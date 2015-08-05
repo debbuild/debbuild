@@ -45,6 +45,7 @@ die "No .spec file to work with!  Exiting.\n" if scalar(@ARGV) == 0;
 # -> Parse command line for options, spec file/tarball/.src.deb (NB - also accept .src.rpm)
 
 sub expandmacros;
+sub unpackcmd;
 
 # User's prefs for dirs, environment, etc,etc,etc.
 # config file ~/.debmacros
@@ -925,56 +926,17 @@ LINE: while (<SPECFILE>) {
 
         if ($deftarball) {
           $prepscript .= "cd '$tarballdir'\n" if $changedir;
-          if ($pkgdata{main}{source} =~ /\.zip$/) {
-            # .zip files are not really tarballs
-            $prepscript .= "/usr/bin/unzip".
-		( $quietunpack ? ' -qq ' : ' ' ).
-		"'$topdir/SOURCES/$pkgdata{main}{source}'";
-          } else {
-            $prepscript .=
-		( $pkgdata{main}{source} =~ /\.(?:tgz|tar\.(?:gz|Z))$/	 ? "/bin/gzip"   : "" ).
-		( $pkgdata{main}{source} =~ /\.tar\.bz2$/		 ? "/bin/bzip2"  : "" ).
-		( $pkgdata{main}{source} =~ /\.tar\.xz$/		 ? "/usr/bin/xz" : "" ).
-		" -dc '$topdir/SOURCES/$pkgdata{main}{source}' | /bin/tar -x".
-		( $quietunpack ? '' : 'vv' )."f - ";
-          }
-          $prepscript .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+          $prepscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
         }
 
         if ($altsource) {
           if ($altsource == 1) { # -a
             $prepscript .= "cd '$tarballdir'\n";
-            if ($pkgdata{sources}{$snum} =~ /\.zip$/) {
-              # .zip files are not really tarballs
-              $prepscript .= "/usr/bin/unzip".
-		( $quietunpack ? ' -qq ' : ' ' ).
-		"'$topdir/SOURCES/$pkgdata{sources}{$snum}'";
-            } else {
-              $prepscript .=
-		( $pkgdata{sources}{$snum} =~ /\.(?:tgz|tar\.(?:gz|Z))$/ ? "/bin/gzip"   : "" ).
-		( $pkgdata{sources}{$snum} =~ /\.tar\.bz2$/		 ? "/bin/bzip2"  : "" ).
-		( $pkgdata{sources}{$snum} =~ /\.tar\.xz$/		 ? "/usr/bin/xz" : "" ).
-		" -dc '$topdir/SOURCES/$pkgdata{sources}{$snum}' | /bin/tar -x".
-		( $quietunpack ? '' : 'vv' )."f -";
-            }
-            $prepscript .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+            $prepscript .= unpackcmd($pkgdata{sources}{$snum},$quietunpack);
           } # $altsource == 1
 
           if ($altsource == 2) { # -b
-            if ($pkgdata{sources}{$snum} =~ /\.zip$/) {
-              # .zip files are not really tarballs
-              $prepscript .= "/usr/bin/unzip".
-		( $quietunpack ? ' -qq ' : ' ' ).
-		"'$topdir/SOURCES/$pkgdata{main}{source}'";
-            } else {
-              $prepscript .=
-		( $pkgdata{sources}{$snum} =~ /\.(?:tgz|tar\.(?:gz|Z))$/  ? "/bin/gzip"   : "" ).
-		( $pkgdata{sources}{$snum} =~ /\.tar\.bz2$/		  ? "/bin/bzip2"  : "" ).
-		( $pkgdata{sources}{$snum} =~ /\.tar\.xz$/		  ? "/usr/bin/xz" : "" ).
-		" -dc '$topdir/SOURCES/$pkgdata{sources}{$snum}' | /bin/tar -x".
-		( $quietunpack ? '' : 'vv' )."f -";
-            }
-            $prepscript .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+            $prepscript .= unpackcmd($pkgdata{sources}{$snum},$quietunpack);
             $prepscript .= "cd '$tarballdir'\n";
           } # $altsource == 2
         }
@@ -2082,6 +2044,38 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
   return $macrostring;
 } # end expandmacros()
 
+
+## unpackcmd()
+# Prepare the necessary commands for uncompressing and extracting the content
+# of the source drop according to the file extension.
+sub unpackcmd {
+   my ($sourcedrop,$quietunpack) = @_;
+   my $prepscript;
+
+   if ($sourcedrop =~ /\.zip$/) {
+      # .zip files are not really tarballs
+      $prepscript .= "/usr/bin/unzip".
+         ( $quietunpack ? ' -qq ' : ' ' ).
+         "'$topdir/SOURCES/$sourcedrop'";
+   } elsif ($sourcedrop =~ /\.tar$/) {
+      # plain .tar files don't need to be uncompressed
+      $prepscript .= "/bin/tar -x".
+         ( $quietunpack ? '' : 'vv' )."f ".
+         "'$topdir/SOURCES/$sourcedrop'";
+   } else {
+      # select the decompressor according to the file extension
+      $prepscript .=
+         ( $sourcedrop =~ /\.(?:tgz|tar\.(?:gz|Z))$/ ? "/bin/gzip"   :
+           $sourcedrop =~ /\.tar\.bz2$/              ? "/bin/bzip2"  :
+           $sourcedrop =~ /\.tar\.xz$/               ? "/usr/bin/xz" :
+           die("Can't handle unknown file type '$sourcedrop'.") ).
+         " -dc '$topdir/SOURCES/$sourcedrop' | /bin/tar -x".
+         ( $quietunpack ? '' : 'vv' )."f - ";
+   }
+   $prepscript .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+
+   return $prepscript;
+} # end unpackcmd()
 
 
 __END__
