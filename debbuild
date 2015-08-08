@@ -1,0 +1,2241 @@
+#!/usr/bin/perl -w
+# debbuild script
+# Shamelessly steals interface from rpm's "rpmbuild" to create
+# Debian packages.  Please note that such packages are highly
+# unlikely to conform to "Debian Policy".
+###
+# SVN revision info
+# $Date: 2015-08-03 17:34:33 -0400 (Mon, 03 Aug 2015) $
+# SVN revision $Rev: 200 $
+# Last update by $Author: kdeugau $
+###
+# Copyright (C) 2005-2015 Kris Deugau <kdeugau@deepnet.cx>
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program; if not, write to the Free Software
+#    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+use strict;
+use warnings;
+use Fcntl;	# for sysopen flags
+use Cwd 'abs_path';	# for finding where files really are
+use Config;
+
+my $version = "0.11.3";
+
+# regex debugger
+#use re "debug";
+
+# Behavioural compatibility FTW!  Yes, rpmbuild does this too.
+die "No .spec file to work with!  Exiting.\n" if scalar(@ARGV) == 0;
+
+# Program flow:
+# -> Parse/execute "system" config/macros (if any - should be rare)
+# -> Parse/execute "user" config/macros (if any - *my* requirement is %_topdir)
+# -> Parse command line for options, spec file/tarball/.src.deb (NB - also accept .src.rpm)
+
+sub expandmacros;
+
+# User's prefs for dirs, environment, etc,etc,etc.
+# config file ~/.debmacros
+# Default ordered search paths for config/macros:
+# /usr/lib/rpm/rpmrc  /usr/lib/rpm/redhat/rpmrc  /etc/rpmrc      ~/.rpmrc
+# /usr/lib/rpm/macros /usr/lib/rpm/redhat/macros /etc/rpm/macros ~/.rpmmacros
+# **NOTE:  May be possible to (ab)use bits of debhelper
+
+# Build tree
+# default is /usr/src/debian/{BUILD,SOURCES,SPECS,DEBS,SDEBS}
+
+# Globals
+my $finalmessages = '';	# A place to stuff messages that I want printed at the *very* end of any processing.
+my $specfile;
+my $tarball;
+my $srcpkg;
+my $cmdbuildroot;
+my $tarballdir = '%{name}-%{version}';	# We do this in case of a spec file not using %setup...
+my %specglobals;	# For %define's in specfile, among other things.
+
+$specglobals{'_vendor'} = 'debbuild';
+# this can be changed by the Vendor: header in the spec file
+$specglobals{'vendor'} = 'debbuild';
+
+# Initialized globals
+my $verbosity = 0;
+my $NoAutoReq = 0;
+my %cmdopts = (type => '',
+		stage => 'a',
+		short => 'n'
+	);
+my $topdir = "/usr/src/debian";
+#my $specglobals{buildroot} = "%{_tmppath}/%{name}-%{version}-%{release}.root".int(rand(99998)+1);
+$specglobals{buildroot} = '%{_topdir}/BUILDROOT/%{name}-%{version}-%{release}';
+
+# "Constants"
+my %targets = ('p' => 'Prep',
+		'c' => 'Compile',
+		'i' => 'Install',
+		'l' => 'Verify %files',
+		'a' => 'Build binary and source',
+		'b' => 'Build binary',
+		's' => 'Build source'
+	);
+# Ah, the joys of multiple architectures.  :(  Feh.
+# As copied from rpm
+my %optflags = ( 'i386'	=>	'-O2 -g -march=i386 -mcpu=i686',
+		'amd64'	=>	'-O2 -g'
+	);
+my $hostarch;	# we set this later...
+my $scriptletbase =
+q(#!/bin/bash
+
+  RPM_SOURCE_DIR="%{_topdir}/SOURCES"
+  RPM_BUILD_DIR="%{_topdir}/BUILD"
+  RPM_OPT_FLAGS="%{optflags}"
+  RPM_ARCH="%{_arch}"
+  RPM_OS="linux"
+  export RPM_SOURCE_DIR RPM_BUILD_DIR RPM_OPT_FLAGS RPM_ARCH RPM_OS
+  RPM_DOC_DIR="/usr/share/doc"
+  export RPM_DOC_DIR
+  RPM_PACKAGE_NAME="%{name}"
+  RPM_PACKAGE_VERSION="%{version}"
+  RPM_PACKAGE_RELEASE="%{release}"
+  export RPM_PACKAGE_NAME RPM_PACKAGE_VERSION RPM_PACKAGE_RELEASE
+  LANG=C
+  export LANG
+  unset CDPATH DISPLAY ||:
+  RPM_BUILD_ROOT="%{buildroot}"
+  export RPM_BUILD_ROOT
+
+  PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/usr/lib64/pkgconfig:/usr/share/pkgconfig"
+  export PKG_CONFIG_PATH
+);
+
+if (-e '/usr/bin/dpkg-architecture') {
+  foreach (`dpkg-architecture`) {
+    s/=(.+)/="$1"/;
+    $scriptletbase .= "  $_";
+    ($hostarch) = (/^DEB_HOST_ARCH="(.+)"$/) if /DEB_HOST_ARCH=/;
+  }
+} else {
+  warn "Missing dpkg-architecture, DEB_HOST_ARCH will not be set!\n";
+}
+
+$scriptletbase .=
+q(
+  set -x
+  umask 022
+  cd "%{_topdir}/BUILD"
+);
+
+# Hackery to try to bring some semblance of sanity to packages built for more
+# than one Debian version at the same time.  Whee.
+# /etc/debian-version and/or version of base-files package
+my %distmap = (
+# legacy Unbuntu
+	"3.1.9ubuntu"	=> "dapper",
+	"6.06"		=> "dapper",
+	"4ubuntu"	=> "feisty",
+	"7.04"		=> "fiesty",
+        "4.0.1ubuntu"	=> "hardy",
+	"8.04"		=> "hardy",
+# Note we do NOT support identification of "subrelease" versions (ie semimajor updates
+# to a given release).  If your dependencies are really that tight, and you can't rely
+# on the versions of the actual dependencies, you're already in over your head, and
+# should probably only ship a tarballed installer.
+# only supporting LTS releases
+# base-files version doesn't map to the Ubuntu version the way Debian versions do, thus the doubled entries
+#	Ubuntu 12.04.5 LTS (Precise Pangolin)
+	"6.5ubuntu"	=> "precise",
+	"12.04"		=> "precise",
+#	Ubuntu 14.04.2 LTS (Trusty Tahr)
+	"7.2ubuntu"	=> "trusty",
+	"14.04"		=> "trusty",
+# Debian releases
+	"3.0"	=> "woody",
+	"3.1"	=> "sarge",
+	"4"	=> "etch",
+	"5"	=> "lenny",
+	"6"	=> "squeeze",
+	"7"	=> "wheezy",
+	"8"	=> "jessie",
+	"9"	=> "stretch",
+	"99"	=> "sid",
+);
+
+# Map Ubuntu base-files versions to the nominal public versions
+
+my %ubnt_vermap = (
+	"6.5ubuntu6"	=> "12.04",
+	"7.2ubuntu5"	=> "14.04",
+);
+
+# Enh.  There doesn't seem to be any better way to do this...  :(
+{
+# could theoretically also do something with this...  it's about as stable as "dpkg-query ..." below...  :(
+#  my $releasever = qx { cat /etc/debian_version };
+#  chomp $releasever;
+  my $basefiles;
+  my $basever;
+  my $baseos;
+
+  # Funny thing how files like this have become useful...
+  # Check for /etc/os-release.  If that doesn't exist, try /etc/lsb-release.  If that doesn't exist,
+  # check for existence of dpkg-query, and either call it Debian Woody (if missing), or fall through
+  # to guessing based on the version of the base-files package.
+  if (-e '/etc/os-release') {
+    open OSREL, "</etc/os-release";
+    # Look for ID and VERSION_ID lines.
+    while (<OSREL>) {
+      $baseos = $1 if /^ID=(\w+)/;
+      $basever = $1 if /^VERSION_ID="?([\d.]+)/;
+    }
+    close OSREL;
+
+  } elsif (-e '/etc/lsb-release') {
+    open LSBREL, "</etc/lsb-release";
+    # Look for DISTRIB_ID and DISTRIB_RELEASE lines.
+    # We could also theoretically extract the dist codename, but since we have to hand-map
+    # it in so many other cases there's little point.
+    while (<LSBREL>) {
+      $baseos = $1 if /^DISTRIB_ID=(\w+)/;
+      $basever = $1 if /^DISTRIB_RELEASE=([\d.]+)/;
+    }
+    close LSBREL;
+
+  } elsif ( ! -e '/usr/bin/dpkg-query' ) {
+    # call it woody, since sarge and newer have dpkg-query, and we don't much care about obsolete^n releases
+    $basever = "3.0";
+    $baseos = 'debian';
+
+  } else {
+# *eyeroll*  there *really* has to be a better way to go about this.  You
+# can't sanely build packages for multiple distro targets if you can't
+# programmatically figure out which one you're building on.
+
+# note that we care only about major release numbers; tracking minor or point
+# releases would be...  exponentially more painful.
+
+    my $majver;
+    # for the lazy copy-paster:  dpkg-query --showformat '${version}\n' -W base-files
+    # avoid shellisms
+    if (open BASEGETTER, "-|", "dpkg-query", "--showformat", '${version}', "-W", "base-files") {
+      $basever = <BASEGETTER>;
+      close BASEGETTER;
+
+      if ($basever =~ /ubuntu/) {
+        # Ubuntu, at least until they upset their versioning scheme again
+        # note that we remap the basefiles version to the public release number, to match the
+        # behaviour for Debian, and to match the unofficial standard for RHEL/Centos etc and Fedora
+        ($basefiles,$basever) = ($basever =~ /^(([\d.]+)ubuntu)\d/);
+        $baseos = 'ubuntu';
+      } else {
+        # Debian, or more "pure" derivative
+        $baseos = 'debian';
+        ($basever,$majver) = ($basever =~ /^((\d+)(?:\.\d)?)/);
+        if ($majver > 3) {
+          $basever = $majver;
+        }
+      }
+    }
+
+    if (!$basever) {
+      # Your llama is on fire
+      $basever = '99';
+      print "Warning:  couldn't autodetect OS version, assuming sid/unstable\n";
+    }
+  } # got dpkg-query?
+
+  # Set some legacy globals.
+  $specglobals{"debdist"} = $distmap{$basever};
+  $specglobals{"debver"} = $basever;   # this may have trouble with Ubuntu versions?
+
+  # Set the standard generic OS-class globals;
+  $baseos = lc($baseos);
+  $specglobals{"ubuntu"} = $basever if $baseos eq 'ubuntu';
+  $specglobals{"debian"} = $basever if $baseos eq 'debian';
+
+  # Default %{dist} to something marginally sane.  Note this should be overrideable by --define.
+  # This has been chosen to most closely follow the usage in RHEL/CentOS and Fedora, ie "el5" or "fc20".
+  $specglobals{"dist"} = $baseos.$basever;
+
+} # done trying to set debian dist/version
+
+# Package data
+# This is the form of $pkgdata{pkgname}{meta}
+# meta includes Summary, Name, Version, Release, Group, Copyright,
+#	Source, URL, Packager, BuildRoot, Description, BuildRequires,
+#	Requires, Provides
+# 10/31/2005 Maybe this should be flatter?  -kgd
+my %pkgdata = (main => {source => ''});
+my @pkglist = ('main');	#sigh
+# Files listing.  Embedding this in %pkgdata would be, um, messy.
+my %filelist;
+my %doclist;
+my $buildreq = '';
+
+# Scriptlets
+my $prepscript = '';
+my $buildscript = '';
+# %install doesn't need the full treatment from %clean;  just an empty place to install to.
+# NB - rpm doesn't do this;  is it really necessary?
+my $installscript = '';
+#'[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT'."\n";
+my $cleanscript = '';
+
+# Snag some environment data
+my $tmpdir;
+if (defined $ENV{TMP} && $ENV{TMP} =~ /^(\/var)?\/tmp$/) {
+  $tmpdir = $ENV{TMP};
+} else {
+  $tmpdir = "/var/tmp";
+}
+
+##main
+
+load_userconfig();
+parse_cmd();
+
+if ($cmdopts{install}) {
+  install_sdeb();
+  exit 0;
+}
+
+# output stage of --showpkgs
+if ($cmdopts{type} eq 'd') {
+  parse_spec();
+  foreach my $pkg (@pkglist) {
+    $pkgdata{$pkg}{name} =~ tr/_/-/;
+
+    my $pkgfullname = "$pkgdata{$pkg}{name}_".
+	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
+	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb";
+
+    print "$pkgfullname\n" if $filelist{$pkg};
+
+  }
+  # Source package
+  print "$pkgdata{main}{name}-".
+	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
+	"$pkgdata{main}{version}-$pkgdata{main}{release}.sdeb\n";
+  exit 0;
+}
+
+# Stick --rebuild handling in here - basically install_sdeb()
+# followed by tweaking options to run with -ba
+if ($cmdopts{type} eq 's') {
+  if ($srcpkg =~ /\.src\.rpm$/) {
+    my @srclist = qx { rpm -qlp $srcpkg };
+    foreach (@srclist) {
+      chomp;
+      $specfile = "$topdir/SPECS/$_" if /\.spec$/;
+    }
+    qx { rpm -i $srcpkg };
+  } else {
+    install_sdeb();
+    my @srclist = qx { pax < $srcpkg };
+    foreach (@srclist) {
+      chomp;
+      $specfile = "$topdir/$_" if /SPECS/;
+    }
+  }
+  $cmdopts{type} = 'b';
+  $cmdopts{stage} = 'a';
+}
+
+if ($cmdopts{type} eq 'b') {
+  # Need to read the spec file to find the tarball.  Note that
+  # this also generates most of the shell script required.
+  parse_spec();
+  die "Can't build $pkgdata{main}{name}:  build requirements not met.\n"
+    if !checkbuildreq();
+}
+
+if ($cmdopts{type} eq 't') {
+  # Need to unpack the tarball to find the spec file.  Sort of the inverse of -b above.
+  # Note that rpmbuild doesn't seem to support this operation from a .zip file, so neither will we.
+  # zcat $tarball |tar -t |grep .spec
+  # collect some info about the tarball
+  $specfile = "$topdir/BUILD/". qx { zcat $tarball |tar -t |grep -e '[\.]spec\$' };
+  chomp $specfile;
+  my ($fileonly, $dirname) = ($tarball =~ /(([a-zA-Z0-9._-]+)\.(?:tgz|tar\.(?:gz|bz2|xz|Z)))$/);
+
+  $tarball = abs_path($tarball);
+##fixme:  use macro expansions for the executables
+  my $unpackcmd = "cd $topdir/BUILD; ".
+	( $tarball =~ /\.(?:tgz|tar\.(?:gz|Z))$/	 ? "/bin/gzip"   : "" ).
+	( $tarball =~ /\.tar\.bz2$/			 ? "/bin/bzip2"  : "" ).
+	( $tarball =~ /\.tar\.xz$/			 ? "/usr/bin/xz" : "" ).
+	" -dc $tarball |/bin/tar -xf -";
+
+  system "$unpackcmd";
+  system "cp $tarball $topdir/SOURCES/$fileonly";
+  system "cp $specfile $topdir/SPECS/";
+  parse_spec();
+  die "Can't build $pkgdata{main}{name}:  build requirements not met.\n"
+    if !checkbuildreq();
+}
+
+# -> srcpkg if -.s
+if ($cmdopts{stage} eq 's') {
+  srcpackage();
+  print $finalmessages;
+  exit 0;
+}
+
+# Hokay.  Need to:
+# -> prep if -.p OR (-.[cilabs] AND !--short-circuit)
+if ($cmdopts{stage} eq 'p' || ($cmdopts{stage} =~ /[cilabs]/ && $cmdopts{short} ne 'y')) {
+  prep();
+}
+# -> build if -.c OR (-.[ilabs] AND !--short-circuit)
+if ($cmdopts{stage} eq 'c' || ($cmdopts{stage} =~ /[ilabs]/ && $cmdopts{short} ne 'y')) {
+  build();
+}
+# -> install if -.[ilabs]
+#if ($cmdopts{stage} eq 'i' || ($cmdopts{stage} =~ /[labs]/ && $cmdopts{short} ne 'y')) {
+if ($cmdopts{stage} =~ /[ilabs]/) {
+  install();
+#foreach my $pkg (@pkglist) {
+#  print "files in $pkg:\n ".$filelist{$pkg}."\n";
+#}
+
+}
+# -> binpkg and srcpkg if -.a
+if ($cmdopts{stage} eq 'a') {
+  binpackage();
+  srcpackage();
+  clean();
+}
+# -> binpkg if -.b
+if ($cmdopts{stage} eq 'b') {
+  binpackage();
+  clean();
+}
+
+# Spit out any closing remarks
+print $finalmessages;
+
+# Just in case.
+exit 0;
+
+
+## load_userconfig()
+# Loads user configuration (if any)
+# Currently only handles .debmacros
+# Needs to handle "other files"
+sub load_userconfig {
+  my $homedir = (getpwuid($<))[7];
+  if (-e "$homedir/.debmacros") {
+    open USERMACROS,"<$homedir/.debmacros";
+    while (<USERMACROS>) {
+      # And we also only handle a few macros at the moment.
+      if (/^\%_topdir/) {
+	my (undef,$tmp) = split /\s+/, $_;
+	$topdir = $tmp;
+      }
+      next if /^\%_/;
+      # Allow arbitrary definitions.  Note that we're only doing simple defs here for now.
+      if (/^\%([a-z0-9]+)\s+(.+)$/) {
+	$specglobals{$1} = $2;
+      }
+    }
+  }
+} # end load_userconfig()
+
+
+## parse_cmd()
+# Parses command line into global hash %cmdopts, other globals
+# Options based on rpmbuild's options
+sub parse_cmd {
+  # Don't feel like coding my own option parser...
+  #use Getopt::Long;
+  # ... but I may have to:  (OTOH, rpm uses popt, so maybe we can too.)
+  #use Getopt::Popt qw(:all);
+  # Or not.  >:(  Stupid Debian lack of findable Perl module names in packages.
+
+  # ... also note, single-character options are mostly not flags, so they can't be
+  # sanely combined the way most other programs' single-character flag options can.
+
+  # Stuff it.
+  my $prevopt = '';
+  foreach (@ARGV) {
+    chomp;
+
+    # Is it an option?
+    if (/^-/) {
+
+      # Is it a long option?
+      if (/^--/) {
+	if (/^--short-circuit/) {
+	  $cmdopts{short} = 'y';
+	} elsif (/^--rebuild/) {
+	  $cmdopts{type} = 's';
+	} elsif (/^--showpkgs/) {
+	  $cmdopts{type} = 'd';	# d for 'diagnostic' or 'debug' or 'dump'
+	} elsif (/^--help/) {
+	  print "debbuild v$version".q{
+Copyright 2005-2015 Kris Deugau <kdeugau@deepnet.cx>
+
+Build .deb packages from RPM-style .spec files
+debbuild supports most package-building options rpmbuild does.
+
+Build options with [ <specfile> | <tarball> | <source package> ]:
+      -bp                        build through %prep (unpack sources and apply patches) from <specfile>
+      -bc                        build through %build (%prep, then compile) from <specfile>
+      -bi                        build through %install (%prep, %build, then install) from <specfile>
+      -bl                        verify %files section from <specfile>
+      -ba                        build source and binary packages from <specfile>
+      -bb                        build binary package only from <specfile>
+      -bs                        build source package only from <specfile>
+      -tp                        build through %prep (unpack sources and apply patches) from <tarball>
+      -tc                        build through %build (%prep, then compile) from <tarball>
+      -ti                        build through %install (%prep, %build, then install) from <tarball>
+      -ta                        build source and binary packages from <tarball>
+      -tb                        build binary package only from <tarball>
+      -ts                        build source package only from <tarball>
+      --rebuild                  build binary package from <source package>
+      --buildroot=DIRECTORY      override build root
+      --short-circuit            skip straight to specified stage (only for c,i)
+
+Common options:
+  -D, --define='MACRO EXPR'      define MACRO with value EXPR
+
+debbuild-specific options:
+      -i                         Unpack a .sdeb in the %_topdir tree
+      --showpkgs                 Show package names that would be built.  Only works with .spec files.
+
+};
+	  exit;
+
+	} elsif (/^--define/) {
+	  # nothing to do?  Can't see anything needed, we handle the actual definition later.
+##fixme
+# add --self-package here
+# deps build-essential pax fakeroot
+	} else {
+	  print "Long option $_ not handled\n";
+	}
+      } else {
+	# Not a long option
+	if (/^-[bt]/) {
+	  if ($cmdopts{stage} eq 's') {
+	    # Mutually exclusive options.
+	    die "Can't use $_ with --rebuild\n";
+	  } else {
+	    # Capture the type (from "bare" files or tarball) and the stage (prep, build, etc)
+	    ($cmdopts{stage}) = (/^-[bt]([pcilabs])/);
+	    ($cmdopts{type}) = (/^-([bt])[pcilabs]/);
+	  }
+	} elsif (/^-v/) {
+	  # bump verbosity.  Not sure what I'll actually do here...
+	} elsif (/^-i/) {
+	  $cmdopts{install} = 1;
+	  $prevopt = '-i';
+	} elsif (/^-D/) {
+	  # --define.  nothing to do on this round;  actual work is done next time.
+	} else {
+	  die "Bad option $_\n";
+	}
+      }
+
+    } else { # Not an option argument
+
+      # --buildroot is the only option that takes an argument
+      # Therefore, any *other* bare arguments are the spec file,
+      # tarball, or source package we're operating on - depending
+      # on which one we meet.
+      if ($prevopt eq '--buildroot') {
+	$cmdbuildroot = $_;
+      } elsif ($prevopt eq '--define' || $prevopt eq '-D') {
+	my ($macro,$value) = (/([a-z0-9_.-]+)(?:\s+(.+))?/i);
+	if ($value ne '') {
+	  $specglobals{$macro} = $value;
+	} else {
+	  warn "WARNING:  missing value for macro $macro in --define!  Ignoring.\n";
+	}
+      } elsif ($prevopt eq '-i') {
+	$srcpkg = $_;
+      } else {
+	if ($cmdopts{type} eq 's') {
+	  # Source package
+ 	  if (!/(sdeb|\.src\.rpm)$/) {
+	    die "Can't --rebuild with $_\n";
+	  }
+          $srcpkg = $_;
+	} elsif ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
+	  # Spec file
+	  $specfile = $_;
+	} else {
+	  # Tarball build.  Need to extract tarball to find spec file.  Whee.
+	  $tarball = $_;
+	}
+      }
+    }
+    $prevopt = $_;
+  } # foreach @ARGV
+
+  # Some cross-checks.  rpmbuild limits --short-circuit to just
+  # the "compile" and "install" targets - with good reason IMO.
+  # Note that --short-circuit with -.p is not really an error, just redundant.
+  # NB - this is NOT fatal, just ignored!
+  if ($cmdopts{short} eq 'y' && $cmdopts{stage} =~ /[labs]/) {
+    warn "Can't use --short-circuit for $targets{$cmdopts{stage}} stage.  Ignoring.\n";
+    $cmdopts{short} = 'n';
+  }
+
+  # Valid options, with example arguments (if any):
+# Build from .spec file; mutually exclusive:
+  # -bp
+  # -bc         
+  # -bi         
+  # -bl
+  # -ba
+  # -bb
+  # -bs
+# Build from tarball; mutually exclusive:
+  # -tp
+  # -tc
+  # -ti
+  # -ta
+  # -tb
+  # -ts
+# Build from .src.(deb|rpm)
+  # --rebuild
+  # --recompile
+
+# General options
+  # --buildroot=DIRECTORY
+  # --clean
+  # --nobuild
+  # --nodeps
+  # --nodirtokens
+  # --rmsource
+  # --rmspec
+  # --short-circuit
+  # --target=CPU-VENDOR-OS
+
+  #my $popt = new Getopt::Popt(argv => \@ARGV, options => \@optionsTable);
+
+} # end parse_cmd()
+
+
+## parse_spec()
+# Parse the .spec file.
+sub parse_spec {
+  die "No .spec file specified!  Exiting.\n" if !$specfile;
+  open SPECFILE,"<$specfile" or die "specfile ($specfile) barfed: $!";
+
+  my $iflevel = 0;
+  my $buildarch = $hostarch;
+  $pkgdata{main}{arch} = $hostarch;
+
+  my $stage = 'preamble';
+  my $subname = 'main';
+  my $scriptlet;
+
+# Basic algorithm:
+# For each line
+#   if it's a member of an %if construct, branch and see which segment of the
+#	spec file we need to parse and which one gets discarded, then
+#	short-circuit back to the top of the loop.
+#   if it's a %section, bump the stage.  Preparse addons to the %section line
+#	(eg subpackage) and stuff them in suitable loop-global variables, then
+#	short-circuit back to the top of the loop.
+#   Otherwise, parse the line according to which section we're supposedly
+#	parsing right now
+
+LINE: while (<SPECFILE>) {
+    next if /^#/ && $stage eq 'preamble';       # Ignore comments...
+    next if /^\s*$/ && $stage eq 'preamble';    # ... and blank lines.
+
+# no sense in continuing if we find something we don't grok
+    # Yes, this is really horribly fugly.  But it's a cheap crosscheck against invalid
+    # %-tags which also make rpmbuild barf.  In theory.
+# notes:  some of these are not *entirely* case-sensitive (%ifxxx), but most are.
+    # Extracted from the Maximum RPM online doc via:
+    # grep -h %[a-z] *|perl -e 'while (<>) { /\%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
+    if (/^%[a-z]/ &&
+		$_ !~ /^%(?:attr|build|changelog|check|clean|config|configure|defattr|define|description|
+		dir|doc|docdir|else|endif|files|ghost|if|ifarch|ifn|ifnarch|ifnos|ifnxxx|fos|ifxxx|
+		install|makeinstall|package|patch\d+|post|postun|pre|prep|preun|readme|setup[^\s]*|
+		triggerin|triggerpostun|triggerun|verify|verifyscript)\b/x
+	) {
+	my ($badtag) = (/^%([a-z]+)/i);
+	die "Unknown tag \%$badtag at line $. of $specfile\n";
+    }
+
+# preprocess %define's
+    if (my ($key, $def) = (/^\%(?:define|global)\s+([^\s]+)\s+(.+)$/) ) {
+      $specglobals{$key} = expandmacros($def,'g');
+    }
+
+    if (/^\%if/) {
+      s/^\%if//;
+      chomp;
+      my $expr = expandmacros($_, 'g');
+      $iflevel++;
+
+      if ($expr !~ /^\s*\d+\s*$/) {
+        # gots a logic statement we want to turn into a 1 or a 0.  most likely by eval'ing it.
+
+        $expr =~ s/\s+//g;
+
+# For Great w00tness!  New and Improved multilayered logic handling.
+
+	my @bits = split /\b/, $expr;
+	$expr = '';
+	foreach my $bit (@bits) {
+	  next if $bit eq '"';
+	  $bit =~ s/"//g;
+	  $expr .= qq("$bit") if $bit =~ /^\w+$/;
+	  $expr .= $bit if $bit !~ /^\w+$/;
+	}
+
+        # Done in this order so we don't cascade incorrectly.  Yes, those spaces ARE correct in the replacements!
+        $expr =~ s/==/ eq /g;
+        $expr =~ s/!=/ ne /g;
+        $expr =~ s/<=>/ cmp /g;
+        $expr =~ s/<=/ le /g;
+        $expr =~ s/>=/ ge /g;
+        $expr =~ s/</ lt /g;
+        $expr =~ s/>/ gt /g;
+
+        # Turn it into something that eval's to a number.  Maybe not needed?  O_o
+        #$expr = "( $expr ? 1 : 0 )";
+
+        $expr = eval $expr;
+      }
+
+      next LINE if $expr != 0;        # This appears to be the only case we call false.
+      while (<SPECFILE>) {
+        if (/^\%endif/) {
+          $iflevel--;
+          next LINE;
+        } elsif (/^\%else/) {
+          next LINE;
+        }
+      }
+    }
+    if (/^\%else/) {
+      while (<SPECFILE>) {
+        if (/^\%endif/) {
+          $iflevel--;
+          next LINE;
+        }
+      }
+    }
+    if (/^\%endif/) {
+      $iflevel--;
+      next LINE;
+    } # %if/%else/%endif
+
+    if (/^\%{echo:(.+)}/) {
+      my $output = expandmacros($1, 'gp');
+      print "$output";
+      next LINE;
+    }
+
+# now we pick out the sections and set "state" to parse that section.  Fugly but I can't see a better way.  >:(
+
+    if (/^\%description(?:\s+(?:-n\s+)?(.+))?/) {
+      $stage = 'desc';
+      $subname = "main";
+      if ($1) {       # Magic to add entries to the right package
+        my $tmp = expandmacros("$1", 'gp');
+        if (/-n/) { $subname = $tmp; } else { $subname = "$pkgdata{main}{name}-$tmp"; }
+      }
+      next LINE;
+    } # %description
+
+    if (/^\%package\s+(?:-n\s+)?(.+)/) {
+      $stage = 'package';
+      if ($1) {       # Magic to add entries to the right package
+        my $tmp = expandmacros("$1", 'gp');
+        if (/-n/) { $subname = $tmp; } else { $subname = "$pkgdata{main}{name}-$tmp"; }
+      }
+      push @pkglist, $subname;
+      $pkgdata{$subname}{name} = $subname;
+      $pkgdata{$subname}{version} = $pkgdata{main}{version};
+  # Build "same arch as previous package found" by default.  Where rpm just picks the
+  # *very* last one, we want to allow arch<native>+arch-all
+  # (eg, Apache is i386, but apache-manual is all)
+      $pkgdata{$subname}{arch} = $buildarch;  # Since it's likely subpackages will NOT have a BuildArch line...
+      next LINE;
+    } # %package
+
+    if (/^\%prep/) {
+      $stage = 'prep';
+      # Replace some core macros
+      $pkgdata{main}{source} = expandmacros($pkgdata{main}{source},'gp');
+      next LINE;
+    } # %prep
+
+    if (/^\%build/) {
+      $stage = 'build';
+      $buildscript .= "cd '$tarballdir'\n" if $pkgdata{main}{hassetup};
+      next LINE;
+    } # %build
+
+    if (/^\%install/) {
+      $stage = 'install';
+      $installscript .= "cd '$tarballdir'\n" if $pkgdata{main}{hassetup};
+      next LINE;
+    } # %install
+
+    if (/^\%clean/) {
+      $stage = 'clean';
+      $cleanscript .= "cd '$tarballdir'\n" if $pkgdata{main}{hassetup};
+      next LINE;
+    } # %clean
+
+    if (/^\%(pre|post|preun|postun)\b(?:\s+(?:-n\s+)?(.+))?/i) {
+      $stage = 'prepost';
+      $scriptlet = lc $1;
+      $subname = 'main';
+      if ($2) {       # Magic to add entries to the right package
+        my $tmp = expandmacros("$2", 'g');
+        if (/-n/) { $subname = $tmp; } else { $subname = "$pkgdata{main}{name}-$tmp"; }
+      }
+      next LINE;
+    } # %pre/%post/%preun/%postun
+
+    if (/^\%files(?:\s+(?:-n\s+)?(.+))?/) {
+      $stage = 'files';
+      $subname = 'main';
+      if ($1) {       # Magic to add entries to the right list of files
+        my $tmp = expandmacros("$1", 'gp');
+        if (/-n/) { $subname = $tmp; } else { $subname = "$pkgdata{main}{name}-$tmp"; }
+      }
+      next LINE;
+    } # %files
+
+    if (/^\%changelog/) {
+      $stage = 'changelog';
+      $pkgdata{main}{changelog} = '';
+      next LINE;
+    }
+
+# now we handle individual lines from the various sections
+
+    if ($stage eq 'desc') {
+      next LINE if /^\s*#/;
+      $pkgdata{$subname}{desc} .= " $_";
+    } # description
+
+    if ($stage eq 'package') {
+      # gotta expand %defines here.  Whee.
+# Note that we look for the Debian-specific Recommends, Suggests, and Replaces,
+# although they will have to be wrapped in '%if %{_vendor} == "debbuild"' for
+# an rpmbuild-compatible .spec file
+# NB: NOT going to support Pre-Depends, since it's a "Don't Use" (mis)feature, and
+# RPM's support for a similar tag (PreReq) has been recently dropped.
+      if (my ($dname,$dvalue) = (/^(Recommends|Suggests|Enhances|Replaces|Summary|Group|Version|Requires|Conflicts|Provides|BuildArch(?:itecture)?):\s+(.+)$/i)) {
+        $dname =~ tr/[A-Z]/[a-z]/;
+        if ($dname =~ /^BuildArch/i) {
+          $dvalue =~ s/^noarch/all/ig;
+          $buildarch = $dvalue;     # Emulate rpm's behaviour to a degree
+          $dname = 'arch';
+        }
+        if ($dname =~ /recommends|suggests|enhances|replaces|requires|conflicts|provides/) {
+          $pkgdata{$subname}{$dname} .= ", ".expandmacros($dvalue, 'gp');
+        } else {
+          $pkgdata{$subname}{$dname} = expandmacros($dvalue, 'gp');
+        }
+      }
+    } # package
+
+    if ($stage eq 'prep') {
+      # Actual handling for %prep section.  May have %setup macro;  may
+      # include %patch tags, may be just a bare shell script.
+      if (/^\%setup/) {
+        $pkgdata{main}{hassetup} = 1;  # flag the fact that we've got %setup
+        # Parse out the %setup macro.
+        chomp;
+        # rpmbuild doesn't complain about gibberish immediately following %setup, but we will
+        warn "Suspect \%setup tag '$_', continuing\n" if ! /^\%setup(?:\s|$)/;
+
+        # Prepare some flags
+        my $changedir = 0;
+        my $deldir = 1;
+        my $quietunpack = 0;
+        my $deftarball = 1;
+        my $snum = '';
+        my $sbefore;
+        my $safter;
+        my $altsource = 0;
+
+        my @sbits = split /\s+/;
+        shift @sbits;
+        while (my $sopt = shift @sbits) {
+          if ($sopt eq '-n') {
+            $tarballdir = shift @sbits;
+          } elsif ($sopt eq '-a') {
+            # shift, next opt must be numeric (which sourcenn:)
+            $sopt = shift @sbits;
+            die "Argument for \%setup -a must be numeric at $specfile line $.\n" if $sopt !~ /^\d+$/;
+            $safter = $sopt;
+            $snum = $sopt;
+            $altsource = 1;
+          } elsif ($sopt eq '-b') {
+            # shift, next opt must be numeric (which sourcenn:)
+            $sopt = shift @sbits;
+            die "Argument for \%setup -b must be numeric at $specfile line $.\n" if $sopt !~ /^\d+$/;
+            $sbefore = $sopt;
+            $snum = $sopt;
+            $altsource = 2;
+          } elsif ($sopt eq '-c') {
+            # flag, create and change directory before unpack
+            $changedir = 1;
+          } elsif ($sopt eq '-D') {
+            # flag, do not delete directory before unpack
+            $deldir = 0;
+          } elsif ($sopt eq '-T') {
+            # flag, do not unpack first source
+            $deftarball = 0;
+          } elsif ($sopt eq '-q') {
+            # SSSH!  Unpack quietly
+            $quietunpack = 1;
+          }
+        } # $sopt = shift @sbits
+
+# Note that this is an incomplete match to rpmbuild's full %setup expression.
+# Still known to do:
+# - Match implementation of -a and -b if both are specified.
+#   Looks to be "expand -a into $aftersource and expand -b into $beforesource inside the while()"
+#   instead of treating them as flags like the other arguments.
+# Known differences
+# - -q appears to be somewhat positional
+# - rpmbuild requires -n on all %setup macros, but carries the first down to %install etc,
+#   debbuild sets the global on the first call, and keeps using it for further %setup calls
+
+        $prepscript .= "cd '$topdir/BUILD'\n";
+        $tarballdir = expandmacros($tarballdir,'gp');
+        $prepscript .= "rm -rf '$tarballdir'\n" if $deldir;
+        $prepscript .= "/bin/mkdir -p $tarballdir\n" if $changedir;
+
+        if ($deftarball) {
+          $prepscript .= "cd '$tarballdir'\n" if $changedir;
+          if ($pkgdata{main}{source} =~ /\.zip$/) {
+            # .zip files are not really tarballs
+            $prepscript .= "/usr/bin/unzip".
+		( $quietunpack ? ' -qq ' : ' ' ).
+		"'$topdir/SOURCES/$pkgdata{main}{source}'";
+          } else {
+            $prepscript .=
+		( $pkgdata{main}{source} =~ /\.(?:tgz|tar\.(?:gz|Z))$/	 ? "/bin/gzip"   : "" ).
+		( $pkgdata{main}{source} =~ /\.tar\.bz2$/		 ? "/bin/bzip2"  : "" ).
+		( $pkgdata{main}{source} =~ /\.tar\.xz$/		 ? "/usr/bin/xz" : "" ).
+		" -dc '$topdir/SOURCES/$pkgdata{main}{source}' | /bin/tar -x".
+		( $quietunpack ? '' : 'vv' )."f - ";
+          }
+          $prepscript .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+        }
+
+        if ($altsource) {
+          if ($altsource == 1) { # -a
+            $prepscript .= "cd '$tarballdir'\n";
+            if ($pkgdata{sources}{$snum} =~ /\.zip$/) {
+              # .zip files are not really tarballs
+              $prepscript .= "/usr/bin/unzip".
+		( $quietunpack ? ' -qq ' : ' ' ).
+		"'$topdir/SOURCES/$pkgdata{sources}{$snum}'";
+            } else {
+              $prepscript .=
+		( $pkgdata{sources}{$snum} =~ /\.(?:tgz|tar\.(?:gz|Z))$/ ? "/bin/gzip"   : "" ).
+		( $pkgdata{sources}{$snum} =~ /\.tar\.bz2$/		 ? "/bin/bzip2"  : "" ).
+		( $pkgdata{sources}{$snum} =~ /\.tar\.xz$/		 ? "/usr/bin/xz" : "" ).
+		" -dc '$topdir/SOURCES/$pkgdata{sources}{$snum}' | /bin/tar -x".
+		( $quietunpack ? '' : 'vv' )."f -";
+            }
+            $prepscript .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+          } # $altsource == 1
+
+          if ($altsource == 2) { # -b
+            if ($pkgdata{sources}{$snum} =~ /\.zip$/) {
+              # .zip files are not really tarballs
+              $prepscript .= "/usr/bin/unzip".
+		( $quietunpack ? ' -qq ' : ' ' ).
+		"'$topdir/SOURCES/$pkgdata{main}{source}'";
+            } else {
+              $prepscript .=
+		( $pkgdata{sources}{$snum} =~ /\.(?:tgz|tar\.(?:gz|Z))$/  ? "/bin/gzip"   : "" ).
+		( $pkgdata{sources}{$snum} =~ /\.tar\.bz2$/		  ? "/bin/bzip2"  : "" ).
+		( $pkgdata{sources}{$snum} =~ /\.tar\.xz$/		  ? "/usr/bin/xz" : "" ).
+		" -dc '$topdir/SOURCES/$pkgdata{sources}{$snum}' | /bin/tar -x".
+		( $quietunpack ? '' : 'vv' )."f -";
+            }
+            $prepscript .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+            $prepscript .= "cd '$tarballdir'\n";
+          } # $altsource == 2
+        }
+
+# rpm doesn't seem to do the chowns any more
+#		qq([ `/usr/bin/id -u` = '0' ] && /bin/chown -Rhf root .\n).
+#		qq([ `/usr/bin/id -u` = '0' ] && /bin/chgrp -Rhf root .\n).
+        $prepscript .=
+		qq(/bin/chmod -Rf a+rX,u+w,g-w,o-w .\n);
+
+      } elsif ( my ($patchnum,$patchopts) = (/^\%patch([^\s]+)(\s+.+)?$/) ) {
+        chomp $patchnum;
+        $prepscript .= qq(echo "Patch #$patchnum ($pkgdata{main}{"patch$patchnum"}):"\n);
+	# If there are options passed, use'em.
+	# Otherwise, catch a bare %patch and ASS-U-ME it's '-p0'-able.
+	# Will break on options that don't provide -pnn, but what the hell.
+	# Need to decompress .bz2 and .gz patches on the fly.  Not sure why one
+	# would ever have such things, but there they are...  and rpmbuild supports 'em
+	# patch originally suggested by Lucian Cristian for .bz2
+	# reworked and expanded to support .Z/.gz/.xz as well
+	if ( $pkgdata{main}{"patch$patchnum"} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
+	  my $decompressor;
+	  $decompressor = 'gzip'  if $pkgdata{main}{"patch$patchnum"} =~ /\.(?:Z|gz)$/;
+	  $decompressor = 'bzip2' if $pkgdata{main}{"patch$patchnum"} =~ /\.bz2$/;
+	  $decompressor = 'xz'    if $pkgdata{main}{"patch$patchnum"} =~ /\.xz$/;
+	  $prepscript .= qq(/bin/$decompressor -d < $topdir/SOURCES/$pkgdata{main}{"patch$patchnum"} | patch );
+	  $prepscript .= $patchopts if $patchopts;
+	  $prepscript .= "-p0" if !$patchopts;
+	  $prepscript .= qq( -s\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+	} else {
+	  $prepscript .= "patch ";
+	  $prepscript .= $patchopts if $patchopts;
+	  $prepscript .= "-p0" if !$patchopts;
+	  $prepscript .= " -s <$topdir/SOURCES/".$pkgdata{main}{"patch$patchnum"}."\n";
+	}
+      } else {
+        $prepscript .= expandmacros($_,'gp');
+      }
+      next LINE;
+    } # prep
+
+    if ($stage eq 'build') {
+      # %build.  This is pretty much just a shell script.  There
+      # aren't many local macros to deal with.
+      if (/^\%configure/) {
+        $buildscript .= expandmacros($_,'cgbp');
+      } elsif (/^\%\{__make\}/) {
+        $buildscript .= expandmacros($_,'mgbp');
+      } else {
+        $buildscript .= expandmacros($_,'gp');
+      }
+      next LINE;
+    } # build
+
+    if ($stage eq 'install') {
+      if (/^\%makeinstall/) {
+        $installscript .= expandmacros($_,'igbp');
+      } else {
+        $installscript .= expandmacros($_,'gp');
+      }
+      next LINE;
+    } # install
+
+    if ($stage eq 'clean') {
+      $cleanscript .= expandmacros($_,'gp');
+      next LINE;
+    } # clean
+
+    if ($stage eq 'prepost') {
+      $pkgdata{$subname}{$scriptlet} .= expandmacros($_,'gp');
+      next LINE;
+    } # prepost
+
+    if ($stage eq 'files') {
+      # need to deal with these someday
+      next LINE if /^\%dir/;
+      next LINE if /^\%defattr/;
+      next LINE if /^\%verify/;
+      # dunno what to do with this; not sure if there's space in Debian's package structure for it.
+      next LINE if /^\%ghost/;
+      # Debian dpkg doesn't speak "%docdir".  Meh.
+      next LINE if /^\%docdir/;
+#      my $singleton = 0;	# don't recall what this was for
+      next LINE if /^\s*#/;
+      next LINE if /^\s*$/;
+
+# create and initialize flags
+      my ($perms, $owner, $group, $conf, $filesline);
+      $perms = $owner = $group = $conf = '-';
+
+      $filesline = $_;
+
+      # strip and flag %attr constructs
+      if ($filesline =~ /\%attr\b/) {
+	# Extract %attr...
+	my ($args) = (/(\%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\))/);
+	$args =~ s/\s+//g;
+	$args =~ s/"//g;    # don't think quotes are ever necessary, but they're *allowed*
+	# ... and parse it ...
+	($perms,$owner,$group) = ($args =~ /\(([\d-]+),([a-zA-Z0-9-]+),([a-zA-Z0-9-]+)/);
+	# ... and wipe it when we're done.
+	$filesline =~ s/\%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\)//;
+      }
+
+      # Conffiles.  Note that Debian and RH have similar, but not
+      # *quite* identical ideas of what constitutes a conffile.  Nrgh.
+      # Note that dpkg will always ask if you want to replace the file - noreplace
+      # is more or less permanently enabled.
+##fixme
+# also need to handle missingok (file that doesn't exist, but should be removed on uninstall)
+# hmm.  not sure if such is **POSSIBLE** with Debian...  maybe an addition to %post?
+      if ($filesline =~ /\%config\b(?:\s*\(\s*noreplace\s*\)\s*)?/) {
+        $pkgdata{$subname}{conffiles} = 1;  # Flag it for later
+	$conf = 'y';
+	$filesline =~ s/\%config\b(?:\s*\(\s*noreplace\s*\)\s*)?//;
+      }
+
+      # %doc needs extra processing, because it can be a space-separated list, and may
+      # include both full and partial pathnames.  The partial pathnames must be fiddled
+      # into place in the %install script, because Debian doesn't really have the concept
+      # of "documentation file" that rpm does.  (Debian "documentation files" are files
+      # in /usr/share/doc/<packagename>.)
+##fixme:  unhandled case: %doc %defattr.  Eeep.
+# don't really know what to do with %defattr, generally.  :(
+      if ($filesline =~ /\%doc\b/) {
+        $filesline =~ s/\s*\%doc\s+//;
+
+# this could probably go elsewhere.
+	my $pkgname = $pkgdata{$subname}{name};
+	$pkgname =~ tr/_/-/;
+
+	# have to extract the partial pathnames that %doc installs automagically
+	foreach (split /\s+/, $filesline) {
+	  if (! (/^\%/ or m|^/|) ) {
+	    $doclist{$subname} .= " $_";
+	    my ($element) = m|([^/\s]+/?)$|;
+	    $filesline =~ s|$_|\%{_docdir}/$pkgname/$element|;
+	  }
+	}
+      } # $filesline =~ /\%doc\b/
+
+      $filesline =~ s/^\s*//;	# Just In Case.  For, uh, neatness.
+
+# due to Debian's total lack of real permissions-processing in its actual package
+# handling component (dpkg-deb), this can't really be done "properly".  We'll have
+# to add chown/chmod commands to the postinst instead.  Feh.
+      $pkgdata{$subname}{'post'} .= "chown $owner $filesline\n" if $owner ne '-';
+      $pkgdata{$subname}{'post'} .= "chgrp $group $filesline\n" if $group ne '-';
+      $pkgdata{$subname}{'post'} .= "chmod $perms $filesline\n" if $perms ne '-';
+
+##fixme
+# need hackery to assure only one filespec per %config.  NB:  "*" is one filespec.  <g>
+      push @{$pkgdata{$subname}{conflist}}, $filesline if $conf ne '-';
+
+      # now that we've got the specials out of the way, we can add things to the appropriate list of files.
+      # ... and finally everything else
+      $filelist{$subname} .= " $filesline";
+
+      next LINE;
+    } # files
+
+    if ($stage eq 'changelog') {
+      # this is one of the few places we do NOT generally want to replace macros...
+      $pkgdata{main}{changelog} .= $_;
+    }
+
+    if ($stage eq 'preamble') {
+      if (/^summary:\s*(.+)/i) {
+        $pkgdata{main}{summary} = $1;
+      } elsif (/^name:\s*(.+)/i) {
+        $pkgdata{main}{name} = expandmacros($1,'g');
+      } elsif (/^epoch:\s*(.+)/i) {
+        $pkgdata{main}{epoch} = expandmacros($1,'g');
+      } elsif (/^version:\s*(.+)/i) {
+        $pkgdata{main}{version} = expandmacros($1,'g');
+      } elsif (/^release:\s*(.+)/i) {
+        $pkgdata{main}{release} = expandmacros($1,'g');
+      } elsif (/^group:\s*(.+)/i) {
+        $pkgdata{main}{group} = $1;
+      } elsif (/^copyright:\s*(.+)/i) {
+        $pkgdata{main}{copyright} = $1;
+      } elsif (/^url:\s*(.+)/i) {
+        $pkgdata{main}{url} = $1;
+      } elsif (/^packager:\s*(.+)/i) {
+        $pkgdata{main}{packager} = $1;
+      } elsif (/^vendor:\s*(.+)/i) {
+        $specglobals{vendor} = $1;
+      } elsif (/^buildroot:\s*(.+)/i) {
+        $specglobals{buildroot} = $1;
+      } elsif (my ($sval) = /^source0?:\s*(.+)/i) {
+        $sval =~ s/\s*$//;
+        $pkgdata{main}{source} = $sval;
+        # Do this here since we don't use any URL forms elsewhere (maybe some other time)
+        $pkgdata{main}{source} =~ s|^.+/([^/]+)$|$1|;
+        $pkgdata{sources}{0} = $pkgdata{main}{source};
+	# .tar, .tar.gz, .tar.Z, .tar.bz2, .tar.xz, .tgz, .zip
+        die "Unknown Source: header format $sval\n" if $sval !~ /\.(?:tar(?:\.(?:gz|bz2|xz|Z))?|tgz|zip)$/;
+      } elsif (my ($srcnum, $src) = (/^source([0-9]+):\s*(.+)/i)) {
+        $src =~ s/\s*$//;
+        $pkgdata{sources}{$srcnum} = $src;
+        # Do this here since we don't use any URL forms elsewhere (maybe some other time)
+        $pkgdata{sources}{$srcnum} =~ s|^.+/([^/]+)$|$1|;
+      } elsif (/^patch([^:]+):\s*(.+)$/i) {
+        my $patchname = "patch$1";
+        $pkgdata{main}{$patchname} = $2;
+        if ($pkgdata{main}{$patchname} =~ /\//) {
+          # URL-style patch.  Rare but not unheard-of.
+          my @patchbits = split '/', $pkgdata{main}{$patchname};
+          $pkgdata{main}{$patchname} = $patchbits[$#patchbits];
+        }
+        chomp $pkgdata{main}{$patchname};
+      } elsif (/^buildarch(?:itecture)?:\s*(.+)/i) {
+        $pkgdata{main}{arch} = $1;
+        $pkgdata{main}{arch} =~ s/^noarch$/all/;
+        $buildarch = $pkgdata{main}{arch};
+      } elsif (/^buildrequires:\s*(.+)/i) {
+        $buildreq .= ", $1";
+      } elsif (/^requires:\s*(.+)/i) {
+        $pkgdata{main}{requires} .= ", ".expandmacros("$1", 'gp');
+      } elsif (/^provides:\s*(.+)/i) {
+        $pkgdata{main}{provides} .= ", $1";
+      } elsif (/^conflicts:\s*(.+)/i) {
+        $pkgdata{main}{conflicts} .= ", $1";
+      } elsif (/^recommends:\s*(.+)/i) {
+        $pkgdata{main}{recommends} .= ", $1";
+	warn "Warning:  Debian-specific 'Recommends:' outside \%if wrapper\n" if $iflevel == 0;
+# As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
+# along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
+      } elsif (/^suggests:\s*(.+)/i) {
+        $pkgdata{main}{suggests} .= ", $1";
+	warn "Warning:  'Suggests:' outside \%if wrapper\n" if $iflevel == 0;
+      } elsif (/^enhances:\s*(.+)/i) {
+        $pkgdata{main}{enhances} .= ", $1";
+	warn "Warning:  'Enhances:' outside \%if wrapper\n" if $iflevel == 0;
+      } elsif (/^supplements:\s*(.+)/i) {
+        $pkgdata{main}{enhances} .= ", $1";
+        warn "Warning:  'Supplements:' is not natively supported by .deb packages.  Downgrading relationship to Enhances:.\n";
+      } elsif (/^replaces:\s*(.+)/i) {
+        $pkgdata{main}{replaces} .= ", $1";
+	warn "Warning:  'Replaces:' outside \%if wrapper\n" if $iflevel == 0;
+      } elsif (/^obsoletes:\s*(.+)/i) {
+        $pkgdata{main}{replaces} .= ", $1";
+      } elsif (/^autoreq(?:prov)?:\s*(.+)/i) {
+	# we don't handle auto-provides (yet)
+	$NoAutoReq = 1 if $1 =~ /(?:no|0)/i;
+      }
+      next LINE;
+    } # preamble
+
+  } # while <SPEC>
+
+  # Parse and replace some more macros.  More will be replaced even later.
+
+  # Expand macros as necessary.
+  $scriptletbase = expandmacros($scriptletbase,'gp');
+
+  $cleanscript = expandmacros($cleanscript,'gp');
+
+  $specglobals{buildroot} = $cmdbuildroot if $cmdbuildroot;
+  $specglobals{buildroot} = expandmacros($specglobals{buildroot},'gp');
+
+  close SPECFILE;
+} # end parse_spec()
+
+
+## prep()
+# Writes and executes the %prep script (mostly) built while reading the spec file.
+sub prep {
+  # Replace some things here just to make sure.
+  $prepscript = expandmacros($prepscript,'gp');
+
+  # create script filename
+  my $prepscriptfile = "$tmpdir/deb-tmp.prep.".int(rand(99998)+1);
+  sysopen(PREPSCRIPT, $prepscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
+	or die "Can't open/create prep script file $prepscriptfile: $!\n";
+  print PREPSCRIPT $scriptletbase;
+  print PREPSCRIPT $prepscript;
+  close PREPSCRIPT;
+
+  # execute
+  print "Calling \%prep script $prepscriptfile...\n";
+  system("/bin/sh -e $prepscriptfile") == 0
+	or die "Can't exec: $!\n";
+
+  # and clean up
+  unlink $prepscriptfile;
+} # end prep()
+
+
+## build()
+# Writes and executes the %build script (mostly) built while reading the spec file.
+sub build {
+  # Expand the macros
+  $buildscript = expandmacros($buildscript,'cgbp');
+
+  # create script filename
+  my $buildscriptfile = "$tmpdir/deb-tmp.build.".int(rand(99998)+1);
+  sysopen(BUILDSCRIPT, $buildscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
+	or die "Can't open/create build script file $buildscriptfile: $!\n";
+  print BUILDSCRIPT $scriptletbase;
+  print BUILDSCRIPT $buildscript;
+  close BUILDSCRIPT;
+
+  # execute
+  print "Calling \%build script $buildscriptfile...\n";
+  system("/bin/sh -e $buildscriptfile") == 0
+	or die "Can't exec: $!\n";
+
+  # and clean up
+  unlink $buildscriptfile;
+} # end build()
+
+
+## install()
+# Writes and executes the %install script (mostly) built while reading the spec file.
+sub install {
+
+  # munge %doc entries into place
+  # rpm handles this with a separate executed %doc script, we're not going to bother.
+  foreach my $docpkg (keys %doclist) {
+    my $pkgname = $pkgdata{$docpkg}{name};
+    $pkgname =~ s/_/-/g;
+
+    $installscript .= "DOCDIR=\$RPM_BUILD_ROOT\%{_docdir}/$pkgname\nexport DOCDIR\n";
+    $installscript .= "mkdir -p \$DOCDIR\n";
+    $doclist{$docpkg} =~ s/^\s*//;
+    foreach (split(' ',$doclist{$docpkg})) {
+      $installscript .= "cp -pr $_ \$DOCDIR/\n";
+    }
+  }
+
+  # Expand the macros
+  $installscript = expandmacros($installscript,'igbp');
+
+  # create script filename
+  my $installscriptfile = "$tmpdir/deb-tmp.inst.".int(rand(99998)+1);
+  sysopen(INSTSCRIPT, $installscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
+	or die "Can't open/create install script file $installscriptfile: $!\n";
+  print INSTSCRIPT $scriptletbase;
+  print INSTSCRIPT $installscript;
+  close INSTSCRIPT;
+
+  # execute
+  print "Calling \%install script $installscriptfile...\n";
+  system("/bin/sh -e $installscriptfile") == 0
+	or die "Can't exec: $!\n";
+
+  # and clean up
+  unlink $installscriptfile;
+
+  # final bit: compress manpages if present
+  # done here cuz I don't grok shell well
+  # should probably error-check all kinds of things.  <g>
+  if (opendir MANROOT, "$specglobals{buildroot}/usr/share/man") {
+    my @mansects = readdir MANROOT;
+    closedir MANROOT;
+    foreach my $mandir (@mansects) {
+      next if $mandir !~ /^man/;
+      opendir MANPAGES, "$specglobals{buildroot}/usr/share/man/$mandir";
+      my @pagelist = readdir MANPAGES;
+      closedir MANPAGES;			# Slightly safer to to this;  no accidental recursion.  O_o
+      foreach my $manpage (@pagelist) {
+        $manpage = "$specglobals{buildroot}/usr/share/man/$mandir/$manpage";
+        if ( -f $manpage) {
+	  if ($manpage =~ /^(.+)\.(?:Z|gz|bz2)\n?$/) {
+	    my $newpage = $1;
+	    `gunzip $manpage` if $manpage =~ /\.(?:Z|gz)$/;
+	    `bunzip2 $manpage` if $manpage =~ /\.bz2$/;
+	    $manpage = $newpage;
+	  }
+	  `gzip -9 -n $manpage`;
+        } elsif ( -l $manpage) {
+	  my $linkdest = readlink $manpage;
+	  $linkdest =~ s/\.(?:Z|gz|bz2)//;
+	  unlink $manpage;
+	  $manpage =~ s/\.(?:Z|gz|bz2)//;
+	  symlink "$linkdest.gz", "$manpage.gz" or print "DEBUG: wibble: symlinking manpage failed: $!\n";
+        }
+      }
+    }
+  } # if opendir MANROOT
+} # end install()
+
+
+## binpackage()
+# Creates the binary .deb package from the installed tree in $specglobals{buildroot}.
+# Writes and executes a shell script to do so.
+# Creates miscellaneous files required by dpkg-deb to actually build the package file.
+# Should handle simple subpackages
+sub binpackage {
+
+  foreach my $pkg (@pkglist) {
+
+    $pkgdata{$pkg}{arch} = $hostarch if !$pkgdata{$pkg}{arch};  # Just In Case.
+
+    # Make sure we have somewhere to write the .deb file
+    if (!-e "$topdir/DEBS/$pkgdata{$pkg}{arch}") {
+      mkdir "$topdir/DEBS/$pkgdata{$pkg}{arch}";
+    }
+
+    # Skip building a package that doesn't have any files or dependencies.  True
+    # metapackages don't have any files, but they depend on a bunch of things.
+    # Packages with neither have, essentially, no content.
+    next if 
+        (!$filelist{$pkg} or $filelist{$pkg} =~ /^\s*$/) &&
+        (!$pkgdata{$pkg}{requires});
+    $filelist{$pkg} = '' if !$filelist{$pkg};
+
+    # Gotta do this first, otherwise we don't have a place to move files from %files
+    mkdir "$specglobals{buildroot}/$pkg";
+
+    # Eliminate any lingering % macros
+    $filelist{$pkg} = expandmacros $filelist{$pkg}, 'gp';
+
+    my @pkgfilelist = split ' ', $filelist{$pkg};
+    foreach my $pkgfile (@pkgfilelist) {
+      $pkgfile = expandmacros($pkgfile, 'gp');
+
+      # Feh.  Manpages don't **NEED** to be gzipped, but rpmbuild does, and so shall we.
+      # ... and your little info page too!
+      if ($pkgfile =~ m{/usr/share/(?:man/man|info)}) {
+	# need to check to see if manpage is gzipped
+	if (-e "$specglobals{buildroot}$pkgfile") {
+	  # if we've just been pointed to a manpage section with "many" pages,
+	  # we need to gzip them all.
+	  # fortunately, we do NOT need to explicitly track each file for the
+	  # purpose of stuffing them in the package...  the original %files
+	  # entry will do just fine.
+	  if ( -d "$specglobals{buildroot}$pkgfile") {
+	    foreach my $globfile (glob("$specglobals{buildroot}$pkgfile/*")) {
+	      gzip $globfile if $globfile !~ m|\.gz$|;
+	    }
+	  } else {
+	    if ($pkgfile !~ m|\.gz$|) {
+	      qx { gzip $specglobals{buildroot}$pkgfile };
+	      $pkgfile .= ".gz";
+	    }
+	  }
+	} else {
+	  if ($pkgfile !~ m|\.gz$|) {
+	    $pkgfile .= ".gz";
+	  } else {
+	    $pkgfile =~ s/\.gz$//;
+	    qx { gzip $specglobals{buildroot}$pkgfile };
+	    $pkgfile .= ".gz";
+	  }
+	}
+      }
+
+      my ($fpath,$fname) = ($pkgfile =~ m|(.+?/?)?([^/]+/?)$|);	# We don't need $fname now, but we might.
+      qx { mkdir -p $specglobals{buildroot}/$pkg$fpath }
+	if $fpath && $fpath ne '';
+      qx { mv $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath };
+    }
+
+    # Get the "Depends" (Requires) a la RPM.  Ish.  We strip the leading
+    # comma and space here (if needed) in case there were "Requires" specified
+    # in the spec file - those would precede these.
+    $pkgdata{$pkg}{requires} .= getreqs("$specglobals{buildroot}/$pkg") if ! $NoAutoReq;
+
+    # magic needed to properly version dependencies...
+    # only provided deps will really be included
+    $pkgdata{$pkg}{requires} =~ s/^, //;	# Still have to do this here.
+    $pkgdata{$pkg}{requires} =~ s/\s+//g;
+    my @deps = split /,/, $pkgdata{$pkg}{requires};
+    my $tmp = '';
+    foreach my $dep (@deps) {
+      # Hack up the perl(Class::SubClass) deps into something dpkg can understand.
+      # May or may not be versioned.
+      # We do this first so the version rewriter can do its magic next.
+      if (my ($mod,$ver) = ($dep =~ /^perl\(([A-Za-z0-9\:\-]+)\)([><=]+.+)?/) ) {
+	$mod =~ s/^perl\(//;
+	$mod =~ s/\)$//;
+	$mod =~ s/::/-/g;
+	$mod =~ tr/A-Z/a-z/;
+	$mod = "lib$mod-perl";
+	$mod .= $ver if $ver;
+	$dep = $mod;
+      }
+      if (my ($name,$rel,$value) = ($dep =~ /^([a-zA-Z0-9._-]+)([><=]+)([a-zA-Z0-9._-]+)$/)) {
+        $tmp .= ", $name ($rel $value)";
+      } else {
+        $tmp .= ", $dep";
+      }
+    }
+    ($pkgdata{$pkg}{requires} = $tmp) =~ s/^, //;
+
+    # Do this here since we're doing {depends}...
+    if (defined($pkgdata{$pkg}{provides})) {
+      $pkgdata{$pkg}{provides} =~ s/^, //;
+      $pkgdata{$pkg}{provides} = expandmacros($pkgdata{$pkg}{provides},'gp');
+    }
+    if (defined($pkgdata{$pkg}{conflicts})) {
+      $pkgdata{$pkg}{conflicts} =~ s/^, //;
+      $pkgdata{$pkg}{conflicts} = expandmacros($pkgdata{$pkg}{conflicts},'gp');
+    }
+
+# These are Debian-specific!
+    if (defined($pkgdata{$pkg}{recommends})) {
+      $pkgdata{$pkg}{recommends} =~ s/^, //;
+      $pkgdata{$pkg}{recommends} = expandmacros($pkgdata{$pkg}{recommends},'gp');
+    }
+    if (defined($pkgdata{$pkg}{suggests})) {
+      $pkgdata{$pkg}{suggests} =~ s/^, //;
+      $pkgdata{$pkg}{suggests} = expandmacros($pkgdata{$pkg}{suggests},'gp');
+    }
+    if (defined($pkgdata{$pkg}{enhances})) {
+      $pkgdata{$pkg}{enhances} =~ s/^, //;
+      $pkgdata{$pkg}{enhances} = expandmacros($pkgdata{$pkg}{enhances},'gp');
+    }
+    if (defined($pkgdata{$pkg}{replaces})) {
+      $pkgdata{$pkg}{replaces} =~ s/^, //;
+      $pkgdata{$pkg}{replaces} = expandmacros($pkgdata{$pkg}{replaces},'gp');
+    }
+
+    # Gotta do this next, otherwise the control file has nowhere to go.  >:(
+    mkdir "$specglobals{buildroot}/$pkg/DEBIAN";
+
+    # Hack the filename for the package into a Debian-tool-compatible format.  GRRRRRR!!!!!
+    # Have I mentioned I hate Debian Policy?
+    $pkgdata{$pkg}{name} =~ tr/_/-/;
+
+    # create script filename
+    my $debscriptfile = "$tmpdir/deb-tmp.pkg.".int(rand(99998)+1);
+    sysopen(DEBSCRIPT, $debscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
+	or die "Can't open/create package-creation script file $debscriptfile: $!\n";
+    print DEBSCRIPT $scriptletbase;
+    print DEBSCRIPT "fakeroot -- dpkg-deb -b $specglobals{buildroot}/$pkg $topdir/DEBS/$pkgdata{$pkg}{arch}/".
+	"$pkgdata{$pkg}{name}_".
+	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
+	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb\n";
+      # %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
+    close DEBSCRIPT;
+
+    $pkgdata{$pkg}{summary} = expandmacros($pkgdata{$pkg}{summary}, 'gp');
+    my $control = "Package: $pkgdata{$pkg}{name}\n".
+	"Version: ".(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
+	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}\n".
+	"Section: ".($pkgdata{$pkg}{group} ? $pkgdata{$pkg}{group} : $pkgdata{main}{group})."\n".
+	"Priority: optional\n".
+	"Architecture: $pkgdata{$pkg}{arch}\n".
+	"Maintainer: $pkgdata{main}{packager}\n".
+	( $pkgdata{$pkg}{requires} ne '' ? "Depends: $pkgdata{$pkg}{requires}\n" : '' ).
+	( defined($pkgdata{$pkg}{provides}) ? "Provides: $pkgdata{$pkg}{provides}\n" : '' ).
+	( defined($pkgdata{$pkg}{conflicts}) ? "Conflicts: $pkgdata{$pkg}{conflicts}\n" : '' ).
+	( defined($pkgdata{$pkg}{recommends}) ? "Recommends: $pkgdata{$pkg}{recommends}\n" : '' ).
+	( defined($pkgdata{$pkg}{suggests}) ? "Suggests: $pkgdata{$pkg}{suggests}\n" : '' ).
+	( defined($pkgdata{$pkg}{enhances}) ? "Enhances: $pkgdata{$pkg}{enhances}\n" : '' ).
+	( defined($pkgdata{$pkg}{replaces}) ? "Replaces: $pkgdata{$pkg}{replaces}\n" : '' ).
+	"Description: $pkgdata{$pkg}{summary}\n";
+    $pkgdata{$pkg}{desc} = expandmacros($pkgdata{$pkg}{desc}, 'gp');
+    # Munge things so that Debian tools don't choke on errant blank lines
+    $pkgdata{$pkg}{desc} =~ s/\s+$//g;		# Trim trailing blanks
+    $pkgdata{$pkg}{desc} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
+    $control .= "$pkgdata{$pkg}{desc}\n";
+
+    open CONTROL, ">$specglobals{buildroot}/$pkg/DEBIAN/control";
+    print CONTROL $control;
+    close CONTROL;
+
+    # Iff there are conffiles (as specified in the %files list(s), add'em
+    # in so dpkg-deb can tag them.
+    if ($pkgdata{$pkg}{conffiles}) {
+      open CONFLIST, ">$specglobals{buildroot}/$pkg/DEBIAN/conffiles";
+      foreach my $conffile (@{$pkgdata{$pkg}{conflist}}) {
+	$conffile = expandmacros($conffile, 'g');
+	my @tmp = glob "$specglobals{buildroot}/$pkg/$conffile";
+	foreach (@tmp) {
+	  s|$specglobals{buildroot}/$pkg/||g;	# nrgl.  gotta be a better way to do this...
+	  s/\s+/\n/g;	# Not gonna support spaces in filenames.  Ewww.
+	  print CONFLIST "$_\n";
+	}
+      }
+      close CONFLIST;
+    }
+
+    # found the point of scripts on subpackages.
+    if ($pkgdata{$pkg}{'pre'}) {
+      $pkgdata{$pkg}{'pre'} = expandmacros($pkgdata{$pkg}{'pre'},'gp');
+      open PREINST, ">$specglobals{buildroot}/$pkg/DEBIAN/preinst";
+      print PREINST "#!/bin/sh\nset -e\n\n";
+      print PREINST $pkgdata{$pkg}{'pre'};
+      close PREINST;
+      chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/preinst";
+    }
+    if ($pkgdata{$pkg}{'post'}) {
+      $pkgdata{$pkg}{'post'} = expandmacros($pkgdata{$pkg}{'post'},'gp');
+      open POSTINST, ">$specglobals{buildroot}/$pkg/DEBIAN/postinst";
+      print POSTINST "#!/bin/sh\nset -e\n\n";
+      print POSTINST $pkgdata{$pkg}{'post'};
+      close POSTINST;
+      chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/postinst";
+    }
+    if ($pkgdata{$pkg}{'preun'}) {
+      $pkgdata{$pkg}{'pre'} = expandmacros($pkgdata{$pkg}{'preun'},'gp');
+      open PREUNINST, ">$specglobals{buildroot}/$pkg/DEBIAN/prerm";
+      print PREUNINST "#!/bin/sh\nset -e\n\n";
+      print PREUNINST $pkgdata{$pkg}{'preun'};
+      close PREUNINST;
+      chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/prerm";
+    }
+    if ($pkgdata{$pkg}{'postun'}) {
+      $pkgdata{$pkg}{'postun'} = expandmacros($pkgdata{$pkg}{'postun'},'gp');
+      open POSTUNINST, ">$specglobals{buildroot}/$pkg/DEBIAN/postrm";
+      print POSTUNINST "#!/bin/sh\nset -e\n\n";
+      print POSTUNINST $pkgdata{$pkg}{'postun'};
+      close POSTUNINST;
+      chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/postrm";
+    }
+
+    # execute
+    print "Calling package creation script $debscriptfile for $pkgdata{$pkg}{name}...\n";
+    system("/bin/sh -e $debscriptfile") == 0
+	or die "Can't exec: $!\n";
+
+    $finalmessages .= "Wrote binary package ".
+	"$pkgdata{$pkg}{name}_".
+	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
+	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb".
+	" in $topdir/DEBS/$pkgdata{$pkg}{arch}\n";
+    # and clean up
+    unlink $debscriptfile;
+
+  } # subpackage loop
+
+} # end binpackage()
+
+
+## srcpackage()
+# Builds a .src.deb source package.  Note that Debian's idea of
+# a "source package" is seriously flawed IMO, because you can't
+# easily copy it as-is.
+# Not quite identical to RPM, but Good Enough (TM).
+sub srcpackage {
+  # In case we were called with -bs.
+  $pkgdata{main}{name} =~ tr/_/-/;
+  my $pkgsrcname = "$pkgdata{main}{name}-".
+	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
+	"$pkgdata{main}{version}-$pkgdata{main}{release}.sdeb";
+
+  my $paxcmd;
+
+  # We'll definitely need this later, and *may* need it sooner.
+  (my $barespec = $specfile) =~ s|.+/([^/]+)$|$1|;
+
+  # Copy the specfile to the build tree, but only if it's not there already.
+##buglet: need to deal with silly case where silly user has put the spec
+# file in a subdir of %{_topdir}/SPECS.  Ewww.  Silly user!
+  if (abs_path($specfile) !~ /^$topdir\/SPECS/) {
+    $paxcmd .= "cp $specfile %{_topdir}/SPECS/; \n"
+  }
+
+  # use pax -w [file] [file] ... >outfile.sdeb
+  $paxcmd = "cd $topdir; pax -w ";
+
+  # some packages may not have a "main" source.
+  $paxcmd .= "SOURCES/$pkgdata{main}{source} " if $pkgdata{main}{source};
+
+  # create file list:  Source[nn], Patch[nn]
+  foreach my $specbit (keys %{$pkgdata{main}} ) {
+    next if $specbit eq 'source';
+    $paxcmd .= "SOURCES/$pkgdata{main}{$specbit} " if $specbit =~ /^patch/;
+##buglet: need to deal with case where patches are listed as URLs?
+#  or other extended pathnames?  Silly !@$%^&!%%!%!! user!
+  }
+
+  foreach my $source (keys %{$pkgdata{sources}}) {
+    # Skip Source0, since it's also $pkgdata{main}{source}.  Could arguably
+    # just remove that instead, but I think that might backfire.
+    next if $source eq '0';
+    $paxcmd .= "SOURCES/$pkgdata{sources}{$source} ";
+  }
+
+  # add the spec file, source package destination, and cd back where we came from.
+  $paxcmd .= "SPECS/$barespec > $topdir/SDEBS/$pkgsrcname; cd -";
+
+  # In case of %-macros...
+  $paxcmd = expandmacros($paxcmd,'gp');
+  
+  system "$paxcmd";
+  $finalmessages .= "Wrote source package $pkgsrcname in $topdir/SDEBS.\n";
+} # end srcpackage()
+
+
+## clean()
+# Writes and executes the %clean script (mostly) built while reading the spec file.
+sub clean {
+  # Replace some things here just to make sure.
+  $cleanscript = expandmacros($cleanscript,'gp');
+
+  # create script filename
+  my $cleanscriptfile = "$tmpdir/deb-tmp.clean.".int(rand(99998)+1);
+  sysopen(CLEANSCRIPT, $cleanscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
+	or die $!;
+  print CLEANSCRIPT $scriptletbase;
+  print CLEANSCRIPT $cleanscript;
+  close CLEANSCRIPT;
+
+  # execute
+  print "Calling \%clean script $cleanscriptfile...\n";
+  system("/bin/sh -e $cleanscriptfile") == 0
+	or die "Can't exec: $!\n";
+
+  # and clean up
+  unlink $cleanscriptfile;
+} # end clean()
+
+
+## checkbuildreq()
+# Checks the build requirements (if any)
+# Spits out a rude warning and returns a true-false error if any
+# requirements are not met.
+sub checkbuildreq {
+  return 1 if $buildreq eq '';	# No use doing extra work.
+
+  # expand macros 
+  $buildreq = expandmacros($buildreq,'gp');
+
+  if ( ! -e "/usr/bin/dpkg-query" ) {
+    print "**WARNING**  dpkg-query not found.  Can't check build-deps.\n".
+	"  Required for sucessful build:\n".$buildreq."\n".
+	"  Continuing anyway.\n";
+    return 1;
+  }
+
+  my $reqflag = 1;  # unset iff a buildreq is missing
+
+  $buildreq =~ s/^, //;	# Strip the leading comma and space
+  my @reqlist = split /,\s+/, $buildreq;
+
+  my @missinglist;
+  foreach my $req (@reqlist) {
+    # from rpmbuild error message
+    # Dependency tokens must begin with alpha-numeric, '_' or '/'
+##fixme:  check for suitable whitespace around $rel
+    my ($pkg,$rel,$ver);
+
+    # We have two classes of requirements - versioned and unversioned.
+    if ($req =~ /[><=]/) {
+      # Pick up the details of versioned buildreqs
+      ($pkg,$rel,$ver) = ($req =~ /([a-z0-9._-]+)\s+([><=]+)\s+([a-z0-9._-]+)/);
+    } else {
+      # And the unversioned ones.
+      $pkg = $req;
+      $rel = '>=';
+      $ver = 0;
+    }
+
+## Apparently a package that has been installed, then uninstalled, has a "known" dpkg status of
+## "unknown ok not-installed" vs a package that has never been installed which returns nothing.  O_o
+## Virtual packages, of course, *also* show as "not installed" like this (WTF?)
+## This causes real packages to be misdetected as installed "possible virtual packages" instead of "missing
+## packages".  I don't think there's really a solution until/unless Debian's tools properly register virtual
+## packages as installed.
+    my @pkglist = qx { dpkg-query --showformat '\${status}\t\${version}\n' -W $pkg };
+    if (!$pkglist[0]) {
+      print " * Missing build-dependency $pkg!\n  $pkglist[0]";
+      $reqflag = 0;
+      push @missinglist, $pkg;
+    } else {
+# real package, installed
+#kdeugau:~$ dpkg-query --showformat '${status}\t${version}\n' -W libc-client2007e-dev 2>&1
+#install ok installed    8:2007f~dfsg-1
+# virtual package, provided by ???
+#kdeugau:~$ dpkg-query --showformat '${status}\t${version}\n' -W libc-client-dev 2>&1
+#unknown ok not-installed
+# real package or virtual package not installed or provided
+#kdeugau:~$ dpkg-query --showformat '${status}\t${version}\n' -W libdb4.8-dbg 2>&1
+#dpkg-query: no packages found matching libdb4.8-dbg
+
+      my ($reqstat,undef,undef,$reqver) = split /\s+/, $pkglist[0];
+      if ($reqstat =~ /^unknown/) {
+	# this seems to be a virtual package.
+	print " * Warning: $pkg is probably installed but seems to be a virtual package.\n";
+      } elsif ($reqstat =~ /^install/) {
+	my ($resp) = qx { dpkg --compare-versions $reqver '$rel' $ver && echo "ok" };
+	if ($resp !~ /^ok/) {
+	  $reqflag = 0;
+	  print " * Buildreq $pkg is installed, but wrong version ($reqver):  Need $ver\n"
+        }
+      } else {
+	# whatever state it's in, it's not completely installed, therefore it's missing.
+	print " * Missing build-dependency $pkg!\n  $pkglist[0]";
+	$reqflag = 0;
+        push @missinglist, $pkg;
+      } # end not installed/installed check
+    }
+  } # end req loop
+
+  print "To install all missing dependencies, run 'apt-get install ".join(' ', @missinglist)."'.\n" unless $reqflag;
+
+  return $reqflag;
+} # end checkbuildreq()
+
+
+## getreqs()
+# Find out which libraries/packages are required for any
+# executables and libs in a given file tree.
+# (Debian doesn't have soname-level deps;  just package-level)
+# Returns an empty string if the tree contains no binaries.
+# Doesn't work well on shell scripts. but those *should* be
+# fine anyway.  (Yeah, right...)
+sub getreqs() {
+  my $pkgtree = $_[0];
+
+  print "Checking library requirements...\n";
+  my @binlist = qx { find $pkgtree -type f -perm 755 };
+
+  if (scalar(@binlist) == 0) {
+    return '';
+  }
+
+  my @reqlist;
+  foreach (@binlist) {
+    push @reqlist, qx { LANG=C ldd $_ };
+  }
+
+  # Get the list of libs provided by this package.  Still doesn't
+  # handle the case where the lib gets stuffed into a subpackage.  :/
+  my @intprovlist = qx { find $pkgtree -type f -name "*.so*" };
+  my $provlist = '';
+  foreach (@intprovlist) {
+    s/$pkgtree//;
+    $provlist .= "$_";
+  }
+
+  my %reqs;
+  my $reqlibs = '';
+  my %reqliblist;
+
+  foreach (@reqlist) {
+    next if /^$pkgtree/;
+    next if /not a dynamic executable/;
+    next if m|/lib(?:64)?/ld-linux|;	# Hack! Hack!  PTHBTT!  (libc suxx0rz)
+    next if /linux-gate.so/;		# Kernel hackery for teh W1n!!1!1eleventy-one!1  (Don't ask.  Feh.)
+    next if /linux-vdso.so/;		# More kernel hackery.  Whee!
+
+    # Whee!  more hackery to detect provided-here libs.  Some apparently return from ldd as "not found".
+    my ($a,$b) = split / => /;
+    $a =~ s/\s*//g;
+    if ($b =~ /not found/) {
+      next if qx { find $specglobals{buildroot} -name "*$a" };
+    }
+
+    my ($req) = (m|=\>\s+([a-zA-Z0-9._/+-]+)|); # dig out the actual library (so)name.
+	# And feh, we need the *path*, since I've discovered a new edge case where
+	# the same libnnn.1.2.3 *file*name is found across *several* lib dirs.  >:(
+
+    # Ignore libs provided by this package.  Note that we don't match
+    # on word-boundary at the *end* of the lib we're looking for, as the
+    # looked-for lib may not have the full soname version. (ie, it may
+    # "just" point to one of the symlinks that get created somewhere.)
+    next if $provlist =~ /\b$req/;
+
+    $reqlibs .= " $req";
+    $reqliblist{$req} = 1;
+  }
+
+  if (%reqliblist) {
+    foreach my $rlib (keys %reqliblist) {
+      my $libpkg = qx { dpkg -S $rlib };
+      ($libpkg,undef) = split /:/, $libpkg;
+      $reqs{$libpkg} = 1;
+    }
+  }
+
+  my $deplist = '';
+  foreach (keys %reqs) {
+    $deplist .= ", $_";
+  }
+
+# For now, we're done.  We're not going to meddle with versions yet.
+# Among other things, it's messier than handling "simple" yes/no "do
+# we have this lib?" deps.  >:(
+
+  return $deplist;
+} # end getreqs()
+
+
+## install_sdeb()
+# Extracts .sdeb contents to %_topdir as appropriate
+sub install_sdeb {
+  $srcpkg = abs_path($srcpkg);
+
+  my $paxcmd = "cd $topdir; pax -r <$srcpkg; cd -";
+
+  # In case of %-macros...
+  $paxcmd = expandmacros($paxcmd,'gp');
+  
+  system "$paxcmd";
+  print "Extracted source package $srcpkg to $topdir.\n";
+} # end install_sdeb()
+
+
+## expandmacros()
+# Expands all %{blah} macros in the passed string
+# Split up a bit with some sections so we don't spend time trying to
+# expand macros that are only used in a few specific places.
+sub expandmacros {
+  my $macrostring = shift;
+  my $section = shift;
+
+  # To allow the FHS-ish %configure and %makeinstall to work The Right Way.
+  # (Without clobbering the global $specglobals{buildroot}.)
+  my $prefix = '';
+
+  if ($section =~ /c/) {
+    # %configure macro
+# Don't know what it's for, don't have a useful default replacement
+# 	--program-prefix=%{_program_prefix} \
+    $macrostring =~ s'%configure'./configure --host=$DEB_HOST_GNU_TYPE \
+	--build=$DEB_BUILD_GNU_TYPE \
+	--prefix=%{_prefix} \
+	--exec-prefix=%{_exec_prefix} \
+	--bindir=%{_bindir} \
+	--sbindir=%{_sbindir} \
+	--sysconfdir=%{_sysconfdir} \
+	--datadir=%{_datadir} \
+	--includedir=%{_includedir} \
+	--libdir=%{_libdir} \
+	--libexecdir=%{_libexecdir} \
+	--localstatedir=%{_localstatedir} \
+	--sharedstatedir=%{_sharedstatedir} \
+	--mandir=%{_mandir} \
+	--infodir=%{_infodir} ';
+  } # done %configure
+
+  if ($section =~ /m/) {
+    $macrostring =~ s'%{__make}'make ';
+  } # done make
+
+# %makeinstall expands with recursive macros in rpm.  whee.
+  if ($section =~ /i/) {
+    # This is where we need to mangle $prefix.
+    $macrostring =~ s'%makeinstall'make \
+        prefix=%{?buildroot:%{buildroot}}%{_prefix} \
+        exec_prefix=%{?buildroot:%{buildroot}}%{_exec_prefix} \
+        bindir=%{?buildroot:%{buildroot}}%{_bindir} \
+        sbindir=%{?buildroot:%{buildroot}}%{_sbindir} \
+        sysconfdir=%{?buildroot:%{buildroot}}%{_sysconfdir} \
+        datadir=%{?buildroot:%{buildroot}}%{_datadir} \
+        includedir=%{?buildroot:%{buildroot}}%{_includedir} \
+        libdir=%{?buildroot:%{buildroot}}%{_libdir} \
+        libexecdir=%{?buildroot:%{buildroot}}%{_libexecdir} \
+        localstatedir=%{?buildroot:%{buildroot}}%{_localstatedir} \
+        sharedstatedir=%{?buildroot:%{buildroot}}%{_sharedstatedir} \
+        mandir=%{?buildroot:%{buildroot}}%{_mandir} \
+        infodir=%{?buildroot:%{buildroot}}%{_infodir} \
+  install ';
+    $prefix = $specglobals{buildroot};
+  } # done %install and/or %makeinstall
+
+  # Build data
+  # Note that these are processed in reverse order to get the substitution order right
+  if ($section =~ /b/) {
+#    $macrostring =~ s'%{fhs}'host=$DEB_HOST_GNU_TYPE \
+#	build=$DEB_BUILD_GNU_TYPE \
+    $macrostring =~ s'%{fhs}'prefix=%{_prefix} \
+	exec-prefix=%{_exec_prefix} \
+	bindir=%{_bindir} \
+	sbindir=%{_sbindir} \
+	sysconfdir=%{_sysconfdir} \
+	datadir=%{_datadir} \
+	includedir=%{_includedir} \
+	libdir=%{_libdir} \
+	libexecdir=%{_libexecdir} \
+	localstatedir=%{_localstatedir} \
+	sharedstatedir=%{_sharedstatedir} \
+	mandir=%{_mandir} \
+	infodir=%{_infodir} \
+';
+
+    # Note that the above regex terminates with the extra space
+    # "Just In Case" of user additions, which will then get neatly
+    # tagged on the end where they take precedence (supposedly)
+    # over the "default" ones.
+
+    # Now we cascade the macros introduced above.  >_<
+									# Wot ot to go theah:
+    $macrostring =~ s|%{_mandir}|%{_datadir}/man|g;			#/usr/share/man
+    $macrostring =~ s|%{_infodir}|%{_datadir}/info|g;			#/usr/share/info
+    $macrostring =~ s|%{_oldincludedir}|/usr/include|g;		#/usr/include
+    $macrostring =~ s|%{_includedir}|%{_prefix}/include|g;	#/usr/include
+    $macrostring =~ s|%{_libdir}|%{_exec_prefix}/%{_lib}|g;	#/usr/lib
+    $macrostring =~ s|%{_lib}|lib|g;					#?
+    $macrostring =~ s|%{_localstatedir}|/var|g;			#/var
+    $macrostring =~ s|%{_sharedstatedir}|%{_prefix}/com|g;	#/usr/com WTF?
+    $macrostring =~ s|%{_sysconfdir}|/etc|g;			#/etc
+    $macrostring =~ s|%{_datadir}|%{_prefix}/share|g;		#/usr/share
+    $macrostring =~ s|%{_libexecdir}|%{_exec_prefix}/libexec|g;	#/usr/libexec
+    $macrostring =~ s|%{_sbindir}|%{_exec_prefix}/sbin|g;	#/usr/sbin
+    $macrostring =~ s|%{_bindir}|%{_exec_prefix}/bin|g;		#/usr/bin
+    $macrostring =~ s|%{_exec_prefix}|%{_prefix}|g;		#/usr
+    $macrostring =~ s|%{_prefix}|/usr|g;				#/usr
+  } # done with config section
+
+  # Package data
+  if ($section =~ /p/) {
+    $macrostring =~ s/\%\{buildroot\}/$specglobals{buildroot}/gi;
+    $macrostring =~ s/\%\{source0?}/$topdir\/SOURCES\/$pkgdata{main}{source}/gi;
+    foreach my $source (keys %{$pkgdata{sources}}) {
+      $macrostring =~ s/\%\{source$source\}/$topdir\/SOURCES\/$pkgdata{sources}{$source}/gi;
+    }
+    $macrostring =~ s/\%\{name\}/$pkgdata{main}{name}/gi;
+    $macrostring =~ s/\%\{version\}/$pkgdata{main}{version}/gi;
+    $macrostring =~ s/\%\{release\}/$pkgdata{main}{release}/gi;
+  }
+
+  # Globals, and not-so-globals
+  if ($section =~ /g/) {
+
+    $macrostring =~ s|%{_builddir}|%{_topdir}/BUILD|g;
+# no longer a valid macro/tag
+#    $macrostring =~ s|%{buildsubdir}|$tarballdir|g;
+    $macrostring =~ s|%{_topdir}|$topdir|g;
+    $macrostring =~ s|%{_tmppath}|$tmpdir|g;
+    $macrostring =~ s'%{_docdir}'%{_datadir}/doc'g;
+
+    # Standard FHS locations.  More or less.
+    $macrostring =~ s'%{_bindir}'/usr/bin'g;
+    $macrostring =~ s'%{_sbindir}'/usr/sbin'g;
+    $macrostring =~ s'%{_mandir}'%{_datadir}/man'g;
+    $macrostring =~ s'%{_infodir}'%{_datadir}/info'g;
+    $macrostring =~ s'%{_includedir}'/usr/include'g;
+    $macrostring =~ s'%{_libdir}'/usr/lib'g;
+    $macrostring =~ s'%{_sysconfdir}'/etc'g;
+    $macrostring =~ s'%{_localstatedir}'/var'g;
+    $macrostring =~ s'%{_prefix}'/usr'g;
+
+    # FHS-ish locations that aren't quite actually FHS-specified.
+    $macrostring =~ s'%{_datadir}'/usr/share'g;
+
+    # special %define's.  Handle the general case where we eval anything.
+    # Even more general:  %(...) is a spec-parse-time shell code wrapper.
+    # Prime example:
+    #%define perl_vendorlib %(eval "`perl -V:installvendorlib`"; echo $installvendorlib)
+    if ($macrostring =~ /\%\((.+)\)/) {
+      my $shellstr = $1;
+      # Oy vey this gets silly for the perl bits.  Executing a shell to
+      # call Perl to get the vendorlib/sitelib/whatever "core" globals.
+      # This can do more, but...  eww.
+      $shellstr = qx { /bin/sh -c '$shellstr' };	# Yay!  ' characters apparently get properly exscapededed.
+      $macrostring =~ s/\%\(.+\)/$shellstr/;
+    }
+
+    # support for **some** %if constructs.  Note that this breaks somewhat if
+    # there's no value specified...  but so does rpm.
+
+    my $tmpcount = 0;	# runaway shutdown.  Not really sure how else to avoid getting stuck.
+    while ($macrostring =~ m/\%\{([?!]+)([a-z0-9_.-]+)(?:\:([a-z0-9_.\/\-\\]+)?)?\}/g) {       #Whew....
+      my $qex = $1;
+      my $macro = $2;
+      my $value = '';
+      if (defined($3)) {
+        $value = $3;
+      } else {
+        $value = $specglobals{$macro} if $specglobals{$macro};
+      }
+      my $neg = '1' if $qex =~ /\!/;
+      if ($specglobals{$macro}) {
+	$value = '' if $neg;
+      } else {
+	$value = '' if !$neg;
+      }
+      $macrostring =~ s/\%\{[?!]+[a-z0-9_.-]+(?:\:([a-z0-9_.\/\-\\]+)?)?\}/$value/;
+
+# not certain about this, but I don't want to run away.  It *can* happen if planned carefully.  :/
+$tmpcount++;
+# %makeinstall has 13 occurrences.  D'Oh!
+die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
+
+    } # while()
+
+    # Misc expansions
+    $macrostring =~ s|%{_arch}|$hostarch|g;
+    $macrostring =~ s|%{optflags}|$optflags{$hostarch}|g;
+    $macrostring =~ s|%{_vendor}|$specglobals{'_vendor'}|g;
+
+    # system programs.  RPM uses a global config file for these;  we'll just
+    # ASS-U-ME and make life a little simpler.
+    if ($macrostring =~ /\%\{\_\_([a-z0-9_-]+)\}/) {
+# see /usr/lib/rpm/macros for most of the list.  we should arguably just parse that file, but..  ow.
+      $macrostring =~ s|%{__([a-z0-9_-]+)}|$1|g;
+    }
+
+# should probably stick a "no runaway" flag in here...  Just In Case...
+    # %define's
+# note to self: find out valid chars for %define name/label so we can parse them
+    while (my ($key) = ($macrostring =~ /%{([a-z0-9_]+)}/i) ) {
+# hrm.  This needs thinking.
+#die "A horrible death!  \%{$key}, '$macrostring'\n" if !$specglobals{$key};
+      $macrostring =~ s|%{$key}|$specglobals{$key}|g;
+		# wanna limit this to "... if $specglobals{$key}", but need more magic
+    }
+
+    # Perl @INC/...lib locations, and other related bits.
+    $macrostring =~ s|%{perl_archlib}|$Config{installarchlib}|g;
+    $macrostring =~ s|%{perl_sitelib}|$Config{installsitelib}|g;
+    $macrostring =~ s|%{perl_sitearch}|$Config{installsitearch}|g;
+    $macrostring =~ s|%{perl_vendorlib}|$Config{installvendorlib}|g;
+    $macrostring =~ s|%{perl_vendorarch}|$Config{installvendorarch}|g;
+
+  } # done with globals section
+
+  return $macrostring;
+} # end expandmacros()
+
+
+
+__END__
+
+
+
+=head1 NAME
+
+debbuild - Build Debian-compatible .deb packages from RPM .spec files
+
+=head1 SYNOPSIS
+
+ debbuild {-ba|-bb|-bp|-bc|-bi|-bl|-bs} [build-options] file.spec
+
+ debbuild {-ta|-tb|-tp|-tc|-ti|-tl|-ts} [build-options] file.{tgz|zip|tar.{gz|bz2|xz|Z}}
+
+ debbuild --rebuild file.{src.rpm|sdeb}
+
+ debbuild --showpkgs
+
+ debbuild -i foo.sdeb
+
+=head1 DESCRIPTION
+
+debbuild attempts to build Debian-friendly semi-native packages from RPM spec files, 
+RPM-friendly tarballs, and RPM source packages (.src.rpm files).  It accepts I<most> of the 
+options rpmbuild does, and should be able to interpret most spec files usefully.  Perl 
+modules should be handled via CPAN+dh-make-perl instead as it's simpler than even tweaking
+a .spec template.
+
+As far as possible, the command-line options are identical to those from rpmbuild, although 
+several rpmbuild options are not supported:
+
+ --recompile
+ --showrc
+ --buildroot
+ --clean
+ --nobuild
+ --rmsource
+ --rmspec
+ --sign
+ --target
+
+Some of these could probably be trivially added.  Feel free to send me a patch.  ;)
+
+Complex spec files will most likely not work well, if at all.  Rewrite them from scratch - 
+you'll have to make heavy modifications anyway.
+
+If you see something you don't like, mail me.  Send a patch if you feel inspired.  I don't 
+promise I'll do anything other than say "Yup, that's broken" or "Got your message".
+
+The source package container I invented for debbuild, the .sdeb file, can be "installed"
+with debbuild -i exactly the same way as a .src.rpm can be installed with "rpm -i".  Both
+will unpack the file and place the source(s) and .spec file in the appropriate places in
+%_topdir/SOURCES and %_topdir/SPECS respectively.
+
+=head1 ASSUMPTIONS
+
+As with rpmbuild, debbuild makes some assumptions about your system.
+
+=over 4
+
+=item *
+
+Either you have rights to do as you please under /usr/src/debian, or you have created a file 
+~/.debmacros containing a suitable %_topdir definition.
+
+Both rpmbuild and debbuild require the directories %_topdir/{BUILD,SOURCES,SPECS}.  However, 
+where rpmbuild requires the %_topdir/{RPMS,SRPMS} directories, debbuild  
+requires %_topdir/{DEBS,SDEBS} instead.  Create them in advance;  
+some subdirectories are created automatically as needed, but most are not.
+
+=item *
+
+/var/tmp must allow script execution - rpmbuild and debbuild both rely on creating and 
+executing shell scripts for much of their functionality.  By default, debbuild also creates 
+install trees under /var/tmp - however this is (almost) entirely under the control of the 
+package's .spec file.
+
+=item *
+  
+If you wish to --rebuild a .src.rpm, your %_topdir for both debbuild and rpmbuild must either 
+match, or be suitably symlinked one direction or another so that both programs are effectively 
+working in the same tree.  (Or you could just manually wrestle files around your system.)
+
+You could symlink ~/.rpmmacros to ~/.debmacros (or vice versa) and save yourself some hassle 
+if you need to rebuild .src.rpm packages on a regular basis.  Currently debbuild only uses the 
+%_topdir macro definition, although there are many more things that rpmbuild can use from 
+~/.rpmmacros.
+
+=back
+
+=head1 ERRATA
+
+debbuild deliberately does a few things differently from rpm.
+
+=head2 BuildArch or BuildArchitecture
+
+rpm takes the last BuildArch entry it finds in the .spec file, whatever it is, and runs with 
+that for all packages.  Debian's repository system is fairly heavily designed around the 
+assumption that a single source package may generate small binary (executable) packages 
+for each arch, and large binary arch-all packages containing shared data.
+
+debbuild allows this by using the architecture specified by (in order of preference):
+
+=over 4
+
+=item * Host architecture
+
+=item * BuildArch specified in .spec file preamble
+
+=item * "Last specified" BuildArch for packages with several subpackages
+
+=item * BuildArch specified in the %package section for that subpackage
+
+=back
+
+=head2 Finding out what packages should be built (--showpkgs)
+
+rpmbuild does not include any convenient method I know of to list the packages a spec file 
+will produce.  Since I needed this ability for another tool, I added it.
+
+It requires the .spec file for the package, and produces a list of full package filenames 
+(without path data) that would be generated by one of --rebuild, -ta, -tb, -ba, or -bb.  
+This includes the .sdeb source package.
+
+=head1 AUTHOR
+
+debbuild was written by Kris Deugau <kdeugau@deepnet.cx>.  A version that approximates 
+current is available at http://www.deepnet.cx/debbuild/.
+
+=head1 BUGS
+
+Funky Things Happen if you forget a command-line option or two.  I've been too lazy to bother 
+fixing this.
+
+Many macro expansions are unsupported or incompletely supported.
+
+The generated scriptlets don't quite match those from rpmbuild exactly.  There are extra 
+environment variables and preprocessing that I haven't needed (yet).
+
+Dcumentation, such as it is, will likely remain perpetually out of date.
+
+%_topdir and the five "working" directories under %_topdir could arguably be created by 
+debbuild.  However, rpmbuild doesn't create these directories either.
+
+debbuild's %setup -q is arguably less buggy than rpmbuild's implementation;  with rpmbuild
+it must appear before -a or -b at least to be effective.  debbuild does not care.
+
+%setup -c, -a, and -b should arguably throw errors if specified together;  otherwise the
+results are almost certainly not what you want to happen.
+
+=head1 SEE ALSO
+
+rpm(8), rpmbuild(8), and pretty much any document describing how to write a .spec file.
+
+=cut
