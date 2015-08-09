@@ -362,25 +362,51 @@ if ($cmdopts{type} eq 'b') {
 }
 
 if ($cmdopts{type} eq 't') {
-  # Need to unpack the tarball to find the spec file.  Sort of the inverse of -b above.
-  # Note that rpmbuild doesn't seem to support this operation from a .zip file, so neither will we.
-  # zcat $tarball |tar -t |grep .spec
-  # collect some info about the tarball
-  $specfile = "$topdir/BUILD/". qx { zcat $tarball |tar -t |grep -e '[\.]spec\$' };
+  # Need to unpack the $tarball to find the spec file.  Sort of the inverse of
+  # -b above.  Note that rpmbuild doesn't seem to support this operation from a
+  # .zip file properly, but we try our best.
+  $specfile = "$topdir/BUILD/";
+  if ($tarball =~ /\.zip$/) {
+    # .zip files are not really tarballs
+    $specfile .= qx { /usr/bin/zipinfo -1 $tarball '*.spec' };
+  } elsif ($tarball =~ /\.tar$/) {
+    # plain .tar files don't need to be uncompressed
+    $specfile .= qx { /bin/tar -tf $tarball --wildcards '*.spec' };
+  } else {
+    # select the decompressor according to the file extension
+    $specfile .=
+      ( $tarball =~ /\.(?:tgz|tar\.(?:gz|Z))$/ ?
+          qx { /bin/zcat $tarball | /bin/tar -t | grep -e '[\.]spec\$' } :
+        $tarball =~ /\.tar\.bz2$/ ?
+          qx { /bin/bzcat $tarball | /bin/tar -t | grep -e '[\.]spec\$' } :
+        $tarball =~ /\.tar\.xz$/ ?
+          qx { /usr/bin/xzcat $tarball | /bin/tar -t | grep -e '[\.]spec\$' } :
+        die("Can't handle unknown file type '$tarball'.") );
+  }
   chomp $specfile;
-  my ($fileonly, $dirname) = ($tarball =~ /(([a-zA-Z0-9._-]+)\.(?:tgz|tar\.(?:gz|bz2|xz|Z)))$/);
 
   $tarball = abs_path($tarball);
 ##fixme:  use macro expansions for the executables
-  my $unpackcmd = "cd $topdir/BUILD; ".
-	( $tarball =~ /\.(?:tgz|tar\.(?:gz|Z))$/	 ? "/bin/gzip"   : "" ).
-	( $tarball =~ /\.tar\.bz2$/			 ? "/bin/bzip2"  : "" ).
-	( $tarball =~ /\.tar\.xz$/			 ? "/usr/bin/xz" : "" ).
-	" -dc $tarball |/bin/tar -xf -";
+  my $unpackcmd = "cd $topdir/BUILD;\n";
+  if ($tarball =~ /\.zip$/) {
+    # .zip files are not really tarballs
+    $unpackcmd .= "/usr/bin/unzip -uoq $tarball";
+  } elsif ($tarball =~ /\.tar$/) {
+    # plain .tar files don't need to be uncompressed
+    $unpackcmd .= "/bin/tar -xf $tarball";
+  } else {
+    # select the decompressor according to the file extension
+    $unpackcmd .=
+      ( $tarball =~ /\.(?:tgz|tar\.(?:gz|Z))$/ ? "/bin/gzip"   :
+        $tarball =~ /\.tar\.bz2$/              ? "/bin/bzip2"  :
+        $tarball =~ /\.tar\.xz$/               ? "/usr/bin/xz" :
+        die("Can't handle unknown file type '$tarball'.") ).
+      " -dc $tarball | /bin/tar -xf -";
+  }
 
   system "$unpackcmd";
-  system "cp $tarball $topdir/SOURCES/$fileonly";
-  system "cp $specfile $topdir/SPECS/";
+  system "cp -f $tarball $topdir/SOURCES/";
+  system "cp -f $specfile $topdir/SPECS/";
   parse_spec();
   die "Can't build $pkgdata{main}{name}:  build requirements not met.\n"
     if !checkbuildreq();
@@ -2054,7 +2080,7 @@ sub unpackcmd {
 
    if ($sourcedrop =~ /\.zip$/) {
       # .zip files are not really tarballs
-      $prepscript .= "/usr/bin/unzip".
+      $prepscript .= "/usr/bin/unzip -o".
          ( $quietunpack ? ' -qq ' : ' ' ).
          "'$topdir/SOURCES/$sourcedrop'";
    } elsif ($sourcedrop =~ /\.tar$/) {
