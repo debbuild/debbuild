@@ -386,11 +386,11 @@ if ($cmdopts{type} eq 't') {
   chomp $specfile;
 
   $tarball = abs_path($tarball);
-##fixme:  use macro expansions for the executables
+
   my $unpackcmd = "cd $topdir/BUILD;\n";
   if ($tarball =~ /\.zip$/) {
     # .zip files are not really tarballs
-    $unpackcmd .= "/usr/bin/unzip -uoq $tarball";
+    $unpackcmd .= "/usr/bin/unzip -boaq $tarball";
   } elsif ($tarball =~ /\.tar$/) {
     # plain .tar files don't need to be uncompressed
     $unpackcmd .= "/bin/tar -xf $tarball";
@@ -403,7 +403,6 @@ if ($cmdopts{type} eq 't') {
         die("Can't handle unknown file type '$tarball'.") ).
       " -dc $tarball | /bin/tar -xf -";
   }
-
   system "$unpackcmd";
   system "cp -f $tarball $topdir/SOURCES/";
   system "cp -f $specfile $topdir/SPECS/";
