@@ -964,6 +964,8 @@ LINE: while (<SPECFILE>) {
             $prepscript .= unpackcmd($pkgdata{sources}{$snum},$quietunpack);
             $prepscript .= "cd '$tarballdir'\n";
           } # $altsource == 2
+        } else { # possibly have to apply some patches before %build
+          $prepscript .= "cd '$tarballdir'\n" unless $changedir;
         }
 
 # rpm doesn't seem to do the chowns any more
