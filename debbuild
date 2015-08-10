@@ -986,17 +986,15 @@ LINE: while (<SPECFILE>) {
 	# reworked and expanded to support .Z/.gz/.xz as well
 	if ( $pkgdata{main}{"patch$patchnum"} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
 	  my $decompressor;
-	  $decompressor = 'gzip'  if $pkgdata{main}{"patch$patchnum"} =~ /\.(?:Z|gz)$/;
-	  $decompressor = 'bzip2' if $pkgdata{main}{"patch$patchnum"} =~ /\.bz2$/;
-	  $decompressor = 'xz'    if $pkgdata{main}{"patch$patchnum"} =~ /\.xz$/;
-	  $prepscript .= qq(/bin/$decompressor -d < $topdir/SOURCES/$pkgdata{main}{"patch$patchnum"} | patch );
-	  $prepscript .= $patchopts if $patchopts;
-	  $prepscript .= "-p0" if !$patchopts;
+	  $decompressor = '/bin/gzip'  if $pkgdata{main}{"patch$patchnum"} =~ /\.(?:Z|gz)$/;
+	  $decompressor = '/bin/bzip2' if $pkgdata{main}{"patch$patchnum"} =~ /\.bz2$/;
+	  $decompressor = '/usr/bin/xz'    if $pkgdata{main}{"patch$patchnum"} =~ /\.xz$/;
+	  $prepscript .= qq($decompressor -d < $topdir/SOURCES/$pkgdata{main}{"patch$patchnum"} | patch );
+	  $prepscript .= ( $patchopts ? $patchopts : "-p0" );
 	  $prepscript .= qq( -s\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
 	} else {
 	  $prepscript .= "patch ";
-	  $prepscript .= $patchopts if $patchopts;
-	  $prepscript .= "-p0" if !$patchopts;
+	  $prepscript .= ( $patchopts ? $patchopts : "-p0" );
 	  $prepscript .= " -s <$topdir/SOURCES/".$pkgdata{main}{"patch$patchnum"}."\n";
 	}
       } else {
