@@ -30,6 +30,7 @@ use warnings;
 use Fcntl;	# for sysopen flags
 use Cwd 'abs_path';	# for finding where files really are
 use Config;
+use File::Basename;
 
 my $version = "0.11.3";
 
@@ -693,7 +694,7 @@ LINE: while (<SPECFILE>) {
     if (/^%[a-z]/ &&
 		$_ !~ /^%(?:attr|build|changelog|check|clean|config|configure|defattr|define|description|
 		dir|doc|docdir|else|endif|files|ghost|if|ifarch|ifn|ifnarch|ifnos|ifnxxx|fos|ifxxx|
-		install|makeinstall|package|patch\d+|post|postun|pre|prep|preun|readme|setup[^\s]*|
+		install|makeinstall|package|patch\d*|post|postun|pre|prep|preun|readme|setup[^\s]*|
 		triggerin|triggerpostun|triggerun|verify|verifyscript)\b/x
 	) {
 	my ($badtag) = (/^%([a-z]+)/i);
@@ -974,8 +975,10 @@ LINE: while (<SPECFILE>) {
         $prepscript .=
 		qq(/bin/chmod -Rf a+rX,u+w,g-w,o-w .\n);
 
-      } elsif ( my ($patchnum,$patchopts) = (/^\%patch([^\s]+)(\s+.+)?$/) ) {
-        chomp $patchnum;
+      } elsif ( my ($patchnum,$patchopts) = (/^\%patch(\d*)(\s+.+)?$/) ) {
+        unless ( $patchnum ) {
+           $patchnum = ( $patchopts =~ s/-P\s+(\d+)// ? $1 : 0 );
+        }
         $prepscript .= qq(echo "Patch #$patchnum ($pkgdata{main}{"patch$patchnum"}):"\n);
 	# If there are options passed, use'em.
 	# Otherwise, catch a bare %patch and ASS-U-ME it's '-p0'-able.
@@ -1151,28 +1154,15 @@ LINE: while (<SPECFILE>) {
         $specglobals{vendor} = $1;
       } elsif (/^buildroot:\s*(.+)/i) {
         $specglobals{buildroot} = $1;
-      } elsif (my ($sval) = /^source0?:\s*(.+)/i) {
-        $sval =~ s/\s*$//;
-        $pkgdata{main}{source} = $sval;
-        # Do this here since we don't use any URL forms elsewhere (maybe some other time)
-        $pkgdata{main}{source} =~ s|^.+/([^/]+)$|$1|;
-        $pkgdata{sources}{0} = $pkgdata{main}{source};
-	# .tar, .tar.gz, .tar.Z, .tar.bz2, .tar.xz, .tgz, .zip
-        die "Unknown Source: header format $sval\n" if $sval !~ /\.(?:tar(?:\.(?:gz|bz2|xz|Z))?|tgz|zip)$/;
-      } elsif (my ($srcnum, $src) = (/^source([0-9]+):\s*(.+)/i)) {
+      } elsif (my ($srcnum, $src) = (/^source(\d*):\s*(.+)/i)) {
         $src =~ s/\s*$//;
-        $pkgdata{sources}{$srcnum} = $src;
-        # Do this here since we don't use any URL forms elsewhere (maybe some other time)
-        $pkgdata{sources}{$srcnum} =~ s|^.+/([^/]+)$|$1|;
-      } elsif (/^patch([^:]+):\s*(.+)$/i) {
-        my $patchname = "patch$1";
-        $pkgdata{main}{$patchname} = $2;
-        if ($pkgdata{main}{$patchname} =~ /\//) {
-          # URL-style patch.  Rare but not unheard-of.
-          my @patchbits = split '/', $pkgdata{main}{$patchname};
-          $pkgdata{main}{$patchname} = $patchbits[$#patchbits];
-        }
-        chomp $pkgdata{main}{$patchname};
+        $srcnum = 0 unless $srcnum;
+        $pkgdata{main}{source} = basename($src);
+        $pkgdata{sources}{0} = $pkgdata{main}{source} if 0 == $srcnum;
+      } elsif (my ($patchnum, $patch) = (/^patch(\d*):\s*(.+)/i)) {
+        $patch =~ s/\s*$//;
+        $patchnum = 0 unless $patchnum;
+        $pkgdata{main}{"patch$patchnum"} = basename($patch);
       } elsif (/^buildarch(?:itecture)?:\s*(.+)/i) {
         $pkgdata{main}{arch} = $1;
         $pkgdata{main}{arch} =~ s/^noarch$/all/;
