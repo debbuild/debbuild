@@ -1157,8 +1157,8 @@ LINE: while (<SPECFILE>) {
       } elsif (my ($srcnum, $src) = (/^source(\d*):\s*(.+)/i)) {
         $src =~ s/\s*$//;
         $srcnum = 0 unless $srcnum;
-        $pkgdata{main}{source} = basename($src);
-        $pkgdata{sources}{0} = $pkgdata{main}{source} if 0 == $srcnum;
+        $pkgdata{sources}{$srcnum} = basename($src);
+        $pkgdata{main}{source} = $pkgdata{sources}{0} if 0 == $srcnum;
       } elsif (my ($patchnum, $patch) = (/^patch(\d*):\s*(.+)/i)) {
         $patch =~ s/\s*$//;
         $patchnum = 0 unless $patchnum;
