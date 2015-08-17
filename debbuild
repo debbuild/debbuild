@@ -5,9 +5,9 @@
 # unlikely to conform to "Debian Policy".
 ###
 # SVN revision info
-# $Date: 2015-08-03 17:34:33 -0400 (Mon, 03 Aug 2015) $
-# SVN revision $Rev: 200 $
-# Last update by $Author: kdeugau $
+# $Date$
+# SVN revision $Rev$
+# Last update by $Author$
 ###
 # Copyright (C) 2005-2015 Kris Deugau <kdeugau@deepnet.cx>
 #
@@ -32,7 +32,7 @@ use Cwd 'abs_path';	# for finding where files really are
 use Config;
 use File::Basename;
 
-my $version = "0.11.3";
+my $version = "0.11.3";	#VERSION#
 
 # regex debugger
 #use re "debug";
@@ -404,6 +404,7 @@ if ($cmdopts{type} eq 't') {
         die("Can't handle unknown file type '$tarball'.") ).
       " -dc $tarball | /bin/tar -xf -";
   }
+
   system "$unpackcmd";
   system "cp -f $tarball $topdir/SOURCES/";
   system "cp -f $specfile $topdir/SPECS/";
@@ -2065,21 +2066,21 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
 # of the source drop according to the file extension.
 sub unpackcmd {
    my ($sourcedrop,$quietunpack) = @_;
-   my $prepscript;
+   my $cmdstring;
 
    if ($sourcedrop =~ /\.zip$/) {
       # .zip files are not really tarballs
-      $prepscript .= "/usr/bin/unzip -o".
+      $cmdstring .= "/usr/bin/unzip -o".
          ( $quietunpack ? ' -qq ' : ' ' ).
          "'$topdir/SOURCES/$sourcedrop'";
    } elsif ($sourcedrop =~ /\.tar$/) {
       # plain .tar files don't need to be uncompressed
-      $prepscript .= "/bin/tar -x".
+      $cmdstring .= "/bin/tar -x".
          ( $quietunpack ? '' : 'vv' )."f ".
          "'$topdir/SOURCES/$sourcedrop'";
    } else {
       # select the decompressor according to the file extension
-      $prepscript .=
+      $cmdstring .=
          ( $sourcedrop =~ /\.(?:tgz|tar\.(?:gz|Z))$/ ? "/bin/gzip"   :
            $sourcedrop =~ /\.tar\.bz2$/              ? "/bin/bzip2"  :
            $sourcedrop =~ /\.tar\.xz$/               ? "/usr/bin/xz" :
@@ -2087,9 +2088,9 @@ sub unpackcmd {
          " -dc '$topdir/SOURCES/$sourcedrop' | /bin/tar -x".
          ( $quietunpack ? '' : 'vv' )."f - ";
    }
-   $prepscript .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+   $cmdstring .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
 
-   return $prepscript;
+   return $cmdstring;
 } # end unpackcmd()
 
 
