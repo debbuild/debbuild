@@ -1605,8 +1605,8 @@ sub srcpackage {
     $paxcmd .= "cp $specfile %{_topdir}/SPECS/; \n"
   }
 
-  # use pax -w [file] [file] ... >outfile.sdeb
-  $paxcmd = "cd $topdir; pax -w ";
+  # use pax -w [file] [file] ... -f outfile.sdeb
+  $paxcmd = "(cd $topdir; pax -w ";
 
   # some packages may not have a "main" source.
   $paxcmd .= "SOURCES/$pkgdata{main}{source} " if $pkgdata{main}{source};
@@ -1626,13 +1626,13 @@ sub srcpackage {
     $paxcmd .= "SOURCES/$pkgdata{sources}{$source} ";
   }
 
-  # add the spec file, source package destination, and cd back where we came from.
-  $paxcmd .= "SPECS/$barespec > $topdir/SDEBS/$pkgsrcname; cd -";
+  # add the spec file and write to source package destination.
+  $paxcmd .= "SPECS/$barespec -f $topdir/SDEBS/$pkgsrcname)";
 
   # In case of %-macros...
   $paxcmd = expandmacros($paxcmd,'gp');
   
-  system "$paxcmd";
+  system("$paxcmd") == 0 and 
   $finalmessages .= "Wrote source package $pkgsrcname in $topdir/SDEBS.\n";
 } # end srcpackage()
 
@@ -1837,12 +1837,12 @@ sub getreqs() {
 sub install_sdeb {
   $srcpkg = abs_path($srcpkg);
 
-  my $paxcmd = "cd $topdir; pax -r <$srcpkg; cd -";
+  my $paxcmd = "(cd $topdir; pax -r -f $srcpkg)";
 
   # In case of %-macros...
   $paxcmd = expandmacros($paxcmd,'gp');
   
-  system "$paxcmd";
+  system("$paxcmd") == 0 and
   print "Extracted source package $srcpkg to $topdir.\n";
 } # end install_sdeb()
 
