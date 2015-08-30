@@ -988,7 +988,11 @@ LINE: while (<SPECFILE>) {
 	# would ever have such things, but there they are...  and rpmbuild supports 'em
 	# patch originally suggested by Lucian Cristian for .bz2
 	# reworked and expanded to support .Z/.gz/.xz as well
-	if ( $pkgdata{main}{"patch$patchnum"} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
+	if ( $pkgdata{main}{"patch$patchnum"} =~ /\.zip$/ ) {
+	  $prepscript .= qq(/usr/bin/unzip -p $topdir/SOURCES/$pkgdata{main}{"patch$patchnum"} | patch );
+	  $prepscript .= ( $patchopts ? $patchopts : "-p0" );
+	  $prepscript .= qq( -s\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+	} elsif ( $pkgdata{main}{"patch$patchnum"} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
 	  my $decompressor;
 	  $decompressor = '/bin/gzip'  if $pkgdata{main}{"patch$patchnum"} =~ /\.(?:Z|gz)$/;
 	  $decompressor = '/bin/bzip2' if $pkgdata{main}{"patch$patchnum"} =~ /\.bz2$/;
