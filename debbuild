@@ -1960,6 +1960,7 @@ sub expandmacros {
     foreach my $source (keys %{$pkgdata{sources}}) {
       $macrostring =~ s/\%\{source$source\}/$topdir\/SOURCES\/$pkgdata{sources}{$source}/gi;
     }
+    $macrostring =~ s/\%\{patch([\d]+)}/$topdir\/SOURCES\/$pkgdata{main}{"patch$1"}/gi;
     $macrostring =~ s/\%\{name\}/$pkgdata{main}{name}/gi;
     $macrostring =~ s/\%\{version\}/$pkgdata{main}{version}/gi;
     $macrostring =~ s/\%\{release\}/$pkgdata{main}{release}/gi;
