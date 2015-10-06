@@ -968,6 +968,8 @@ LINE: while (<SPECFILE>) {
             $prepscript .= unpackcmd($pkgdata{sources}{$snum},$quietunpack);
             $prepscript .= "cd '$tarballdir'\n";
           } # $altsource == 2
+        } else { # possibly have to apply some patches before %build
+          $prepscript .= "cd '$tarballdir'\n" unless $changedir;
         }
 
 # rpm doesn't seem to do the chowns any more
@@ -988,7 +990,7 @@ LINE: while (<SPECFILE>) {
         # yes we can!
         # add patch{nn} to the list
         my @patchlist;
-        push @patchlist, "$1" if $1;
+        push @patchlist, "$1" if defined $1;
 
 # options:
 # -P  patch number
@@ -1055,7 +1057,7 @@ LINE: while (<SPECFILE>) {
             $prepscript .= qq($decompressor -dc $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n);
           } elsif ( $pkgdata{main}{$pnum} =~ /\.zip$/ ) {
             # .zip'ed patch.  *backs away slowly*
-            $prepscript .= qq(/usr/bin/unzip $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n);
+            $prepscript .= qq(/usr/bin/unzip -p $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n);
           } else {
             $prepscript .= "/bin/cat $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n";
           }
@@ -1222,7 +1224,7 @@ LINE: while (<SPECFILE>) {
         $pkgdata{main}{source} = $pkgdata{sources}{0} if 0 == $srcnum;
       } elsif (my ($patchnum, $patch) = (/^patch(\d*):\s*(.+)/i)) {
         $patch =~ s/\s*$//;
-        $patchnum = '' if !defined($patchnum);
+        $patchnum = '' unless defined($patchnum);
         $pkgdata{main}{$patchnum} = basename($patch);
       } elsif (/^buildarch(?:itecture)?:\s*(.+)/i) {
         $pkgdata{main}{arch} = $1;
@@ -1665,8 +1667,8 @@ sub srcpackage {
     $paxcmd .= "cp $specfile %{_topdir}/SPECS/; \n"
   }
 
-  # use pax -w [file] [file] ... >outfile.sdeb
-  $paxcmd = "cd $topdir; pax -w ";
+  # use pax -w [file] [file] ... -f outfile.sdeb
+  $paxcmd = "(cd $topdir; pax -w ";
 
   # some packages may not have a "main" source.
   $paxcmd .= "SOURCES/$pkgdata{main}{source} " if $pkgdata{main}{source};
@@ -1686,13 +1688,13 @@ sub srcpackage {
     $paxcmd .= "SOURCES/$pkgdata{sources}{$source} ";
   }
 
-  # add the spec file, source package destination, and cd back where we came from.
-  $paxcmd .= "SPECS/$barespec > $topdir/SDEBS/$pkgsrcname; cd -";
+  # add the spec file and write to source package destination.
+  $paxcmd .= "SPECS/$barespec -f $topdir/SDEBS/$pkgsrcname)";
 
   # In case of %-macros...
   $paxcmd = expandmacros($paxcmd,'gp');
   
-  system "$paxcmd";
+  system("$paxcmd") == 0 and
   $finalmessages .= "Wrote source package $pkgsrcname in $topdir/SDEBS.\n";
 } # end srcpackage()
 
@@ -1897,12 +1899,12 @@ sub getreqs() {
 sub install_sdeb {
   $srcpkg = abs_path($srcpkg);
 
-  my $paxcmd = "cd $topdir; pax -r <$srcpkg; cd -";
+  my $paxcmd = "(cd $topdir; pax -r -f $srcpkg)";
 
   # In case of %-macros...
   $paxcmd = expandmacros($paxcmd,'gp');
   
-  system "$paxcmd";
+  system("$paxcmd") == 0 and
   print "Extracted source package $srcpkg to $topdir.\n";
 } # end install_sdeb()
 
@@ -2016,7 +2018,7 @@ sub expandmacros {
     foreach my $source (keys %{$pkgdata{sources}}) {
       $macrostring =~ s/\%\{source$source\}/$topdir\/SOURCES\/$pkgdata{sources}{$source}/gi;
     }
-    $macrostring =~ s/\%\{patch([\d]+)}/$topdir\/SOURCES\/$pkgdata{main}{"patch$1"}/gi;
+    $macrostring =~ s/\%\{patch(\d+)}/$topdir\/SOURCES\/$pkgdata{main}{$1}/gi;
     $macrostring =~ s/\%\{name\}/$pkgdata{main}{name}/gi;
     $macrostring =~ s/\%\{version\}/$pkgdata{main}{version}/gi;
     $macrostring =~ s/\%\{release\}/$pkgdata{main}{release}/gi;
