@@ -71,6 +71,9 @@ $specglobals{'_vendor'} = 'debbuild';
 # this can be changed by the Vendor: header in the spec file
 $specglobals{'vendor'} = 'debbuild';
 
+# more things that should be parsed from rpm's macro files
+$specglobals{_default_patch_fuzz} = 0;
+
 # Initialized globals
 my $verbosity = 0;
 my $NoAutoReq = 0;
@@ -387,7 +390,7 @@ if ($cmdopts{type} eq 't') {
   chomp $specfile;
 
   $tarball = abs_path($tarball);
-
+##fixme:  use macro expansions for the executables
   my $unpackcmd = "cd $topdir/BUILD;\n";
   if ($tarball =~ /\.zip$/) {
     # .zip files are not really tarballs
@@ -947,7 +950,6 @@ LINE: while (<SPECFILE>) {
 #   debbuild sets the global on the first call, and keeps using it for further %setup calls
 
         $prepscript .= "cd '$topdir/BUILD'\n";
-        $tarballdir = expandmacros($tarballdir,'gp');
         $prepscript .= "rm -rf '$tarballdir'\n" if $deldir;
         $prepscript .= "/bin/mkdir -p $tarballdir\n" if $changedir;
 
@@ -966,8 +968,6 @@ LINE: while (<SPECFILE>) {
             $prepscript .= unpackcmd($pkgdata{sources}{$snum},$quietunpack);
             $prepscript .= "cd '$tarballdir'\n";
           } # $altsource == 2
-        } else { # possibly have to apply some patches before %build
-          $prepscript .= "cd '$tarballdir'\n" unless $changedir;
         }
 
 # rpm doesn't seem to do the chowns any more
@@ -976,35 +976,91 @@ LINE: while (<SPECFILE>) {
         $prepscript .=
 		qq(/bin/chmod -Rf a+rX,u+w,g-w,o-w .\n);
 
-      } elsif ( my ($patchnum,$patchopts) = (/^\%patch(\d*)(\s+.+)?$/) ) {
-        unless ( $patchnum ) {
-           $patchnum = ( $patchopts =~ s/-P\s+(\d+)// ? $1 : 0 );
+      } elsif (/^\%patch(\d*)/) {
+        my $line = $_;
+
+        # Things rpmbuild Does
+        # -> blindly follows Patch(.*):  ==>  %patch$1
+        # %patch0 does not in fact equal %patch without -P
+        # spaces optional between flag and argument
+        # multiple -P options actually trigger multiple patch events.  >_<
+        # can we emulate this?
+        # yes we can!
+        # add patch{nn} to the list
+        my @patchlist;
+        push @patchlist, "$1" if $1;
+
+# options:
+# -P  patch number
+# -p  path strip.  passed to patch as-is
+# -b  backup file postfix.  literal, if eg "bkfile", backup files will be "filebkfile", not "file.bkfile".  Passed to
+#     patch as-is, with a minor flag adjustment
+# -E  Remove empty files.  Passed to patch as-is
+
+# from /usr/lib/rpm/macros;  doesn't seem to be used by rpmbuild currently
+# Default patch flags
+#%_default_patch_flags  -s
+
+        my @pbits = split /\s+/;
+        my $plev = 0;
+        my $psuff = '';
+        my $noempty = 0;
+        shift @pbits;
+        my $pnflag = 0;
+        while (my $popt = shift @pbits) {
+          if ($popt =~ /^-P(\d*)/) {
+            $pnflag = 1;
+            # push the patchnum onto the list
+            if ($1) {
+              push @patchlist, "$1";
+            } else {
+              my $tmp = shift @pbits;
+              die "Invalid patch number $tmp: $line" if $tmp !~ /^\d+$/;
+              push @patchlist, $tmp;
+            }
+          } elsif ($popt =~ (/^-b([^\s]*)/) ) {
+            if ($1) {
+              $psuff = "-b --suffix $1";
+            } else {
+              $psuff = "-b --suffix ".shift(@pbits);
+            }
+          } elsif ($popt =~ (/^-p([^\s]*)/) ) {
+            if ($1) {
+              $plev = $1;
+            } else {
+              $plev = shift @pbits;
+            }
+          } elsif ($popt =~ (/^-E/) ) {
+            $noempty = 1;
+          } elsif ($popt =~ (/^(-[^s]+)/) ) {
+            die "Unknown \%patch option $1: $line\n";
+          }
+        } # while (shift @pbits)
+
+        # add the "null" patch to the list unless we've got a -P flag, or there's already a patch on the list
+        push @patchlist, '' unless $pnflag || @patchlist;
+
+        my $patchopts = " -p$plev $psuff";
+        $patchopts .= " --fuzz=".$specglobals{_default_patch_fuzz};
+        $patchopts .= " -E" if $noempty;
+
+        foreach my $pnum (@patchlist) {
+          $prepscript .= qq(echo "Patch ).($pnum eq '' ? '' : "#$pnum ").qq(($pkgdata{main}{$pnum}):"\n);
+          if ( $pkgdata{main}{$pnum} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
+            # Compressed patch.  You weirdo.
+            my $decompressor;
+            $decompressor = '/bin/gzip'  if $pkgdata{main}{$pnum} =~ /\.(?:Z|gz)$/;
+            $decompressor = '/bin/bzip2' if $pkgdata{main}{$pnum} =~ /\.bz2$/;
+            $decompressor = '/usr/bin/xz'    if $pkgdata{main}{$pnum} =~ /\.xz$/;
+            $prepscript .= qq($decompressor -dc $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n);
+          } elsif ( $pkgdata{main}{$pnum} =~ /\.zip$/ ) {
+            # .zip'ed patch.  *backs away slowly*
+            $prepscript .= qq(/usr/bin/unzip $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n);
+          } else {
+            $prepscript .= "/bin/cat $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n";
+          }
         }
-        $prepscript .= qq(echo "Patch #$patchnum ($pkgdata{main}{"patch$patchnum"}):"\n);
-	# If there are options passed, use'em.
-	# Otherwise, catch a bare %patch and ASS-U-ME it's '-p0'-able.
-	# Will break on options that don't provide -pnn, but what the hell.
-	# Need to decompress .bz2 and .gz patches on the fly.  Not sure why one
-	# would ever have such things, but there they are...  and rpmbuild supports 'em
-	# patch originally suggested by Lucian Cristian for .bz2
-	# reworked and expanded to support .Z/.gz/.xz as well
-	if ( $pkgdata{main}{"patch$patchnum"} =~ /\.zip$/ ) {
-	  $prepscript .= qq(/usr/bin/unzip -p $topdir/SOURCES/$pkgdata{main}{"patch$patchnum"} | patch );
-	  $prepscript .= ( $patchopts ? $patchopts : "-p0" );
-	  $prepscript .= qq( -s\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
-	} elsif ( $pkgdata{main}{"patch$patchnum"} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
-	  my $decompressor;
-	  $decompressor = '/bin/gzip'  if $pkgdata{main}{"patch$patchnum"} =~ /\.(?:Z|gz)$/;
-	  $decompressor = '/bin/bzip2' if $pkgdata{main}{"patch$patchnum"} =~ /\.bz2$/;
-	  $decompressor = '/usr/bin/xz'    if $pkgdata{main}{"patch$patchnum"} =~ /\.xz$/;
-	  $prepscript .= qq($decompressor -d < $topdir/SOURCES/$pkgdata{main}{"patch$patchnum"} | patch );
-	  $prepscript .= ( $patchopts ? $patchopts : "-p0" );
-	  $prepscript .= qq( -s\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
-	} else {
-	  $prepscript .= "patch ";
-	  $prepscript .= ( $patchopts ? $patchopts : "-p0" );
-	  $prepscript .= " -s <$topdir/SOURCES/".$pkgdata{main}{"patch$patchnum"}."\n";
-	}
+
       } else {
         $prepscript .= expandmacros($_,'gp');
       }
@@ -1166,8 +1222,8 @@ LINE: while (<SPECFILE>) {
         $pkgdata{main}{source} = $pkgdata{sources}{0} if 0 == $srcnum;
       } elsif (my ($patchnum, $patch) = (/^patch(\d*):\s*(.+)/i)) {
         $patch =~ s/\s*$//;
-        $patchnum = 0 unless $patchnum;
-        $pkgdata{main}{"patch$patchnum"} = basename($patch);
+        $patchnum = '' if !defined($patchnum);
+        $pkgdata{main}{$patchnum} = basename($patch);
       } elsif (/^buildarch(?:itecture)?:\s*(.+)/i) {
         $pkgdata{main}{arch} = $1;
         $pkgdata{main}{arch} =~ s/^noarch$/all/;
@@ -1609,8 +1665,8 @@ sub srcpackage {
     $paxcmd .= "cp $specfile %{_topdir}/SPECS/; \n"
   }
 
-  # use pax -w [file] [file] ... -f outfile.sdeb
-  $paxcmd = "(cd $topdir; pax -w ";
+  # use pax -w [file] [file] ... >outfile.sdeb
+  $paxcmd = "cd $topdir; pax -w ";
 
   # some packages may not have a "main" source.
   $paxcmd .= "SOURCES/$pkgdata{main}{source} " if $pkgdata{main}{source};
@@ -1630,13 +1686,13 @@ sub srcpackage {
     $paxcmd .= "SOURCES/$pkgdata{sources}{$source} ";
   }
 
-  # add the spec file and write to source package destination.
-  $paxcmd .= "SPECS/$barespec -f $topdir/SDEBS/$pkgsrcname)";
+  # add the spec file, source package destination, and cd back where we came from.
+  $paxcmd .= "SPECS/$barespec > $topdir/SDEBS/$pkgsrcname; cd -";
 
   # In case of %-macros...
   $paxcmd = expandmacros($paxcmd,'gp');
   
-  system("$paxcmd") == 0 and 
+  system "$paxcmd";
   $finalmessages .= "Wrote source package $pkgsrcname in $topdir/SDEBS.\n";
 } # end srcpackage()
 
@@ -1841,12 +1897,12 @@ sub getreqs() {
 sub install_sdeb {
   $srcpkg = abs_path($srcpkg);
 
-  my $paxcmd = "(cd $topdir; pax -r -f $srcpkg)";
+  my $paxcmd = "cd $topdir; pax -r <$srcpkg; cd -";
 
   # In case of %-macros...
   $paxcmd = expandmacros($paxcmd,'gp');
   
-  system("$paxcmd") == 0 and
+  system "$paxcmd";
   print "Extracted source package $srcpkg to $topdir.\n";
 } # end install_sdeb()
 
@@ -1970,8 +2026,8 @@ sub expandmacros {
   if ($section =~ /g/) {
 
     $macrostring =~ s|%{_builddir}|%{_topdir}/BUILD|g;
-# no longer a valid macro/tag
-#    $macrostring =~ s|%{buildsubdir}|$tarballdir|g;
+# Not predefined in an eternal file;  defaults to %{name}-%{version}
+    $macrostring =~ s|%{buildsubdir}|$tarballdir|g;
     $macrostring =~ s|%{_topdir}|$topdir|g;
     $macrostring =~ s|%{_tmppath}|$tmpdir|g;
     $macrostring =~ s'%{_docdir}'%{_datadir}/doc'g;
@@ -2075,7 +2131,7 @@ sub unpackcmd {
 
    if ($sourcedrop =~ /\.zip$/) {
       # .zip files are not really tarballs
-      $cmdstring .= "/usr/bin/unzip -o".
+      $cmdstring .= "/usr/bin/unzip".
          ( $quietunpack ? ' -qq ' : ' ' ).
          "'$topdir/SOURCES/$sourcedrop'";
    } elsif ($sourcedrop =~ /\.tar$/) {
