@@ -990,7 +990,7 @@ LINE: while (<SPECFILE>) {
         # yes we can!
         # add patch{nn} to the list
         my @patchlist;
-        push @patchlist, "$1" if defined $1;
+        push @patchlist, "$1" if $1 ne '';
 
 # options:
 # -P  patch number
@@ -1013,7 +1013,7 @@ LINE: while (<SPECFILE>) {
           if ($popt =~ /^-P(\d*)/) {
             $pnflag = 1;
             # push the patchnum onto the list
-            if ($1) {
+            if ($1 ne '') {
               push @patchlist, "$1";
             } else {
               my $tmp = shift @pbits;
