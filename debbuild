@@ -978,8 +978,9 @@ LINE: while (<SPECFILE>) {
         $prepscript .=
 		qq(/bin/chmod -Rf a+rX,u+w,g-w,o-w .\n);
 
-      } elsif (/^\%patch(\d*)/) {
-        my $line = $_;
+      } elsif (/^\%patch/) {
+        my $line = $_; # save for diagnostics
+        my @pbits = split /\s+/;
 
         # Things rpmbuild Does
         # -> blindly follows Patch(.*):  ==>  %patch$1
@@ -988,9 +989,12 @@ LINE: while (<SPECFILE>) {
         # multiple -P options actually trigger multiple patch events.  >_<
         # can we emulate this?
         # yes we can!
-        # add patch{nn} to the list
         my @patchlist;
-        push @patchlist, "$1" if $1 ne '';
+
+        # add patch{nn} to the list
+        if ((shift @pbits) =~ /^\%patch(\d+)/) {
+          push @patchlist, "$1";
+        }
 
 # options:
 # -P  patch number
@@ -1003,15 +1007,12 @@ LINE: while (<SPECFILE>) {
 # Default patch flags
 #%_default_patch_flags  -s
 
-        my @pbits = split /\s+/;
         my $plev = 0;
         my $psuff = '';
         my $noempty = 0;
-        shift @pbits;
-        my $pnflag = 0;
+
         while (my $popt = shift @pbits) {
           if ($popt =~ /^-P(\d*)/) {
-            $pnflag = 1;
             # push the patchnum onto the list
             if ($1 ne '') {
               push @patchlist, "$1";
@@ -1026,8 +1027,8 @@ LINE: while (<SPECFILE>) {
             } else {
               $psuff = "-b --suffix ".shift(@pbits);
             }
-          } elsif ($popt =~ (/^-p([^\s]*)/) ) {
-            if ($1) {
+          } elsif ($popt =~ (/^-p(\d*)/) ) {
+            if ($1 ne '') {
               $plev = $1;
             } else {
               $plev = shift @pbits;
@@ -1039,8 +1040,8 @@ LINE: while (<SPECFILE>) {
           }
         } # while (shift @pbits)
 
-        # add the "null" patch to the list unless we've got a -P flag, or there's already a patch on the list
-        push @patchlist, '' unless $pnflag || @patchlist;
+        # add the "null" patch for "%patch" unadorned
+        push @patchlist, '' unless @patchlist;
 
         my $patchopts = " -p$plev $psuff";
         $patchopts .= " --fuzz=".$specglobals{_default_patch_fuzz};
