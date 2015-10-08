@@ -994,6 +994,8 @@ LINE: while (<SPECFILE>) {
         # add patch{nn} to the list
         if ((shift @pbits) =~ /^\%patch(\d+)/) {
           push @patchlist, "$1";
+        } elsif ($line !~ /-P/) {
+          push @patchlist, '';
         }
 
 # options:
@@ -1037,6 +1039,8 @@ LINE: while (<SPECFILE>) {
             $noempty = 1;
           } elsif ($popt =~ (/^(-[^s]+)/) ) {
             die "Unknown \%patch option $1: $line\n";
+          } elsif ($popt =~ (/(\d+)/) ) {
+            push @patchlist, $1;
           }
         } # while (shift @pbits)
 
