@@ -995,7 +995,7 @@ LINE: while (<SPECFILE>) {
         if ((shift @pbits) =~ /^\%patch(\d+)/) {
           push @patchlist, "$1";
         }
-        # add the "null" patch for "%patch" unadorned
+        # add the "null" patch to the list unless we've got a -P flag
         elsif ($line !~ /-P/) {
           push @patchlist, '';
         }
