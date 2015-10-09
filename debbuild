@@ -994,7 +994,9 @@ LINE: while (<SPECFILE>) {
         # add patch{nn} to the list
         if ((shift @pbits) =~ /^\%patch(\d+)/) {
           push @patchlist, "$1";
-        } elsif ($line !~ /-P/) {
+        }
+        # add the "null" patch for "%patch" unadorned
+        elsif ($line !~ /-P/) {
           push @patchlist, '';
         }
 
@@ -1043,9 +1045,6 @@ LINE: while (<SPECFILE>) {
             push @patchlist, $1;
           }
         } # while (shift @pbits)
-
-        # add the "null" patch for "%patch" unadorned
-        push @patchlist, '' unless @patchlist;
 
         my $patchopts = " -p$plev $psuff";
         $patchopts .= " --fuzz=".$specglobals{_default_patch_fuzz};
