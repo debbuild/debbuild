@@ -900,7 +900,6 @@ LINE: while (<SPECFILE>) {
         my $deldir = 1;
         my $quietunpack = 0;
         my $deftarball = 1;
-        my $snum = '';
         my $sbefore;
         my $safter;
         my $altsource = 0;
@@ -915,14 +914,12 @@ LINE: while (<SPECFILE>) {
             $sopt = shift @sbits;
             die "Argument for \%setup -a must be numeric at $specfile line $.\n" if $sopt !~ /^\d+$/;
             $safter = $sopt;
-            $snum = $sopt;
             $altsource = 1;
           } elsif ($sopt eq '-b') {
             # shift, next opt must be numeric (which sourcenn:)
             $sopt = shift @sbits;
             die "Argument for \%setup -b must be numeric at $specfile line $.\n" if $sopt !~ /^\d+$/;
             $sbefore = $sopt;
-            $snum = $sopt;
             $altsource = 2;
           } elsif ($sopt eq '-c') {
             # flag, create and change directory before unpack
@@ -961,11 +958,11 @@ LINE: while (<SPECFILE>) {
         if ($altsource) {
           if ($altsource == 1) { # -a
             $prepscript .= "cd '$tarballdir'\n";
-            $prepscript .= unpackcmd($pkgdata{sources}{$snum},$quietunpack);
+            $prepscript .= unpackcmd($pkgdata{sources}{$safter},$quietunpack);
           } # $altsource == 1
 
           if ($altsource == 2) { # -b
-            $prepscript .= unpackcmd($pkgdata{sources}{$snum},$quietunpack);
+            $prepscript .= unpackcmd($pkgdata{sources}{$sbefore},$quietunpack);
             $prepscript .= "cd '$tarballdir'\n";
           } # $altsource == 2
         } else { # possibly have to apply some patches before %build
