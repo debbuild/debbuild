@@ -902,7 +902,6 @@ LINE: while (<SPECFILE>) {
         my $skipdefault = 0;
         my $sbefore;
         my $safter;
-        my $altsource = '';
 
         my @sbits = split /\s+/;
         shift @sbits;
@@ -910,12 +909,10 @@ LINE: while (<SPECFILE>) {
           if ($sopt eq '-n') {
             $tarballdir = shift @sbits;
           } elsif ($sopt eq '-a') {
-            $altsource = $sopt;
             # shift, next opt must be numeric (which sourcenn:)
             $safter = shift @sbits;
             die "Argument for \%setup -a must be numeric at $specfile line $.\n" if $safter !~ /^\d+$/;
           } elsif ($sopt eq '-b') {
-            $altsource = $sopt;
             # shift, next opt must be numeric (which sourcenn:)
             $sbefore = shift @sbits;
             die "Argument for \%setup -b must be numeric at $specfile line $.\n" if $sbefore !~ /^\d+$/;
@@ -956,7 +953,7 @@ LINE: while (<SPECFILE>) {
           $prepscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
         }
 
-        if ($altsource eq '-b') {
+        if (defined $sbefore) {
           $prepscript .= unpackcmd($pkgdata{sources}{$sbefore},$quietunpack);
         }
 
@@ -966,7 +963,7 @@ LINE: while (<SPECFILE>) {
           $prepscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
         }
 
-        if ($altsource eq '-a') {
+        if (defined $safter) {
           $prepscript .= unpackcmd($pkgdata{sources}{$safter},$quietunpack);
         }
 
