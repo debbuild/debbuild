@@ -910,17 +910,15 @@ LINE: while (<SPECFILE>) {
           if ($sopt eq '-n') {
             $tarballdir = shift @sbits;
           } elsif ($sopt eq '-a') {
+            $altsource = $sopt;
             # shift, next opt must be numeric (which sourcenn:)
-            $sopt = shift @sbits;
-            die "Argument for \%setup -a must be numeric at $specfile line $.\n" if $sopt !~ /^\d+$/;
-            $safter = $sopt;
-            $altsource = '-a';
+            $safter = shift @sbits;
+            die "Argument for \%setup -a must be numeric at $specfile line $.\n" if $safter !~ /^\d+$/;
           } elsif ($sopt eq '-b') {
+            $altsource = $sopt;
             # shift, next opt must be numeric (which sourcenn:)
-            $sopt = shift @sbits;
-            die "Argument for \%setup -b must be numeric at $specfile line $.\n" if $sopt !~ /^\d+$/;
-            $sbefore = $sopt;
-            $altsource = '-b';
+            $sbefore = shift @sbits;
+            die "Argument for \%setup -b must be numeric at $specfile line $.\n" if $sbefore !~ /^\d+$/;
           } elsif ($sopt eq '-c') {
             # flag, create and change directory before unpack
             $createdir = 1;
