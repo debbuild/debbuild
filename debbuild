@@ -896,10 +896,10 @@ LINE: while (<SPECFILE>) {
         warn "Suspect \%setup tag '$_', continuing\n" if ! /^\%setup(?:\s|$)/;
 
         # Prepare some flags
-        my $changedir = 0;
-        my $deldir = 1;
+        my $createdir = 0;
+        my $leavedirs = 0;
         my $quietunpack = 0;
-        my $deftarball = 1;
+        my $skipdefault = 0;
         my $sbefore;
         my $safter;
         my $altsource = 0;
@@ -923,13 +923,13 @@ LINE: while (<SPECFILE>) {
             $altsource = 2;
           } elsif ($sopt eq '-c') {
             # flag, create and change directory before unpack
-            $changedir = 1;
+            $createdir = 1;
           } elsif ($sopt eq '-D') {
             # flag, do not delete directory before unpack
-            $deldir = 0;
+            $leavedirs = 1;
           } elsif ($sopt eq '-T') {
             # flag, do not unpack first source
-            $deftarball = 0;
+            $skipdefault = 1;
           } elsif ($sopt eq '-q') {
             # SSSH!  Unpack quietly
             $quietunpack = 1;
@@ -947,11 +947,11 @@ LINE: while (<SPECFILE>) {
 #   debbuild sets the global on the first call, and keeps using it for further %setup calls
 
         $prepscript .= "cd '$topdir/BUILD'\n";
-        $prepscript .= "rm -rf '$tarballdir'\n" if $deldir;
-        $prepscript .= "/bin/mkdir -p $tarballdir\n" if $changedir;
+        $prepscript .= "rm -rf '$tarballdir'\n" unless $leavedirs;
+        $prepscript .= "/bin/mkdir -p $tarballdir\n" if $createdir;
 
-        if ($deftarball) {
-          $prepscript .= "cd '$tarballdir'\n" if $changedir;
+        unless ($skipdefault) {
+          $prepscript .= "cd '$tarballdir'\n" if $createdir;
           $prepscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
         }
 
@@ -966,7 +966,7 @@ LINE: while (<SPECFILE>) {
             $prepscript .= "cd '$tarballdir'\n";
           } # $altsource == 2
         } else { # possibly have to apply some patches before %build
-          $prepscript .= "cd '$tarballdir'\n" unless $changedir;
+          $prepscript .= "cd '$tarballdir'\n" unless $createdir;
         }
 
 # rpm doesn't seem to do the chowns any more
