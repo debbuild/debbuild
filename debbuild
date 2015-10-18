@@ -947,23 +947,23 @@ LINE: while (<SPECFILE>) {
           $prepscript .= "/bin/mkdir -p $tarballdir\n";
           $prepscript .= "cd '$tarballdir'\n";
         }
-
-        if (not $createdir and not $skipdefault) {
+        elsif (not $skipdefault) {
           $prepscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
         }
 
-        foreach my $src (@sbefore) {
-          $prepscript .= unpackcmd($pkgdata{sources}{$src},$quietunpack);
+        foreach (@sbefore) {
+          $prepscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
         }
 
-        $prepscript .= "cd '$tarballdir'\n" unless $createdir;
-
-        if ($createdir and not $skipdefault) {
+        if (not $createdir) {
+          $prepscript .= "cd '$tarballdir'\n";
+        }
+        elsif (not $skipdefault) {
           $prepscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
         }
 
-        foreach my $src (@safter) {
-          $prepscript .= unpackcmd($pkgdata{sources}{$src},$quietunpack);
+        foreach (@safter) {
+          $prepscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
         }
 
 # rpm doesn't seem to do the chowns any more
