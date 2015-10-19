@@ -945,17 +945,22 @@ LINE: while (<SPECFILE>) {
 
         if ($createdir) {
           $prepscript .= "/bin/mkdir -p $tarballdir\n";
+
+          foreach (@sbefore) {
+            $prepscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
+          }
+
           $prepscript .= "cd '$tarballdir'\n";
         }
         elsif (not $skipdefault) {
           $prepscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
         }
 
-        foreach (@sbefore) {
-          $prepscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
-        }
-
         if (not $createdir) {
+          foreach (@sbefore) {
+            $prepscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
+          }
+
           $prepscript .= "cd '$tarballdir'\n";
         }
         elsif (not $skipdefault) {
