@@ -943,13 +943,12 @@ LINE: while (<SPECFILE>) {
         $prepscript .= "cd '$topdir/BUILD'\n";
         $prepscript .= "rm -rf '$tarballdir'\n" unless $leavedirs;
 
+        foreach (@sbefore) {
+          $prepscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
+        }
+
         if ($createdir) {
           $prepscript .= "/bin/mkdir -p $tarballdir\n";
-
-          foreach (@sbefore) {
-            $prepscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
-          }
-
           $prepscript .= "cd '$tarballdir'\n";
         }
         elsif (not $skipdefault) {
@@ -957,10 +956,6 @@ LINE: while (<SPECFILE>) {
         }
 
         if (not $createdir) {
-          foreach (@sbefore) {
-            $prepscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
-          }
-
           $prepscript .= "cd '$tarballdir'\n";
         }
         elsif (not $skipdefault) {
