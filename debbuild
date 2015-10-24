@@ -71,9 +71,6 @@ $specglobals{'_vendor'} = 'debbuild';
 # this can be changed by the Vendor: header in the spec file
 $specglobals{'vendor'} = 'debbuild';
 
-# more things that should be parsed from rpm's macro files
-$specglobals{_default_patch_fuzz} = 0;
-
 # Initialized globals
 my $verbosity = 0;
 my $NoAutoReq = 0;
@@ -82,6 +79,10 @@ my %cmdopts = (type => '',
 		short => 'n'
 	);
 my $topdir = "/usr/src/debian";
+# more things parsed from rpm's macro files
+my $default_patch_flags = '';
+my $default_patch_fuzz = 0;
+
 #my $specglobals{buildroot} = "%{_tmppath}/%{name}-%{version}-%{release}.root".int(rand(99998)+1);
 $specglobals{buildroot} = '%{_topdir}/BUILDROOT/%{name}-%{version}-%{release}';
 
@@ -470,9 +471,14 @@ sub load_userconfig {
     open USERMACROS,"<$homedir/.debmacros";
     while (<USERMACROS>) {
       # And we also only handle a few macros at the moment.
-      if (/^\%_topdir/) {
-	my (undef,$tmp) = split /\s+/, $_;
-	$topdir = $tmp;
+      if (/^\%_topdir\s+(.+)$/) {
+        $topdir = $1;
+      }
+      if (/^\%_default_patch_flags\s+(.+)$/) {
+        $default_patch_flags = $1;
+      }
+      if (/^\%_default_patch_fuzz\s+(.+)$/) {
+        $default_patch_fuzz = $1;
       }
       next if /^\%_/;
       # Allow arbitrary definitions.  Note that we're only doing simple defs here for now.
@@ -1001,10 +1007,6 @@ LINE: while (<SPECFILE>) {
 #     patch as-is, with a minor flag adjustment
 # -E  Remove empty files.  Passed to patch as-is
 
-# from /usr/lib/rpm/macros;  doesn't seem to be used by rpmbuild currently
-# Default patch flags
-#%_default_patch_flags  -s
-
         my $plev = 0;
         my $psuff = '';
         my $noempty = 0;
@@ -1040,8 +1042,9 @@ LINE: while (<SPECFILE>) {
           }
         } # while (shift @pbits)
 
-        my $patchopts = " -p$plev $psuff";
-        $patchopts .= " --fuzz=".$specglobals{_default_patch_fuzz};
+        my $patchopts = $default_patch_flags;
+        $patchopts .= " -p$plev $psuff";
+        $patchopts .= " --fuzz=$default_patch_fuzz";
         $patchopts .= " -E" if $noempty;
 
         foreach my $pnum (@patchlist) {
