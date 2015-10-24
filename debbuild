@@ -65,14 +65,6 @@ my $tarball;
 my $srcpkg;
 my $cmdbuildroot;
 my $tarballdir = '%{name}-%{version}';	# We do this in case of a spec file not using %setup...
-my %specglobals;	# For %define's in specfile, among other things.
-
-$specglobals{'_vendor'} = 'debbuild';
-# this can be changed by the Vendor: header in the spec file
-$specglobals{'vendor'} = 'debbuild';
-
-# more things that should be parsed from rpm's macro files
-$specglobals{_default_patch_fuzz} = 0;
 
 # Initialized globals
 my $verbosity = 0;
@@ -81,9 +73,18 @@ my %cmdopts = (type => '',
 		stage => 'a',
 		short => 'n'
 	);
-my $topdir = "/usr/src/debian";
-#my $specglobals{buildroot} = "%{_tmppath}/%{name}-%{version}-%{release}.root".int(rand(99998)+1);
-$specglobals{buildroot} = '%{_topdir}/BUILDROOT/%{name}-%{version}-%{release}';
+
+my %specglobals = ( # For %define's in specfile, among other things.
+	_vendor => 'debbuild',
+	# this can be changed by the Vendor: header in the spec file
+	vendor => 'debbuild',
+	# buildroot => "%{_tmppath}/%{name}-%{version}-%{release}.root".int(rand(99998)+1),
+	buildroot => '%{_topdir}/BUILDROOT/%{name}-%{version}-%{release}',
+	# more things parsed from rpm's macro files
+	_topdir => "/usr/src/debian",
+	_default_patch_flags => '',
+	_default_patch_fuzz => 0
+);
 
 # "Constants"
 my %targets = ('p' => 'Prep',
@@ -310,6 +311,9 @@ if (defined $ENV{TMP} && $ENV{TMP} =~ /^(\/var)?\/tmp$/) {
 load_userconfig();
 parse_cmd();
 
+# global shortcut
+my $topdir = expandmacros($specglobals{_topdir},'g');
+
 if ($cmdopts{install}) {
   install_sdeb();
   exit 0;
@@ -470,9 +474,14 @@ sub load_userconfig {
     open USERMACROS,"<$homedir/.debmacros";
     while (<USERMACROS>) {
       # And we also only handle a few macros at the moment.
-      if (/^\%_topdir/) {
-	my (undef,$tmp) = split /\s+/, $_;
-	$topdir = $tmp;
+      if (/^\%_topdir\s+(.+)$/) {
+        $specglobals{_topdir} = $1;
+      }
+      if (/^\%_default_patch_flags\s+(.+)$/) {
+        $specglobals{_default_patch_flags} = $1;
+      }
+      if (/^\%_default_patch_fuzz\s+(.+)$/) {
+        $specglobals{_default_patch_fuzz} = $1;
       }
       next if /^\%_/;
       # Allow arbitrary definitions.  Note that we're only doing simple defs here for now.
@@ -548,6 +557,15 @@ debbuild-specific options:
 };
 	  exit;
 
+	} elsif (/^--buildroot=(.+)/) {
+	  $cmdbuildroot = $1;
+	} elsif (/^--define=(.*)/) {
+	  my ($macro,$value) = ($1 =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i);
+	  if ($value ne '') {
+	    $specglobals{$macro} = $value;
+	  } else {
+	    warn "WARNING: missing value for macro $macro in --define! Ignoring.\n";
+	  }
 	} elsif (/^--define/) {
 	  # nothing to do?  Can't see anything needed, we handle the actual definition later.
 ##fixme
@@ -1001,10 +1019,6 @@ LINE: while (<SPECFILE>) {
 #     patch as-is, with a minor flag adjustment
 # -E  Remove empty files.  Passed to patch as-is
 
-# from /usr/lib/rpm/macros;  doesn't seem to be used by rpmbuild currently
-# Default patch flags
-#%_default_patch_flags  -s
-
         my $plev = 0;
         my $psuff = '';
         my $noempty = 0;
@@ -1040,7 +1054,8 @@ LINE: while (<SPECFILE>) {
           }
         } # while (shift @pbits)
 
-        my $patchopts = " -p$plev $psuff";
+        my $patchopts = $specglobals{_default_patch_flags};
+        $patchopts .= " -p$plev $psuff";
         $patchopts .= " --fuzz=".$specglobals{_default_patch_fuzz};
         $patchopts .= " -E" if $noempty;
 
@@ -2055,7 +2070,7 @@ sub expandmacros {
       # Oy vey this gets silly for the perl bits.  Executing a shell to
       # call Perl to get the vendorlib/sitelib/whatever "core" globals.
       # This can do more, but...  eww.
-      $shellstr = qx { /bin/sh -c '$shellstr' };	# Yay!  ' characters apparently get properly exscapededed.
+      chomp($shellstr = qx { /bin/sh -c '$shellstr' });	# Yay!  ' characters apparently get properly exscapededed.
       $macrostring =~ s/\%\(.+\)/$shellstr/;
     }
 
