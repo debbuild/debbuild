@@ -472,7 +472,7 @@ sub load_userconfig {
     while (<USERMACROS>) {
       # And we also only handle a few macros at the moment.
       if (/^\%_topdir\s+(.+)$/) {
-        $topdir = $1;
+        $topdir = expandmacros($1,'g');
       }
       if (/^\%_default_patch_flags\s+(.+)$/) {
         $default_patch_flags = $1;
@@ -2058,7 +2058,7 @@ sub expandmacros {
       # Oy vey this gets silly for the perl bits.  Executing a shell to
       # call Perl to get the vendorlib/sitelib/whatever "core" globals.
       # This can do more, but...  eww.
-      $shellstr = qx { /bin/sh -c '$shellstr' };	# Yay!  ' characters apparently get properly exscapededed.
+      chomp($shellstr = qx { /bin/sh -c '$shellstr' });	# Yay!  ' characters apparently get properly exscapededed.
       $macrostring =~ s/\%\(.+\)/$shellstr/;
     }
 
