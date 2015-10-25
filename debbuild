@@ -311,6 +311,10 @@ if (defined $ENV{TMP} && $ENV{TMP} =~ /^(\/var)?\/tmp$/) {
 load_userconfig();
 parse_cmd();
 
+if ($specglobals{_topdir}) {
+  $topdir = expandmacros($specglobals{_topdir},'g');
+}
+
 if ($cmdopts{install}) {
   install_sdeb();
   exit 0;
@@ -554,6 +558,15 @@ debbuild-specific options:
 };
 	  exit;
 
+	} elsif (/^--buildroot=(.+)/) {
+	  $cmdbuildroot = $1;
+	} elsif (/^--define=(.*)/) {
+	  my ($macro,$value) = ($1 =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i);
+	  if ($value ne '') {
+	    $specglobals{$macro} = $value;
+	  } else {
+	    warn "WARNING: missing value for macro $macro in --define! Ignoring.\n";
+	  }
 	} elsif (/^--define/) {
 	  # nothing to do?  Can't see anything needed, we handle the actual definition later.
 ##fixme
