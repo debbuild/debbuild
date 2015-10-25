@@ -65,11 +65,6 @@ my $tarball;
 my $srcpkg;
 my $cmdbuildroot;
 my $tarballdir = '%{name}-%{version}';	# We do this in case of a spec file not using %setup...
-my %specglobals;	# For %define's in specfile, among other things.
-
-$specglobals{'_vendor'} = 'debbuild';
-# this can be changed by the Vendor: header in the spec file
-$specglobals{'vendor'} = 'debbuild';
 
 # Initialized globals
 my $verbosity = 0;
@@ -83,8 +78,13 @@ my $topdir = "/usr/src/debian";
 my $default_patch_flags = '';
 my $default_patch_fuzz = 0;
 
-#my $specglobals{buildroot} = "%{_tmppath}/%{name}-%{version}-%{release}.root".int(rand(99998)+1);
-$specglobals{buildroot} = '%{_topdir}/BUILDROOT/%{name}-%{version}-%{release}';
+my %specglobals = ( # For %define's in specfile, among other things.
+	_vendor => 'debbuild',
+	# this can be changed by the Vendor: header in the spec file
+	vendor => 'debbuild',
+	# buildroot => "%{_tmppath}/%{name}-%{version}-%{release}.root".int(rand(99998)+1),
+	buildroot => '%{_topdir}/BUILDROOT/%{name}-%{version}-%{release}'
+);
 
 # "Constants"
 my %targets = ('p' => 'Prep',
