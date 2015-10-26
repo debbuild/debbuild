@@ -473,20 +473,11 @@ sub load_userconfig {
   if (-e "$homedir/.debmacros") {
     open USERMACROS,"<$homedir/.debmacros";
     while (<USERMACROS>) {
-      # And we also only handle a few macros at the moment.
-      if (/^\%_topdir\s+(.+)$/) {
-        $specglobals{_topdir} = $1;
-      }
-      if (/^\%_default_patch_flags\s+(.+)$/) {
-        $specglobals{_default_patch_flags} = $1;
-      }
-      if (/^\%_default_patch_fuzz\s+(.+)$/) {
-        $specglobals{_default_patch_fuzz} = $1;
-      }
-      next if /^\%_/;
-      # Allow arbitrary definitions.  Note that we're only doing simple defs here for now.
-      if (/^\%([a-z0-9]+)\s+(.+)$/) {
-	$specglobals{$1} = $2;
+      # And we also only handle a few '_global' macros at the moment.
+      # Allow arbitrary definitions.  Note that we're only doing simple
+      # defs here for now.
+      if (/^\%(_topdir|_default_patch_(flags|fuzz)|[a-z0-9]+)\s+(.+)$/) {
+        $specglobals{$1} = $3;
       }
     }
   }
