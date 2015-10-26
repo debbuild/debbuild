@@ -73,17 +73,17 @@ my %cmdopts = (type => '',
 		stage => 'a',
 		short => 'n'
 	);
-my $topdir = "/usr/src/debian";
-# more things parsed from rpm's macro files
-my $default_patch_flags = '';
-my $default_patch_fuzz = 0;
 
 my %specglobals = ( # For %define's in specfile, among other things.
 	_vendor => 'debbuild',
 	# this can be changed by the Vendor: header in the spec file
 	vendor => 'debbuild',
 	# buildroot => "%{_tmppath}/%{name}-%{version}-%{release}.root".int(rand(99998)+1),
-	buildroot => '%{_topdir}/BUILDROOT/%{name}-%{version}-%{release}'
+	buildroot => '%{_topdir}/BUILDROOT/%{name}-%{version}-%{release}',
+	# more things parsed from rpm's macro files
+	_topdir => "/usr/src/debian",
+	_default_patch_flags => '',
+	_default_patch_fuzz => 0
 );
 
 # "Constants"
@@ -311,9 +311,8 @@ if (defined $ENV{TMP} && $ENV{TMP} =~ /^(\/var)?\/tmp$/) {
 load_userconfig();
 parse_cmd();
 
-if ($specglobals{_topdir}) {
-  $topdir = expandmacros($specglobals{_topdir},'g');
-}
+# global shortcut
+my $topdir = expandmacros($specglobals{_topdir},'g');
 
 if ($cmdopts{install}) {
   install_sdeb();
@@ -476,13 +475,13 @@ sub load_userconfig {
     while (<USERMACROS>) {
       # And we also only handle a few macros at the moment.
       if (/^\%_topdir\s+(.+)$/) {
-        $topdir = expandmacros($1,'g');
+        $specglobals{_topdir} = $1;
       }
       if (/^\%_default_patch_flags\s+(.+)$/) {
-        $default_patch_flags = $1;
+        $specglobals{_default_patch_flags} = $1;
       }
       if (/^\%_default_patch_fuzz\s+(.+)$/) {
-        $default_patch_fuzz = $1;
+        $specglobals{_default_patch_fuzz} = $1;
       }
       next if /^\%_/;
       # Allow arbitrary definitions.  Note that we're only doing simple defs here for now.
@@ -1055,9 +1054,9 @@ LINE: while (<SPECFILE>) {
           }
         } # while (shift @pbits)
 
-        my $patchopts = $default_patch_flags;
+        my $patchopts = $specglobals{_default_patch_flags};
         $patchopts .= " -p$plev $psuff";
-        $patchopts .= " --fuzz=$default_patch_fuzz";
+        $patchopts .= " --fuzz=".$specglobals{_default_patch_fuzz};
         $patchopts .= " -E" if $noempty;
 
         foreach my $pnum (@patchlist) {
