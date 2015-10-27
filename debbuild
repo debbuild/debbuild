@@ -381,7 +381,6 @@ if ($cmdopts{type} eq 't') {
     # plain .tar files don't need to be uncompressed
     $specfile .= qx { /bin/tar -tf $tarball --wildcards '*.spec' };
   } else {
-    # select the decompressor according to the file extension
     my $decompressor = decompressor($tarball,"cat");
     $specfile .= qx { $decompressor $tarball | /bin/tar -t | grep -e '[\.]spec\$' };
   }
@@ -397,7 +396,6 @@ if ($cmdopts{type} eq 't') {
     # plain .tar files don't need to be uncompressed
     $unpackcmd .= "/bin/tar -xf $tarball";
   } else {
-    # select the decompressor according to the file extension
     $unpackcmd .= decompressor($tarball,"untar").
       " -dc $tarball | /bin/tar -xf -";
   }
@@ -2133,7 +2131,6 @@ sub unpackcmd {
          ( $quietunpack ? '' : 'vv' )."f ".
          "'$topdir/SOURCES/$sourcedrop'";
    } else {
-      # select the decompressor according to the file extension
       $cmdstring .= decompressor($sourcedrop,"untar").
          " -dc '$topdir/SOURCES/$sourcedrop' | /bin/tar -x".
          ( $quietunpack ? '' : 'vv' )."f - ";
