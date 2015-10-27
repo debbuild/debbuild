@@ -381,15 +381,8 @@ if ($cmdopts{type} eq 't') {
     # plain .tar files don't need to be uncompressed
     $specfile .= qx { /bin/tar -tf $tarball --wildcards '*.spec' };
   } else {
-    # select the decompressor according to the file extension
-    $specfile .=
-      ( $tarball =~ /\.(?:tgz|tar\.(?:gz|Z))$/ ?
-          qx { /bin/zcat $tarball | /bin/tar -t | grep -e '[\.]spec\$' } :
-        $tarball =~ /\.tar\.bz2$/ ?
-          qx { /bin/bzcat $tarball | /bin/tar -t | grep -e '[\.]spec\$' } :
-        $tarball =~ /\.tar\.xz$/ ?
-          qx { /usr/bin/xzcat $tarball | /bin/tar -t | grep -e '[\.]spec\$' } :
-        die("Can't handle unknown file type '$tarball'.") );
+    my $decompress = decompress($tarball);
+    $specfile .= qx { $decompress | /bin/tar -t | grep -e '[\.]spec\$' };
   }
   chomp $specfile;
 
@@ -403,13 +396,7 @@ if ($cmdopts{type} eq 't') {
     # plain .tar files don't need to be uncompressed
     $unpackcmd .= "/bin/tar -xf $tarball";
   } else {
-    # select the decompressor according to the file extension
-    $unpackcmd .=
-      ( $tarball =~ /\.(?:tgz|tar\.(?:gz|Z))$/ ? "/bin/gzip"   :
-        $tarball =~ /\.tar\.bz2$/              ? "/bin/bzip2"  :
-        $tarball =~ /\.tar\.xz$/               ? "/usr/bin/xz" :
-        die("Can't handle unknown file type '$tarball'.") ).
-      " -dc $tarball | /bin/tar -xf -";
+    $unpackcmd .= decompress($tarball)." | /bin/tar -xf -";
   }
 
   system "$unpackcmd";
@@ -573,8 +560,7 @@ debbuild-specific options:
 	    die "Can't use $_ with --rebuild\n";
 	  } else {
 	    # Capture the type (from "bare" files or tarball) and the stage (prep, build, etc)
-	    ($cmdopts{stage}) = (/^-[bt]([pcilabs])/);
-	    ($cmdopts{type}) = (/^-([bt])[pcilabs]/);
+	    ($cmdopts{type},$cmdopts{stage}) = (/^-([bt])([pcilabs])/);
 	  }
 	} elsif (/^-v/) {
 	  # bump verbosity.  Not sure what I'll actually do here...
@@ -1054,11 +1040,8 @@ LINE: while (<SPECFILE>) {
           $prepscript .= qq(echo "Patch ).($pnum eq '' ? '' : "#$pnum ").qq(($pkgdata{main}{$pnum}):"\n);
           if ( $pkgdata{main}{$pnum} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
             # Compressed patch.  You weirdo.
-            my $decompressor;
-            $decompressor = '/bin/gzip'  if $pkgdata{main}{$pnum} =~ /\.(?:Z|gz)$/;
-            $decompressor = '/bin/bzip2' if $pkgdata{main}{$pnum} =~ /\.bz2$/;
-            $decompressor = '/usr/bin/xz'    if $pkgdata{main}{$pnum} =~ /\.xz$/;
-            $prepscript .= qq($decompressor -dc $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n);
+            my $decompress = decompress("$topdir/SOURCES/$pkgdata{main}{$pnum}");
+            $prepscript .= qq($decompress | /usr/bin/patch $patchopts\n\n);
           } elsif ( $pkgdata{main}{$pnum} =~ /\.zip$/ ) {
             # .zip'ed patch.  *backs away slowly*
             $prepscript .= qq(/usr/bin/unzip -p $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n);
@@ -1613,7 +1596,7 @@ sub binpackage {
       chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/postinst";
     }
     if ($pkgdata{$pkg}{'preun'}) {
-      $pkgdata{$pkg}{'pre'} = expandmacros($pkgdata{$pkg}{'preun'},'gp');
+      $pkgdata{$pkg}{'preun'} = expandmacros($pkgdata{$pkg}{'preun'},'gp');
       open PREUNINST, ">$specglobals{buildroot}/$pkg/DEBIAN/prerm";
       print PREUNINST "#!/bin/sh\nset -e\n\n";
       print PREUNINST $pkgdata{$pkg}{'preun'};
@@ -2146,19 +2129,26 @@ sub unpackcmd {
          ( $quietunpack ? '' : 'vv' )."f ".
          "'$topdir/SOURCES/$sourcedrop'";
    } else {
-      # select the decompressor according to the file extension
-      $cmdstring .=
-         ( $sourcedrop =~ /\.(?:tgz|tar\.(?:gz|Z))$/ ? "/bin/gzip"   :
-           $sourcedrop =~ /\.tar\.bz2$/              ? "/bin/bzip2"  :
-           $sourcedrop =~ /\.tar\.xz$/               ? "/usr/bin/xz" :
-           die("Can't handle unknown file type '$sourcedrop'.") ).
-         " -dc '$topdir/SOURCES/$sourcedrop' | /bin/tar -x".
+      $cmdstring .= decompress("$topdir/SOURCES/$sourcedrop")." | /bin/tar -x".
          ( $quietunpack ? '' : 'vv' )."f - ";
    }
    $cmdstring .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
 
    return $cmdstring;
 } # end unpackcmd()
+
+
+## decompress()
+# Determine the suitable decompressor according to the file extension.
+sub decompress {
+   my ($filename) = @_;
+   my $decompressor =
+      ( $filename =~ /\.(?:tgz|(?:gz|Z))$/ ? "/bin/zcat"      :
+        $filename =~ /\.bz2$/              ? "/bin/bzcat"     :
+        $filename =~ /\.xz$/               ? "/usr/bin/xzcat" :
+      die("Can't handle unknown file type '$filename'.") );
+   return "$decompressor '$filename'";
+}
 
 
 __END__
