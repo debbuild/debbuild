@@ -381,8 +381,8 @@ if ($cmdopts{type} eq 't') {
     # plain .tar files don't need to be uncompressed
     $specfile .= qx { /bin/tar -tf $tarball --wildcards '*.spec' };
   } else {
-    my $decompressor = decompressor($tarball);
-    $specfile .= qx { $decompressor $tarball | /bin/tar -t | grep -e '[\.]spec\$' };
+    my $decompress = decompress($tarball);
+    $specfile .= qx { $decompress | /bin/tar -t | grep -e '[\.]spec\$' };
   }
   chomp $specfile;
 
@@ -396,7 +396,7 @@ if ($cmdopts{type} eq 't') {
     # plain .tar files don't need to be uncompressed
     $unpackcmd .= "/bin/tar -xf $tarball";
   } else {
-    $unpackcmd .= decompressor($tarball)." $tarball | /bin/tar -xf -";
+    $unpackcmd .= decompress($tarball)." | /bin/tar -xf -";
   }
 
   system "$unpackcmd";
@@ -1040,8 +1040,8 @@ LINE: while (<SPECFILE>) {
           $prepscript .= qq(echo "Patch ).($pnum eq '' ? '' : "#$pnum ").qq(($pkgdata{main}{$pnum}):"\n);
           if ( $pkgdata{main}{$pnum} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
             # Compressed patch.  You weirdo.
-            my $decompressor = decompressor($pkgdata{main}{$pnum});
-            $prepscript .= qq($decompressor $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n);
+            my $decompress = decompress("$topdir/SOURCES/$pkgdata{main}{$pnum}");
+            $prepscript .= qq($decompress | /usr/bin/patch $patchopts\n\n);
           } elsif ( $pkgdata{main}{$pnum} =~ /\.zip$/ ) {
             # .zip'ed patch.  *backs away slowly*
             $prepscript .= qq(/usr/bin/unzip -p $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n);
@@ -2129,8 +2129,7 @@ sub unpackcmd {
          ( $quietunpack ? '' : 'vv' )."f ".
          "'$topdir/SOURCES/$sourcedrop'";
    } else {
-      $cmdstring .= decompressor($sourcedrop).
-         " '$topdir/SOURCES/$sourcedrop' | /bin/tar -x".
+      $cmdstring .= decompress("$topdir/SOURCES/$sourcedrop")." | /bin/tar -x".
          ( $quietunpack ? '' : 'vv' )."f - ";
    }
    $cmdstring .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
@@ -2139,14 +2138,16 @@ sub unpackcmd {
 } # end unpackcmd()
 
 
-## decompressor()
+## decompress()
 # Determine the suitable decompressor according to the file extension.
-sub decompressor {
+sub decompress {
    my ($filename) = @_;
-   return ( $filename =~ /\.(?:tgz|(?:gz|Z))$/ ? "/bin/zcat"      :
-            $filename =~ /\.bz2$/              ? "/bin/bzcat"     :
-            $filename =~ /\.xz$/               ? "/usr/bin/xzcat" :
+   my $decompressor =
+      ( $filename =~ /\.(?:tgz|(?:gz|Z))$/ ? "/bin/zcat"      :
+        $filename =~ /\.bz2$/              ? "/bin/bzcat"     :
+        $filename =~ /\.xz$/               ? "/usr/bin/xzcat" :
       die("Can't handle unknown file type '$filename'.") );
+   return "$decompressor '$filename'";
 }
 
 
