@@ -1612,7 +1612,7 @@ sub binpackage {
       chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/postinst";
     }
     if ($pkgdata{$pkg}{'preun'}) {
-      $pkgdata{$pkg}{'pre'} = expandmacros($pkgdata{$pkg}{'preun'},'gp');
+      $pkgdata{$pkg}{'preun'} = expandmacros($pkgdata{$pkg}{'preun'},'gp');
       open PREUNINST, ">$specglobals{buildroot}/$pkg/DEBIAN/prerm";
       print PREUNINST "#!/bin/sh\nset -e\n\n";
       print PREUNINST $pkgdata{$pkg}{'preun'};
