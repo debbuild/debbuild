@@ -382,14 +382,8 @@ if ($cmdopts{type} eq 't') {
     $specfile .= qx { /bin/tar -tf $tarball --wildcards '*.spec' };
   } else {
     # select the decompressor according to the file extension
-    $specfile .=
-      ( $tarball =~ /\.(?:tgz|tar\.(?:gz|Z))$/ ?
-          qx { /bin/zcat $tarball | /bin/tar -t | grep -e '[\.]spec\$' } :
-        $tarball =~ /\.tar\.bz2$/ ?
-          qx { /bin/bzcat $tarball | /bin/tar -t | grep -e '[\.]spec\$' } :
-        $tarball =~ /\.tar\.xz$/ ?
-          qx { /usr/bin/xzcat $tarball | /bin/tar -t | grep -e '[\.]spec\$' } :
-        die("Can't handle unknown file type '$tarball'.") );
+    my $decompressor = decompressor($tarball,"cat");
+    $specfile .= qx { $decompressor $tarball | /bin/tar -t | grep -e '[\.]spec\$' };
   }
   chomp $specfile;
 
@@ -404,11 +398,7 @@ if ($cmdopts{type} eq 't') {
     $unpackcmd .= "/bin/tar -xf $tarball";
   } else {
     # select the decompressor according to the file extension
-    $unpackcmd .=
-      ( $tarball =~ /\.(?:tgz|tar\.(?:gz|Z))$/ ? "/bin/gzip"   :
-        $tarball =~ /\.tar\.bz2$/              ? "/bin/bzip2"  :
-        $tarball =~ /\.tar\.xz$/               ? "/usr/bin/xz" :
-        die("Can't handle unknown file type '$tarball'.") ).
+    $unpackcmd .= decompressor($tarball,"untar").
       " -dc $tarball | /bin/tar -xf -";
   }
 
@@ -1053,16 +1043,14 @@ LINE: while (<SPECFILE>) {
           $prepscript .= qq(echo "Patch ).($pnum eq '' ? '' : "#$pnum ").qq(($pkgdata{main}{$pnum}):"\n);
           if ( $pkgdata{main}{$pnum} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
             # Compressed patch.  You weirdo.
-            my $decompressor;
-            $decompressor = '/bin/gzip'  if $pkgdata{main}{$pnum} =~ /\.(?:Z|gz)$/;
-            $decompressor = '/bin/bzip2' if $pkgdata{main}{$pnum} =~ /\.bz2$/;
-            $decompressor = '/usr/bin/xz'    if $pkgdata{main}{$pnum} =~ /\.xz$/;
+            my $decompressor = decompressor($pkgdata{main}{$pnum},"patch");
             $prepscript .= qq($decompressor -dc $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n);
           } elsif ( $pkgdata{main}{$pnum} =~ /\.zip$/ ) {
             # .zip'ed patch.  *backs away slowly*
             $prepscript .= qq(/usr/bin/unzip -p $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n);
           } else {
-            $prepscript .= "/bin/cat $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n";
+            $prepscript .= decompressor($pkgdata{main}{$pnum},"none").
+		    " $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n";
           }
         }
 
@@ -2146,11 +2134,7 @@ sub unpackcmd {
          "'$topdir/SOURCES/$sourcedrop'";
    } else {
       # select the decompressor according to the file extension
-      $cmdstring .=
-         ( $sourcedrop =~ /\.(?:tgz|tar\.(?:gz|Z))$/ ? "/bin/gzip"   :
-           $sourcedrop =~ /\.tar\.bz2$/              ? "/bin/bzip2"  :
-           $sourcedrop =~ /\.tar\.xz$/               ? "/usr/bin/xz" :
-           die("Can't handle unknown file type '$sourcedrop'.") ).
+      $cmdstring .= decompressor($sourcedrop,"untar").
          " -dc '$topdir/SOURCES/$sourcedrop' | /bin/tar -x".
          ( $quietunpack ? '' : 'vv' )."f - ";
    }
@@ -2158,6 +2142,34 @@ sub unpackcmd {
 
    return $cmdstring;
 } # end unpackcmd()
+
+
+## decompressor()
+# Determine the suitable decompressor according to the file extension.
+sub decompressor {
+   my ($filename,$type) = @_;
+   my $decompressor = "/bin/cat";
+   if ($type eq "untar") {
+      $decompressor =
+         ( $filename =~ /\.(?:tgz|tar\.(?:gz|Z))$/ ? "/bin/gzip"   :
+           $filename =~ /\.tar\.bz2$/              ? "/bin/bzip2"  :
+           $filename =~ /\.tar\.xz$/               ? "/usr/bin/xz" :
+           die("Can't handle unknown file type '$filename'.") );
+   } elsif ($type eq "cat") {
+      $decompressor =
+         ( $filename =~ /\.(?:tgz|tar\.(?:gz|Z))$/ ? "/bin/zcat"      :
+           $filename =~ /\.tar\.bz2$/              ? "/bin/bzcat"     :
+           $filename =~ /\.tar\.xz$/               ? "/usr/bin/xzcat" :
+           die("Can't handle unknown file type '$filename'.") );
+   } elsif ($type eq "patch") {
+      $decompressor =
+         ( $filename =~ /\.(?:gz|Z)$/ ? "/bin/gzip"   :
+           $filename =~ /\.bz2$/      ? "/bin/bzip2"  :
+           $filename =~ /\.xz$/       ? "/usr/bin/xz" :
+           die("Can't handle unknown file type '$filename'.") );
+   }
+   return $decompressor;
+}
 
 
 __END__
