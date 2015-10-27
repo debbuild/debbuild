@@ -573,8 +573,7 @@ debbuild-specific options:
 	    die "Can't use $_ with --rebuild\n";
 	  } else {
 	    # Capture the type (from "bare" files or tarball) and the stage (prep, build, etc)
-	    ($cmdopts{stage}) = (/^-[bt]([pcilabs])/);
-	    ($cmdopts{type}) = (/^-([bt])[pcilabs]/);
+	    ($cmdopts{type},$cmdopts{stage}) = (/^-([bt])([pcilabs])/);
 	  }
 	} elsif (/^-v/) {
 	  # bump verbosity.  Not sure what I'll actually do here...
