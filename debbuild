@@ -382,7 +382,7 @@ if ($cmdopts{type} eq 't') {
     $specfile .= qx { /bin/tar -tf $tarball --wildcards '*.spec' };
   } else {
     my $decompress = decompress($tarball);
-    $specfile .= qx { $decompress | /bin/tar -t | grep -e '[\.]spec\$' };
+    $specfile .= qx { $decompress | /bin/tar -tf - --wildcards '*.spec' };
   }
   chomp $specfile;
 
@@ -1040,14 +1040,14 @@ LINE: while (<SPECFILE>) {
           $prepscript .= qq(echo "Patch ).($pnum eq '' ? '' : "#$pnum ").qq(($pkgdata{main}{$pnum}):"\n);
           if ( $pkgdata{main}{$pnum} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
             # Compressed patch.  You weirdo.
-            my $decompress = decompress("$topdir/SOURCES/$pkgdata{main}{$pnum}");
-            $prepscript .= qq($decompress | /usr/bin/patch $patchopts\n\n);
+            $prepscript .= decompress("$topdir/SOURCES/$pkgdata{main}{$pnum}");
           } elsif ( $pkgdata{main}{$pnum} =~ /\.zip$/ ) {
             # .zip'ed patch.  *backs away slowly*
-            $prepscript .= qq(/usr/bin/unzip -p $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n);
+            $prepscript .= "/usr/bin/unzip -p $topdir/SOURCES/$pkgdata{main}{$pnum}";
           } else {
-            $prepscript .= "/bin/cat $topdir/SOURCES/$pkgdata{main}{$pnum} | /usr/bin/patch $patchopts\n\n";
+            $prepscript .= "/bin/cat $topdir/SOURCES/$pkgdata{main}{$pnum}";
           }
+          $prepscript .= " | /usr/bin/patch $patchopts\n\n";
         }
 
       } else {
@@ -2120,17 +2120,15 @@ sub unpackcmd {
 
    if ($sourcedrop =~ /\.zip$/) {
       # .zip files are not really tarballs
-      $cmdstring .= "/usr/bin/unzip".
-         ( $quietunpack ? ' -qq ' : ' ' ).
+      $cmdstring .= "/usr/bin/unzip".( $quietunpack ? ' -qq ' : ' ' ).
          "'$topdir/SOURCES/$sourcedrop'";
    } elsif ($sourcedrop =~ /\.tar$/) {
       # plain .tar files don't need to be uncompressed
-      $cmdstring .= "/bin/tar -x".
-         ( $quietunpack ? '' : 'vv' )."f ".
+      $cmdstring .= "/bin/tar -x".( $quietunpack ? '' : 'vv' )."f ".
          "'$topdir/SOURCES/$sourcedrop'";
    } else {
-      $cmdstring .= decompress("$topdir/SOURCES/$sourcedrop")." | /bin/tar -x".
-         ( $quietunpack ? '' : 'vv' )."f - ";
+      $cmdstring .= decompress("$topdir/SOURCES/$sourcedrop").
+         " | /bin/tar -x".( $quietunpack ? '' : 'vv' )."f -";
    }
    $cmdstring .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
 
