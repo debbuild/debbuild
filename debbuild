@@ -295,7 +295,7 @@ my $buildscript = '';
 # %install doesn't need the full treatment from %clean;  just an empty place to install to.
 # NB - rpm doesn't do this;  is it really necessary?
 my $installscript = '';
-#'[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT'."\n";
+#'[ "$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf $RPM_BUILD_ROOT'."\n";
 my $cleanscript = '';
 
 # Snag some environment data
@@ -308,7 +308,7 @@ if (defined $ENV{TMP} && $ENV{TMP} =~ /^(\/var)?\/tmp$/) {
 
 ##main
 
-load_userconfig();
+load_config();
 parse_cmd();
 
 # global shortcut
@@ -373,33 +373,33 @@ if ($cmdopts{type} eq 't') {
   # Need to unpack the $tarball to find the spec file.  Sort of the inverse of
   # -b above.  Note that rpmbuild doesn't seem to support this operation from a
   # .zip file properly, but we try our best.
-  $specfile = "$topdir/BUILD/";
+  my $cmdline;
   if ($tarball =~ /\.zip$/) {
     # .zip files are not really tarballs
-    $specfile .= qx { /usr/bin/zipinfo -1 $tarball '*.spec' };
+    $cmdline = "%{__unzip} -Z1 $tarball '*.spec'";
   } elsif ($tarball =~ /\.tar$/) {
     # plain .tar files don't need to be uncompressed
-    $specfile .= qx { /bin/tar -tf $tarball --wildcards '*.spec' };
+    $cmdline = "%{__tar} -tf $tarball --wildcards '*.spec'";
   } else {
     my $decompress = decompress($tarball);
-    $specfile .= qx { $decompress | /bin/tar -tf - --wildcards '*.spec' };
+    $cmdline = "$decompress | %{__tar} -tf - --wildcards '*.spec'";
   }
-  chomp $specfile;
+  $cmdline = expandmacros($cmdline,'g');
+  chomp( $specfile = "$topdir/BUILD/".qx { $cmdline } );
 
   $tarball = abs_path($tarball);
-##fixme:  use macro expansions for the executables
   my $unpackcmd = "cd $topdir/BUILD;\n";
   if ($tarball =~ /\.zip$/) {
     # .zip files are not really tarballs
-    $unpackcmd .= "/usr/bin/unzip -boaq $tarball";
+    $unpackcmd .= "%{__unzip} -boaq $tarball";
   } elsif ($tarball =~ /\.tar$/) {
     # plain .tar files don't need to be uncompressed
-    $unpackcmd .= "/bin/tar -xf $tarball";
+    $unpackcmd .= "%{__tar} -xf $tarball";
   } else {
-    $unpackcmd .= decompress($tarball)." | /bin/tar -xf -";
+    $unpackcmd .= decompress($tarball)." | %{__tar} -xf -";
   }
 
-  system "$unpackcmd";
+  system expandmacros($unpackcmd,'g');
   system "cp -f $tarball $topdir/SOURCES/";
   system "cp -f $specfile $topdir/SPECS/";
   parse_spec();
@@ -451,24 +451,37 @@ print $finalmessages;
 exit 0;
 
 
-## load_userconfig()
-# Loads user configuration (if any)
-# Currently only handles .debmacros
-# Needs to handle "other files"
-sub load_userconfig {
+## load_config()
+# Loads sys and user configuration (if any)
+sub load_config {
+  # Load system macros from RPM installation
+  if (-e "/usr/lib/rpm/macros") {
+    open SYSMACROS,"</usr/lib/rpm/macros";
+    while (<SYSMACROS>) {
+      # Load all '_global' macros.
+      if (/^\%([a-z0-9_]+)\s+(.+)$/) {
+        $specglobals{$1} = $2;
+      }
+    }
+    close SYSMACROS;
+  } else {
+    die "/usr/lib/rpm/macros not found; package rpm-common not installed?";
+  }
+  # Load user configuration, permitting local override
   my $homedir = (getpwuid($<))[7];
   if (-e "$homedir/.debmacros") {
     open USERMACROS,"<$homedir/.debmacros";
     while (<USERMACROS>) {
-      # And we also only handle a few '_global' macros at the moment.
-      # Allow arbitrary definitions.  Note that we're only doing simple
-      # defs here for now.
+      # We only handle a few '_global' macros for override at the moment, but
+      # we allow arbitrary definitions.  Note that we're only doing simple defs
+      # here for now.
       if (/^\%(_topdir|_default_patch_(flags|fuzz)|[a-z0-9]+)\s+(.+)$/) {
         $specglobals{$1} = $3;
       }
     }
+    close USERMACROS;
   }
-} # end load_userconfig()
+} # end load_config()
 
 
 ## parse_cmd()
@@ -936,14 +949,14 @@ LINE: while (<SPECFILE>) {
 #   it for further %setup calls
 
         $prepscript .= "cd '$topdir/BUILD'\n";
-        $prepscript .= "rm -rf '$tarballdir'\n" unless $leavedirs;
+        $prepscript .= "%{__rm} -rf '$tarballdir'\n" unless $leavedirs;
 
         foreach (@sbefore) {
           $prepscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
         }
 
         if ($createdir) {
-          $prepscript .= "/bin/mkdir -p $tarballdir\n";
+          $prepscript .= "%{__mkdir_p} $tarballdir\n";
           $prepscript .= "cd '$tarballdir'\n";
         }
         elsif (not $skipdefault) {
@@ -962,10 +975,10 @@ LINE: while (<SPECFILE>) {
         }
 
 # rpm doesn't seem to do the chowns any more
-#		qq([ `/usr/bin/id -u` = '0' ] && /bin/chown -Rhf root .\n).
-#		qq([ `/usr/bin/id -u` = '0' ] && /bin/chgrp -Rhf root .\n).
+#		qq([ `%{__id_u}` = '0' ] && %{__chown} -Rhf root .\n).
+#		qq([ `%{__id_u}` = '0' ] && %{__chgrp} -Rhf root .\n).
         $prepscript .=
-		qq(/bin/chmod -Rf a+rX,u+w,g-w,o-w .\n);
+		qq(%{__chmod} -Rf a+rX,u+w,g-w,o-w .\n);
 
       } elsif (/^\%patch/) {
         my $line = $_; # save for diagnostics
@@ -1043,11 +1056,11 @@ LINE: while (<SPECFILE>) {
             $prepscript .= decompress("$topdir/SOURCES/$pkgdata{main}{$pnum}");
           } elsif ( $pkgdata{main}{$pnum} =~ /\.zip$/ ) {
             # .zip'ed patch.  *backs away slowly*
-            $prepscript .= "/usr/bin/unzip -p $topdir/SOURCES/$pkgdata{main}{$pnum}";
+            $prepscript .= "%{__unzip} -p $topdir/SOURCES/$pkgdata{main}{$pnum}";
           } else {
-            $prepscript .= "/bin/cat $topdir/SOURCES/$pkgdata{main}{$pnum}";
+            $prepscript .= "%{__cat} $topdir/SOURCES/$pkgdata{main}{$pnum}";
           }
-          $prepscript .= " | /usr/bin/patch $patchopts\n\n";
+          $prepscript .= " | %{__patch} $patchopts\n\n";
         }
 
       } else {
@@ -1326,10 +1339,10 @@ sub install {
     $pkgname =~ s/_/-/g;
 
     $installscript .= "DOCDIR=\$RPM_BUILD_ROOT\%{_docdir}/$pkgname\nexport DOCDIR\n";
-    $installscript .= "mkdir -p \$DOCDIR\n";
+    $installscript .= "%{__mkdir_p} \$DOCDIR\n";
     $doclist{$docpkg} =~ s/^\s*//;
     foreach (split(' ',$doclist{$docpkg})) {
-      $installscript .= "cp -pr $_ \$DOCDIR/\n";
+      $installscript .= "%{__cp} -pr $_ \$DOCDIR/\n";
     }
   }
 
@@ -1452,9 +1465,9 @@ sub binpackage {
       }
 
       my ($fpath,$fname) = ($pkgfile =~ m|(.+?/?)?([^/]+/?)$|);	# We don't need $fname now, but we might.
-      qx { mkdir -p $specglobals{buildroot}/$pkg$fpath }
+      qx { $specglobals{__mkdir_p} $specglobals{buildroot}/$pkg$fpath }
 	if $fpath && $fpath ne '';
-      qx { mv $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath };
+      qx { $specglobals{__mv} $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath };
     }
 
     # Get the "Depends" (Requires) a la RPM.  Ish.  We strip the leading
@@ -1631,7 +1644,7 @@ sub srcpackage {
 ##buglet: need to deal with silly case where silly user has put the spec
 # file in a subdir of %{_topdir}/SPECS.  Ewww.  Silly user!
   if (abs_path($specfile) !~ /^$topdir\/SPECS/) {
-    $paxcmd .= "cp $specfile %{_topdir}/SPECS/; \n"
+    $paxcmd .= "%{__cp} $specfile $topdir/SPECS/; \n"
   }
 
   # use pax -w [file] [file] ... -f outfile.sdeb
@@ -2061,12 +2074,9 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
     $macrostring =~ s|%{optflags}|$optflags{$hostarch}|g;
     $macrostring =~ s|%{_vendor}|$specglobals{'_vendor'}|g;
 
-    # system programs.  RPM uses a global config file for these;  we'll just
-    # ASS-U-ME and make life a little simpler.
-    if ($macrostring =~ /\%\{\_\_([a-z0-9_-]+)\}/) {
-# see /usr/lib/rpm/macros for most of the list.  we should arguably just parse that file, but..  ow.
-      $macrostring =~ s|%{__([a-z0-9_-]+)}|$1|g;
-    }
+    # System programs.  RPM uses a global config file for these,
+    # see /usr/lib/rpm/macros for the full list.
+    $macrostring =~ s|%{(__[a-z0-9_-]+)}|$specglobals{$1}|g;
 
 # should probably stick a "no runaway" flag in here...  Just In Case...
     # %define's
@@ -2100,15 +2110,15 @@ sub unpackcmd {
 
    if ($sourcedrop =~ /\.zip$/) {
       # .zip files are not really tarballs
-      $cmdstring .= "/usr/bin/unzip".( $quietunpack ? ' -qq ' : ' ' ).
+      $cmdstring .= "%{__unzip}".( $quietunpack ? ' -qq ' : ' ' ).
          "'$topdir/SOURCES/$sourcedrop'";
    } elsif ($sourcedrop =~ /\.tar$/) {
       # plain .tar files don't need to be uncompressed
-      $cmdstring .= "/bin/tar -x".( $quietunpack ? '' : 'vv' )."f ".
+      $cmdstring .= "%{__tar} -x".( $quietunpack ? '' : 'vv' )."f ".
          "'$topdir/SOURCES/$sourcedrop'";
    } else {
       $cmdstring .= decompress("$topdir/SOURCES/$sourcedrop").
-         " | /bin/tar -x".( $quietunpack ? '' : 'vv' )."f -";
+         " | %{__tar} -x".( $quietunpack ? '' : 'vv' )."f -";
    }
    $cmdstring .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
 
@@ -2121,12 +2131,12 @@ sub unpackcmd {
 sub decompress {
    my ($filename) = @_;
    my $decompressor =
-      ( $filename =~ /\.(?:tgz|(?:gz|Z))$/ ? "/bin/gzip"      :
-        $filename =~ /\.bz2$/              ? "/bin/bzip2"     :
-        $filename =~ /\.xz$/               ? "/usr/bin/xz" :
+      ( $filename =~ /\.(?:tgz|(?:gz|Z))$/ ? "%{__gzip}"  :
+        $filename =~ /\.bz2$/              ? "%{__bzip2}" :
+        $filename =~ /\.xz$/               ? "%{__xz}"    :
       die("Can't handle unknown file type '$filename'.") );
    return "$decompressor -dc '$filename'";
-}
+} # end decompress()
 
 
 __END__
