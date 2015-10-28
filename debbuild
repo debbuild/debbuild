@@ -1579,37 +1579,17 @@ sub binpackage {
     }
 
     # found the point of scripts on subpackages.
-    if ($pkgdata{$pkg}{'pre'}) {
-      $pkgdata{$pkg}{'pre'} = expandmacros($pkgdata{$pkg}{'pre'},'gp');
-      open PREINST, ">$specglobals{buildroot}/$pkg/DEBIAN/preinst";
-      print PREINST "#!/bin/sh\nset -e\n\n";
-      print PREINST $pkgdata{$pkg}{'pre'};
-      close PREINST;
-      chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/preinst";
-    }
-    if ($pkgdata{$pkg}{'post'}) {
-      $pkgdata{$pkg}{'post'} = expandmacros($pkgdata{$pkg}{'post'},'gp');
-      open POSTINST, ">$specglobals{buildroot}/$pkg/DEBIAN/postinst";
-      print POSTINST "#!/bin/sh\nset -e\n\n";
-      print POSTINST $pkgdata{$pkg}{'post'};
-      close POSTINST;
-      chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/postinst";
-    }
-    if ($pkgdata{$pkg}{'preun'}) {
-      $pkgdata{$pkg}{'preun'} = expandmacros($pkgdata{$pkg}{'preun'},'gp');
-      open PREUNINST, ">$specglobals{buildroot}/$pkg/DEBIAN/prerm";
-      print PREUNINST "#!/bin/sh\nset -e\n\n";
-      print PREUNINST $pkgdata{$pkg}{'preun'};
-      close PREUNINST;
-      chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/prerm";
-    }
-    if ($pkgdata{$pkg}{'postun'}) {
-      $pkgdata{$pkg}{'postun'} = expandmacros($pkgdata{$pkg}{'postun'},'gp');
-      open POSTUNINST, ">$specglobals{buildroot}/$pkg/DEBIAN/postrm";
-      print POSTUNINST "#!/bin/sh\nset -e\n\n";
-      print POSTUNINST $pkgdata{$pkg}{'postun'};
-      close POSTUNINST;
-      chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/postrm";
+    foreach my $scr ('pre','post','preun','postun') {
+      my $scrfile = $scr;
+      if ($scrfile !~ s/un/rm/) { $scrfile .= 'inst'; }
+      if ($pkgdata{$pkg}{$scr}) {
+        $pkgdata{$pkg}{$scr} = expandmacros($pkgdata{$pkg}{$scr},'gp');
+        open SCRIPT, ">$specglobals{buildroot}/$pkg/DEBIAN/$scrfile";
+        print SCRIPT "#!/bin/sh\nset -e\n\n";
+        print SCRIPT $pkgdata{$pkg}{$scr};
+        close SCRIPT;
+        chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/$scrfile";
+      }
     }
 
     # execute
