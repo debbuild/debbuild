@@ -381,8 +381,7 @@ if ($cmdopts{type} eq 't') {
     # plain .tar files don't need to be uncompressed
     $cmdline = "%{__tar} -tf $tarball --wildcards '*.spec'";
   } else {
-    my $decompress = decompress($tarball);
-    $cmdline = "$decompress | %{__tar} -tf - --wildcards '*.spec'";
+    $cmdline = decompress($tarball)." | %{__tar} -tf - --wildcards '*.spec'";
   }
   $cmdline = expandmacros($cmdline,'g');
   chomp( $specfile = "$topdir/BUILD/".qx { $cmdline } );
