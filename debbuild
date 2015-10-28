@@ -2143,11 +2143,11 @@ sub unpackcmd {
 sub decompress {
    my ($filename) = @_;
    my $decompressor =
-      ( $filename =~ /\.(?:tgz|(?:gz|Z))$/ ? "/bin/zcat"      :
-        $filename =~ /\.bz2$/              ? "/bin/bzcat"     :
-        $filename =~ /\.xz$/               ? "/usr/bin/xzcat" :
+      ( $filename =~ /\.(?:tgz|(?:gz|Z))$/ ? "/bin/gzip"      :
+        $filename =~ /\.bz2$/              ? "/bin/bzip2"     :
+        $filename =~ /\.xz$/               ? "/usr/bin/xz" :
       die("Can't handle unknown file type '$filename'.") );
-   return "$decompressor '$filename'";
+   return "$decompressor -dc '$filename'";
 }
 
 
