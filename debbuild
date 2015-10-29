@@ -387,7 +387,8 @@ if ($cmdopts{type} eq 't') {
   chomp( $specfile = "$topdir/BUILD/".qx { $cmdline } );
 
   $tarball = abs_path($tarball);
-  my $unpackcmd = "cd $topdir/BUILD;\n";
+
+  my $unpackcmd = "cd $topdir/BUILD\n";
   if ($tarball =~ /\.zip$/) {
     # .zip files are not really tarballs
     $unpackcmd .= "%{__unzip} -boaq $tarball";
@@ -397,10 +398,10 @@ if ($cmdopts{type} eq 't') {
   } else {
     $unpackcmd .= decompress($tarball)." | %{__tar} -xf -";
   }
-
+  $unpackcmd .= "\n%{__cp} -f $tarball $topdir/SOURCES/";
+  $unpackcmd .= "\n%{__cp} -f $specfile $topdir/SPECS/";
   system expandmacros($unpackcmd,'g');
-  system "cp -f $tarball $topdir/SOURCES/";
-  system "cp -f $specfile $topdir/SPECS/";
+
   parse_spec();
   die "Can't build $pkgdata{main}{name}:  build requirements not met.\n"
     if !checkbuildreq();
