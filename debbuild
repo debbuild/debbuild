@@ -451,34 +451,27 @@ exit 0;
 
 
 ## load_config()
-# Loads sys and user configuration (if any)
+# Load system macros from RPM installation
+# /usr/lib/rpm/macros /usr/lib/rpm/redhat/macros /etc/rpm/macros
+# and user configuration (if any)
+# ~/.rpmmacros a.k.a. ~/.debmacros
 sub load_config {
-  # Load system macros from RPM installation
-  if (-e "/usr/lib/rpm/macros") {
-    open SYSMACROS,"</usr/lib/rpm/macros";
-    while (<SYSMACROS>) {
-      # Load all '_global' macros.
-      if (/^\%([a-z0-9_]+)\s+(.+)$/) {
-        $specglobals{$1} = $2;
-      }
-    }
-    close SYSMACROS;
-  } else {
-    die "/usr/lib/rpm/macros not found; package rpm-common not installed?";
-  }
   # Load user configuration, permitting local override
   my $homedir = (getpwuid($<))[7];
-  if (-e "$homedir/.debmacros") {
-    open USERMACROS,"<$homedir/.debmacros";
-    while (<USERMACROS>) {
-      # We only handle a few '_global' macros for override at the moment, but
-      # we allow arbitrary definitions.  Note that we're only doing simple defs
-      # here for now.
-      if (/^\%(_topdir|_default_patch_(flags|fuzz)|[a-z0-9]+)\s+(.+)$/) {
-        $specglobals{$1} = $3;
+  foreach my $macros ( ('/usr/lib/rpm/macros',
+                        '/usr/lib/rpm/redhat/macros',
+                        '/etc/rpm/macros',
+                        "$homedir/.debmacros") ) {
+    if (-e $macros) { # should we warn about missing macro files?
+      open MACROS,"<$macros";
+      while (<MACROS>) {
+        # Load all '_global' macros.
+        if (/^\%([a-z0-9_]+)\s+(.+)$/) {
+          $specglobals{$1} = $2;
+        }
       }
+      close MACROS;
     }
-    close USERMACROS;
   }
 } # end load_config()
 
