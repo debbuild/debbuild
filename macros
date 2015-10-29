@@ -1,0 +1,25 @@
+#/*! \page config_macros Default configuration: /etc/rpm/macros
+# \verbatim
+#
+# This is a per-system RPM configuration file.
+# Per-user configuration should be added to ~/.rpmmacros.
+#
+#==============================================================================
+# ---- TeX Live utilities
+#
+%__texlive_bin /opt/texlive/current/bin/i386-linux
+#
+%__latex %{__texlive_bin}/latex
+%__pdftex %{__texlive_bin}/pdftex
+%__texhash %{__texlive_bin}/texhash
+%__updmap_sys %{__texlive_bin}/updmap-sys
+
+#==============================================================================
+# ---- System utilities
+#
+%__ps2pdf %{_usr}/bin/ps2pdf
+%__recode %{_usr}/bin/recode
+%__touch %{_usr}/bin/touch
+
+# \endverbatim
+#*/
