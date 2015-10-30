@@ -48,16 +48,6 @@ die "No .spec file to work with!  Exiting.\n" if scalar(@ARGV) == 0;
 sub expandmacros;
 sub unpackcmd;
 
-# User's prefs for dirs, environment, etc,etc,etc.
-# config file ~/.debmacros
-# Default ordered search paths for config/macros:
-# /usr/lib/rpm/rpmrc  /usr/lib/rpm/redhat/rpmrc  /etc/rpmrc      ~/.rpmrc
-# /usr/lib/rpm/macros /usr/lib/rpm/redhat/macros /etc/rpm/macros ~/.rpmmacros
-# **NOTE:  May be possible to (ab)use bits of debhelper
-
-# Build tree
-# default is /usr/src/debian/{BUILD,SOURCES,SPECS,DEBS,SDEBS}
-
 # Globals
 my $finalmessages = '';	# A place to stuff messages that I want printed at the *very* end of any processing.
 my $specfile;
@@ -74,14 +64,23 @@ my %cmdopts = (type => '',
 		short => 'n'
 	);
 
+# User's prefs for dirs, environment, etc,etc,etc.
+# config file ~/.debmacros
+# Default ordered search paths for config/macros:
+# /usr/lib/rpm/rpmrc  /usr/lib/rpm/redhat/rpmrc  /etc/rpmrc      ~/.rpmrc
+# /usr/lib/rpm/macros /usr/lib/rpm/redhat/macros /etc/rpm/macros ~/.rpmmacros
+# **NOTE:  May be possible to (ab)use bits of debhelper
+
 my %specglobals = ( # For %define's in specfile, among other things.
 	_vendor => 'debbuild',
 	# this can be changed by the Vendor: header in the spec file
 	vendor => 'debbuild',
 	# buildroot => "%{_tmppath}/%{name}-%{version}-%{release}.root".int(rand(99998)+1),
 	buildroot => '%{_topdir}/BUILDROOT/%{name}-%{version}-%{release}',
-	# more things parsed from rpm's macro files
+	# Build tree
+	# default is /usr/src/debian/{BUILD,SOURCES,SPECS,DEBS,SDEBS}
 	_topdir => "/usr/src/debian",
+	# more things parsed from rpm's macro files
 	_default_patch_flags => '',
 	_default_patch_fuzz => 0
 );
@@ -466,7 +465,6 @@ sub load_config {
     if (-e $macros) { # should we warn about missing macro files?
       open MACROS,"<$macros";
       while (<MACROS>) {
-        # Load all '_global' macros.
         if (/^\%([a-z0-9_]+)\s+(.+)$/) {
           $specglobals{$1} = $2;
         }
@@ -1030,7 +1028,7 @@ LINE: while (<SPECFILE>) {
             }
           } elsif ($popt =~ (/^-E/) ) {
             $noempty = 1;
-          } elsif ($popt =~ (/^(-[^s]+)/) ) {
+          } elsif ($popt =~ (/^(-[^\s]+)/) ) {
             die "Unknown \%patch option $1: $line\n";
           } elsif ($popt =~ (/(\d+)/) ) {
             push @patchlist, $1;
@@ -1496,31 +1494,13 @@ sub binpackage {
     ($pkgdata{$pkg}{requires} = $tmp) =~ s/^, //;
 
     # Do this here since we're doing {depends}...
-    if (defined($pkgdata{$pkg}{provides})) {
-      $pkgdata{$pkg}{provides} =~ s/^, //;
-      $pkgdata{$pkg}{provides} = expandmacros($pkgdata{$pkg}{provides},'gp');
-    }
-    if (defined($pkgdata{$pkg}{conflicts})) {
-      $pkgdata{$pkg}{conflicts} =~ s/^, //;
-      $pkgdata{$pkg}{conflicts} = expandmacros($pkgdata{$pkg}{conflicts},'gp');
-    }
-
-# These are Debian-specific!
-    if (defined($pkgdata{$pkg}{recommends})) {
-      $pkgdata{$pkg}{recommends} =~ s/^, //;
-      $pkgdata{$pkg}{recommends} = expandmacros($pkgdata{$pkg}{recommends},'gp');
-    }
-    if (defined($pkgdata{$pkg}{suggests})) {
-      $pkgdata{$pkg}{suggests} =~ s/^, //;
-      $pkgdata{$pkg}{suggests} = expandmacros($pkgdata{$pkg}{suggests},'gp');
-    }
-    if (defined($pkgdata{$pkg}{enhances})) {
-      $pkgdata{$pkg}{enhances} =~ s/^, //;
-      $pkgdata{$pkg}{enhances} = expandmacros($pkgdata{$pkg}{enhances},'gp');
-    }
-    if (defined($pkgdata{$pkg}{replaces})) {
-      $pkgdata{$pkg}{replaces} =~ s/^, //;
-      $pkgdata{$pkg}{replaces} = expandmacros($pkgdata{$pkg}{replaces},'gp');
+    foreach my $label (('provides','conflicts',
+                        # These are Debian-specific!
+                        'recommends','suggests','enhances','replaces')) {
+      if (defined($pkgdata{$pkg}{$label})) {
+        $pkgdata{$pkg}{$label} =~ s/^, //;
+        $pkgdata{$pkg}{$label} = expandmacros($pkgdata{$pkg}{$label},'gp');
+      }
     }
 
     # Gotta do this next, otherwise the control file has nowhere to go.  >:(
