@@ -57,6 +57,7 @@ my $cmdbuildroot;
 my $tarballdir = '%{name}-%{version}';	# We do this in case of a spec file not using %setup...
 
 # Initialized globals
+my ($g_filemode, $g_owner, $g_group, $g_dirmode) = ('-', '-', '-', '-');
 my $verbosity = 0;
 my $NoAutoReq = 0;
 my %cmdopts = (type => '',
@@ -1094,22 +1095,32 @@ LINE: while (<SPECFILE>) {
 
     if ($stage eq 'files') {
       # need to deal with these someday
-      next LINE if /^\%dir/;
-      next LINE if /^\%defattr/;
       next LINE if /^\%verify/;
       # dunno what to do with this; not sure if there's space in Debian's package structure for it.
       next LINE if /^\%ghost/;
-      # Debian dpkg doesn't speak "%docdir".  Meh.
-      next LINE if /^\%docdir/;
 #      my $singleton = 0;	# don't recall what this was for
       next LINE if /^\s*#/;
       next LINE if /^\s*$/;
 
+      if (/^\%defattr/) {
+        ($g_filemode, $g_owner, $g_group, $g_dirmode) =
+          (/^\%defattr\s*\(\s*((?:-|\d+)),?\s*(\w+),?\s*(\w+),?\s*((?:-|\d+))\s*\)/);
+        next LINE;
+      }
+
 # create and initialize flags
-      my ($perms, $owner, $group, $conf, $filesline);
-      $perms = $owner = $group = $conf = '-';
+      my ($perms, $owner, $group, $conf, $filesline) =
+        ($g_filemode, $g_owner, $g_group, '-', '-');
 
       $filesline = $_;
+
+      if (/^\%dir/) {
+        $filesline =~ s/^\%dir\s*//;
+      }
+      # Debian dpkg doesn't speak "%docdir".  Meh.
+      if (/^\%docdir/) {
+        $filesline =~ s/^\%docdir\s*//;
+      }
 
       # strip and flag %attr constructs
       if ($filesline =~ /\%attr\b/) {
@@ -1161,13 +1172,20 @@ LINE: while (<SPECFILE>) {
       } # $filesline =~ /\%doc\b/
 
       $filesline =~ s/^\s*//;	# Just In Case.  For, uh, neatness.
+      chomp $filesline;
 
 # due to Debian's total lack of real permissions-processing in its actual package
 # handling component (dpkg-deb), this can't really be done "properly".  We'll have
 # to add chown/chmod commands to the postinst instead.  Feh.
-      $pkgdata{$subname}{'post'} .= "chown $owner $filesline\n" if $owner ne '-';
-      $pkgdata{$subname}{'post'} .= "chgrp $group $filesline\n" if $group ne '-';
-      $pkgdata{$subname}{'post'} .= "chmod $perms $filesline\n" if $perms ne '-';
+      $pkgdata{$subname}{'post'} .= "if [ -d $filesline ]; then\n";
+      $pkgdata{$subname}{'post'} .= "  %{__chown} -Rh $owner $filesline\n" if $owner ne '-';
+      $pkgdata{$subname}{'post'} .= "  %{__chgrp} -Rh $group $filesline\n" if $group ne '-';
+      $pkgdata{$subname}{'post'} .= "  %{__chmod} $g_dirmode $filesline\n" if $g_dirmode ne '-';
+      $pkgdata{$subname}{'post'} .= "else\n";
+      $pkgdata{$subname}{'post'} .= "  %{__chown} -h $owner $filesline\n" if $owner ne '-';
+      $pkgdata{$subname}{'post'} .= "  %{__chgrp} -h $group $filesline\n" if $group ne '-';
+      $pkgdata{$subname}{'post'} .= "  %{__chmod} $perms $filesline\n" if $perms ne '-';
+      $pkgdata{$subname}{'post'} .= "fi\n";
 
 ##fixme
 # need hackery to assure only one filespec per %config.  NB:  "*" is one filespec.  <g>
@@ -1458,7 +1476,7 @@ sub binpackage {
       my ($fpath,$fname) = ($pkgfile =~ m|(.+?/?)?([^/]+/?)$|);	# We don't need $fname now, but we might.
       qx { $specglobals{__mkdir_p} $specglobals{buildroot}/$pkg$fpath }
 	if $fpath && $fpath ne '';
-      qx { $specglobals{__mv} $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath };
+      qx { if [ -f $specglobals{buildroot}$pkgfile ]; then $specglobals{__mv} $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath; else $specglobals{__cp} -r $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath; fi };
     }
 
     # Get the "Depends" (Requires) a la RPM.  Ish.  We strip the leading
