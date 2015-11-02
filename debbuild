@@ -1177,15 +1177,10 @@ LINE: while (<SPECFILE>) {
 # due to Debian's total lack of real permissions-processing in its actual package
 # handling component (dpkg-deb), this can't really be done "properly".  We'll have
 # to add chown/chmod commands to the postinst instead.  Feh.
-      $pkgdata{$subname}{'post'} .= "if [ -d $filesline ]; then\n";
-      $pkgdata{$subname}{'post'} .= "  %{__chown} -Rh $owner $filesline\n" if $owner ne '-';
-      $pkgdata{$subname}{'post'} .= "  %{__chgrp} -Rh $group $filesline\n" if $group ne '-';
-      $pkgdata{$subname}{'post'} .= "  %{__chmod} $g_dirmode $filesline\n" if $g_dirmode ne '-';
-      $pkgdata{$subname}{'post'} .= "else\n";
-      $pkgdata{$subname}{'post'} .= "  %{__chown} -h $owner $filesline\n" if $owner ne '-';
-      $pkgdata{$subname}{'post'} .= "  %{__chgrp} -h $group $filesline\n" if $group ne '-';
-      $pkgdata{$subname}{'post'} .= "  %{__chmod} $perms $filesline\n" if $perms ne '-';
-      $pkgdata{$subname}{'post'} .= "fi\n";
+      $pkgdata{$subname}{'post'} .= "%{__chown} -Rh $owner $filesline\n" if $owner ne '-';
+      $pkgdata{$subname}{'post'} .= "%{__chgrp} -Rh $group $filesline\n" if $group ne '-';
+      $pkgdata{$subname}{'post'} .= "if [ -d $filesline ]; then %{__chmod} $g_dirmode $filesline; fi\n" if $g_dirmode ne '-';
+      $pkgdata{$subname}{'post'} .= "if [ -f $filesline ]; then %{__chmod} $perms $filesline; fi\n" if $perms ne '-';
 
 ##fixme
 # need hackery to assure only one filespec per %config.  NB:  "*" is one filespec.  <g>
@@ -1476,7 +1471,8 @@ sub binpackage {
       my ($fpath,$fname) = ($pkgfile =~ m|(.+?/?)?([^/]+/?)$|);	# We don't need $fname now, but we might.
       qx { $specglobals{__mkdir_p} $specglobals{buildroot}/$pkg$fpath }
 	if $fpath && $fpath ne '';
-      qx { if [ -f $specglobals{buildroot}$pkgfile ]; then $specglobals{__mv} $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath; else $specglobals{__cp} -r $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath; fi };
+      qx { if [ -d $specglobals{buildroot}$pkgfile ]; then $specglobals{__cp} -ar $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath; fi };
+      qx { if [ -f $specglobals{buildroot}$pkgfile ]; then $specglobals{__mv} $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath; fi };
     }
 
     # Get the "Depends" (Requires) a la RPM.  Ish.  We strip the leading
