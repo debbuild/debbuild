@@ -1040,8 +1040,12 @@ LINE: while (<SPECFILE>) {
             } else {
               $fuzz = shift @pbits;
             }
-          } elsif ($popt =~ (/^(-d)/) ) {
-            $altdir = shift @pbits;
+          } elsif ($popt =~ (/^-d([^\s]*)/) ) {
+            if ($1) {
+              $psuff = "-d $1";
+            } else {
+              $psuff = "-d ".shift(@pbits);
+            }
           } elsif ($popt =~ (/^(-E)/) ) {
             $noempty = $1;
           } elsif ($popt =~ (/^(-R)/) ) {
