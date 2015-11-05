@@ -624,6 +624,10 @@ debbuild-specific options:
     $cmdopts{short} = 'n';
   }
 
+  # Did we catch a '-b.' or '-t.' option?
+  # rpmbuild quits silently.
+  exit 0 if '' eq $cmdopts{type};
+
   # Valid options, with example arguments (if any):
 # Build from .spec file; mutually exclusive:
   # -bp
