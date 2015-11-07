@@ -384,23 +384,22 @@ if ($cmdopts{type} eq 't') {
     $cmdline = decompress($tarball)." | %{__tar} -tf - --wildcards '*.spec'";
   }
   $cmdline = expandmacros($cmdline,'g');
-  chomp( $specfile = "$topdir/BUILD/".qx { $cmdline } );
+  chomp( $specfile = "$topdir/SPECS/".basename( qx { $cmdline } ) );
 
   $tarball = abs_path($tarball);
 
-  my $unpackcmd = "cd $topdir/BUILD\n";
+  $cmdline = '';
   if ($tarball =~ /\.zip$/) {
     # .zip files are not really tarballs
-    $unpackcmd .= "%{__unzip} -boaq $tarball";
+    $cmdline .= "%{__unzip} -p $tarball '*.spec'";
   } elsif ($tarball =~ /\.tar$/) {
     # plain .tar files don't need to be uncompressed
-    $unpackcmd .= "%{__tar} -xf $tarball";
+    $cmdline .= "%{__tar} -xOf $tarball --wildcards '*.spec'";
   } else {
-    $unpackcmd .= decompress($tarball)." | %{__tar} -xf -";
+    $cmdline .= decompress($tarball)." | %{__tar} -xOf - --wildcards '*.spec'";
   }
-  $unpackcmd .= "\n%{__cp} -f $tarball $topdir/SOURCES/";
-  $unpackcmd .= "\n%{__cp} -f $specfile $topdir/SPECS/";
-  system expandmacros($unpackcmd,'g');
+  $cmdline .= " > $specfile\n%{__cp} -f $tarball $topdir/SOURCES/";
+  system expandmacros($cmdline,'g');
 
   parse_spec();
   die "Can't build $pkgdata{main}{name}:  build requirements not met.\n"
