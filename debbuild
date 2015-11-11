@@ -1300,12 +1300,15 @@ LINE: while (<SPECFILE>) {
   # Parse and replace some more macros.  More will be replaced even later.
 
   # Expand macros as necessary.
-  $scriptletbase = expandmacros($scriptletbase,'gp');
-
   $cleanscript = expandmacros($cleanscript,'gp');
 
   $specglobals{buildroot} = $cmdbuildroot if $cmdbuildroot;
-  $specglobals{buildroot} = expandmacros($specglobals{buildroot},'gp');
+
+  while ($specglobals{buildroot} =~ m/\%/) {
+    $specglobals{buildroot} = expandmacros($specglobals{buildroot},'gp');
+  }
+
+  $scriptletbase = expandmacros($scriptletbase,'gp');
 
   close SPECFILE;
 } # end parse_spec()
