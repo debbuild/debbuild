@@ -57,12 +57,16 @@ my $cmdbuildroot;
 my $tarballdir = '%{name}-%{version}';	# We do this in case of a spec file not using %setup...
 
 # Initialized globals
-my ($g_filemode, $g_owner, $g_group, $g_dirmode) = ('-', '-', '-', '-');
 my $verbosity = 0;
 my $NoAutoReq = 0;
 my %cmdopts = (type => '',
 		stage => 'a',
 		short => 'n'
+	);
+my %defattr = (filemode => '-',
+		owner => '-',
+		group => '-',
+		dirmode => '-'
 	);
 
 # User's prefs for dirs, environment, etc,etc,etc.
@@ -1126,14 +1130,14 @@ LINE: while (<SPECFILE>) {
       next LINE if /^\s*$/;
 
       if (/^\%defattr/) {
-        ($g_filemode, $g_owner, $g_group, $g_dirmode) =
+        ($defattr{filemode}, $defattr{owner}, $defattr{group}, $defattr{dirmode}) =
           (/^\%defattr\s*\(\s*((?:-|\d+)),?\s*(\w+),?\s*(\w+),?\s*((?:-|\d+))\s*\)/);
         next LINE;
       }
 
 # create and initialize flags
       my ($perms, $owner, $group, $conf, $filesline) =
-        ($g_filemode, $g_owner, $g_group, '-', '-');
+        ($defattr{filemode}, $defattr{owner}, $defattr{group}, '-', '-');
 
       $filesline = $_;
 
@@ -1202,7 +1206,7 @@ LINE: while (<SPECFILE>) {
 # to add chown/chmod commands to the postinst instead.  Feh.
       $pkgdata{$subname}{'post'} .= "%{__chown} -Rh $owner $filesline\n" if $owner ne '-';
       $pkgdata{$subname}{'post'} .= "%{__chgrp} -Rh $group $filesline\n" if $group ne '-';
-      $pkgdata{$subname}{'post'} .= "if [ -d $filesline ]; then %{__chmod} $g_dirmode $filesline; fi\n" if $g_dirmode ne '-';
+      $pkgdata{$subname}{'post'} .= "if [ -d $filesline ]; then %{__chmod} $defattr{dirmode} $filesline; fi\n" if $defattr{dirmode} ne '-';
       $pkgdata{$subname}{'post'} .= "if [ -f $filesline ]; then %{__chmod} $perms $filesline; fi\n" if $perms ne '-';
 
 ##fixme
