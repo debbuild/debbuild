@@ -2058,6 +2058,9 @@ sub expandmacros {
       $macrostring =~ s/\%\(.+\)/$shellstr/;
     }
 
+    # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
+    $macrostring =~ s/\%\{getenv\:([A-Z_]+)\}/$ENV{$1}/g;
+
     # support for **some** %if constructs.  Note that this breaks somewhat if
     # there's no value specified...  but so does rpm.
 
