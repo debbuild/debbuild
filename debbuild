@@ -725,7 +725,7 @@ LINE: while (<SPECFILE>) {
       if ($expr !~ /^\s*\d+\s*$/) {
         # gots a logic statement we want to turn into a 1 or a 0.  most likely by eval'ing it.
 
-        $expr =~ s/\s+//g;
+        $expr =~ s/\s//g;
 
 # For Great w00tness!  New and Improved multilayered logic handling.
 
@@ -992,7 +992,7 @@ LINE: while (<SPECFILE>) {
         my @patchlist;
 
         # add patch{nn} to the list
-        if ((shift @pbits) =~ /^\%patch(\d+)/) {
+        if ((shift @pbits) =~ /^%patch(\d+)/) {
           push @patchlist, "$1";
         }
         # add the "null" patch to the list unless we've got a -P flag
@@ -1030,35 +1030,23 @@ LINE: while (<SPECFILE>) {
               die "Invalid patch number $tmp: $line" if $tmp !~ /^\d+$/;
               push @patchlist, $tmp;
             }
-          } elsif ($popt =~ (/^-[bz]([^\s]*)/) ) {
-            if ($1) {
-              $psuff = "-b --suffix $1";
-            } else {
-              $psuff = "-b --suffix ".shift(@pbits);
-            }
-          } elsif ($popt =~ (/^-p(\d*)/) ) {
-            if ($1 ne '') {
-              $plev = $1;
-            } else {
-              $plev = shift @pbits;
-            }
-          } elsif ($popt =~ (/^-F(\d*)/) ) {
-            if ($1 ne '') {
-              $fuzz = $1;
-            } else {
-              $fuzz = shift @pbits;
-            }
-          } elsif ($popt =~ (/^-d([^\s]*)/) ) {
+          } elsif ($popt =~ /^-[bz]([^\s]*)/) {
+            $psuff = "-b --suffix ".($1 || shift @pbits);
+          } elsif ($popt =~ /^-p(\d*)/) {
+            $plev = ($1 ne '' ? $1 : shift @pbits);
+          } elsif ($popt =~ /^-F(\d*)/) {
+            $fuzz = ($1 ne '' ? $1 : shift @pbits);
+          } elsif ($popt =~ /^-d([^\s]*)/) {
             $altdir = "-d ".($1 || shift @pbits);
-          } elsif ($popt =~ (/^-o([^\s]*)/) ) {
+          } elsif ($popt =~ /^-o([^\s]*)/) {
             $output = "-o ".($1 || shift @pbits);
-          } elsif ($popt =~ (/^(-E)/) ) {
+          } elsif ($popt =~ /^(-E)/) {
             $noempty = $1;
-          } elsif ($popt =~ (/^(-R)/) ) {
+          } elsif ($popt =~ /^(-R)/) {
             $reverse = $1;
-          } elsif ($popt =~ (/^(-[^\s]+)/) ) {
+          } elsif ($popt =~ /^(-[^\s]+)/) {
             die "Unknown \%patch option $1: $line\n";
-          } elsif ($popt =~ (/(\d+)/) ) {
+          } elsif ($popt =~ /(\d+)/) {
             push @patchlist, $1;
           }
         } # while (shift @pbits)
@@ -1092,8 +1080,6 @@ LINE: while (<SPECFILE>) {
       # aren't many local macros to deal with.
       if (/^\%configure/) {
         $buildscript .= expandmacros($_,'cgbp');
-      } elsif (/^\%\{__make\}/) {
-        $buildscript .= expandmacros($_,'mgbp');
       } else {
         $buildscript .= expandmacros($_,'gp');
       }
@@ -1141,23 +1127,23 @@ LINE: while (<SPECFILE>) {
       $filesline = $_;
 
       if (/^\%dir/) {
-        $filesline =~ s/^\%dir\s*//;
+        $filesline =~ s/^%dir\s*//;
       }
       # Debian dpkg doesn't speak "%docdir".  Meh.
       if (/^\%docdir/) {
-        $filesline =~ s/^\%docdir\s*//;
+        $filesline =~ s/^%docdir\s*//;
       }
 
       # strip and flag %attr constructs
-      if ($filesline =~ /\%attr\b/) {
+      if ($filesline =~ /%attr\b/) {
 	# Extract %attr...
 	my ($args) = (/(\%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\))/);
-	$args =~ s/\s+//g;
+	$args =~ s/\s//g;
 	$args =~ s/"//g;    # don't think quotes are ever necessary, but they're *allowed*
 	# ... and parse it ...
 	($perms,$owner,$group) = ($args =~ /\(([\d-]+),([a-zA-Z0-9-]+),([a-zA-Z0-9-]+)/);
 	# ... and wipe it when we're done.
-	$filesline =~ s/\%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\)//;
+	$filesline =~ s/%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\)//;
       }
 
       # Conffiles.  Note that Debian and RH have similar, but not
@@ -1167,10 +1153,10 @@ LINE: while (<SPECFILE>) {
 ##fixme
 # also need to handle missingok (file that doesn't exist, but should be removed on uninstall)
 # hmm.  not sure if such is **POSSIBLE** with Debian...  maybe an addition to %post?
-      if ($filesline =~ /\%config\b(?:\s*\(\s*noreplace\s*\)\s*)?/) {
+      if ($filesline =~ /%config\b(?:\s*\(\s*noreplace\s*\)\s*)?/) {
         $pkgdata{$subname}{conffiles} = 1;  # Flag it for later
 	$conf = 'y';
-	$filesline =~ s/\%config\b(?:\s*\(\s*noreplace\s*\)\s*)?//;
+	$filesline =~ s/%config\b(?:\s*\(\s*noreplace\s*\)\s*)?//;
       }
 
       # %doc needs extra processing, because it can be a space-separated list, and may
@@ -1180,8 +1166,8 @@ LINE: while (<SPECFILE>) {
       # in /usr/share/doc/<packagename>.)
 ##fixme:  unhandled case: %doc %defattr.  Eeep.
 # don't really know what to do with %defattr, generally.  :(
-      if ($filesline =~ /\%doc\b/) {
-        $filesline =~ s/\s*\%doc\s+//;
+      if ($filesline =~ /%doc\b/) {
+        $filesline =~ s/\s*%doc\s+//;
 
 # this could probably go elsewhere.
 	my $pkgname = $pkgdata{$subname}{name};
@@ -1189,13 +1175,13 @@ LINE: while (<SPECFILE>) {
 
 	# have to extract the partial pathnames that %doc installs automagically
 	foreach (split /\s+/, $filesline) {
-	  if (! (/^\%/ or m|^/|) ) {
+	  if (! (/^%/ or m|^/|) ) {
 	    $doclist{$subname} .= " $_";
 	    my ($element) = m|([^/\s]+/?)$|;
-	    $filesline =~ s|$_|\%{_docdir}/$pkgname/$element|;
+	    $filesline =~ s|$_|%{_docdir}/$pkgname/$element|;
 	  }
 	}
-      } # $filesline =~ /\%doc\b/
+      } # $filesline =~ /%doc\b/
 
       $filesline =~ s/^\s*//;	# Just In Case.  For, uh, neatness.
       chomp $filesline;
@@ -1303,7 +1289,7 @@ LINE: while (<SPECFILE>) {
 
   $specglobals{buildroot} = $cmdbuildroot if $cmdbuildroot;
 
-  while ($specglobals{buildroot} =~ m/\%/) {
+  while ($specglobals{buildroot} =~ m/%/) {
     $specglobals{buildroot} = expandmacros($specglobals{buildroot},'gp');
   }
 
@@ -1512,7 +1498,7 @@ sub binpackage {
     # magic needed to properly version dependencies...
     # only provided deps will really be included
     $pkgdata{$pkg}{requires} =~ s/^, //;	# Still have to do this here.
-    $pkgdata{$pkg}{requires} =~ s/\s+//g;
+    $pkgdata{$pkg}{requires} =~ s/\s//g;
     my @deps = split /,/, $pkgdata{$pkg}{requires};
     my $tmp = '';
     foreach my $dep (@deps) {
@@ -1850,7 +1836,7 @@ sub getreqs() {
 
     # Whee!  more hackery to detect provided-here libs.  Some apparently return from ldd as "not found".
     my ($a,$b) = split / => /;
-    $a =~ s/\s*//g;
+    $a =~ s/\s//g;
     if ($b =~ /not found/) {
       next if qx { find $specglobals{buildroot} -name "*$a" };
     }
@@ -1938,10 +1924,6 @@ sub expandmacros {
 	--infodir=%{_infodir} ';
   } # done %configure
 
-  if ($section =~ /m/) {
-    $macrostring =~ s'%{__make}'make ';
-  } # done make
-
 # %makeinstall expands with recursive macros in rpm.  whee.
   if ($section =~ /i/) {
     # This is where we need to mangle $prefix.
@@ -1989,13 +1971,13 @@ sub expandmacros {
     # over the "default" ones.
 
     # Now we cascade the macros introduced above.  >_<
-									# Wot ot to go theah:
-    $macrostring =~ s|%{_mandir}|%{_datadir}/man|g;			#/usr/share/man
-    $macrostring =~ s|%{_infodir}|%{_datadir}/info|g;			#/usr/share/info
+								# Wot ot to go theah:
+    $macrostring =~ s|%{_mandir}|%{_datadir}/man|g;		#/usr/share/man
+    $macrostring =~ s|%{_infodir}|%{_datadir}/info|g;		#/usr/share/info
     $macrostring =~ s|%{_oldincludedir}|/usr/include|g;		#/usr/include
     $macrostring =~ s|%{_includedir}|%{_prefix}/include|g;	#/usr/include
     $macrostring =~ s|%{_libdir}|%{_exec_prefix}/%{_lib}|g;	#/usr/lib
-    $macrostring =~ s|%{_lib}|lib|g;					#?
+    $macrostring =~ s|%{_lib}|lib|g;				#?
     $macrostring =~ s|%{_localstatedir}|/var|g;			#/var
     $macrostring =~ s|%{_sharedstatedir}|%{_prefix}/com|g;	#/usr/com WTF?
     $macrostring =~ s|%{_sysconfdir}|/etc|g;			#/etc
@@ -2004,20 +1986,20 @@ sub expandmacros {
     $macrostring =~ s|%{_sbindir}|%{_exec_prefix}/sbin|g;	#/usr/sbin
     $macrostring =~ s|%{_bindir}|%{_exec_prefix}/bin|g;		#/usr/bin
     $macrostring =~ s|%{_exec_prefix}|%{_prefix}|g;		#/usr
-    $macrostring =~ s|%{_prefix}|/usr|g;				#/usr
+    $macrostring =~ s|%{_prefix}|/usr|g;			#/usr
   } # done with config section
 
   # Package data
   if ($section =~ /p/) {
-    $macrostring =~ s/\%\{buildroot\}/$specglobals{buildroot}/gi;
-    $macrostring =~ s/\%\{source0?}/$topdir\/SOURCES\/$pkgdata{main}{source}/gi;
+    $macrostring =~ s/%{buildroot}/$specglobals{buildroot}/gi;
+    $macrostring =~ s/%{source0?}/$topdir\/SOURCES\/$pkgdata{main}{source}/gi;
     foreach my $source (keys %{$pkgdata{sources}}) {
-      $macrostring =~ s/\%\{source$source\}/$topdir\/SOURCES\/$pkgdata{sources}{$source}/gi;
+      $macrostring =~ s/%{source$source}/$topdir\/SOURCES\/$pkgdata{sources}{$source}/gi;
     }
-    $macrostring =~ s/\%\{patch(\d+)}/$topdir\/SOURCES\/$pkgdata{main}{$1}/gi;
-    $macrostring =~ s/\%\{name\}/$pkgdata{main}{name}/gi;
-    $macrostring =~ s/\%\{version\}/$pkgdata{main}{version}/gi;
-    $macrostring =~ s/\%\{release\}/$pkgdata{main}{release}/gi;
+    $macrostring =~ s/%{patch(\d+)}/$topdir\/SOURCES\/$pkgdata{main}{$1}/gi;
+    $macrostring =~ s/%{name}/$pkgdata{main}{name}/gi;
+    $macrostring =~ s/%{version}/$pkgdata{main}{version}/gi;
+    $macrostring =~ s/%{release}/$pkgdata{main}{release}/gi;
   }
 
   # Globals, and not-so-globals
@@ -2048,23 +2030,20 @@ sub expandmacros {
     # Even more general:  %(...) is a spec-parse-time shell code wrapper.
     # Prime example:
     #%define perl_vendorlib %(eval "`perl -V:installvendorlib`"; echo $installvendorlib)
-    if ($macrostring =~ /\%\((.+)\)/) {
-      my $shellstr = $1;
       # Oy vey this gets silly for the perl bits.  Executing a shell to
       # call Perl to get the vendorlib/sitelib/whatever "core" globals.
       # This can do more, but...  eww.
-      chomp($shellstr = qx { /bin/sh -c '$shellstr' });	# Yay!  ' characters apparently get properly exscapededed.
-      $macrostring =~ s/\%\(.+\)/$shellstr/;
-    }
+    $macrostring =~ s|%\((.+)\)|my $res = qx{/bin/sh -c '$1'}; chomp $res; $res;|e;
+      # Yay!  ' characters apparently get properly exscapededed.
 
     # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
-    $macrostring =~ s/\%\{getenv\:([A-Z_]+)\}/$ENV{$1}/g;
+    $macrostring =~ s/%{getenv:([A-Z_]+)}/$ENV{$1}/g;
 
     # support for **some** %if constructs.  Note that this breaks somewhat if
     # there's no value specified...  but so does rpm.
 
     my $tmpcount = 0;	# runaway shutdown.  Not really sure how else to avoid getting stuck.
-    while ($macrostring =~ m/\%\{([?!]+)([a-z0-9_.-]+)(?:\:([a-z0-9_.\/\-\\]+)?)?\}/g) {       #Whew....
+    while ($macrostring =~ m/%{([?!]+)([a-z0-9_.-]+)(?:\:([a-z0-9_.\/\-\\]+)?)?}/g) {       #Whew....
       my $qex = $1;
       my $macro = $2;
       my $value = '';
@@ -2079,7 +2058,7 @@ sub expandmacros {
       } else {
 	$value = '' if !$neg;
       }
-      $macrostring =~ s/\%\{[?!]+[a-z0-9_.-]+(?:\:([a-z0-9_.\/\-\\]+)?)?\}/$value/;
+      $macrostring =~ s/%{[?!]+[a-z0-9_.-]+(?:\:([a-z0-9_.\/\-\\]+)?)?}/$value/;
 
 # not certain about this, but I don't want to run away.  It *can* happen if planned carefully.  :/
 $tmpcount++;
@@ -2104,7 +2083,7 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
 # hrm.  This needs thinking.
 #die "A horrible death!  \%{$key}, '$macrostring'\n" if !$specglobals{$key};
       $macrostring =~ s|%{$key}|$specglobals{$key}|g;
-		# wanna limit this to "... if $specglobals{$key}", but need more magic
+	# wanna limit this to "... if $specglobals{$key}", but need more magic
     }
 
     # Perl @INC/...lib locations, and other related bits.
