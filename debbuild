@@ -1008,14 +1008,16 @@ LINE: while (<SPECFILE>) {
 #     flag adjustment
 # -E  Remove empty files.  Passed to patch as-is
 # -R  Reverse patch.  Passed to patch as-is
-# -F  fuzz factor.  Passed to patch as is
-# -d  alternative directory.  Passed to patch as is
+# -F  fuzz factor.  Passed to patch as-is
+# -d  alternative directory.  Passed to patch as-is
+# -o  redirect output.  Passed to patch as-is
 
         my $plev = 0;
         my $psuff = '';
         my $noempty = '';
         my $reverse = '';
         my $altdir = '';
+        my $output = '';
         my $fuzz = $specglobals{_default_patch_fuzz};
 
         while (my $popt = shift @pbits) {
@@ -1047,11 +1049,9 @@ LINE: while (<SPECFILE>) {
               $fuzz = shift @pbits;
             }
           } elsif ($popt =~ (/^-d([^\s]*)/) ) {
-            if ($1) {
-              $psuff = "-d $1";
-            } else {
-              $psuff = "-d ".shift(@pbits);
-            }
+            $altdir = "-d ".($1 || shift @pbits);
+          } elsif ($popt =~ (/^-o([^\s]*)/) ) {
+            $output = "-o ".($1 || shift @pbits);
           } elsif ($popt =~ (/^(-E)/) ) {
             $noempty = $1;
           } elsif ($popt =~ (/^(-R)/) ) {
@@ -1064,9 +1064,8 @@ LINE: while (<SPECFILE>) {
         } # while (shift @pbits)
 
         my $patchopts = $specglobals{_default_patch_flags};
-        $patchopts .= " -p$plev $psuff $noempty $reverse";
+        $patchopts .= " -p$plev $psuff $noempty $reverse $altdir $output";
         $patchopts .= " --fuzz=$fuzz";
-        $patchopts .= " -d $altdir" if $altdir ne '';;
 
         foreach my $pnum (@patchlist) {
           $prepscript .= qq(echo "Patch ).($pnum eq '' ? '' : "#$pnum ").qq(($pkgdata{main}{$pnum}):"\n);
