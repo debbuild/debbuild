@@ -17,6 +17,7 @@
 #==============================================================================
 # ---- System utilities
 #
+%__pax % {_usr}/bin/pax
 %__ps2pdf %{_usr}/bin/ps2pdf
 %__recode %{_usr}/bin/recode
 %__touch %{_usr}/bin/touch
