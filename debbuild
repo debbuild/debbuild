@@ -112,7 +112,7 @@ q(#!/bin/bash
   RPM_BUILD_DIR="%{_topdir}/BUILD"
   RPM_OPT_FLAGS="%{optflags}"
   RPM_ARCH="%{_arch}"
-  RPM_OS="linux"
+  RPM_OS="%{_os}"
   export RPM_SOURCE_DIR RPM_BUILD_DIR RPM_OPT_FLAGS RPM_ARCH RPM_OS
   RPM_DOC_DIR="/usr/share/doc"
   export RPM_DOC_DIR
@@ -709,6 +709,12 @@ LINE: while (<SPECFILE>) {
     if (my ($key, $def) = (/^\%(?:define|global)\s+([^\s]+)\s+(.+)$/) ) {
       $specglobals{$key} = expandmacros($def,'g');
     }
+
+    # RPM conditionals
+    s/^%ifos/%if %{_os}==/;
+    s/^%ifnos/%if %{_os}!=/;
+    s/^%ifarch/%if %{_arch}==/;
+    s/^%ifnarch/%if %{_arch}!=/;
 
     if (/^\%if/) {
       s/^\%if//;
