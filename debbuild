@@ -707,15 +707,16 @@ LINE: while (<SPECFILE>) {
 
 # preprocess %define's
     if (my ($key, $def) = (/^\%(?:define|global)\s+([^\s]+)\s+(.+)$/) ) {
-      $specglobals{$key} = expandmacros($def,'g');
+      $specglobals{$key} = expandmacros($def,'gp');
     }
 
-    # RPM conditionals
+    # RPM conditionals – transform to generic form
     s/^%ifos/%if %{_os}==/;
     s/^%ifnos/%if %{_os}!=/;
     s/^%ifarch/%if %{_arch}==/;
     s/^%ifnarch/%if %{_arch}!=/;
 
+    # Generic %if...%else...%endif construct
     if (/^\%if/) {
       s/^\%if//;
       chomp;
@@ -724,8 +725,9 @@ print "Input:<<<$_>>>\n";
 print "Expanded:<<<$expr>>>\n";
       $iflevel++;
 
-      if ($expr !~ /^\s*\d+\s*$/) {
-        # gots a logic statement we want to turn into a 1 or a 0.  most likely by eval'ing it.
+      if ($expr !~ /^[\d\s<=>&|\-+\(\)]+$/) {
+        # got a logic statement we want to turn into a 1 or a 0.
+        # most likely by eval'ing it.
 
         $expr =~ s/\s//g;
 print "Unspaced:<<<$expr>>>\n";
@@ -753,6 +755,12 @@ print "Unspaced:<<<$expr>>>\n";
         # Turn it into something that eval's to a number.  Maybe not needed?  O_o
         #$expr = "( $expr ? 1 : 0 )";
 
+print "Expression:<<<$expr>>>\n";
+        $ifexpr = eval $expr;
+print "Evaluated:<<<$ifexpr>>>\n";
+      } else {
+        # "plain" numeric expressions are evaluated as-is
+        $expr =~ s/(\d+)/0$1/g; # in octal; e.g., 0%{?ubuntu}
 print "Expression:<<<$expr>>>\n";
         $ifexpr = eval $expr;
 print "Evaluated:<<<$ifexpr>>>\n";
@@ -1233,7 +1241,7 @@ print "Evaluated:<<<$ifexpr>>>\n";
       } elsif (/^vendor:\s*(.+)/i) {
         $specglobals{vendor} = $1;
       } elsif (/^buildroot:\s*(.+)/i) {
-        $specglobals{buildroot} = $1;
+        $specglobals{buildroot} = expandmacros($1, 'gp');
       } elsif (my ($srcnum, $src) = (/^source(\d*):\s*(.+)/i)) {
         $src =~ s/\s*$//;
         $srcnum = 0 unless $srcnum;
