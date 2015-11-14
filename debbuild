@@ -666,7 +666,7 @@ sub parse_spec {
   die "No .spec file specified!  Exiting.\n" if !$specfile;
   open SPECFILE,"<$specfile" or die "specfile ($specfile) barfed: $!";
 
-  my $iflevel = 0;
+  my ($iflevel, $ifexpr) = (0, undef);
   my $buildarch = $hostarch;
   $pkgdata{main}{arch} = $hostarch;
 
@@ -713,13 +713,16 @@ LINE: while (<SPECFILE>) {
     if (/^\%if/) {
       s/^\%if//;
       chomp;
+print "Input:<<<$_>>>\n";
       my $expr = expandmacros($_, 'g');
+print "Expanded:<<<$expr>>>\n";
       $iflevel++;
 
       if ($expr !~ /^\s*\d+\s*$/) {
         # gots a logic statement we want to turn into a 1 or a 0.  most likely by eval'ing it.
 
         $expr =~ s/\s//g;
+print "Unspaced:<<<$expr>>>\n";
 
 # For Great w00tness!  New and Improved multilayered logic handling.
 
@@ -744,13 +747,15 @@ LINE: while (<SPECFILE>) {
         # Turn it into something that eval's to a number.  Maybe not needed?  O_o
         #$expr = "( $expr ? 1 : 0 )";
 
-        $expr = eval $expr;
+print "Expression:<<<$expr>>>\n";
+        $ifexpr = eval $expr;
+print "Evaluated:<<<$ifexpr>>>\n";
       }
 
-      next LINE if $expr != 0;        # This appears to be the only case we call false.
+      next LINE if $ifexpr != 0;        # This appears to be the only case we call false.
       while (<SPECFILE>) {
         if (/^\%endif/) {
-          $iflevel--;
+          $iflevel--; $ifexpr = undef;
           next LINE;
         } elsif (/^\%else/) {
           next LINE;
@@ -758,15 +763,17 @@ LINE: while (<SPECFILE>) {
       }
     }
     if (/^\%else/) {
+      next LINE if $ifexpr == 0;
+
       while (<SPECFILE>) {
         if (/^\%endif/) {
-          $iflevel--;
+          $iflevel--; $ifexpr = undef;
           next LINE;
         }
       }
     }
     if (/^\%endif/) {
-      $iflevel--;
+      $iflevel--; $ifexpr = undef;
       next LINE;
     } # %if/%else/%endif
 
