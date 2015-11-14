@@ -366,8 +366,8 @@ if ($cmdopts{type} eq 's') {
 }
 
 if ($cmdopts{type} eq 't') {
-  # Need to inspect the $tarball to find the spec file.  Sort of the inverse of
-  # -b above.  Note that rpmbuild doesn't seem to support this operation from a
+  # Need to inspect the $tarball to find the spec file.
+  # Note that rpmbuild doesn't seem to support this operation from a
   # .zip file properly, but we try our best.
   my $cmdline;
   if ($tarball =~ /\.zip$/) {
@@ -450,16 +450,14 @@ exit 0;
 
 
 ## load_config()
-# Load system macros from RPM installation
+# Load system macros similar to RPM which digests
 # /usr/lib/rpm/macros /usr/lib/rpm/redhat/macros /etc/rpm/macros
-# and user configuration (if any)
-# ~/.rpmmacros a.k.a. ~/.debmacros
+# and user configuration (if any) ~/.rpmmacros a.k.a. ~/.debmacros
 sub load_config {
   # Load user configuration, permitting local override
   my $homedir = (getpwuid($<))[7];
-  foreach my $macros ( ('/usr/lib/rpm/macros',
-                        '/usr/lib/rpm/redhat/macros',
-                        '/etc/rpm/macros',
+  foreach my $macros ( ('/usr/lib/debbuild/macros',
+                        '/etc/debbuild/macros',
                         "$homedir/.debmacros") ) {
     if (-e $macros) { # should we warn about missing macro files?
       open MACROS,"<$macros";
@@ -2063,7 +2061,7 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
 # note to self: find out valid chars for %define name/label so we can parse them
     while (my ($key) = ($macrostring =~ /%{([a-z0-9_-]+)}/i) ) {
 # hrm.  This needs thinking.
-#die "A horrible death!  \%{$key}, '$macrostring'\n" if !$specglobals{$key};
+die "A horrible death!  \%{$key}, '$macrostring'\n" if !$specglobals{$key};
       $macrostring =~ s|%{$key}|$specglobals{$key}|g;
 	# wanna limit this to "... if $specglobals{$key}", but need more magic
     }
