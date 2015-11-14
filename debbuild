@@ -155,7 +155,7 @@ my %distmap = (
 	"3.1.9ubuntu"	=> "dapper",
 	"6.06"		=> "dapper",
 	"4ubuntu"	=> "feisty",
-	"7.04"		=> "fiesty",
+	"7.04"		=> "feisty",
         "4.0.1ubuntu"	=> "hardy",
 	"8.04"		=> "hardy",
 # Note we do NOT support identification of "subrelease" versions (ie semimajor updates
@@ -365,14 +365,6 @@ if ($cmdopts{type} eq 's') {
   $cmdopts{stage} = 'a';
 }
 
-if ($cmdopts{type} eq 'b') {
-  # Need to read the spec file to find the tarball.  Note that
-  # this also generates most of the shell script required.
-  parse_spec();
-  die "Can't build $pkgdata{main}{name}:  build requirements not met.\n"
-    if !checkbuildreq();
-}
-
 if ($cmdopts{type} eq 't') {
   # Need to inspect the $tarball to find the spec file.  Sort of the inverse of
   # -b above.  Note that rpmbuild doesn't seem to support this operation from a
@@ -404,16 +396,15 @@ if ($cmdopts{type} eq 't') {
   $cmdline .= " > $specfile\n%{__cp} -f $tarball $topdir/SOURCES/";
   system expandmacros($cmdline,'g');
 
+  $cmdopts{type} = 'b'; # fall through
+}
+
+if ($cmdopts{type} eq 'b') {
+  # Need to read the spec file to find the tarball.  Note that
+  # this also generates most of the shell script required.
   parse_spec();
   die "Can't build $pkgdata{main}{name}:  build requirements not met.\n"
     if !checkbuildreq();
-}
-
-# -> srcpkg if -.s
-if ($cmdopts{stage} eq 's') {
-  srcpackage();
-  print $finalmessages;
-  exit 0;
 }
 
 # Hokay.  Need to:
@@ -444,6 +435,11 @@ if ($cmdopts{stage} eq 'a') {
 if ($cmdopts{stage} eq 'b') {
   binpackage();
   clean();
+}
+
+# -> srcpkg if -.s
+if ($cmdopts{stage} eq 's') {
+  srcpackage();
 }
 
 # Spit out any closing remarks
@@ -703,8 +699,8 @@ LINE: while (<SPECFILE>) {
     # grep -h %[a-z] *|perl -e 'while (<>) { /\%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
     if (/^%[a-z]/ &&
 		$_ !~ /^%(?:attr|build|changelog|check|clean|config|configure|defattr|define|description|
-		dir|doc|docdir|else|endif|files|ghost|if|ifarch|ifn|ifnarch|ifnos|ifnxxx|fos|ifxxx|
-		install|makeinstall|package|patch\d*|post|postun|pre|prep|preun|readme|setup[^\s]*|
+		dir|doc|docdir|else|endif|files|ghost|if|ifarch|ifn|ifnarch|ifnos|ifnxxx|ifos|ifxxx|
+		install|makeinstall|package|patch\d*|post|postun|pre|prep|preun|readme|setup\d*|
 		triggerin|triggerpostun|triggerun|verify|verifyscript)\b/x
 	) {
 	my ($badtag) = (/^%([a-z]+)/i);
@@ -1114,25 +1110,19 @@ LINE: while (<SPECFILE>) {
       next LINE if /^\s*#/;
       next LINE if /^\s*$/;
 
-      if (/^\%defattr/) {
+      if (/^%defattr\s*\(\s*((?:-|\d+)),?\s*(\w+),?\s*(\w+),?\s*((?:-|\d+))\s*\)/) {
         ($defattr{filemode}, $defattr{owner}, $defattr{group}, $defattr{dirmode}) =
-          (/^\%defattr\s*\(\s*((?:-|\d+)),?\s*(\w+),?\s*(\w+),?\s*((?:-|\d+))\s*\)/);
+          ($1, $2, $3, $4);
         next LINE;
       }
 
 # create and initialize flags
       my ($perms, $owner, $group, $conf, $filesline) =
-        ($defattr{filemode}, $defattr{owner}, $defattr{group}, '-', '-');
+        ($defattr{filemode}, $defattr{owner}, $defattr{group}, '-', $_);
 
-      $filesline = $_;
-
-      if (/^\%dir/) {
-        $filesline =~ s/^%dir\s*//;
-      }
       # Debian dpkg doesn't speak "%docdir".  Meh.
-      if (/^\%docdir/) {
-        $filesline =~ s/^%docdir\s*//;
-      }
+      $filesline =~ s/^%dir\s*//;
+      $filesline =~ s/^%docdir\s*//;
 
       # strip and flag %attr constructs
       if ($filesline =~ /%attr\b/) {
@@ -1650,7 +1640,7 @@ sub srcpackage {
   }
 
   # use pax -w [file] [file] ... -f outfile.sdeb
-  $paxcmd = "(cd $topdir; pax -w ";
+  $paxcmd = "(cd $topdir; %{__pax} -w ";
 
   # some packages may not have a "main" source.
   $paxcmd .= "SOURCES/$pkgdata{main}{source} " if $pkgdata{main}{source};
@@ -1881,7 +1871,7 @@ sub getreqs() {
 sub install_sdeb {
   $srcpkg = abs_path($srcpkg);
 
-  my $paxcmd = "(cd $topdir; pax -r -f $srcpkg)";
+  my $paxcmd = "(cd $topdir; %{__pax} -r -f $srcpkg)";
 
   # In case of %-macros...
   $paxcmd = expandmacros($paxcmd,'gp');
@@ -1927,7 +1917,7 @@ sub expandmacros {
 # %makeinstall expands with recursive macros in rpm.  whee.
   if ($section =~ /i/) {
     # This is where we need to mangle $prefix.
-    $macrostring =~ s'%makeinstall'make \
+    $macrostring =~ s'%makeinstall'%{__make} \
         prefix=%{?buildroot:%{buildroot}}%{_prefix} \
         exec_prefix=%{?buildroot:%{buildroot}}%{_exec_prefix} \
         bindir=%{?buildroot:%{buildroot}}%{_bindir} \
@@ -1991,15 +1981,12 @@ sub expandmacros {
 
   # Package data
   if ($section =~ /p/) {
-    $macrostring =~ s/%{buildroot}/$specglobals{buildroot}/gi;
     $macrostring =~ s/%{source0?}/$topdir\/SOURCES\/$pkgdata{main}{source}/gi;
     foreach my $source (keys %{$pkgdata{sources}}) {
       $macrostring =~ s/%{source$source}/$topdir\/SOURCES\/$pkgdata{sources}{$source}/gi;
     }
     $macrostring =~ s/%{patch(\d+)}/$topdir\/SOURCES\/$pkgdata{main}{$1}/gi;
-    $macrostring =~ s/%{name}/$pkgdata{main}{name}/gi;
-    $macrostring =~ s/%{version}/$pkgdata{main}{version}/gi;
-    $macrostring =~ s/%{release}/$pkgdata{main}{release}/gi;
+    $macrostring =~ s/%{(name|version|release)}/$pkgdata{main}{$1}/gi;
   }
 
   # Globals, and not-so-globals
@@ -2033,7 +2020,7 @@ sub expandmacros {
       # Oy vey this gets silly for the perl bits.  Executing a shell to
       # call Perl to get the vendorlib/sitelib/whatever "core" globals.
       # This can do more, but...  eww.
-    $macrostring =~ s|%\((.+)\)|my $res = qx{/bin/sh -c '$1'}; chomp $res; $res;|e;
+    $macrostring =~ s|%\((.+)\)|my $res = qx{/bin/sh -c '$1'}; chomp $res; $res;|eg;
       # Yay!  ' characters apparently get properly exscapededed.
 
     # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
@@ -2070,16 +2057,11 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
     # Misc expansions
     $macrostring =~ s|%{_arch}|$hostarch|g;
     $macrostring =~ s|%{optflags}|$optflags{$hostarch}|g;
-    $macrostring =~ s|%{_vendor}|$specglobals{'_vendor'}|g;
-
-    # System programs.  RPM uses a global config file for these,
-    # see /usr/lib/rpm/macros for the full list.
-    $macrostring =~ s|%{(__[a-z0-9_-]+)}|$specglobals{$1}|g;
 
 # should probably stick a "no runaway" flag in here...  Just In Case...
     # %define's
 # note to self: find out valid chars for %define name/label so we can parse them
-    while (my ($key) = ($macrostring =~ /%{([a-z0-9_]+)}/i) ) {
+    while (my ($key) = ($macrostring =~ /%{([a-z0-9_-]+)}/i) ) {
 # hrm.  This needs thinking.
 #die "A horrible death!  \%{$key}, '$macrostring'\n" if !$specglobals{$key};
       $macrostring =~ s|%{$key}|$specglobals{$key}|g;
