@@ -2063,10 +2063,11 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
     # %define's
 # note to self: find out valid chars for %define name/label so we can parse them
     while (my ($key) = ($macrostring =~ /%{([a-z0-9_-]+)}/i) ) {
-# hrm.  This needs thinking.
-die "A horrible death!  \%{$key}, '$macrostring'\n" if !$specglobals{$key};
-      $macrostring =~ s|%{$key}|$specglobals{$key}|g;
-	# wanna limit this to "... if $specglobals{$key}", but need more magic
+      if (defined $specglobals{$key}) {
+        $macrostring =~ s|%{$key}|$specglobals{$key}|g;
+      } else {
+        expandmacros($macrostring,$section);
+      }
     }
 
     # Perl @INC/...lib locations, and other related bits.
