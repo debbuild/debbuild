@@ -177,30 +177,28 @@
 #%___build_shell		%{?_buildshell:%{_buildshell}}%{!?_buildshell:/bin/sh}
 #%___build_args		-e
 #%___build_cmd		%{?_sudo:%{_sudo} }%{?_remsh:%{_remsh} %{_remhost} }%{?_remsudo:%{_remsudo} }%{?_remchroot:%{_remchroot} %{_remroot} }%{___build_shell} %{___build_args}
-#%___build_pre	\
-#  RPM_SOURCE_DIR=\"%{u2p:%{_sourcedir}}\"\
-#  RPM_BUILD_DIR=\"%{u2p:%{_builddir}}\"\
-#  RPM_OPT_FLAGS=\"%{optflags}\"\
-#  RPM_ARCH=\"%{_arch}\"\
-#  RPM_OS=\"%{_os}\"\
-#  export RPM_SOURCE_DIR RPM_BUILD_DIR RPM_OPT_FLAGS RPM_ARCH RPM_OS\
-#  RPM_DOC_DIR=\"%{_docdir}\"\
-#  export RPM_DOC_DIR\
-#  RPM_PACKAGE_NAME=\"%{name}\"\
-#  RPM_PACKAGE_VERSION=\"%{version}\"\
-#  RPM_PACKAGE_RELEASE=\"%{release}\"\
-#  export RPM_PACKAGE_NAME RPM_PACKAGE_VERSION RPM_PACKAGE_RELEASE\
-#  LANG=C\
-#  export LANG\
-#  unset CDPATH DISPLAY ||:\
-#  %{?buildroot:RPM_BUILD_ROOT=\"%{u2p:%{buildroot}}\"\
-#  export RPM_BUILD_ROOT}\
-#  %{?_javaclasspath:CLASSPATH=\"%{_javaclasspath}\"\
-#  export CLASSPATH}\
-#  \
-#  %{verbose:set -x}%{!verbose:exec > /dev/null}\
-#  umask 022\
-#  cd \"%{u2p:%{_builddir}}\"\
+%___build_pre	\
+  RPM_SOURCE_DIR=\"%{_sourcedir}\"\
+  RPM_BUILD_DIR=\"%{_builddir}\"\
+  RPM_OPT_FLAGS=\"%{optflags}\"\
+  RPM_ARCH=\"%{_arch}\"\
+  RPM_OS=\"%{_os}\"\
+  export RPM_SOURCE_DIR RPM_BUILD_DIR RPM_OPT_FLAGS RPM_ARCH RPM_OS\
+  RPM_DOC_DIR=\"%{_docdir}\"\
+  export RPM_DOC_DIR\
+  RPM_PACKAGE_NAME=\"%{name}\"\
+  RPM_PACKAGE_VERSION=\"%{version}\"\
+  RPM_PACKAGE_RELEASE=\"%{release}\"\
+  export RPM_PACKAGE_NAME RPM_PACKAGE_VERSION RPM_PACKAGE_RELEASE\
+  LANG=C\
+  export LANG\
+  unset CDPATH DISPLAY ||:\
+  RPM_BUILD_ROOT=\"%{buildroot}\"\
+  export RPM_BUILD_ROOT\
+  \
+  set -x\
+  umask 022\
+  cd \"%{_builddir}\"\
 
 #==============================================================================
 # ---- configure macros.

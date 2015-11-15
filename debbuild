@@ -98,30 +98,7 @@ my %optflags = ( 'i386'	=>	'-O2 -g -march=i386 -mcpu=i686',
 		'amd64'	=>	'-O2 -g'
 	);
 my $hostarch;	# we set this later...
-my $scriptletbase =
-q(#!/bin/bash
-
-  RPM_SOURCE_DIR="%{_sourcedir}"
-  RPM_BUILD_DIR="%{_builddir}"
-  RPM_OPT_FLAGS="%{optflags}"
-  RPM_ARCH="%{_arch}"
-  RPM_OS="%{_os}"
-  export RPM_SOURCE_DIR RPM_BUILD_DIR RPM_OPT_FLAGS RPM_ARCH RPM_OS
-  RPM_DOC_DIR="%{_docdir}"
-  export RPM_DOC_DIR
-  RPM_PACKAGE_NAME="%{name}"
-  RPM_PACKAGE_VERSION="%{version}"
-  RPM_PACKAGE_RELEASE="%{release}"
-  export RPM_PACKAGE_NAME RPM_PACKAGE_VERSION RPM_PACKAGE_RELEASE
-  LANG=C
-  export LANG
-  unset CDPATH DISPLAY ||:
-  RPM_BUILD_ROOT="%{buildroot}"
-  export RPM_BUILD_ROOT
-
-  PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/usr/lib64/pkgconfig:/usr/share/pkgconfig"
-  export PKG_CONFIG_PATH
-);
+my $scriptletbase = "#!/bin/bash\n";
 
 if (-e '/usr/bin/dpkg-architecture') {
   foreach (`dpkg-architecture`) {
@@ -133,11 +110,8 @@ if (-e '/usr/bin/dpkg-architecture') {
   warn "Missing dpkg-architecture, DEB_HOST_ARCH will not be set!\n";
 }
 
-$scriptletbase .=
-q(
-  set -x
-  umask 022
-  cd "%{_builddir}"
+$scriptletbase .= q(
+%{___build_pre}
 );
 
 # Hackery to try to bring some semblance of sanity to packages built for more
@@ -1989,6 +1963,8 @@ sub expandmacros {
 
     # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
     $macrostring =~ s/%{getenv:([A-Z_]+)}/$ENV{$1}/g;
+
+    $macrostring =~ s/\\//g;
 
     # support for **some** %if constructs.  Note that this breaks somewhat if
     # there's no value specified...  but so does rpm.
