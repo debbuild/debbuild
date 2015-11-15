@@ -376,16 +376,16 @@ if ($cmdopts{type} eq 'b') {
 
 # Hokay.  Need to:
 # -> prep if -.p OR (-.[cilabs] AND !--short-circuit)
-if ($cmdopts{stage} eq 'p' || ($cmdopts{stage} =~ /[cilabs]/ && $cmdopts{short} ne 'y')) {
+if ($cmdopts{stage} eq 'p' || ($cmdopts{stage} =~ /[cilab]/ && $cmdopts{short} ne 'y')) {
   prep();
 }
 # -> build if -.c OR (-.[ilabs] AND !--short-circuit)
-if ($cmdopts{stage} eq 'c' || ($cmdopts{stage} =~ /[ilabs]/ && $cmdopts{short} ne 'y')) {
+if ($cmdopts{stage} eq 'c' || ($cmdopts{stage} =~ /[ilab]/ && $cmdopts{short} ne 'y')) {
   build();
 }
 # -> install if -.[ilabs]
-#if ($cmdopts{stage} eq 'i' || ($cmdopts{stage} =~ /[labs]/ && $cmdopts{short} ne 'y')) {
-if ($cmdopts{stage} =~ /[ilabs]/) {
+#if ($cmdopts{stage} eq 'i' || ($cmdopts{stage} =~ /[lab]/ && $cmdopts{short} ne 'y')) {
+if ($cmdopts{stage} =~ /[ilab]/) {
   install();
 #foreach my $pkg (@pkglist) {
 #  print "files in $pkg:\n ".$filelist{$pkg}."\n";
@@ -1617,7 +1617,7 @@ sub srcpackage {
   }
 
   # use pax -w [file] [file] ... -f outfile.sdeb
-  $paxcmd = "(cd %{_topdir}; %{__pax} -w ";
+  $paxcmd = "(cd %{_topdir}; %{__pax} -L -w ";
 
   # some packages may not have a "main" source.
   $paxcmd .= "%{_sourcedir}/$pkgdata{main}{source} " if $pkgdata{main}{source};
@@ -1638,7 +1638,7 @@ sub srcpackage {
   }
 
   # add the spec file and write to source package destination.
-  $paxcmd .= "%{_specdir}/$barespec -f $topdir/SDEBS/$pkgsrcname)";
+  $paxcmd .= "%{_specdir}/$barespec -f %{_srcdebdir}/$pkgsrcname)";
 
   # In case of %-macros...
   $paxcmd = expandmacros($paxcmd,'gp');
@@ -1937,11 +1937,11 @@ sub expandmacros {
 
   # Package data
   if ($section =~ /p/) {
-    $macrostring =~ s/%{source0?}/$topdir\/SOURCES\/$pkgdata{main}{source}/gi;
+    $macrostring =~ s|%{source0?}|%{_sourcedir}/$pkgdata{main}{source}|gi;
     foreach my $source (keys %{$pkgdata{sources}}) {
-      $macrostring =~ s/%{source$source}/$topdir\/SOURCES\/$pkgdata{sources}{$source}/gi;
+      $macrostring =~ s|%{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
     }
-    $macrostring =~ s/%{patch(\d+)}/$topdir\/SOURCES\/$pkgdata{main}{$1}/gi;
+    $macrostring =~ s|%{patch(\d+)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
     $macrostring =~ s/%{(name|version|release)}/$pkgdata{main}{$1}/gi;
   }
 
