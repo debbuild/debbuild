@@ -79,17 +79,8 @@ my $iflevel = 0; # Nest level
 # **NOTE:  May be possible to (ab)use bits of debhelper
 
 my %specglobals = ( # For %define's in specfile, among other things.
-	_vendor => 'debbuild',
 	# this can be changed by the Vendor: header in the spec file
 	vendor => 'debbuild',
-	# buildroot => "%{_tmppath}/%{name}-%{version}-%{release}.root".int(rand(99998)+1),
-	buildroot => '%{_topdir}/BUILDROOT/%{name}-%{version}-%{release}',
-	# Build tree
-	# default is /usr/src/debian/{BUILD,SOURCES,SPECS,DEBS,SDEBS}
-	_topdir => "/usr/src/debian",
-	# more things parsed from rpm's macro files
-	_default_patch_flags => '',
-	_default_patch_fuzz => 0
 );
 
 # "Constants"
@@ -110,13 +101,13 @@ my $hostarch;	# we set this later...
 my $scriptletbase =
 q(#!/bin/bash
 
-  RPM_SOURCE_DIR="%{_topdir}/SOURCES"
-  RPM_BUILD_DIR="%{_topdir}/BUILD"
+  RPM_SOURCE_DIR="%{_sourcedir}"
+  RPM_BUILD_DIR="%{_builddir}"
   RPM_OPT_FLAGS="%{optflags}"
   RPM_ARCH="%{_arch}"
   RPM_OS="%{_os}"
   export RPM_SOURCE_DIR RPM_BUILD_DIR RPM_OPT_FLAGS RPM_ARCH RPM_OS
-  RPM_DOC_DIR="/usr/share/doc"
+  RPM_DOC_DIR="%{_docdir}"
   export RPM_DOC_DIR
   RPM_PACKAGE_NAME="%{name}"
   RPM_PACKAGE_VERSION="%{version}"
@@ -146,7 +137,7 @@ $scriptletbase .=
 q(
   set -x
   umask 022
-  cd "%{_topdir}/BUILD"
+  cd "%{_builddir}"
 );
 
 # Hackery to try to bring some semblance of sanity to packages built for more
@@ -395,7 +386,7 @@ if ($cmdopts{type} eq 't') {
   } else {
     $cmdline = decompress($tarball)." | %{__tar} -xOf - --wildcards '*.spec'";
   }
-  $cmdline .= " > $specfile\n%{__cp} -f $tarball $topdir/SOURCES/";
+  $cmdline .= " > $specfile\n%{__cp} -f $tarball %{_sourcedir}";
   system expandmacros($cmdline,'g');
 
   $cmdopts{type} = 'b'; # fall through
@@ -464,13 +455,21 @@ sub load_config {
     if (-e $macros) { # should we warn about missing macro files?
       open MACROS,"<$macros";
       while (<MACROS>) {
-        if (/^\%([a-z0-9_]+)\s+(.+)$/) {
-          $specglobals{$1} = $2;
+        if (my ($macro,$value) = /^\%([a-z0-9_]+)\s+(.+)$/) {
+          if ($value =~ /\\$/) {
+            while (<MACROS>) {
+              $specglobals{$macro} .= $_;
+              last unless /\\$/;
+            }
+          } else {
+            $specglobals{$macro} = $value;
+          }
         }
       }
       close MACROS;
     }
   }
+
 } # end load_config()
 
 
@@ -959,7 +958,7 @@ ENDIF: if (/^%endif/) {
 #   %install etc, debbuild sets the global on the first call, and keeps using
 #   it for further %setup calls
 
-        $prepscript .= "cd '$topdir/BUILD'\n";
+        $prepscript .= "cd '%{_builddir}'\n";
         $prepscript .= "%{__rm} -rf '$tarballdir'\n" unless $leavedirs;
 
         foreach (@sbefore) {
@@ -1072,12 +1071,12 @@ ENDIF: if (/^%endif/) {
           $prepscript .= qq(echo "Patch ).($pnum eq '' ? '' : "#$pnum ").qq(($pkgdata{main}{$pnum}):"\n);
           if ( $pkgdata{main}{$pnum} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
             # Compressed patch.  You weirdo.
-            $prepscript .= decompress("$topdir/SOURCES/$pkgdata{main}{$pnum}");
+            $prepscript .= decompress("%{_sourcedir}/$pkgdata{main}{$pnum}");
           } elsif ( $pkgdata{main}{$pnum} =~ /\.zip$/ ) {
             # .zip'ed patch.  *backs away slowly*
-            $prepscript .= "%{__unzip} -p $topdir/SOURCES/$pkgdata{main}{$pnum}";
+            $prepscript .= "%{__unzip} -p %{_sourcedir}/$pkgdata{main}{$pnum}";
           } else {
-            $prepscript .= "%{__cat} $topdir/SOURCES/$pkgdata{main}{$pnum}";
+            $prepscript .= "%{__cat} %{_sourcedir}/$pkgdata{main}{$pnum}";
           }
           $prepscript .= " | %{__patch} $patchopts\n\n";
         }
@@ -1593,10 +1592,9 @@ sub binpackage {
       my $scrfile = $scr;
       if ($scrfile !~ s/un/rm/) { $scrfile .= 'inst'; }
       if ($pkgdata{$pkg}{$scr}) {
-        $pkgdata{$pkg}{$scr} = expandmacros($pkgdata{$pkg}{$scr},'gp');
         open SCRIPT, ">$specglobals{buildroot}/$pkg/DEBIAN/$scrfile";
         print SCRIPT "#!/bin/sh\nset -e\n\n";
-        print SCRIPT $pkgdata{$pkg}{$scr};
+        print SCRIPT expandmacros($pkgdata{$pkg}{$scr},'gp');
         close SCRIPT;
         chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/$scrfile";
       }
@@ -1641,19 +1639,19 @@ sub srcpackage {
 ##buglet: need to deal with silly case where silly user has put the spec
 # file in a subdir of %{_topdir}/SPECS.  Ewww.  Silly user!
   if (abs_path($specfile) !~ /^$topdir\/SPECS/) {
-    $paxcmd .= "%{__cp} $specfile $topdir/SPECS/; \n"
+    $paxcmd .= "%{__cp} $specfile %{_specdir};\n"
   }
 
   # use pax -w [file] [file] ... -f outfile.sdeb
-  $paxcmd = "(cd $topdir; %{__pax} -w ";
+  $paxcmd = "(cd %{_topdir}; %{__pax} -w ";
 
   # some packages may not have a "main" source.
-  $paxcmd .= "SOURCES/$pkgdata{main}{source} " if $pkgdata{main}{source};
+  $paxcmd .= "%{_sourcedir}/$pkgdata{main}{source} " if $pkgdata{main}{source};
 
   # create file list:  Source[nn], Patch[nn]
   foreach my $specbit (keys %{$pkgdata{main}} ) {
     next if $specbit eq 'source';
-    $paxcmd .= "SOURCES/$pkgdata{main}{$specbit} " if $specbit =~ /^patch/;
+    $paxcmd .= "%{_sourcedir}/$pkgdata{main}{$specbit} " if $specbit =~ /^patch/;
 ##buglet: need to deal with case where patches are listed as URLs?
 #  or other extended pathnames?  Silly !@$%^&!%%!%!! user!
   }
@@ -1662,11 +1660,11 @@ sub srcpackage {
     # Skip Source0, since it's also $pkgdata{main}{source}.  Could arguably
     # just remove that instead, but I think that might backfire.
     next if $source eq '0';
-    $paxcmd .= "SOURCES/$pkgdata{sources}{$source} ";
+    $paxcmd .= "%{_sourcedir}/$pkgdata{sources}{$source} ";
   }
 
   # add the spec file and write to source package destination.
-  $paxcmd .= "SPECS/$barespec -f $topdir/SDEBS/$pkgsrcname)";
+  $paxcmd .= "%{_specdir}/$barespec -f $topdir/SDEBS/$pkgsrcname)";
 
   # In case of %-macros...
   $paxcmd = expandmacros($paxcmd,'gp');
@@ -1873,7 +1871,7 @@ sub getreqs() {
 sub install_sdeb {
   $srcpkg = abs_path($srcpkg);
 
-  my $paxcmd = "(cd $topdir; %{__pax} -r -f $srcpkg)";
+  my $paxcmd = "(cd %{_topdir}; %{__pax} -r -f $srcpkg)";
 
   # In case of %-macros...
   $paxcmd = expandmacros($paxcmd,'gp');
@@ -2062,11 +2060,11 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
 # should probably stick a "no runaway" flag in here...  Just In Case...
     # %define's
 # note to self: find out valid chars for %define name/label so we can parse them
-    while (my ($key) = ($macrostring =~ /%{([a-z0-9_-]+)}/i) ) {
+    while (my ($key) = ($macrostring =~ /%{([a-z0-9_:-]+)}/i) ) {
       if (defined $specglobals{$key}) {
         $macrostring =~ s|%{$key}|$specglobals{$key}|g;
       } else {
-        expandmacros($macrostring,$section);
+        $macrostring = expandmacros($macrostring,$section);
       }
     }
 
@@ -2093,13 +2091,13 @@ sub unpackcmd {
    if ($sourcedrop =~ /\.zip$/) {
       # .zip files are not really tarballs
       $cmdstring .= "%{__unzip}".( $quietunpack ? ' -qq ' : ' ' ).
-         "'$topdir/SOURCES/$sourcedrop'";
+         "'%{_sourcedir}/$sourcedrop'";
    } elsif ($sourcedrop =~ /\.tar$/) {
       # plain .tar files don't need to be uncompressed
       $cmdstring .= "%{__tar} -x".( $quietunpack ? '' : 'vv' )."f ".
-         "'$topdir/SOURCES/$sourcedrop'";
+         "'%{_sourcedir}/$sourcedrop'";
    } else {
-      $cmdstring .= decompress("$topdir/SOURCES/$sourcedrop").
+      $cmdstring .= decompress("%{_sourcedir}/$sourcedrop").
          " | %{__tar} -x".( $quietunpack ? '' : 'vv' )."f -";
    }
    $cmdstring .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
