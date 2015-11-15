@@ -68,6 +68,8 @@ my %defattr = (filemode => '-',
 		group => '-',
 		dirmode => '-'
 	);
+my @ifexpr = (); # Nested %if..%else..%endif conditionals
+my $iflevel = 0; # Nest level
 
 # User's prefs for dirs, environment, etc,etc,etc.
 # config file ~/.debmacros
@@ -666,8 +668,6 @@ sub parse_spec {
   die "No .spec file specified!  Exiting.\n" if !$specfile;
   open SPECFILE,"<$specfile" or die "specfile ($specfile) barfed: $!";
 
-  my $iflevel = 0;
-  my @ifexpr = ();
   my $buildarch = $hostarch;
   $pkgdata{main}{arch} = $hostarch;
 
@@ -717,21 +717,17 @@ LINE: while (<SPECFILE>) {
     s/^%ifarch/%if %{_arch}==/;
     s/^%ifnarch/%if %{_arch}!=/;
 
-    # Generic %if...%else...%endif construct
-    if (/^\%if/) {
-      s/^\%if//;
+    # Generic %if..%else..%endif construct
+    if (/^%if/) {
+      s/^%if//;
       chomp;
-print "Input:<<<$_>>>\n";
       my $expr = lc expandmacros($_, 'g');
-print "Expanded:<<<$expr>>>\n";
-      $iflevel++;
 
       if ($expr !~ /^[\d\s<=>&|\-+\(\)]+$/) {
         # got a logic statement we want to turn into a 1 or a 0.
         # most likely by eval'ing it.
 
         $expr =~ s/\s//g;
-print "Unspaced:<<<$expr>>>\n";
 
 # For Great w00tness!  New and Improved multilayered logic handling.
 
@@ -758,39 +754,44 @@ print "Unspaced:<<<$expr>>>\n";
         $expr =~ s/(\d+)/0$1/g; # in octal; e.g., 0%{?ubuntu}
       }
 
-      # Turn it into something that eval's to a number.  Maybe not needed?  O_o
-print "Expression:<<<$expr>>>\n";
-      unshift @ifexpr, eval $expr;
-print "Evaluated:<<<$ifexpr[0]>>>\n";
+      # Turn it into something that evals to a number.  Maybe not needed?  O_o
+      $iflevel++; unshift @ifexpr, (eval $expr || 0);
 
       next LINE if $ifexpr[0] != 0; # This appears to be the only case we call false.
-      while (<SPECFILE>) {
-        if (/^\%endif/) {
-          $iflevel--; shift @ifexpr;
-          next LINE;
-        } elsif (/^\%else/) {
-          next LINE;
+      my $savelevel = $iflevel;
+      while (<SPECFILE>) { # Skip %if-block, inluding nested %if..%else%..%endif
+        if (/^%if/) {
+          $iflevel++;
+        } elsif (/^%else/) {
+          goto ELSE if $iflevel == $savelevel;
+        } elsif (/^%endif/) {
+          goto ENDIF if $iflevel == $savelevel;
+          $iflevel--;
         }
       }
     }
-    if (/^\%else/) {
+ELSE: if (/^%else/) {
       next LINE if $ifexpr[0] == 0;
 
-      while (<SPECFILE>) {
-        if (/^\%endif/) {
-          $iflevel--; shift @ifexpr;
-          next LINE;
+      my $savelevel = $iflevel;
+      while (<SPECFILE>) { # Skip %else-block, inluding nested %if..%else%..%endif
+        if (/^%if/) {
+          $iflevel++;
+        } elsif (/^%else/) {
+          goto ELSE if $iflevel == $savelevel;
+        } elsif (/^%endif/) {
+          goto ENDIF if $iflevel == $savelevel;
+          $iflevel--;
         }
       }
     }
-    if (/^\%endif/) {
+ENDIF: if (/^%endif/) {
       $iflevel--; shift @ifexpr;
       next LINE;
-    } # %if/%else/%endif
+    } # %if..%else..%endif
 
     if (/^\%{echo:(.+)}/) {
-      my $output = expandmacros($1, 'gp');
-      print "$output";
+      print expandmacros($1, 'gp');
       next LINE;
     }
 
@@ -1082,7 +1083,7 @@ print "Evaluated:<<<$ifexpr[0]>>>\n";
         }
 
       } else {
-        $prepscript .= expandmacros($_,'gp');
+        $prepscript .= $_;
       }
       next LINE;
     } # prep
@@ -1091,29 +1092,29 @@ print "Evaluated:<<<$ifexpr[0]>>>\n";
       # %build.  This is pretty much just a shell script.  There
       # aren't many local macros to deal with.
       if (/^\%configure/) {
-        $buildscript .= expandmacros($_,'cgbp');
+        $buildscript .= expandmacros($_,'c');
       } else {
-        $buildscript .= expandmacros($_,'gp');
+        $buildscript .= $_;
       }
       next LINE;
     } # build
 
     if ($stage eq 'install') {
       if (/^\%makeinstall/) {
-        $installscript .= expandmacros($_,'igbp');
+        $installscript .= expandmacros($_,'i');
       } else {
-        $installscript .= expandmacros($_,'gp');
+        $installscript .= $_;
       }
       next LINE;
     } # install
 
     if ($stage eq 'clean') {
-      $cleanscript .= expandmacros($_,'gp');
+      $cleanscript .= $_;
       next LINE;
     } # clean
 
     if ($stage eq 'prepost') {
-      $pkgdata{$subname}{$scriptlet} .= expandmacros($_,'gp');
+      $pkgdata{$subname}{$scriptlet} .= $_;
       next LINE;
     } # prepost
 
@@ -1220,13 +1221,13 @@ print "Evaluated:<<<$ifexpr[0]>>>\n";
       if (/^summary:\s*(.+)/i) {
         $pkgdata{main}{summary} = $1;
       } elsif (/^name:\s*(.+)/i) {
-        $pkgdata{main}{name} = expandmacros($1,'g');
+        $pkgdata{main}{name} = $1;
       } elsif (/^epoch:\s*(.+)/i) {
-        $pkgdata{main}{epoch} = expandmacros($1,'g');
+        $pkgdata{main}{epoch} = $1;
       } elsif (/^version:\s*(.+)/i) {
-        $pkgdata{main}{version} = expandmacros($1,'g');
+        $pkgdata{main}{version} = $1;
       } elsif (/^release:\s*(.+)/i) {
-        $pkgdata{main}{release} = expandmacros($1,'g');
+        $pkgdata{main}{release} = $1;
       } elsif (/^group:\s*(.+)/i) {
         $pkgdata{main}{group} = $1;
       } elsif (/^copyright:\s*(.+)/i) {
@@ -1238,7 +1239,7 @@ print "Evaluated:<<<$ifexpr[0]>>>\n";
       } elsif (/^vendor:\s*(.+)/i) {
         $specglobals{vendor} = $1;
       } elsif (/^buildroot:\s*(.+)/i) {
-        $specglobals{buildroot} = expandmacros($1, 'gp');
+        $specglobals{buildroot} = $1;
       } elsif (my ($srcnum, $src) = (/^source(\d*):\s*(.+)/i)) {
         $src =~ s/\s*$//;
         $srcnum = 0 unless $srcnum;
@@ -1255,7 +1256,7 @@ print "Evaluated:<<<$ifexpr[0]>>>\n";
       } elsif (/^buildrequires:\s*(.+)/i) {
         $buildreq .= ", $1";
       } elsif (/^requires:\s*(.+)/i) {
-        $pkgdata{main}{requires} .= ", ".expandmacros("$1", 'gp');
+        $pkgdata{main}{requires} .= ", $1";
       } elsif (/^provides:\s*(.+)/i) {
         $pkgdata{main}{provides} .= ", $1";
       } elsif (/^conflicts:\s*(.+)/i) {
@@ -1290,14 +1291,11 @@ print "Evaluated:<<<$ifexpr[0]>>>\n";
 
   # Parse and replace some more macros.  More will be replaced even later.
 
-  # Expand macros as necessary.
-  $cleanscript = expandmacros($cleanscript,'gp');
-
+  # --buildroot override
   $specglobals{buildroot} = $cmdbuildroot if $cmdbuildroot;
 
-  while ($specglobals{buildroot} =~ m/%/) {
-    $specglobals{buildroot} = expandmacros($specglobals{buildroot},'gp');
-  }
+  # Expand macros as necessary.
+  $specglobals{buildroot} = expandmacros($specglobals{buildroot},'gp');
 
   $scriptletbase = expandmacros($scriptletbase,'gp');
 
@@ -1443,7 +1441,7 @@ sub binpackage {
     mkdir "$specglobals{buildroot}/$pkg";
 
     # Eliminate any lingering % macros
-    $filelist{$pkg} = expandmacros $filelist{$pkg}, 'gp';
+    $filelist{$pkg} = expandmacros($filelist{$pkg}, 'gp');
 
     my @pkgfilelist = split ' ', $filelist{$pkg};
     foreach my $pkgfile (@pkgfilelist) {
