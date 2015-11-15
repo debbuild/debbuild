@@ -1959,23 +1959,6 @@ sub expandmacros {
     # tagged on the end where they take precedence (supposedly)
     # over the "default" ones.
 
-    # Now we cascade the macros introduced above.  >_<
-								# Wot ot to go theah:
-    $macrostring =~ s|%{_mandir}|%{_datadir}/man|g;		#/usr/share/man
-    $macrostring =~ s|%{_infodir}|%{_datadir}/info|g;		#/usr/share/info
-    $macrostring =~ s|%{_oldincludedir}|/usr/include|g;		#/usr/include
-    $macrostring =~ s|%{_includedir}|%{_prefix}/include|g;	#/usr/include
-    $macrostring =~ s|%{_libdir}|%{_exec_prefix}/%{_lib}|g;	#/usr/lib
-    $macrostring =~ s|%{_lib}|lib|g;				#?
-    $macrostring =~ s|%{_localstatedir}|/var|g;			#/var
-    $macrostring =~ s|%{_sharedstatedir}|%{_prefix}/com|g;	#/usr/com WTF?
-    $macrostring =~ s|%{_sysconfdir}|/etc|g;			#/etc
-    $macrostring =~ s|%{_datadir}|%{_prefix}/share|g;		#/usr/share
-    $macrostring =~ s|%{_libexecdir}|%{_exec_prefix}/libexec|g;	#/usr/libexec
-    $macrostring =~ s|%{_sbindir}|%{_exec_prefix}/sbin|g;	#/usr/sbin
-    $macrostring =~ s|%{_bindir}|%{_exec_prefix}/bin|g;		#/usr/bin
-    $macrostring =~ s|%{_exec_prefix}|%{_prefix}|g;		#/usr
-    $macrostring =~ s|%{_prefix}|/usr|g;			#/usr
   } # done with config section
 
   # Package data
@@ -1990,27 +1973,10 @@ sub expandmacros {
 
   # Globals, and not-so-globals
   if ($section =~ /g/) {
-
-    $macrostring =~ s|%{_builddir}|%{_topdir}/BUILD|g;
-# Not predefined in an eternal file;  defaults to %{name}-%{version}
+    # Not predefined in an external file; defaults to %{name}-%{version}
     $macrostring =~ s|%{buildsubdir}|$tarballdir|g;
-    $macrostring =~ s|%{_topdir}|$topdir|g;
-    $macrostring =~ s|%{_tmppath}|$tmpdir|g;
-    $macrostring =~ s'%{_docdir}'%{_datadir}/doc'g;
-
-    # Standard FHS locations.  More or less.
-    $macrostring =~ s'%{_bindir}'/usr/bin'g;
-    $macrostring =~ s'%{_sbindir}'/usr/sbin'g;
-    $macrostring =~ s'%{_mandir}'%{_datadir}/man'g;
-    $macrostring =~ s'%{_infodir}'%{_datadir}/info'g;
-    $macrostring =~ s'%{_includedir}'/usr/include'g;
-    $macrostring =~ s'%{_libdir}'/usr/lib'g;
-    $macrostring =~ s'%{_sysconfdir}'/etc'g;
-    $macrostring =~ s'%{_localstatedir}'/var'g;
-    $macrostring =~ s'%{_prefix}'/usr'g;
-
-    # FHS-ish locations that aren't quite actually FHS-specified.
-    $macrostring =~ s'%{_datadir}'/usr/share'g;
+    $macrostring =~ s|%{_docdir}|%{_datadir}/doc|g;
+    $macrostring =~ s|%{optflags}|$optflags{$hostarch}|g;
 
     # special %define's.  Handle the general case where we eval anything.
     # Even more general:  %(...) is a spec-parse-time shell code wrapper.
@@ -2052,10 +2018,6 @@ $tmpcount++;
 die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
 
     } # while()
-
-    # Misc expansions
-    $macrostring =~ s|%{_arch}|$hostarch|g;
-    $macrostring =~ s|%{optflags}|$optflags{$hostarch}|g;
 
 # should probably stick a "no runaway" flag in here...  Just In Case...
     # %define's
