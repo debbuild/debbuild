@@ -212,6 +212,7 @@
 %_sbindir		%{_exec_prefix}/sbin
 %_libexecdir		%{_exec_prefix}/libexec
 %_datadir		%{_prefix}/share
+%_docdir		%{_datadir}/doc
 %_sysconfdir		/etc
 %_sharedstatedir	%{_prefix}/com
 %_localstatedir		/var

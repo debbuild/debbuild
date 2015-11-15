@@ -1975,7 +1975,6 @@ sub expandmacros {
   if ($section =~ /g/) {
     # Not predefined in an external file; defaults to %{name}-%{version}
     $macrostring =~ s|%{buildsubdir}|$tarballdir|g;
-    $macrostring =~ s|%{_docdir}|%{_datadir}/doc|g;
     $macrostring =~ s|%{optflags}|$optflags{$hostarch}|g;
 
     # special %define's.  Handle the general case where we eval anything.
