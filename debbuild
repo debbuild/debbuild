@@ -666,7 +666,8 @@ sub parse_spec {
   die "No .spec file specified!  Exiting.\n" if !$specfile;
   open SPECFILE,"<$specfile" or die "specfile ($specfile) barfed: $!";
 
-  my ($iflevel, $ifexpr) = (0, undef);
+  my $iflevel = 0;
+  my @ifexpr = ();
   my $buildarch = $hostarch;
   $pkgdata{main}{arch} = $hostarch;
 
@@ -721,7 +722,7 @@ LINE: while (<SPECFILE>) {
       s/^\%if//;
       chomp;
 print "Input:<<<$_>>>\n";
-      my $expr = expandmacros($_, 'g');
+      my $expr = lc expandmacros($_, 'g');
 print "Expanded:<<<$expr>>>\n";
       $iflevel++;
 
@@ -752,24 +753,20 @@ print "Unspaced:<<<$expr>>>\n";
         $expr =~ s/</ lt /g;
         $expr =~ s/>/ gt /g;
 
-        # Turn it into something that eval's to a number.  Maybe not needed?  O_o
-        #$expr = "( $expr ? 1 : 0 )";
-
-print "Expression:<<<$expr>>>\n";
-        $ifexpr = eval $expr;
-print "Evaluated:<<<$ifexpr>>>\n";
       } else {
         # "plain" numeric expressions are evaluated as-is
         $expr =~ s/(\d+)/0$1/g; # in octal; e.g., 0%{?ubuntu}
-print "Expression:<<<$expr>>>\n";
-        $ifexpr = eval $expr;
-print "Evaluated:<<<$ifexpr>>>\n";
       }
 
-      next LINE if $ifexpr != 0;        # This appears to be the only case we call false.
+      # Turn it into something that eval's to a number.  Maybe not needed?  O_o
+print "Expression:<<<$expr>>>\n";
+      unshift @ifexpr, eval $expr;
+print "Evaluated:<<<$ifexpr[0]>>>\n";
+
+      next LINE if $ifexpr[0] != 0; # This appears to be the only case we call false.
       while (<SPECFILE>) {
         if (/^\%endif/) {
-          $iflevel--; $ifexpr = undef;
+          $iflevel--; shift @ifexpr;
           next LINE;
         } elsif (/^\%else/) {
           next LINE;
@@ -777,17 +774,17 @@ print "Evaluated:<<<$ifexpr>>>\n";
       }
     }
     if (/^\%else/) {
-      next LINE if $ifexpr == 0;
+      next LINE if $ifexpr[0] == 0;
 
       while (<SPECFILE>) {
         if (/^\%endif/) {
-          $iflevel--; $ifexpr = undef;
+          $iflevel--; shift @ifexpr;
           next LINE;
         }
       }
     }
     if (/^\%endif/) {
-      $iflevel--; $ifexpr = undef;
+      $iflevel--; shift @ifexpr;
       next LINE;
     } # %if/%else/%endif
 
