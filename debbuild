@@ -1311,15 +1311,12 @@ print "Evaluated:<<<$ifexpr>>>\n";
 ## prep()
 # Writes and executes the %prep script (mostly) built while reading the spec file.
 sub prep {
-  # Replace some things here just to make sure.
-  $prepscript = expandmacros($prepscript,'gp');
-
   # create script filename
   my $prepscriptfile = "$tmpdir/deb-tmp.prep.".int(rand(99998)+1);
   sysopen(PREPSCRIPT, $prepscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die "Can't open/create prep script file $prepscriptfile: $!\n";
   print PREPSCRIPT $scriptletbase;
-  print PREPSCRIPT $prepscript;
+  print PREPSCRIPT expandmacros($prepscript,'gp');
   close PREPSCRIPT;
 
   # execute
@@ -1335,15 +1332,12 @@ sub prep {
 ## build()
 # Writes and executes the %build script (mostly) built while reading the spec file.
 sub build {
-  # Expand the macros
-  $buildscript = expandmacros($buildscript,'cgbp');
-
   # create script filename
   my $buildscriptfile = "$tmpdir/deb-tmp.build.".int(rand(99998)+1);
   sysopen(BUILDSCRIPT, $buildscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die "Can't open/create build script file $buildscriptfile: $!\n";
   print BUILDSCRIPT $scriptletbase;
-  print BUILDSCRIPT $buildscript;
+  print BUILDSCRIPT expandmacros($buildscript,'cgbp');
   close BUILDSCRIPT;
 
   # execute
@@ -1374,15 +1368,12 @@ sub install {
     }
   }
 
-  # Expand the macros
-  $installscript = expandmacros($installscript,'igbp');
-
   # create script filename
   my $installscriptfile = "$tmpdir/deb-tmp.inst.".int(rand(99998)+1);
   sysopen(INSTSCRIPT, $installscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die "Can't open/create install script file $installscriptfile: $!\n";
   print INSTSCRIPT $scriptletbase;
-  print INSTSCRIPT $installscript;
+  print INSTSCRIPT expandmacros($installscript,'igbp');
   close INSTSCRIPT;
 
   # execute
@@ -1693,15 +1684,12 @@ sub srcpackage {
 ## clean()
 # Writes and executes the %clean script (mostly) built while reading the spec file.
 sub clean {
-  # Replace some things here just to make sure.
-  $cleanscript = expandmacros($cleanscript,'gp');
-
   # create script filename
   my $cleanscriptfile = "$tmpdir/deb-tmp.clean.".int(rand(99998)+1);
   sysopen(CLEANSCRIPT, $cleanscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die $!;
   print CLEANSCRIPT $scriptletbase;
-  print CLEANSCRIPT $cleanscript;
+  print CLEANSCRIPT expandmacros($cleanscript,'gp');
   close CLEANSCRIPT;
 
   # execute
@@ -1809,7 +1797,7 @@ sub checkbuildreq {
 # Doesn't work well on shell scripts. but those *should* be
 # fine anyway.  (Yeah, right...)
 sub getreqs() {
-  my $pkgtree = $_[0];
+  my ($pkgtree) = @_;
 
   print "Checking library requirements...\n";
   my @binlist = qx { find $pkgtree -type f -perm 755 };
@@ -1905,8 +1893,7 @@ sub install_sdeb {
 # Split up a bit with some sections so we don't spend time trying to
 # expand macros that are only used in a few specific places.
 sub expandmacros {
-  my $macrostring = shift;
-  my $section = shift;
+  my ($macrostring,$section) = @_;
 
   # To allow the FHS-ish %configure and %makeinstall to work The Right Way.
   # (Without clobbering the global $specglobals{buildroot}.)
