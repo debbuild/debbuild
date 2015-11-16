@@ -1184,6 +1184,7 @@ ENDIF: if (/^%endif/) {
     if ($stage eq 'changelog') {
       # this is one of the few places we do NOT generally want to replace macros...
       $pkgdata{main}{changelog} .= $_;
+      next LINE;
     }
 
     if ($stage eq 'preamble') {
