@@ -1947,14 +1947,14 @@ sub expandmacros {
       # Oy vey this gets silly for the perl bits.  Executing a shell to
       # call Perl to get the vendorlib/sitelib/whatever "core" globals.
       # This can do more, but...  eww.
-    $macrostring =~ s|%\((.+)\)|my $res = qx{/bin/sh -c '$1'}; chomp $res; $res;|eg;
+    $macrostring =~ s|%\((.+?)\)|my $res = qx{/bin/sh -c '$1'}; chomp $res; $res;|eg;
       # Yay!  ' characters apparently get properly exscapededed.
 
     # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
     $macrostring =~ s/%{getenv:([A-Z_]+)}/$ENV{$1}/g;
 
     # curious form of 'basename'? – strip domain host (and port)
-    while ($macrostring =~ /%{u2p:(%{.+})}/) {
+    while ($macrostring =~ /%{u2p:(%{.+?})}/) {
       my $url = $1;
       my $expand = expandmacros($1,$section);
       $expand =~ s|\w+://[\w\-.:]+||;
