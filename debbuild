@@ -1859,10 +1859,6 @@ sub install_sdeb {
 sub expandmacros {
   my ($macrostring,$section) = @_;
 
-  # To allow the FHS-ish %configure and %makeinstall to work The Right Way.
-  # (Without clobbering the global $specglobals{buildroot}.)
-  my $prefix = '';
-
   if ($section =~ /c/) {
     # %configure macro
 # Don't know what it's for, don't have a useful default replacement
@@ -1886,7 +1882,6 @@ sub expandmacros {
 
 # %makeinstall expands with recursive macros in rpm.  whee.
   if ($section =~ /i/) {
-    # This is where we need to mangle $prefix.
     $macrostring =~ s'%makeinstall'%{__make} \
         prefix=%{?buildroot:%{buildroot}}%{_prefix} \
         exec_prefix=%{?buildroot:%{buildroot}}%{_exec_prefix} \
@@ -1902,7 +1897,6 @@ sub expandmacros {
         mandir=%{?buildroot:%{buildroot}}%{_mandir} \
         infodir=%{?buildroot:%{buildroot}}%{_infodir} \
   install ';
-    $prefix = $specglobals{buildroot};
   } # done %install and/or %makeinstall
 
   # Build data
