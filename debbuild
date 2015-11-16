@@ -51,7 +51,6 @@ sub unpackcmd;
 # Globals
 my $finalmessages = '';	# A place to stuff messages that I want printed at the *very* end of any processing.
 my $specfile;
-my $tarball;
 my $srcpkg;
 my $cmdbuildroot;
 
@@ -331,16 +330,17 @@ if ($cmdopts{type} eq 's') {
 }
 
 if ($cmdopts{type} eq 't') {
-  # Need to inspect the $tarball to find the spec file.
+  # Need to inspect the tarball to find the spec file.
   # Note that rpmbuild doesn't seem to support this operation from a
   # .zip file properly, but we try our best.
   my $cmdline;
+  my $tarball = $specglobals{tarball};
   if ($tarball =~ /\.zip$/) {
     # .zip files are not really tarballs
-    $cmdline = "%{__unzip} -Z1 $tarball '*.spec'";
+    $cmdline = "%{__unzip} -Z1 %{tarball} '*.spec'";
   } elsif ($tarball =~ /\.tar$/) {
     # plain .tar files don't need to be uncompressed
-    $cmdline = "%{__tar} -tf $tarball --wildcards '*.spec'";
+    $cmdline = "%{__tar} -tf %{tarball} --wildcards '*.spec'";
   } else {
     $cmdline = decompress($tarball)." | %{__tar} -tf - --wildcards '*.spec'";
   }
@@ -351,14 +351,14 @@ if ($cmdopts{type} eq 't') {
 
   if ($tarball =~ /\.zip$/) {
     # .zip files are not really tarballs
-    $cmdline = "%{__unzip} -p $tarball '*.spec'";
+    $cmdline = "%{__unzip} -p %{tarball} '*.spec'";
   } elsif ($tarball =~ /\.tar$/) {
     # plain .tar files don't need to be uncompressed
-    $cmdline = "%{__tar} -xOf $tarball --wildcards '*.spec'";
+    $cmdline = "%{__tar} -xOf %{tarball} --wildcards '*.spec'";
   } else {
     $cmdline = decompress($tarball)." | %{__tar} -xOf - --wildcards '*.spec'";
   }
-  $cmdline .= " > $specfile\n%{__cp} -f $tarball %{_sourcedir}";
+  $cmdline .= " > $specfile\n%{__cp} -f %{tarball} %{_sourcedir}";
   system expandmacros($cmdline,'g');
 
   $cmdopts{type} = 'b'; # fall through
@@ -576,7 +576,7 @@ debbuild-specific options:
 	  $specfile = $_;
 	} else {
 	  # Tarball build.  Need to extract tarball to find spec file.  Whee.
-	  $tarball = $_;
+	  $specglobals{tarball} = $_;
 	}
       }
     }
