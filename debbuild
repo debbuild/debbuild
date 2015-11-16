@@ -2087,7 +2087,6 @@ several rpmbuild options are not supported:
 
  --recompile
  --showrc
- --buildroot
  --clean
  --nobuild
  --rmsource
@@ -2197,12 +2196,6 @@ Dcumentation, such as it is, will likely remain perpetually out of date.
 
 %_topdir and the five "working" directories under %_topdir could arguably be created by 
 debbuild.  However, rpmbuild doesn't create these directories either.
-
-debbuild's %setup -q is arguably less buggy than rpmbuild's implementation;  with rpmbuild
-it must appear before -a or -b at least to be effective.  debbuild does not care.
-
-%setup -c, -a, and -b should arguably throw errors if specified together;  otherwise the
-results are almost certainly not what you want to happen.
 
 =head1 SEE ALSO
 
