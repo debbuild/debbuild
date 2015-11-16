@@ -2,9 +2,9 @@
 # \verbatim
 #
 # This is a global DEBBUILD configuration file. All changes made here will be
-# lost when the rpm package is upgraded. Any per-system configuration should be
-# added to /etc/debbuild/macros, while per-user configuration should be added
-# to ~/.debmacros.
+# lost when the debbuild package is upgraded. Any per-system configuration
+# should be added to /etc/debbuild/macros, while per-user configuration should
+# be added to ~/.debmacros.
 #
 #==============================================================================
 # ---- A macro that expands to nothing.
@@ -32,9 +32,10 @@
 %__ln_s			ln -s
 %__make			/usr/bin/make
 %__mkdir		/bin/mkdir
-%__mkdir_p		/bin/mkdir -p
+%__mkdir_p		%{__mkdir} -p
 %__mv			/bin/mv
 %__patch		/usr/bin/patch
+%__pax			/bin/pax
 %__rm			/bin/rm
 %__sed			/bin/sed
 %__tar			/bin/tar
@@ -119,8 +120,6 @@
 #%defattr(-,root,root)\
 #%endif\
 #%{nil}
-
-#%_defaultdocdir		%{_datadir}/doc
 
 #	The directory where newly built binary packages will be written.
 %_debdir		%{_topdir}/DEBS

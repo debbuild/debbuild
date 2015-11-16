@@ -1,8 +1,8 @@
-#/*! \page config_macros Default configuration: /etc/rpm/macros
+#/*! \page config_macros Default configuration: /etc/debbuild/macros
 # \verbatim
 #
-# This is a per-system RPM configuration file.
-# Per-user configuration should be added to ~/.rpmmacros.
+# This is a per-system DEBBUILD configuration file.
+# Per-user configuration should be added to ~/.debmacros.
 #
 #==============================================================================
 # ---- TeX Live utilities
@@ -17,7 +17,6 @@
 #==============================================================================
 # ---- System utilities
 #
-%__pax /bin/pax
 %__ps2pdf %{_usr}/bin/ps2pdf
 %__recode %{_usr}/bin/recode
 %__touch %{_usr}/bin/touch
