@@ -691,7 +691,7 @@ LINE: while (<SPECFILE>) {
     if (/^%if/) {
       s/^%if//;
       chomp;
-      my $expr = lc expandmacros($_, 'g');
+      my $expr = lc expandmacros($_, 'gp');
 
       if ($expr !~ /^[\d\s<=>&|\-+\(\)]+$/) {
         # got a logic statement we want to turn into a 1 or a 0.
