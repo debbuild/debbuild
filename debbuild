@@ -69,7 +69,6 @@ my %defattr = (filemode => '-',
 		dirmode => '-'
 	);
 my @ifexpr = (); # Nested %if..%else..%endif conditionals
-my $iflevel = 0; # Nest level
 
 # User's prefs for dirs, environment, etc,etc,etc.
 # config file ~/.debmacros
@@ -727,37 +726,37 @@ LINE: while (<SPECFILE>) {
       }
 
       # Turn it into something that evals to a number.  Maybe not needed?  O_o
-      $iflevel++; unshift @ifexpr, (eval $expr || 0);
+      unshift @ifexpr, (eval $expr || 0);
 
       next LINE if $ifexpr[0] != 0; # This appears to be the only case we call false.
-      my $savelevel = $iflevel;
+      my $iflevel = @ifexpr;
       while (<SPECFILE>) { # Skip %if-block, inluding nested %if..%else..%endif
         if (/^%if/) {
           $iflevel++;
         } elsif (/^%else/) {
-          goto ELSE if $iflevel == $savelevel;
+          goto ELSE if $iflevel == @ifexpr;
         } elsif (/^%endif/) {
-          goto ENDIF if $iflevel == $savelevel;
+          goto ENDIF if $iflevel == @ifexpr;
           $iflevel--;
         }
       }
     }
 ELSE: if (/^%else/) {
       next LINE if $ifexpr[0] == 0;
-      my $savelevel = $iflevel;
+      my $iflevel = @ifexpr;
       while (<SPECFILE>) { # Skip %else-block, inluding nested %if..%else..%endif
         if (/^%if/) {
           $iflevel++;
         } elsif (/^%else/) {
-          goto ELSE if $iflevel == $savelevel;
+          goto ELSE if $iflevel == @ifexpr;
         } elsif (/^%endif/) {
-          goto ENDIF if $iflevel == $savelevel;
+          goto ENDIF if $iflevel == @ifexpr;
           $iflevel--;
         }
       }
     }
 ENDIF: if (/^%endif/) {
-      $iflevel--; shift @ifexpr;
+      shift @ifexpr;
       next LINE;
     } # %if..%else..%endif
 
@@ -1234,21 +1233,21 @@ ENDIF: if (/^%endif/) {
         $pkgdata{main}{conflicts} .= ", $1";
       } elsif (/^recommends:\s*(.+)/i) {
         $pkgdata{main}{recommends} .= ", $1";
-	warn "Warning:  Debian-specific 'Recommends:' outside \%if wrapper\n" if $iflevel == 0;
+	warn "Warning:  Debian-specific 'Recommends:' outside \%if wrapper\n" if 0 == @ifexpr;
 # As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
 # along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
       } elsif (/^suggests:\s*(.+)/i) {
         $pkgdata{main}{suggests} .= ", $1";
-	warn "Warning:  'Suggests:' outside \%if wrapper\n" if $iflevel == 0;
+	warn "Warning:  'Suggests:' outside \%if wrapper\n" if 0 == @ifexpr;
       } elsif (/^enhances:\s*(.+)/i) {
         $pkgdata{main}{enhances} .= ", $1";
-	warn "Warning:  'Enhances:' outside \%if wrapper\n" if $iflevel == 0;
+	warn "Warning:  'Enhances:' outside \%if wrapper\n" if 0 == @ifexpr;
       } elsif (/^supplements:\s*(.+)/i) {
         $pkgdata{main}{enhances} .= ", $1";
         warn "Warning:  'Supplements:' is not natively supported by .deb packages.  Downgrading relationship to Enhances:.\n";
       } elsif (/^replaces:\s*(.+)/i) {
         $pkgdata{main}{replaces} .= ", $1";
-	warn "Warning:  'Replaces:' outside \%if wrapper\n" if $iflevel == 0;
+	warn "Warning:  'Replaces:' outside \%if wrapper\n" if 0 == @ifexpr;
       } elsif (/^obsoletes:\s*(.+)/i) {
         $pkgdata{main}{replaces} .= ", $1";
       } elsif (/^autoreq(?:prov)?:\s*(.+)/i) {
