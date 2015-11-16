@@ -1603,7 +1603,7 @@ sub srcpackage {
   my $paxcmd;
 
   # We'll definitely need this later, and *may* need it sooner.
-  (my $barespec = $specfile) =~ s|.+/([^/]+)$|$1|;
+  my $barespec = basename($specfile);
 
   # Copy the specfile to the build tree, but only if it's not there already.
 ##buglet: need to deal with silly case where silly user has put the spec
