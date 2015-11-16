@@ -54,7 +54,6 @@ my $specfile;
 my $tarball;
 my $srcpkg;
 my $cmdbuildroot;
-my $tarballdir = '%{name}-%{version}';	# We do this in case of a spec file not using %setup...
 
 # Initialized globals
 my $verbosity = 0;
@@ -802,19 +801,19 @@ ENDIF: if (/^%endif/) {
 
     if (/^\%build/) {
       $stage = 'build';
-      $buildscript .= "cd '$tarballdir'\n" if $pkgdata{main}{hassetup};
+      $buildscript .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
       next LINE;
     } # %build
 
     if (/^\%install/) {
       $stage = 'install';
-      $installscript .= "cd '$tarballdir'\n" if $pkgdata{main}{hassetup};
+      $installscript .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
       next LINE;
     } # %install
 
     if (/^\%clean/) {
       $stage = 'clean';
-      $cleanscript .= "cd '$tarballdir'\n" if $pkgdata{main}{hassetup};
+      $cleanscript .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
       next LINE;
     } # %clean
 
@@ -896,7 +895,7 @@ ENDIF: if (/^%endif/) {
         shift @sbits;
         while (my $sopt = shift @sbits) {
           if ($sopt eq '-n') {
-            $tarballdir = shift @sbits;
+            $specglobals{buildsubdir} = shift @sbits;
           } elsif ($sopt eq '-a') {
             # shift, next opt must be numeric (which sourcenn:)
             $sopt = shift @sbits;
@@ -930,22 +929,22 @@ ENDIF: if (/^%endif/) {
 #   it for further %setup calls
 
         $prepscript .= "cd '%{_builddir}'\n";
-        $prepscript .= "%{__rm} -rf '$tarballdir'\n" unless $leavedirs;
+        $prepscript .= "%{__rm} -rf '%{buildsubdir}'\n" unless $leavedirs;
 
         foreach (@sbefore) {
           $prepscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
         }
 
         if ($createdir) {
-          $prepscript .= "%{__mkdir_p} $tarballdir\n";
-          $prepscript .= "cd '$tarballdir'\n";
+          $prepscript .= "%{__mkdir_p} %{buildsubdir}\n";
+          $prepscript .= "cd '%{buildsubdir}'\n";
         }
         elsif (not $skipdefault) {
           $prepscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
         }
 
         if (not $createdir) {
-          $prepscript .= "cd '$tarballdir'\n";
+          $prepscript .= "cd '%{buildsubdir}'\n";
         }
         elsif (not $skipdefault) {
           $prepscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
@@ -1449,7 +1448,7 @@ sub binpackage {
       }
 
       my ($fpath,$fname) = ($pkgfile =~ m|(.+?/?)?([^/]+/?)$|);	# We don't need $fname now, but we might.
-      qx { $specglobals{__mkdir_p} $specglobals{buildroot}/$pkg$fpath }
+      qx { $specglobals{__mkdir} -p $specglobals{buildroot}/$pkg$fpath }
 	if $fpath && $fpath ne '';
       qx { if [ -d $specglobals{buildroot}$pkgfile ]; then $specglobals{__cp} -ar $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath; fi };
       qx { if [ -f $specglobals{buildroot}$pkgfile ]; then $specglobals{__mv} $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath; fi };
@@ -1944,8 +1943,6 @@ sub expandmacros {
 
   # Globals, and not-so-globals
   if ($section =~ /g/) {
-    # Not predefined in an external file; defaults to %{name}-%{version}
-    $macrostring =~ s|%{buildsubdir}|$tarballdir|g;
     $macrostring =~ s|%{optflags}|$optflags{$hostarch}|g;
 
     # special %define's.  Handle the general case where we eval anything.

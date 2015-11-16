@@ -97,6 +97,12 @@
 #	Macros that used to be initialized as a side effect of rpmrc parsing.
 #	These are the default values that can be overridden by other
 #	(e.g. per-platform, per-system, per-packager, per-package) macros.
+#
+#      The sub-directory (relative to %{_builddir}) where sources are compiled.
+#      This macro is set after processing %setup, either explicitly from the
+#      value given to -n or the default name-version.
+#
+%buildsubdir %{name}-%{version}
 
 #	The directory where sources/patches will be unpacked and built.
 %_builddir		%{_topdir}/BUILD
