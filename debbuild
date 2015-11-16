@@ -668,7 +668,7 @@ LINE: while (<SPECFILE>) {
     # grep -h %[a-z] *|perl -e 'while (<>) { /\%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
     if (/^%[a-z]/ &&
 		$_ !~ /^%(?:attr|build|changelog|check|clean|config|configure|defattr|define|description|
-		dir|doc|docdir|else|endif|files|ghost|if|ifarch|ifn|ifnarch|ifnos|ifnxxx|ifos|ifxxx|
+		dir|doc|docdir|else|endif|files|ghost|if|ifarch|ifnarch|ifnos|ifos|
 		install|makeinstall|package|patch\d*|post|postun|pre|prep|preun|readme|setup\d*|
 		triggerin|triggerpostun|triggerun|verify|verifyscript)\b/x
 	) {
