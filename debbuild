@@ -50,7 +50,6 @@ sub unpackcmd;
 
 # Globals
 my $finalmessages = '';	# A place to stuff messages that I want printed at the *very* end of any processing.
-my $specfile;
 my $srcpkg;
 my $cmdbuildroot;
 
@@ -289,7 +288,7 @@ if ($cmdopts{install}) {
 
 # output stage of --showpkgs
 if ($cmdopts{type} eq 'd') {
-  parse_spec();
+  parse_spec($specglobals{specfile});
   foreach my $pkg (@pkglist) {
     $pkgdata{$pkg}{name} =~ tr/_/-/;
 
@@ -314,7 +313,7 @@ if ($cmdopts{type} eq 's') {
     my @srclist = qx { rpm -qlp $srcpkg };
     foreach (@srclist) {
       chomp;
-      $specfile = "$topdir/SPECS/$_" if /\.spec$/;
+      $specglobals{specfile} = "$topdir/SPECS/$_" if /\.spec$/;
     }
     qx { rpm -i $srcpkg };
   } else {
@@ -322,7 +321,7 @@ if ($cmdopts{type} eq 's') {
     my @srclist = qx { pax < $srcpkg };
     foreach (@srclist) {
       chomp;
-      $specfile = "$topdir/$_" if /SPECS/;
+      $specglobals{specfile} = "$topdir/$_" if /SPECS/;
     }
   }
   $cmdopts{type} = 'b';
@@ -345,7 +344,7 @@ if ($cmdopts{type} eq 't') {
     $cmdline = decompress($tarball)." | %{__tar} -tf - --wildcards '*.spec'";
   }
   $cmdline = expandmacros($cmdline,'g');
-  chomp( $specfile = "$topdir/SPECS/".basename( qx { $cmdline } ) );
+  chomp( $specglobals{specfile} = "$topdir/SPECS/".basename( qx { $cmdline } ) );
 
   $tarball = abs_path($tarball);
 
@@ -358,7 +357,7 @@ if ($cmdopts{type} eq 't') {
   } else {
     $cmdline = decompress($tarball)." | %{__tar} -xOf - --wildcards '*.spec'";
   }
-  $cmdline .= " > $specfile\n%{__cp} -f %{tarball} %{_sourcedir}";
+  $cmdline .= " > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir}";
   system expandmacros($cmdline,'g');
 
   $cmdopts{type} = 'b'; # fall through
@@ -367,7 +366,7 @@ if ($cmdopts{type} eq 't') {
 if ($cmdopts{type} eq 'b') {
   # Need to read the spec file to find the tarball.  Note that
   # this also generates most of the shell script required.
-  parse_spec();
+  parse_spec($specglobals{specfile});
   die "Can't build $pkgdata{main}{name}:  build requirements not met.\n"
     if !checkbuildreq();
 }
@@ -573,7 +572,7 @@ debbuild-specific options:
           $srcpkg = $_;
 	} elsif ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
 	  # Spec file
-	  $specfile = $_;
+	  $specglobals{specfile} = $_;
 	} else {
 	  # Tarball build.  Need to extract tarball to find spec file.  Whee.
 	  $specglobals{tarball} = $_;
@@ -635,6 +634,7 @@ debbuild-specific options:
 ## parse_spec()
 # Parse the .spec file.
 sub parse_spec {
+  my ($specfile) = @_;
   die "No .spec file specified!  Exiting.\n" if !$specfile;
   open SPECFILE,"<$specfile" or die "specfile ($specfile) barfed: $!";
 
@@ -1603,13 +1603,13 @@ sub srcpackage {
   my $paxcmd;
 
   # We'll definitely need this later, and *may* need it sooner.
-  my $barespec = basename($specfile);
+  my $barespec = basename($specglobals{specfile});
 
   # Copy the specfile to the build tree, but only if it's not there already.
 ##buglet: need to deal with silly case where silly user has put the spec
 # file in a subdir of %{_topdir}/SPECS.  Ewww.  Silly user!
-  if (abs_path($specfile) !~ /^$topdir\/SPECS/) {
-    $paxcmd .= "%{__cp} $specfile %{_specdir};\n"
+  if (abs_path($specglobals{specfile}) !~ /^$topdir\/SPECS/) {
+    $paxcmd .= "%{__cp} %{specfile} %{_specdir};\n"
   }
 
   # use pax -w [file] [file] ... -f outfile.sdeb
