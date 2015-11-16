@@ -183,8 +183,8 @@
 #%___build_args		-e
 #%___build_cmd		%{?_sudo:%{_sudo} }%{?_remsh:%{_remsh} %{_remhost} }%{?_remsudo:%{_remsudo} }%{?_remchroot:%{_remchroot} %{_remroot} }%{___build_shell} %{___build_args}
 %___build_pre	\
-  RPM_SOURCE_DIR=\"%{_sourcedir}\"\
-  RPM_BUILD_DIR=\"%{_builddir}\"\
+  RPM_SOURCE_DIR=\"%{u2p:%{_sourcedir}}\"\
+  RPM_BUILD_DIR=\"%{u2p:%{_builddir}}\"\
   RPM_OPT_FLAGS=\"%{optflags}\"\
   RPM_ARCH=\"%{_arch}\"\
   RPM_OS=\"%{_os}\"\
@@ -198,12 +198,12 @@
   LANG=C\
   export LANG\
   unset CDPATH DISPLAY ||:\
-  RPM_BUILD_ROOT=\"%{buildroot}\"\
+  RPM_BUILD_ROOT=\"%{u2p:%{buildroot}}\"\
   export RPM_BUILD_ROOT\
   \
   set -x\
   umask 022\
-  cd \"%{_builddir}\"\
+  cd \"%{u2p:%{_builddir}}\"\
 
 
 #%___build_body		%{nil}

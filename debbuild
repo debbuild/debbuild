@@ -1958,6 +1958,15 @@ sub expandmacros {
     # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
     $macrostring =~ s/%{getenv:([A-Z_]+)}/$ENV{$1}/g;
 
+    # curious form of 'basename'? – strip domain host (and port)
+    while ($macrostring =~ /%{u2p:(%{.+})}/) {
+      my $url = $1;
+      my $expand = expandmacros($1,$section);
+      $expand =~ s|\w+://[\w\-.:]+||;
+      $macrostring =~ s/%{u2p:$url}/$expand/g;
+    }
+
+    # multi-line macros
     $macrostring =~ s/\\//g;
 
     # support for **some** %if constructs.  Note that this breaks somewhat if
@@ -1993,7 +2002,7 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
 # note to self: find out valid chars for %define name/label so we can parse them
     while (my ($key) = ($macrostring =~ /%{([a-z0-9_:-]+)}/i) ) {
       if (defined $specglobals{$key}) {
-        $macrostring =~ s|%{$key}|$specglobals{$key}|g;
+        $macrostring =~ s|%{$key}|expandmacros($specglobals{$key},$section)|eg;
       } else {
         $macrostring = expandmacros($macrostring,$section);
       }
