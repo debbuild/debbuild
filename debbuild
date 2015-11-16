@@ -443,7 +443,6 @@ sub load_config {
       close MACROS;
     }
   }
-
 } # end load_config()
 
 
@@ -732,7 +731,7 @@ LINE: while (<SPECFILE>) {
 
       next LINE if $ifexpr[0] != 0; # This appears to be the only case we call false.
       my $savelevel = $iflevel;
-      while (<SPECFILE>) { # Skip %if-block, inluding nested %if..%else%..%endif
+      while (<SPECFILE>) { # Skip %if-block, inluding nested %if..%else..%endif
         if (/^%if/) {
           $iflevel++;
         } elsif (/^%else/) {
@@ -745,9 +744,8 @@ LINE: while (<SPECFILE>) {
     }
 ELSE: if (/^%else/) {
       next LINE if $ifexpr[0] == 0;
-
       my $savelevel = $iflevel;
-      while (<SPECFILE>) { # Skip %else-block, inluding nested %if..%else%..%endif
+      while (<SPECFILE>) { # Skip %else-block, inluding nested %if..%else..%endif
         if (/^%if/) {
           $iflevel++;
         } elsif (/^%else/) {
@@ -1617,7 +1615,7 @@ sub srcpackage {
   }
 
   # use pax -w [file] [file] ... -f outfile.sdeb
-  $paxcmd = "(cd %{_topdir}; %{__pax} -L -w ";
+  $paxcmd .= "(cd %{_topdir}; %{__pax} -L -w ";
 
   # some packages may not have a "main" source.
   $paxcmd .= "%{_sourcedir}/$pkgdata{main}{source} " if $pkgdata{main}{source};
