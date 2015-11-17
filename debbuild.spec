@@ -5,12 +5,10 @@
 #   http://docs.fedoraproject.org/drafts/rpm-guide-en/
 # More links may be available from http://www.rpm.org
 
-%define release %{relnum}.%{dist}
-
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 Name: debbuild
 Version: 0.11.3
-Release: %{release}
+Release: ascherer.%{dist}
 Source: https://secure.deepnet.cx/releases/debbuild/debbuild-%{version}.tar.gz
 Group: Development/Tools
 License: GPLv2+
@@ -22,6 +20,8 @@ Suggests: rpm, subversion
 %endif
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
+
+%define da dpkg-architecture
 
 %description
 debbuild attempts to build Debian-friendly semi-native packages from
@@ -38,25 +38,37 @@ rebuild .src.rpm source packages as .deb binary packages.
 %prep
 # Steps to unpack and patch source as needed
 %setup -q
+if [ -x %{_bindir}/%{da} ]
+then
+sed -i -e "s/%_arch.*/`%{da} | sed -n -e 's/^DEB_HOST_ARCH\=/%_arch /p'`/" glomacros
+sed -i -e "s/%_build_arch.*/`%{da} | sed -n -e 's/^DEB_BUILD_ARCH\=/%_build_arch /p'`/" glomacros
+sed -i -e "s/%_os.*/`%{da} | sed -n -e 's/^DEB_BUILD_ARCH_OS\=/%_os /p'`/" glomacros
+sed -i -e "s/%_host_cpu.*/`%{da} | sed -n -e 's/^DEB_HOST_GNU_CPU\=/%_host_cpu /p'`/" glomacros
+sed -i -e "s/%_host_os.*/`%{da} | sed -n -e 's/^DEB_HOST_ARCH_OS\=/%_host_os /p'`/" glomacros
+fi
 
 %build
 # nothing to do here
 
 %install
 # Steps to install to a temporary location for packaging
-[ "$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf $RPM_BUILD_ROOT
-%{__make} install DESTDIR=$RPM_BUILD_ROOT
-%{__cp} glomacros $RPM_BUILD_ROOT/usr/lib/debbuild/macros
-%{__cp} sysmacros $RPM_BUILD_ROOT/etc/debbuild/macros
+%make_install
+%{__mkdir_p} $RPM_BUILD_ROOT%{_libdir}/%{name}
+%{__cp} glomacros $RPM_BUILD_ROOT%{_libdir}/%{name}/macros
+%{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}
+%{__cp} sysmacros $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/macros
 
 # Fill in the pathnames to be packaged here
 %files
 %{_bindir}/*
 %{_mandir}/man8/*
-/usr/lib/debbuild/macros
-/etc/debbuild/macros
+%{_libdir}/%{name}/macros
+%{_sysconfdir}/%{name}/macros
 
 %changelog
+* Tue Nov 17 2015  Andreas Scherer <andreas_tex@freenet.de>
+- Auto-configure host/build environment
+
 * Sat Nov 14 2015  Andreas Scherer <andreas_tex@freenet.de>
 - Add debbuild's own set of %{macros}
 
