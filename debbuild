@@ -262,7 +262,7 @@ load_config();
 parse_cmd();
 
 # global shortcut
-my $topdir = expandmacros($specglobals{_topdir},'g');
+my $topdir = expandmacros($specglobals{_topdir});
 
 if ($cmdopts{install}) {
   install_sdeb();
@@ -326,7 +326,7 @@ if ($cmdopts{type} eq 't') {
   } else {
     $cmdline = decompress($tarball)." | %{__tar} -tf - --wildcards '*.spec'";
   }
-  $cmdline = expandmacros($cmdline,'g');
+  $cmdline = expandmacros($cmdline);
   chomp( $specglobals{specfile} = "$topdir/SPECS/".basename( qx { $cmdline } ) );
 
   $tarball = abs_path($tarball);
@@ -341,7 +341,7 @@ if ($cmdopts{type} eq 't') {
     $cmdline = decompress($tarball)." | %{__tar} -xOf - --wildcards '*.spec'";
   }
   $cmdline .= " > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir}";
-  system expandmacros($cmdline,'g');
+  system expandmacros($cmdline);
 
   $cmdopts{type} = 'b'; # fall through
 }
@@ -621,7 +621,7 @@ sub parse_spec {
   die "No .spec file specified!  Exiting.\n" if !$specfile;
   open SPECFILE,"<$specfile" or die "specfile ($specfile) barfed: $!";
 
-  my $buildarch = expandmacros("%{_arch}",'g');
+  my $buildarch = expandmacros("%{_arch}");
   $pkgdata{main}{arch} = $buildarch;
 
   my $stage = 'preamble';
@@ -662,7 +662,7 @@ LINE: while (<SPECFILE>) {
 
 # preprocess %define's
     if (my ($key, $def) = (/^\%(?:define|global)\s+([^\s]+)\s+(.+)$/) ) {
-      $specglobals{$key} = expandmacros($def,'gp');
+      $specglobals{$key} = expandmacros($def);
     }
 
     # RPM conditionals – transform to generic form
@@ -675,7 +675,7 @@ LINE: while (<SPECFILE>) {
     if (/^%if/) {
       s/^%if//;
       chomp;
-      my $expr = lc expandmacros($_, 'gp');
+      my $expr = lc expandmacros($_);
 
       if ($expr !~ /^[\d\s<=>&|\-+\(\)]+$/) {
         # got a logic statement we want to turn into a 1 or a 0.
@@ -744,7 +744,7 @@ ENDIF: if (/^%endif/) {
     } # %if..%else..%endif
 
     if (/^\%{echo:(.+)}/) {
-      print expandmacros($1, 'gp');
+      print expandmacros($1);
       next LINE;
     }
 
@@ -754,7 +754,7 @@ ENDIF: if (/^%endif/) {
       $stage = 'desc';
       $subname = "main";
       if ($1) {       # Magic to add entries to the right package
-        my $tmp = expandmacros("$1", 'gp');
+        my $tmp = expandmacros("$1");
         if (/-n/) { $subname = $tmp; } else { $subname = "$pkgdata{main}{name}-$tmp"; }
       }
       next LINE;
@@ -763,7 +763,7 @@ ENDIF: if (/^%endif/) {
     if (/^\%package\s+(?:-n\s+)?(.+)/) {
       $stage = 'package';
       if ($1) {       # Magic to add entries to the right package
-        my $tmp = expandmacros("$1", 'gp');
+        my $tmp = expandmacros("$1");
         if (/-n/) { $subname = $tmp; } else { $subname = "$pkgdata{main}{name}-$tmp"; }
       }
       push @pkglist, $subname;
@@ -779,7 +779,7 @@ ENDIF: if (/^%endif/) {
     if (/^\%prep/) {
       $stage = 'prep';
       # Replace some core macros
-      $pkgdata{main}{source} = expandmacros($pkgdata{main}{source},'gp');
+      $pkgdata{main}{source} = expandmacros($pkgdata{main}{source});
       next LINE;
     } # %prep
 
@@ -806,7 +806,7 @@ ENDIF: if (/^%endif/) {
       $scriptlet = lc $1;
       $subname = 'main';
       if ($2) {       # Magic to add entries to the right package
-        my $tmp = expandmacros("$2", 'g');
+        my $tmp = expandmacros("$2");
         if (/-n/) { $subname = $tmp; } else { $subname = "$pkgdata{main}{name}-$tmp"; }
       }
       next LINE;
@@ -816,7 +816,7 @@ ENDIF: if (/^%endif/) {
       $stage = 'files';
       $subname = 'main';
       if ($1) {       # Magic to add entries to the right list of files
-        my $tmp = expandmacros("$1", 'gp');
+        my $tmp = expandmacros("$1");
         if (/-n/) { $subname = $tmp; } else { $subname = "$pkgdata{main}{name}-$tmp"; }
       }
       next LINE;
@@ -850,9 +850,9 @@ ENDIF: if (/^%endif/) {
           $dname = 'arch';
         }
         if ($dname =~ /recommends|suggests|enhances|replaces|requires|conflicts|provides/) {
-          $pkgdata{$subname}{$dname} .= ", ".expandmacros($dvalue, 'gp');
+          $pkgdata{$subname}{$dname} .= ", ".expandmacros($dvalue);
         } else {
-          $pkgdata{$subname}{$dname} = expandmacros($dvalue, 'gp');
+          $pkgdata{$subname}{$dname} = expandmacros($dvalue);
         }
       }
     } # package
@@ -1171,7 +1171,7 @@ ENDIF: if (/^%endif/) {
       } elsif (/^version:\s*(.+)/i) {
         $pkgdata{main}{version} = $1;
       } elsif (/^release:\s*(.+)/i) {
-        $pkgdata{main}{release} = expandmacros($1,'gp');
+        $pkgdata{main}{release} = expandmacros($1);
       } elsif (/^group:\s*(.+)/i) {
         $pkgdata{main}{group} = $1;
       } elsif (/^copyright:\s*(.+)/i) {
@@ -1239,9 +1239,9 @@ ENDIF: if (/^%endif/) {
   $specglobals{buildroot} = $cmdbuildroot if $cmdbuildroot;
 
   # Expand macros as necessary.
-  $specglobals{buildroot} = expandmacros($specglobals{buildroot},'gp');
+  $specglobals{buildroot} = expandmacros($specglobals{buildroot});
 
-  $scriptletbase = expandmacros($scriptletbase,'gp');
+  $scriptletbase = expandmacros($scriptletbase);
 
   close SPECFILE;
 } # end parse_spec()
@@ -1255,7 +1255,7 @@ sub prep {
   sysopen(PREPSCRIPT, $prepscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die "Can't open/create prep script file $prepscriptfile: $!\n";
   print PREPSCRIPT $scriptletbase;
-  print PREPSCRIPT expandmacros($prepscript,'gp');
+  print PREPSCRIPT expandmacros($prepscript);
   close PREPSCRIPT;
 
   # execute
@@ -1276,7 +1276,7 @@ sub build {
   sysopen(BUILDSCRIPT, $buildscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die "Can't open/create build script file $buildscriptfile: $!\n";
   print BUILDSCRIPT $scriptletbase;
-  print BUILDSCRIPT expandmacros($buildscript,'gp');
+  print BUILDSCRIPT expandmacros($buildscript);
   close BUILDSCRIPT;
 
   # execute
@@ -1312,7 +1312,7 @@ sub install {
   sysopen(INSTSCRIPT, $installscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die "Can't open/create install script file $installscriptfile: $!\n";
   print INSTSCRIPT $scriptletbase;
-  print INSTSCRIPT expandmacros($installscript,'gp');
+  print INSTSCRIPT expandmacros($installscript);
   close INSTSCRIPT;
 
   # execute
@@ -1385,11 +1385,11 @@ sub binpackage {
     mkdir "$specglobals{buildroot}/$pkg";
 
     # Eliminate any lingering % macros
-    $filelist{$pkg} = expandmacros($filelist{$pkg}, 'gp');
+    $filelist{$pkg} = expandmacros($filelist{$pkg});
 
     my @pkgfilelist = split ' ', $filelist{$pkg};
     foreach my $pkgfile (@pkgfilelist) {
-      $pkgfile = expandmacros($pkgfile, 'gp');
+      $pkgfile = expandmacros($pkgfile);
 
       # Feh.  Manpages don't **NEED** to be gzipped, but rpmbuild does, and so shall we.
       # ... and your little info page too!
@@ -1466,7 +1466,7 @@ sub binpackage {
                         'recommends','suggests','enhances','replaces')) {
       if (defined($pkgdata{$pkg}{$label})) {
         $pkgdata{$pkg}{$label} =~ s/^, //;
-        $pkgdata{$pkg}{$label} = expandmacros($pkgdata{$pkg}{$label},'gp');
+        $pkgdata{$pkg}{$label} = expandmacros($pkgdata{$pkg}{$label});
       }
     }
 
@@ -1489,7 +1489,7 @@ sub binpackage {
       # %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
     close DEBSCRIPT;
 
-    $pkgdata{$pkg}{summary} = expandmacros($pkgdata{$pkg}{summary}, 'gp');
+    $pkgdata{$pkg}{summary} = expandmacros($pkgdata{$pkg}{summary});
     my $control = "Package: $pkgdata{$pkg}{name}\n".
 	"Version: ".(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
 	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}\n".
@@ -1505,7 +1505,7 @@ sub binpackage {
 	( defined($pkgdata{$pkg}{enhances}) ? "Enhances: $pkgdata{$pkg}{enhances}\n" : '' ).
 	( defined($pkgdata{$pkg}{replaces}) ? "Replaces: $pkgdata{$pkg}{replaces}\n" : '' ).
 	"Description: $pkgdata{$pkg}{summary}\n";
-    $pkgdata{$pkg}{desc} = expandmacros($pkgdata{$pkg}{desc}, 'gp');
+    $pkgdata{$pkg}{desc} = expandmacros($pkgdata{$pkg}{desc});
     # Munge things so that Debian tools don't choke on errant blank lines
     $pkgdata{$pkg}{desc} =~ s/\s+$//g;		# Trim trailing blanks
     $pkgdata{$pkg}{desc} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
@@ -1520,7 +1520,7 @@ sub binpackage {
     if ($pkgdata{$pkg}{conffiles}) {
       open CONFLIST, ">$specglobals{buildroot}/$pkg/DEBIAN/conffiles";
       foreach my $conffile (@{$pkgdata{$pkg}{conflist}}) {
-	$conffile = expandmacros($conffile, 'g');
+	$conffile = expandmacros($conffile);
 	my @tmp = glob "$specglobals{buildroot}/$pkg/$conffile";
 	foreach (@tmp) {
 	  s|$specglobals{buildroot}/$pkg/||g;	# nrgl.  gotta be a better way to do this...
@@ -1538,7 +1538,7 @@ sub binpackage {
       if ($pkgdata{$pkg}{$scr}) {
         open SCRIPT, ">$specglobals{buildroot}/$pkg/DEBIAN/$scrfile";
         print SCRIPT "#!/bin/sh\nset -e\n\n";
-        print SCRIPT expandmacros($pkgdata{$pkg}{$scr},'gp');
+        print SCRIPT expandmacros($pkgdata{$pkg}{$scr});
         close SCRIPT;
         chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/$scrfile";
       }
@@ -1611,7 +1611,7 @@ sub srcpackage {
   $paxcmd .= "%{_specdir}/$barespec -f %{_srcdebdir}/$pkgsrcname)";
 
   # In case of %-macros...
-  $paxcmd = expandmacros($paxcmd,'gp');
+  $paxcmd = expandmacros($paxcmd);
   
   system("$paxcmd") == 0 and
   $finalmessages .= "Wrote source package $pkgsrcname in $topdir/SDEBS.\n";
@@ -1626,7 +1626,7 @@ sub clean {
   sysopen(CLEANSCRIPT, $cleanscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die $!;
   print CLEANSCRIPT $scriptletbase;
-  print CLEANSCRIPT expandmacros($cleanscript,'gp');
+  print CLEANSCRIPT expandmacros($cleanscript);
   close CLEANSCRIPT;
 
   # execute
@@ -1647,7 +1647,7 @@ sub checkbuildreq {
   return 1 if $buildreq eq '';	# No use doing extra work.
 
   # expand macros 
-  $buildreq = expandmacros($buildreq,'gp');
+  $buildreq = expandmacros($buildreq);
 
   if ( ! -e "/usr/bin/dpkg-query" ) {
     print "**WARNING**  dpkg-query not found.  Can't check build-deps.\n".
@@ -1818,7 +1818,7 @@ sub install_sdeb {
   my $paxcmd = "(cd %{_topdir}; %{__pax} -r -f $srcpkg)";
 
   # In case of %-macros...
-  $paxcmd = expandmacros($paxcmd,'gp');
+  $paxcmd = expandmacros($paxcmd);
   
   system("$paxcmd") == 0 and
   print "Extracted source package $srcpkg to $topdir.\n";
@@ -1830,7 +1830,7 @@ sub install_sdeb {
 # Split up a bit with some sections so we don't spend time trying to
 # expand macros that are only used in a few specific places.
 sub expandmacros {
-  my ($macrostring,$section) = @_;
+  my ($macrostring) = @_;
 
   # Replace global macros
   $macrostring =~ s/%configure/%{configure}/g;
@@ -1840,17 +1840,14 @@ sub expandmacros {
   $macrostring =~ s|%{optflags}|$optflags{$pkgdata{main}{arch}}|g;
 
   # Package data
-  if ($section =~ /p/) {
     $macrostring =~ s|%{source0?}|%{_sourcedir}/$pkgdata{main}{source}|gi;
     foreach my $source (keys %{$pkgdata{sources}}) {
       $macrostring =~ s|%{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
     }
     $macrostring =~ s|%{patch(\d+)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
     $macrostring =~ s/%{(name|version|release)}/$pkgdata{main}{$1}/gi;
-  }
 
   # Globals, and not-so-globals
-  if ($section =~ /g/) {
     # special %define's.  Handle the general case where we eval anything.
     # Even more general:  %(...) is a spec-parse-time shell code wrapper.
     # Prime example:
@@ -1867,7 +1864,7 @@ sub expandmacros {
     # curious form of 'basename'? – strip domain host (and port)
     while ($macrostring =~ /%{u2p:(%{.+?})}/) {
       my $url = $1;
-      my $expand = expandmacros($1,$section);
+      my $expand = expandmacros($1);
       $expand =~ s|\w+://[\w\-.:]+||;
       $macrostring =~ s/%{u2p:$url}/$expand/g;
     }
@@ -1910,12 +1907,11 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
 # note to self: find out valid chars for %define name/label so we can parse them
     while (my ($key) = ($macrostring =~ /%{([a-z0-9_:-]+)}/i) ) {
       if (defined $specglobals{$key}) {
-        $macrostring =~ s|%{$key}|expandmacros($specglobals{$key},$section)|eg;
+        $macrostring =~ s|%{$key}|expandmacros($specglobals{$key})|eg;
       } else {
-        $macrostring = expandmacros($macrostring,$section);
+        $macrostring = expandmacros($macrostring);
       }
     }
-  } # done with globals section
 
   return $macrostring;
 } # end expandmacros()
