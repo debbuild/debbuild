@@ -667,9 +667,10 @@ LINE: while (<SPECFILE>) {
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /\%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
     if (/^%[a-z]/ &&
-		$_ !~ /^%(?:attr|build|changelog|check|clean|config|configure|defattr|define|description|
-		dir|doc|docdir|else|endif|files|ghost|if|ifarch|ifnarch|ifnos|ifos|
-		install|makeinstall|package|patch\d*|post|postun|pre|prep|preun|readme|setup\d*|
+		$_ !~ /^%(?:attr|build|changelog|check|clean|config|configure|
+		defattr|define|description|dir|doc|docdir|else|endif|files|ghost|
+		if|ifarch|ifnarch|ifnos|ifos|install|make_install|makeinstall|
+		package|patch\d*|post|postun|pre|prep|preun|readme|setup\d*|
 		triggerin|triggerpostun|triggerun|verify|verifyscript)\b/x
 	) {
 	my ($badtag) = (/^%([a-z]+)/i);
@@ -1069,7 +1070,7 @@ ENDIF: if (/^%endif/) {
     } # build
 
     if ($stage eq 'install') {
-      if (/^\%makeinstall/) {
+      if (/^\%(?:make_install|makeinstall)/) {
         $installscript .= expandmacros($_,'i');
       } else {
         $installscript .= $_;
@@ -1881,6 +1882,7 @@ sub expandmacros {
 
 # %makeinstall expands with recursive macros in rpm.  whee.
   if ($section =~ /i/) {
+    $macrostring =~ s/%make_install/%{make_install}/;
     $macrostring =~ s'%makeinstall'%{__make} \
         prefix=%{?buildroot:%{buildroot}}%{_prefix} \
         exec_prefix=%{?buildroot:%{buildroot}}%{_exec_prefix} \
