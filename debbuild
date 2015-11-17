@@ -91,7 +91,8 @@ my %targets = ('p' => 'Prep',
 # Ah, the joys of multiple architectures.  :(  Feh.
 # As copied from rpm
 my %optflags = ( 'i386'	=>	'-O2 -g -march=i386 -mcpu=i686',
-		'amd64'	=>	'-O2 -g'
+		'amd64'	=>	'-O2 -g',
+		  'all'	=>	''
 	);
 
 # Hackery to try to bring some semblance of sanity to packages built for more
@@ -244,11 +245,8 @@ my $buildreq = '';
 my $scriptletbase = q(%{___build_template});
 my $prepscript = '';
 my $buildscript = '';
-# %install doesn't need the full treatment from %clean;  just an empty place to install to.
-# NB - rpm doesn't do this;  is it really necessary?
 my $installscript = '';
-#'[ "$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf $RPM_BUILD_ROOT'."\n";
-my $cleanscript = '';
+my $cleanscript = '[ "$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf $RPM_BUILD_ROOT';
 
 # Snag some environment data
 my $tmpdir;
