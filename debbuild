@@ -1278,7 +1278,7 @@ sub build {
   sysopen(BUILDSCRIPT, $buildscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die "Can't open/create build script file $buildscriptfile: $!\n";
   print BUILDSCRIPT $scriptletbase;
-  print BUILDSCRIPT expandmacros($buildscript,'cgbp');
+  print BUILDSCRIPT expandmacros($buildscript,'gp');
   close BUILDSCRIPT;
 
   # execute
@@ -1314,7 +1314,7 @@ sub install {
   sysopen(INSTSCRIPT, $installscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die "Can't open/create install script file $installscriptfile: $!\n";
   print INSTSCRIPT $scriptletbase;
-  print INSTSCRIPT expandmacros($installscript,'igbp');
+  print INSTSCRIPT expandmacros($installscript,'gp');
   close INSTSCRIPT;
 
   # execute
@@ -1841,33 +1841,6 @@ sub expandmacros {
   $macrostring =~ s|%optflags|%{optflags}|g;
   $macrostring =~ s|%{optflags}|$optflags{$pkgdata{main}{arch}}|g;
 
-  # Build data
-  # Note that these are processed in reverse order to get the substitution order right
-  if ($section =~ /b/) {
-#    $macrostring =~ s'%{fhs}'host=$DEB_HOST_GNU_TYPE \
-#	build=$DEB_BUILD_GNU_TYPE \
-    $macrostring =~ s'%{fhs}'prefix=%{_prefix} \
-	exec-prefix=%{_exec_prefix} \
-	bindir=%{_bindir} \
-	sbindir=%{_sbindir} \
-	sysconfdir=%{_sysconfdir} \
-	datadir=%{_datadir} \
-	includedir=%{_includedir} \
-	libdir=%{_libdir} \
-	libexecdir=%{_libexecdir} \
-	localstatedir=%{_localstatedir} \
-	sharedstatedir=%{_sharedstatedir} \
-	mandir=%{_mandir} \
-	infodir=%{_infodir} \
-';
-
-    # Note that the above regex terminates with the extra space
-    # "Just In Case" of user additions, which will then get neatly
-    # tagged on the end where they take precedence (supposedly)
-    # over the "default" ones.
-
-  } # done with config section
-
   # Package data
   if ($section =~ /p/) {
     $macrostring =~ s|%{source0?}|%{_sourcedir}/$pkgdata{main}{source}|gi;
@@ -1944,14 +1917,6 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
         $macrostring = expandmacros($macrostring,$section);
       }
     }
-
-    # Perl @INC/...lib locations, and other related bits.
-    $macrostring =~ s|%{perl_archlib}|$Config{installarchlib}|g;
-    $macrostring =~ s|%{perl_sitelib}|$Config{installsitelib}|g;
-    $macrostring =~ s|%{perl_sitearch}|$Config{installsitearch}|g;
-    $macrostring =~ s|%{perl_vendorlib}|$Config{installvendorlib}|g;
-    $macrostring =~ s|%{perl_vendorarch}|$Config{installvendorarch}|g;
-
   } # done with globals section
 
   return $macrostring;
