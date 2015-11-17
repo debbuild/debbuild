@@ -1197,7 +1197,7 @@ ENDIF: if (/^%endif/) {
       } elsif (/^version:\s*(.+)/i) {
         $pkgdata{main}{version} = $1;
       } elsif (/^release:\s*(.+)/i) {
-        $pkgdata{main}{release} = $1;
+        $pkgdata{main}{release} = expandmacros($1,'gp');
       } elsif (/^group:\s*(.+)/i) {
         $pkgdata{main}{group} = $1;
       } elsif (/^copyright:\s*(.+)/i) {
