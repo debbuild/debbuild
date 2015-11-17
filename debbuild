@@ -1429,7 +1429,7 @@ sub binpackage {
 	  # entry will do just fine.
 	  if ( -d "$specglobals{buildroot}$pkgfile") {
 	    foreach my $globfile (glob("$specglobals{buildroot}$pkgfile/*")) {
-	      gzip $globfile if $globfile !~ m|\.gz$|;
+	      qx { gzip $globfile } if $globfile !~ m|\.gz$|;
 	    }
 	  } else {
 	    if ($pkgfile !~ m|\.gz$|) {
