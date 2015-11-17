@@ -1451,8 +1451,7 @@ sub binpackage {
       my ($fpath,$fname) = ($pkgfile =~ m|(.+?/?)?([^/]+/?)$|);	# We don't need $fname now, but we might.
       qx { $specglobals{__mkdir} -p $specglobals{buildroot}/$pkg$fpath }
 	if $fpath && $fpath ne '';
-      qx { if [ -d $specglobals{buildroot}$pkgfile ]; then $specglobals{__cp} -ar $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath; fi };
-      qx { if [ -f $specglobals{buildroot}$pkgfile ]; then $specglobals{__mv} $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath; fi };
+      qx { $specglobals{__cp} -ar $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath };
     }
 
     # Get the "Depends" (Requires) a la RPM.  Ish.  We strip the leading
