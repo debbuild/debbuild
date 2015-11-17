@@ -18,8 +18,6 @@ Packager: Kris Deugau <kdeugau@deepnet.cx>
 Requires: perl, build-essential, fakeroot, bash
 %if %{_vendor} == "debbuild"
 Recommends: patch, bzip2, xz-utils, pax
-# For setting DEB_HOST_ARCH
-Recommends: dpkg-architecture
 Suggests: rpm, subversion
 %endif
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root

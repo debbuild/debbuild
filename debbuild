@@ -93,22 +93,7 @@ my %targets = ('p' => 'Prep',
 my %optflags = ( 'i386'	=>	'-O2 -g -march=i386 -mcpu=i686',
 		'amd64'	=>	'-O2 -g'
 	);
-my $hostarch;	# we set this later...
-my $scriptletbase = "#!/bin/bash\n";
-
-if (-e '/usr/bin/dpkg-architecture') {
-  foreach (`dpkg-architecture`) {
-    s/=(.+)/="$1"/;
-    $scriptletbase .= "  $_";
-    ($hostarch) = (/^DEB_HOST_ARCH="(.+)"$/) if /DEB_HOST_ARCH=/;
-  }
-} else {
-  warn "Missing dpkg-architecture, DEB_HOST_ARCH will not be set!\n";
-}
-
-$scriptletbase .= q(
-%{___build_pre}
-);
+my $scriptletbase .= q(%{___build_template});
 
 # Hackery to try to bring some semblance of sanity to packages built for more
 # than one Debian version at the same time.  Whee.
@@ -638,8 +623,8 @@ sub parse_spec {
   die "No .spec file specified!  Exiting.\n" if !$specfile;
   open SPECFILE,"<$specfile" or die "specfile ($specfile) barfed: $!";
 
-  my $buildarch = $hostarch;
-  $pkgdata{main}{arch} = $hostarch;
+  my $buildarch = expandmacros("%{_arch}",'g');
+  $pkgdata{main}{arch} = $buildarch;
 
   my $stage = 'preamble';
   my $subname = 'main';
@@ -1393,7 +1378,7 @@ sub binpackage {
 
   foreach my $pkg (@pkglist) {
 
-    $pkgdata{$pkg}{arch} = $hostarch if !$pkgdata{$pkg}{arch};  # Just In Case.
+    $pkgdata{$pkg}{arch} = $pkgdata{main}{arch} if !$pkgdata{$pkg}{arch};  # Just In Case.
 
     # Make sure we have somewhere to write the .deb file
     if (!-e "$topdir/DEBS/$pkgdata{$pkg}{arch}") {
@@ -1863,8 +1848,8 @@ sub expandmacros {
     # %configure macro
 # Don't know what it's for, don't have a useful default replacement
 # 	--program-prefix=%{_program_prefix} \
-    $macrostring =~ s'%configure'./configure --host=$DEB_HOST_GNU_TYPE \
-	--build=$DEB_BUILD_GNU_TYPE \
+    $macrostring =~ s'%configure'./configure --host=%{_host} \
+	--build=%{_build} \
 	--prefix=%{_prefix} \
 	--exec-prefix=%{_exec_prefix} \
 	--bindir=%{_bindir} \
@@ -1939,7 +1924,7 @@ sub expandmacros {
 
   # Globals, and not-so-globals
   if ($section =~ /g/) {
-    $macrostring =~ s|%{optflags}|$optflags{$hostarch}|g;
+    $macrostring =~ s|%{optflags}|$optflags{$pkgdata{main}{arch}}|g;
 
     # special %define's.  Handle the general case where we eval anything.
     # Even more general:  %(...) is a spec-parse-time shell code wrapper.
