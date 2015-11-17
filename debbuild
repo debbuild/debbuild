@@ -1519,7 +1519,7 @@ sub binpackage {
     my $control = "Package: $pkgdata{$pkg}{name}\n".
 	"Version: ".(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
 	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}\n".
-	"Section: ".($pkgdata{$pkg}{group} ? $pkgdata{$pkg}{group} : $pkgdata{main}{group})."\n".
+	"Section: ".($pkgdata{$pkg}{group} ? $pkgdata{$pkg}{group} : defined $pkgdata{main}{group} ? $pkgdata{main}{group} : '')."\n".
 	"Priority: optional\n".
 	"Architecture: $pkgdata{$pkg}{arch}\n".
 	"Maintainer: $pkgdata{main}{packager}\n".
@@ -1962,8 +1962,8 @@ sub expandmacros {
 
     # unescape multi-line macros
     $macrostring =~ s/\\"/"/g;
-    $macrostring =~ s/\\$//g;
     $macrostring =~ s/\\\\/\\/g;
+    $macrostring =~ s/([^\s])\\+\n/$1\n/g;
 
     # support for **some** %if constructs.  Note that this breaks somewhat if
     # there's no value specified...  but so does rpm.
