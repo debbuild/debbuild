@@ -1044,13 +1044,7 @@ ENDIF: if (/^%endif/) {
     } # prep
 
     if ($stage eq 'build') {
-      # %build.  This is pretty much just a shell script.  There
-      # aren't many local macros to deal with.
-      if (/^\%configure/) {
-        $buildscript .= expandmacros($_,'c');
-      } else {
-        $buildscript .= $_;
-      }
+      $buildscript .= $_;
       next LINE;
     } # build
 
@@ -1844,30 +1838,14 @@ sub install_sdeb {
 sub expandmacros {
   my ($macrostring,$section) = @_;
 
-  if ($section =~ /c/) {
-    # %configure macro
-# Don't know what it's for, don't have a useful default replacement
-# 	--program-prefix=%{_program_prefix} \
-    $macrostring =~ s'%configure'./configure --host=%{_host} \
-	--build=%{_build} \
-	--prefix=%{_prefix} \
-	--exec-prefix=%{_exec_prefix} \
-	--bindir=%{_bindir} \
-	--sbindir=%{_sbindir} \
-	--sysconfdir=%{_sysconfdir} \
-	--datadir=%{_datadir} \
-	--includedir=%{_includedir} \
-	--libdir=%{_libdir} \
-	--libexecdir=%{_libexecdir} \
-	--localstatedir=%{_localstatedir} \
-	--sharedstatedir=%{_sharedstatedir} \
-	--mandir=%{_mandir} \
-	--infodir=%{_infodir} ';
-  } # done %configure
+  # Replace global macros
+  $macrostring =~ s/%configure/%{configure}/g;
+  $macrostring =~ s/%make_install/%{make_install}/;
+  $macrostring =~ s|%optflags|%{optflags}|g;
+  $macrostring =~ s|%{optflags}|$optflags{$pkgdata{main}{arch}}|g;
 
 # %makeinstall expands with recursive macros in rpm.  whee.
   if ($section =~ /i/) {
-    $macrostring =~ s/%make_install/%{make_install}/;
     $macrostring =~ s'%makeinstall'%{__make} \
         prefix=%{?buildroot:%{buildroot}}%{_prefix} \
         exec_prefix=%{?buildroot:%{buildroot}}%{_exec_prefix} \
@@ -1924,8 +1902,6 @@ sub expandmacros {
 
   # Globals, and not-so-globals
   if ($section =~ /g/) {
-    $macrostring =~ s|%{optflags}|$optflags{$pkgdata{main}{arch}}|g;
-
     # special %define's.  Handle the general case where we eval anything.
     # Even more general:  %(...) is a spec-parse-time shell code wrapper.
     # Prime example:
