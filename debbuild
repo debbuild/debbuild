@@ -1439,7 +1439,7 @@ sub binpackage {
 	  }
 	} else {
 	  if ($pkgfile !~ m|\.gz$|) {
-	    $pkgfile .= ".gz";
+	    $pkgfile .= ".gz" unless $pkgfile =~ /\*$/;
 	  } else {
 	    $pkgfile =~ s/\.gz$//;
 	    qx { gzip $specglobals{buildroot}$pkgfile };
