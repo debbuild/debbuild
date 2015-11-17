@@ -1960,8 +1960,10 @@ sub expandmacros {
       $macrostring =~ s/%{u2p:$url}/$expand/g;
     }
 
-    # multi-line macros
-    $macrostring =~ s/\\//g;
+    # unescape multi-line macros
+    $macrostring =~ s/\\"/"/g;
+    $macrostring =~ s/\\$//g;
+    $macrostring =~ s/\\\\/\\/g;
 
     # support for **some** %if constructs.  Note that this breaks somewhat if
     # there's no value specified...  but so does rpm.
