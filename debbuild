@@ -27,9 +27,9 @@
 
 use strict;
 use warnings;
-use Fcntl;	# for sysopen flags
+
 use Cwd 'abs_path';	# for finding where files really are
-use Config;
+use Fcntl;		# for sysopen flags
 use File::Basename;
 
 my $version = "0.11.3";	#VERSION#
@@ -93,7 +93,6 @@ my %targets = ('p' => 'Prep',
 my %optflags = ( 'i386'	=>	'-O2 -g -march=i386 -mcpu=i686',
 		'amd64'	=>	'-O2 -g'
 	);
-my $scriptletbase .= q(%{___build_template});
 
 # Hackery to try to bring some semblance of sanity to packages built for more
 # than one Debian version at the same time.  Whee.
@@ -242,6 +241,7 @@ my %doclist;
 my $buildreq = '';
 
 # Scriptlets
+my $scriptletbase = q(%{___build_template});
 my $prepscript = '';
 my $buildscript = '';
 # %install doesn't need the full treatment from %clean;  just an empty place to install to.
