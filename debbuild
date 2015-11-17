@@ -214,17 +214,17 @@ my %ubnt_vermap = (
   } # got dpkg-query?
 
   # Set some legacy globals.
-  $specglobals{"debdist"} = $distmap{$basever};
-  $specglobals{"debver"} = $basever;   # this may have trouble with Ubuntu versions?
+  $specglobals{debdist} = $distmap{$basever};
+  $specglobals{debver} = $basever;   # this may have trouble with Ubuntu versions?
 
   # Set the standard generic OS-class globals;
   $baseos = lc($baseos);
-  $specglobals{"ubuntu"} = $basever if $baseos eq 'ubuntu';
-  $specglobals{"debian"} = $basever if $baseos eq 'debian';
+  $specglobals{ubuntu} = $basever if $baseos eq 'ubuntu';
+  $specglobals{debian} = $basever if $baseos eq 'debian';
 
   # Default %{dist} to something marginally sane.  Note this should be overrideable by --define.
   # This has been chosen to most closely follow the usage in RHEL/CentOS and Fedora, ie "el5" or "fc20".
-  $specglobals{"dist"} = $baseos.$basever;
+  $specglobals{dist} = $baseos.$basever;
 
 } # done trying to set debian dist/version
 
