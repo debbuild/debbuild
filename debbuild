@@ -1369,7 +1369,7 @@ sub install {
 	    `bunzip2 $manpage` if $manpage =~ /\.bz2$/;
 	    $manpage = $newpage;
 	  }
-	  `gzip -9 -n $manpage`;
+	  `gzip -f -9 -n $manpage`;
         } elsif ( -l $manpage) {
 	  my $linkdest = readlink $manpage;
 	  $linkdest =~ s/\.(?:Z|gz|bz2)//;
