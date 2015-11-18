@@ -864,33 +864,15 @@ ENDIF: if (/^%endif/) {
 
         my @sbits = split /\s+/;
         shift @sbits;
-        while (my $sopt = shift @sbits) {
-          if ($sopt eq '-n') {
-            $specglobals{buildsubdir} = shift @sbits;
-          } elsif ($sopt eq '-a') {
-            # shift, next opt must be numeric (which sourcenn:)
-            $sopt = shift @sbits;
-            die "Argument for \%setup -a must be numeric at $specfile line $.\n" if $sopt !~ /^\d+$/;
-            push @safter, $sopt;
-          } elsif ($sopt eq '-b') {
-            # shift, next opt must be numeric (which sourcenn:)
-            $sopt = shift @sbits;
-            die "Argument for \%setup -b must be numeric at $specfile line $.\n" if $sopt !~ /^\d+$/;
-            push @sbefore, $sopt;
-          } elsif ($sopt eq '-c') {
-            # flag, create and change directory before unpack
-            $createdir = 1;
-          } elsif ($sopt eq '-D') {
-            # flag, do not delete directory before unpack
-            $leavedirs = 1;
-          } elsif ($sopt eq '-T') {
-            # flag, do not unpack first source
-            $skipdefault = 1;
-          } elsif ($sopt eq '-q') {
-            # SSSH!  Unpack quietly
-            $quietunpack = 1;
-          }
-        } # $sopt = shift @sbits
+        Getopt::Long::GetOptionsFromArray(\@sbits,
+          'n=s' => \$specglobals{buildsubdir},
+          'c'   => \$createdir,   # flag, create and change directory before unpack
+          'D'   => \$leavedirs,   # flag, do not delete directory before unpack
+          'T'   => \$skipdefault, # flag, do not unpack first source
+          'q'   => \$quietunpack, # SSH!  Unpack quietly
+          'b=i' => \@sbefore,
+          'a=i' => \@safter
+        );
 
 # Note that this is an incomplete match to rpmbuild's full %setup expression.
 # Known differences
