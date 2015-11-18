@@ -1578,12 +1578,12 @@ sub srcpackage {
   $paxcmd .= "(cd %{_topdir}; %{__pax} -L -w ";
 
   # some packages may not have a "main" source.
-  $paxcmd .= "%{_sourcedir}/$pkgdata{main}{source} " if $pkgdata{main}{source};
+  $paxcmd .= "SOURCES/$pkgdata{main}{source} " if $pkgdata{main}{source};
 
   # create file list:  Source[nn], Patch[nn]
   foreach my $specbit (keys %{$pkgdata{main}} ) {
     next if $specbit eq 'source';
-    $paxcmd .= "%{_sourcedir}/$pkgdata{main}{$specbit} " if $specbit =~ /^patch/;
+    $paxcmd .= "SOURCES/$pkgdata{main}{$specbit} " if $specbit =~ /^patch/;
 ##buglet: need to deal with case where patches are listed as URLs?
 #  or other extended pathnames?  Silly !@$%^&!%%!%!! user!
   }
@@ -1592,11 +1592,11 @@ sub srcpackage {
     # Skip Source0, since it's also $pkgdata{main}{source}.  Could arguably
     # just remove that instead, but I think that might backfire.
     next if $source eq '0';
-    $paxcmd .= "%{_sourcedir}/$pkgdata{sources}{$source} ";
+    $paxcmd .= "SOURCES/$pkgdata{sources}{$source} ";
   }
 
   # add the spec file and write to source package destination.
-  $paxcmd .= "%{_specdir}/$barespec -f %{_srcdebdir}/$pkgsrcname)";
+  $paxcmd .= "SPECS/$barespec -f %{_srcdebdir}/$pkgsrcname)";
 
   # In case of %-macros...
   $paxcmd = expandmacros($paxcmd);
