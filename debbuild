@@ -418,32 +418,39 @@ sub load_config {
 # Options based on rpmbuild's options
 sub parse_cmd {
   # Don't feel like coding my own option parser...
-  #use Getopt::Long;
-  # ... but I may have to:  (OTOH, rpm uses popt, so maybe we can too.)
-  #use Getopt::Popt qw(:all);
-  # Or not.  >:(  Stupid Debian lack of findable Perl module names in packages.
-
-  # ... also note, single-character options are mostly not flags, so they can't be
-  # sanely combined the way most other programs' single-character flag options can.
-
-  # Stuff it.
-  my $prevopt = '';
-  foreach (@ARGV) {
-    chomp;
-
-    # Is it an option?
-    if (/^-/) {
-
-      # Is it a long option?
-      if (/^--/) {
-	if (/^--short-circuit/) {
-	  $cmdopts{short} = 'y';
-	} elsif (/^--rebuild/) {
-	  $cmdopts{type} = 's';
-	} elsif (/^--showpkgs/) {
-	  $cmdopts{type} = 'd';	# d for 'diagnostic' or 'debug' or 'dump'
-	} elsif (/^--help/) {
-	  print "debbuild v$version".q{
+  Getopt::Long::GetOptions(
+    'buildroot=s'   => \$cmdbuildroot,
+    'short-circuit' => sub { $cmdopts{short} = 'y' },
+    'rebuild'       => sub { $cmdopts{type} = 's' },
+    'showpkgs'      => sub { $cmdopts{type} = 'd' },
+    'b|t=s'         => sub {
+        my ($opt_name,$opt_value) = @_;
+        if ($cmdopts{type} eq 's') {
+          # Mutually exclusive options.
+          die "Can't use -$opt_name$opt_value with --rebuild\n";
+        } else {
+          $cmdopts{type} = $opt_name;
+          $cmdopts{stage} = $opt_value;
+        }
+      },
+    'define|D=s' => sub {
+        my ($opt_name,$opt_value) = @_;
+        my ($macro,$value) = ($opt_value =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i);
+        if ($value ne '') {
+          $specglobals{$macro} = $value;
+        } else {
+          warn "WARNING: missing value for macro $macro in --define! Ignoring.\n";
+        }
+      },
+    'i=s' => sub {
+        my ($opt_name,$opt_value) = @_;
+        $cmdopts{install} = 1;
+        $cmdopts{type} = 's';
+        $srcpkg = $opt_value;
+      },
+    'v+' => \$verbosity, # bump verbosity.  Not sure what I'll actually do here...
+    'help' => sub {
+        print "debbuild v$version".q{
 Copyright 2005-2015 Kris Deugau <kdeugau@deepnet.cx>
 
 Build .deb packages from RPM-style .spec files
@@ -475,82 +482,27 @@ debbuild-specific options:
       --showpkgs                 Show package names that would be built.  Only works with .spec files.
 
 };
-	  exit;
-
-	} elsif (/^--buildroot=(.+)/) {
-	  $cmdbuildroot = $1;
-	} elsif (/^--define=(.*)/) {
-	  my ($macro,$value) = ($1 =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i);
-	  if ($value ne '') {
-	    $specglobals{$macro} = $value;
-	  } else {
-	    warn "WARNING: missing value for macro $macro in --define! Ignoring.\n";
-	  }
-	} elsif (/^--define/) {
-	  # nothing to do?  Can't see anything needed, we handle the actual definition later.
-##fixme
-# add --self-package here
-# deps build-essential pax fakeroot
-	} else {
-	  print "Long option $_ not handled\n";
-	}
-      } else {
-	# Not a long option
-	if (/^-[bt]/) {
-	  if ($cmdopts{stage} eq 's') {
-	    # Mutually exclusive options.
-	    die "Can't use $_ with --rebuild\n";
-	  } else {
-	    # Capture the type (from "bare" files or tarball) and the stage (prep, build, etc)
-	    ($cmdopts{type},$cmdopts{stage}) = (/^-([bt])([pcilabs])/);
-	  }
-	} elsif (/^-v/) {
-	  # bump verbosity.  Not sure what I'll actually do here...
-	} elsif (/^-i/) {
-	  $cmdopts{install} = 1;
-	  $prevopt = '-i';
-	} elsif (/^-D/) {
-	  # --define.  nothing to do on this round;  actual work is done next time.
-	} else {
-	  die "Bad option $_\n";
-	}
+        exit;
       }
+  ); # Getopt::Long::Getoptions()
 
-    } else { # Not an option argument
-
-      # --buildroot is the only option that takes an argument
-      # Therefore, any *other* bare arguments are the spec file,
-      # tarball, or source package we're operating on - depending
-      # on which one we meet.
-      if ($prevopt eq '--buildroot') {
-	$cmdbuildroot = $_;
-      } elsif ($prevopt eq '--define' || $prevopt eq '-D') {
-	my ($macro,$value) = (/([a-z0-9_.-]+)(?:\s+(.+))?/i);
-	if ($value ne '') {
-	  $specglobals{$macro} = $value;
-	} else {
-	  warn "WARNING:  missing value for macro $macro in --define!  Ignoring.\n";
-	}
-      } elsif ($prevopt eq '-i') {
-	$srcpkg = $_;
-      } else {
-	if ($cmdopts{type} eq 's') {
-	  # Source package
- 	  if (!/(sdeb|\.src\.rpm)$/) {
-	    die "Can't --rebuild with $_\n";
-	  }
-          $srcpkg = $_;
-	} elsif ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
-	  # Spec file
-	  $specglobals{specfile} = $_;
-	} else {
-	  # Tarball build.  Need to extract tarball to find spec file.  Whee.
-	  $specglobals{tarball} = $_;
-	}
-      }
+  # --buildroot, --define|-D, and -i are the only options that take an
+  # argument.  Therefore, any *other* bare arguments are the spec file,
+  # tarball, or source package we're operating on - depending on which
+  # one we meet.
+  if ($cmdopts{type} eq 's') {
+    # Source package
+    $srcpkg = $ARGV[0] unless $srcpkg ne '';
+    if ($srcpkg !~ /(\.sdeb|\.src\.rpm)$/) {
+      die "Can't --rebuild with $srcpkg\n";
     }
-    $prevopt = $_;
-  } # foreach @ARGV
+  } elsif ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
+    # Spec file
+    $specglobals{specfile} = $ARGV[0];
+  } else {
+    # Tarball build.  Need to extract tarball to find spec file.  Whee.
+    $specglobals{tarball} = $ARGV[0];
+  }
 
   # Some cross-checks.  rpmbuild limits --short-circuit to just
   # the "compile" and "install" targets - with good reason IMO.
@@ -561,42 +513,9 @@ debbuild-specific options:
     $cmdopts{short} = 'n';
   }
 
-  # Did we catch a '-b.' or '-t.' option?
+  # Did we catch an action option?
   # rpmbuild quits silently.
   exit 0 if '' eq $cmdopts{type};
-
-  # Valid options, with example arguments (if any):
-# Build from .spec file; mutually exclusive:
-  # -bp
-  # -bc         
-  # -bi         
-  # -bl
-  # -ba
-  # -bb
-  # -bs
-# Build from tarball; mutually exclusive:
-  # -tp
-  # -tc
-  # -ti
-  # -ta
-  # -tb
-  # -ts
-# Build from .src.(deb|rpm)
-  # --rebuild
-  # --recompile
-
-# General options
-  # --buildroot=DIRECTORY
-  # --clean
-  # --nobuild
-  # --nodeps
-  # --nodirtokens
-  # --rmsource
-  # --rmspec
-  # --short-circuit
-  # --target=CPU-VENDOR-OS
-
-  #my $popt = new Getopt::Popt(argv => \@ARGV, options => \@optionsTable);
 
 } # end parse_cmd()
 
