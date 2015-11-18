@@ -258,7 +258,8 @@ parse_cmd();
 my $topdir = expandmacros($specglobals{_topdir});
 my $tmpdir = expandmacros($specglobals{_tmppath});
 
-if ($cmdopts{install}) {
+if ($cmdopts{type} eq 's') {
+  die "Can't install $srcpkg\n" unless $srcpkg =~ /\.sdeb$/;
   install_sdeb();
   exit 0;
 }
@@ -285,15 +286,17 @@ if ($cmdopts{type} eq 'd') {
 
 # Stick --rebuild handling in here - basically install_sdeb()
 # followed by tweaking options to run with -ba
-if ($cmdopts{type} eq 's') {
+if ($cmdopts{type} eq 'r') {
   my $specfile;
   if ($srcpkg =~ /\.src\.rpm$/) {
     my @srclist = grep { /\.spec/ } qx { rpm -qlp $srcpkg };
     chomp( $specfile = $srclist[0] );
     qx { rpm -i $srcpkg };
-  } else {
+  } elsif ($srcpkg =~ /\.sdeb$/) {
     install_sdeb();
     chomp( $specfile = basename( qx { pax -f $srcpkg *.spec } ) );
+  } else {
+    die "Can't --rebuild with $srcpkg\n";
   }
   $specglobals{specfile} = "$topdir/SPECS/$specfile";
   $cmdopts{type} = 'b';
@@ -421,18 +424,8 @@ sub parse_cmd {
   Getopt::Long::GetOptions(
     'buildroot=s'   => \$cmdbuildroot,
     'short-circuit' => sub { $cmdopts{short} = 'y' },
-    'rebuild'       => sub { $cmdopts{type} = 's' },
+    'rebuild'       => sub { $cmdopts{type} = 'r' },
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
-    'b|t=s'         => sub {
-        my ($opt_name,$opt_value) = @_;
-        if ($cmdopts{type} eq 's') {
-          # Mutually exclusive options.
-          die "Can't use -$opt_name$opt_value with --rebuild\n";
-        } else {
-          $cmdopts{type} = $opt_name;
-          $cmdopts{stage} = $opt_value;
-        }
-      },
     'define|D=s' => sub {
         my ($opt_name,$opt_value) = @_;
         my ($macro,$value) = ($opt_value =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i);
@@ -444,13 +437,32 @@ sub parse_cmd {
       },
     'i=s' => sub {
         my ($opt_name,$opt_value) = @_;
-        $cmdopts{install} = 1;
         $cmdopts{type} = 's';
         $srcpkg = $opt_value;
       },
     'v+' => \$verbosity, # bump verbosity.  Not sure what I'll actually do here...
-    'help' => sub {
-        print "debbuild v$version".q{
+    'b=s' => \&actionhandler, # do NOT use 'b|t=s' here!
+    't=s' => \&actionhandler, # see 'actionhandler' for details
+    'help' => \&helphandler
+  ); # Getopt::Long::Getoptions()
+  ## actionhandler()
+  # You can't use 'b|t=s' in Getopt::Long::GetOptions(), because 't' will be
+  # treated as an 'alias' to the 'primary' option 'b' and will NOT receive its
+  # own $opt_name.  We have to factor-out the handler and use _two_ options.
+  sub actionhandler {
+    my ($opt_name,$opt_value) = @_;
+    if ($cmdopts{type} eq 'r') {
+    # Mutually exclusive options.
+      die "Can't use -$opt_name$opt_value with --rebuild\n";
+    } else {
+      $cmdopts{type} = $opt_name;
+      $cmdopts{stage} = $opt_value;
+    }
+  } # end actionhandler()
+  ## helphandler()
+  # Factor-out the 'help' text. Could as well be SYNOPSIS in pod.
+  sub helphandler {
+    print "debbuild v$version".q{
 Copyright 2005-2015 Kris Deugau <kdeugau@deepnet.cx>
 
 Build .deb packages from RPM-style .spec files
@@ -480,22 +492,17 @@ Common options:
 debbuild-specific options:
       -i                         Unpack a .sdeb in the %_topdir tree
       --showpkgs                 Show package names that would be built.  Only works with .spec files.
-
 };
-        exit;
-      }
-  ); # Getopt::Long::Getoptions()
+    exit;
+  }
 
   # --buildroot, --define|-D, and -i are the only options that take an
   # argument.  Therefore, any *other* bare arguments are the spec file,
   # tarball, or source package we're operating on - depending on which
   # one we meet.
-  if ($cmdopts{type} eq 's') {
+  if ($cmdopts{type} eq 'r') {
     # Source package
-    $srcpkg = $ARGV[0] unless $srcpkg ne '';
-    if ($srcpkg !~ /(\.sdeb|\.src\.rpm)$/) {
-      die "Can't --rebuild with $srcpkg\n";
-    }
+    $srcpkg = $ARGV[0];
   } elsif ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
     # Spec file
     $specglobals{specfile} = $ARGV[0];
