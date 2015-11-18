@@ -60,11 +60,12 @@ rebuild .src.rpm source packages as .deb binary packages.
 %post
 if [ -x %{_bindir}/%{da} ]
 then
-sed -i -e "s/%_arch.*/`%{da} | sed -n -e 's/^DEB_HOST_ARCH\=/%_arch /p'`/" %{_libdir}/%{name}/macros
-sed -i -e "s/%_build_arch.*/`%{da} | sed -n -e 's/^DEB_BUILD_ARCH\=/%_build_arch /p'`/" %{_libdir}/%{name}/macros
-sed -i -e "s/%_os.*/`%{da} | sed -n -e 's/^DEB_BUILD_ARCH_OS\=/%_os /p'`/" %{_libdir}/%{name}/macros
-sed -i -e "s/%_host_cpu.*/`%{da} | sed -n -e 's/^DEB_HOST_GNU_CPU\=/%_host_cpu /p'`/" %{_libdir}/%{name}/macros
-sed -i -e "s/%_host_os.*/`%{da} | sed -n -e 's/^DEB_HOST_ARCH_OS\=/%_host_os /p'`/" %{_libdir}/%{name}/macros
+sed -e "s/%_arch.*/`%{da} | sed -n -e 's/^DEB_HOST_ARCH\=/%_arch /p'`/" \
+    -e "s/%_build_arch.*/`%{da} | sed -n -e 's/^DEB_BUILD_ARCH\=/%_build_arch /p'`/" \
+    -e "s/%_os.*/`%{da} | sed -n -e 's/^DEB_BUILD_ARCH_OS\=/%_os /p'`/" \
+    -e "s/%_host_cpu.*/`%{da} | sed -n -e 's/^DEB_HOST_GNU_CPU\=/%_host_cpu /p'`/" \
+    -e "s/%_host_os.*/`%{da} | sed -n -e 's/^DEB_HOST_ARCH_OS\=/%_host_os /p'`/" \
+    -i %{_libdir}/%{name}/macros
 fi
 
 %changelog
