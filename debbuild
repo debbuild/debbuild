@@ -31,6 +31,7 @@ use warnings;
 use Cwd 'abs_path';	# for finding where files really are
 use Fcntl;		# for sysopen flags
 use File::Basename;
+use Getopt::Long qw(:config no_ignore_case bundling);
 
 my $version = "0.11.3";	#VERSION#
 
@@ -257,7 +258,8 @@ parse_cmd();
 my $topdir = expandmacros($specglobals{_topdir});
 my $tmpdir = expandmacros($specglobals{_tmppath});
 
-if ($cmdopts{install}) {
+if ($cmdopts{type} eq 's') {
+  die "Can't install $srcpkg\n" unless $srcpkg =~ /\.sdeb$/;
   install_sdeb();
   exit 0;
 }
@@ -284,15 +286,17 @@ if ($cmdopts{type} eq 'd') {
 
 # Stick --rebuild handling in here - basically install_sdeb()
 # followed by tweaking options to run with -ba
-if ($cmdopts{type} eq 's') {
+if ($cmdopts{type} eq 'r') {
   my $specfile;
   if ($srcpkg =~ /\.src\.rpm$/) {
     my @srclist = grep { /\.spec/ } qx { rpm -qlp $srcpkg };
     chomp( $specfile = $srclist[0] );
     qx { rpm -i $srcpkg };
-  } else {
+  } elsif ($srcpkg =~ /\.sdeb$/) {
     install_sdeb();
     chomp( $specfile = basename( qx { pax -f $srcpkg *.spec } ) );
+  } else {
+    die "Can't --rebuild with $srcpkg\n";
   }
   $specglobals{specfile} = "$topdir/SPECS/$specfile";
   $cmdopts{type} = 'b';
@@ -358,7 +362,6 @@ if ($cmdopts{stage} =~ /[ilab]/) {
 #foreach my $pkg (@pkglist) {
 #  print "files in $pkg:\n ".$filelist{$pkg}."\n";
 #}
-
 }
 # -> binpkg and srcpkg if -.a
 if ($cmdopts{stage} eq 'a') {
@@ -371,7 +374,6 @@ if ($cmdopts{stage} eq 'b') {
   binpackage();
   clean();
 }
-
 # -> srcpkg if -.s
 if ($cmdopts{stage} eq 's') {
   srcpackage();
@@ -419,32 +421,52 @@ sub load_config {
 # Options based on rpmbuild's options
 sub parse_cmd {
   # Don't feel like coding my own option parser...
-  #use Getopt::Long;
-  # ... but I may have to:  (OTOH, rpm uses popt, so maybe we can too.)
-  #use Getopt::Popt qw(:all);
-  # Or not.  >:(  Stupid Debian lack of findable Perl module names in packages.
-
-  # ... also note, single-character options are mostly not flags, so they can't be
-  # sanely combined the way most other programs' single-character flag options can.
-
-  # Stuff it.
-  my $prevopt = '';
-  foreach (@ARGV) {
-    chomp;
-
-    # Is it an option?
-    if (/^-/) {
-
-      # Is it a long option?
-      if (/^--/) {
-	if (/^--short-circuit/) {
-	  $cmdopts{short} = 'y';
-	} elsif (/^--rebuild/) {
-	  $cmdopts{type} = 's';
-	} elsif (/^--showpkgs/) {
-	  $cmdopts{type} = 'd';	# d for 'diagnostic' or 'debug' or 'dump'
-	} elsif (/^--help/) {
-	  print "debbuild v$version".q{
+  Getopt::Long::GetOptions(
+    'buildroot=s'   => \$cmdbuildroot,
+    'short-circuit' => sub { $cmdopts{short} = 'y' },
+    'showpkgs'      => sub { $cmdopts{type} = 'd' },
+    'define|D=s' => sub {
+        my ($opt_name,$opt_value) = @_;
+        my ($macro,$value) = ($opt_value =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i);
+        if ($value ne '') {
+          $specglobals{$macro} = $value;
+        } else {
+          warn "WARNING: missing value for macro $macro in --define! Ignoring.\n";
+        }
+      },
+    'rebuild=s' => sub {
+        my ($opt_name,$opt_value) = @_;
+        $cmdopts{type} = 'r';
+        $srcpkg = $opt_value;
+      },
+    'i=s' => sub {
+        my ($opt_name,$opt_value) = @_;
+        $cmdopts{type} = 's';
+        $srcpkg = $opt_value;
+      },
+    'v+' => \$verbosity, # bump verbosity.  Not sure what I'll actually do here...
+    'b=s' => \&actionhandler, # do NOT use 'b|t=s' here!
+    't=s' => \&actionhandler, # see 'actionhandler' for details
+    'help' => \&helphandler
+  ); # Getopt::Long::Getoptions()
+  ## actionhandler()
+  # You can't use 'b|t=s' in Getopt::Long::GetOptions(), because 't' will be
+  # treated as an 'alias' to the 'primary' option 'b' and will NOT receive its
+  # own $opt_name.  We have to factor-out the handler and use _two_ options.
+  sub actionhandler {
+    my ($opt_name,$opt_value) = @_;
+    if ($cmdopts{type} eq 'r') {
+    # Mutually exclusive options.
+      die "Can't use -$opt_name$opt_value with --rebuild\n";
+    } else {
+      $cmdopts{type} = $opt_name;
+      $cmdopts{stage} = $opt_value;
+    }
+  } # end actionhandler()
+  ## helphandler()
+  # Factor-out the 'help' text. Could as well be SYNOPSIS in pod.
+  sub helphandler {
+    print "debbuild v$version".q{
 Copyright 2005-2015 Kris Deugau <kdeugau@deepnet.cx>
 
 Build .deb packages from RPM-style .spec files
@@ -474,84 +496,20 @@ Common options:
 debbuild-specific options:
       -i                         Unpack a .sdeb in the %_topdir tree
       --showpkgs                 Show package names that would be built.  Only works with .spec files.
-
 };
-	  exit;
+    exit;
+  }
 
-	} elsif (/^--buildroot=(.+)/) {
-	  $cmdbuildroot = $1;
-	} elsif (/^--define=(.*)/) {
-	  my ($macro,$value) = ($1 =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i);
-	  if ($value ne '') {
-	    $specglobals{$macro} = $value;
-	  } else {
-	    warn "WARNING: missing value for macro $macro in --define! Ignoring.\n";
-	  }
-	} elsif (/^--define/) {
-	  # nothing to do?  Can't see anything needed, we handle the actual definition later.
-##fixme
-# add --self-package here
-# deps build-essential pax fakeroot
-	} else {
-	  print "Long option $_ not handled\n";
-	}
-      } else {
-	# Not a long option
-	if (/^-[bt]/) {
-	  if ($cmdopts{stage} eq 's') {
-	    # Mutually exclusive options.
-	    die "Can't use $_ with --rebuild\n";
-	  } else {
-	    # Capture the type (from "bare" files or tarball) and the stage (prep, build, etc)
-	    ($cmdopts{type},$cmdopts{stage}) = (/^-([bt])([pcilabs])/);
-	  }
-	} elsif (/^-v/) {
-	  # bump verbosity.  Not sure what I'll actually do here...
-	} elsif (/^-i/) {
-	  $cmdopts{install} = 1;
-	  $prevopt = '-i';
-	} elsif (/^-D/) {
-	  # --define.  nothing to do on this round;  actual work is done next time.
-	} else {
-	  die "Bad option $_\n";
-	}
-      }
-
-    } else { # Not an option argument
-
-      # --buildroot is the only option that takes an argument
-      # Therefore, any *other* bare arguments are the spec file,
-      # tarball, or source package we're operating on - depending
-      # on which one we meet.
-      if ($prevopt eq '--buildroot') {
-	$cmdbuildroot = $_;
-      } elsif ($prevopt eq '--define' || $prevopt eq '-D') {
-	my ($macro,$value) = (/([a-z0-9_.-]+)(?:\s+(.+))?/i);
-	if ($value ne '') {
-	  $specglobals{$macro} = $value;
-	} else {
-	  warn "WARNING:  missing value for macro $macro in --define!  Ignoring.\n";
-	}
-      } elsif ($prevopt eq '-i') {
-	$srcpkg = $_;
-      } else {
-	if ($cmdopts{type} eq 's') {
-	  # Source package
- 	  if (!/(sdeb|\.src\.rpm)$/) {
-	    die "Can't --rebuild with $_\n";
-	  }
-          $srcpkg = $_;
-	} elsif ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
-	  # Spec file
-	  $specglobals{specfile} = $_;
-	} else {
-	  # Tarball build.  Need to extract tarball to find spec file.  Whee.
-	  $specglobals{tarball} = $_;
-	}
-      }
-    }
-    $prevopt = $_;
-  } # foreach @ARGV
+  # --buildroot, --define|-D, --rebuild, and -i are the only options that take
+  # an argument.  Therefore, any *other* bare arguments are the spec file or
+  # the tarball we're operating on - depending on which one we meet.
+  if ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
+    # Spec file
+    $specglobals{specfile} = $ARGV[0];
+  } else {
+    # Tarball build.  Need to extract tarball to find spec file.  Whee.
+    $specglobals{tarball} = $ARGV[0];
+  }
 
   # Some cross-checks.  rpmbuild limits --short-circuit to just
   # the "compile" and "install" targets - with good reason IMO.
@@ -562,42 +520,9 @@ debbuild-specific options:
     $cmdopts{short} = 'n';
   }
 
-  # Did we catch a '-b.' or '-t.' option?
+  # Did we catch an action option?
   # rpmbuild quits silently.
   exit 0 if '' eq $cmdopts{type};
-
-  # Valid options, with example arguments (if any):
-# Build from .spec file; mutually exclusive:
-  # -bp
-  # -bc         
-  # -bi         
-  # -bl
-  # -ba
-  # -bb
-  # -bs
-# Build from tarball; mutually exclusive:
-  # -tp
-  # -tc
-  # -ti
-  # -ta
-  # -tb
-  # -ts
-# Build from .src.(deb|rpm)
-  # --rebuild
-  # --recompile
-
-# General options
-  # --buildroot=DIRECTORY
-  # --clean
-  # --nobuild
-  # --nodeps
-  # --nodirtokens
-  # --rmsource
-  # --rmspec
-  # --short-circuit
-  # --target=CPU-VENDOR-OS
-
-  #my $popt = new Getopt::Popt(argv => \@ARGV, options => \@optionsTable);
 
 } # end parse_cmd()
 
@@ -865,33 +790,15 @@ ENDIF: if (/^%endif/) {
 
         my @sbits = split /\s+/;
         shift @sbits;
-        while (my $sopt = shift @sbits) {
-          if ($sopt eq '-n') {
-            $specglobals{buildsubdir} = shift @sbits;
-          } elsif ($sopt eq '-a') {
-            # shift, next opt must be numeric (which sourcenn:)
-            $sopt = shift @sbits;
-            die "Argument for \%setup -a must be numeric at $specfile line $.\n" if $sopt !~ /^\d+$/;
-            push @safter, $sopt;
-          } elsif ($sopt eq '-b') {
-            # shift, next opt must be numeric (which sourcenn:)
-            $sopt = shift @sbits;
-            die "Argument for \%setup -b must be numeric at $specfile line $.\n" if $sopt !~ /^\d+$/;
-            push @sbefore, $sopt;
-          } elsif ($sopt eq '-c') {
-            # flag, create and change directory before unpack
-            $createdir = 1;
-          } elsif ($sopt eq '-D') {
-            # flag, do not delete directory before unpack
-            $leavedirs = 1;
-          } elsif ($sopt eq '-T') {
-            # flag, do not unpack first source
-            $skipdefault = 1;
-          } elsif ($sopt eq '-q') {
-            # SSSH!  Unpack quietly
-            $quietunpack = 1;
-          }
-        } # $sopt = shift @sbits
+        Getopt::Long::GetOptionsFromArray(\@sbits,
+          'n=s' => \$specglobals{buildsubdir},
+          'c'   => \$createdir,   # flag, create and change directory before unpack
+          'D'   => \$leavedirs,   # flag, do not delete directory before unpack
+          'T'   => \$skipdefault, # flag, do not unpack first source
+          'q'   => \$quietunpack, # SSH!  Unpack quietly
+          'b=i' => \@sbefore,
+          'a=i' => \@safter
+        );
 
 # Note that this is an incomplete match to rpmbuild's full %setup expression.
 # Known differences
@@ -954,60 +861,32 @@ ENDIF: if (/^%endif/) {
           push @patchlist, '';
         }
 
-# options:
-# -P  patch number
-# -p  path strip.  passed to patch as-is
-# -b, -z  backup file postfix.  literal, if eg "bkfile", backup files will be
-#     "filebkfile", not "file.bkfile".  Passed to patch as-is, with a minor
-#     flag adjustment
-# -E  Remove empty files.  Passed to patch as-is
-# -R  Reverse patch.  Passed to patch as-is
-# -F  fuzz factor.  Passed to patch as-is
-# -d  alternative directory.  Passed to patch as-is
-# -o  redirect output.  Passed to patch as-is
+        # %patch options:
+        my ($fuzz, $plev, $psuff, $noempty, $reverse, $altdir, $output)
+          = ($specglobals{_default_patch_fuzz}, 0, '', '', '', '', '');
 
-        my $plev = 0;
-        my $psuff = '';
-        my $noempty = '';
-        my $reverse = '';
-        my $altdir = '';
-        my $output = '';
-        my $fuzz = $specglobals{_default_patch_fuzz};
+        Getopt::Long::GetOptionsFromArray(\@pbits,
+          'P=i'   => \@patchlist, # patch number(s)
+          'p=i'   => \$plev,      # path strip.  Passed to patch as-is
+          'F=i'   => \$fuzz,      # fuzz factor.  Passed to patch as-is
+          'd=s'   => \$altdir,    # alternative directory.  Passed to patch as-is
+          'o=s'   => \$output,    # redirect output.  Passed to patch as-is
+          'E'     => \$noempty,   # remove empty files.  Passed to patch as-is
+          'R'     => \$reverse,   # reverse patch.  Passed to patch as-is
+          'b|z=s' => \$psuff,     # backup file postfix.
+            # Literal, if e.g. "bkfile", backup files will be "filebkfile",
+            # not "file.bkfile".  Passed as-is, with a minor flag adjustment
+        );
 
-        while (my $popt = shift @pbits) {
-          if ($popt =~ /^-P(\d*)/) {
-            # push the patchnum onto the list
-            if ($1 ne '') {
-              push @patchlist, "$1";
-            } else {
-              my $tmp = shift @pbits;
-              die "Invalid patch number $tmp: $line" if $tmp !~ /^\d+$/;
-              push @patchlist, $tmp;
-            }
-          } elsif ($popt =~ /^-[bz]([^\s]*)/) {
-            $psuff = "-b --suffix ".($1 || shift @pbits);
-          } elsif ($popt =~ /^-p(\d*)/) {
-            $plev = ($1 ne '' ? $1 : shift @pbits);
-          } elsif ($popt =~ /^-F(\d*)/) {
-            $fuzz = ($1 ne '' ? $1 : shift @pbits);
-          } elsif ($popt =~ /^-d([^\s]*)/) {
-            $altdir = "-d ".($1 || shift @pbits);
-          } elsif ($popt =~ /^-o([^\s]*)/) {
-            $output = "-o ".($1 || shift @pbits);
-          } elsif ($popt =~ /^(-E)/) {
-            $noempty = $1;
-          } elsif ($popt =~ /^(-R)/) {
-            $reverse = $1;
-          } elsif ($popt =~ /^(-[^\s]+)/) {
-            die "Unknown \%patch option $1: $line\n";
-          } elsif ($popt =~ /(\d+)/) {
-            push @patchlist, $1;
-          }
-        } # while (shift @pbits)
+        push @patchlist, @pbits; # all other arguments are patch numbers
 
         my $patchopts = $specglobals{_default_patch_flags};
-        $patchopts .= " -p$plev $psuff $noempty $reverse $altdir $output";
-        $patchopts .= " --fuzz=$fuzz";
+        $patchopts .= " --fuzz=$fuzz -p$plev";
+        $patchopts .= " -b --suffix=$psuff" if $psuff ne '';
+        $patchopts .= " -d $altdir" if $altdir ne '';
+        $patchopts .= " -o $output" if $output ne '';
+        $patchopts .= " -E" if $noempty;
+        $patchopts .= " -R" if $reverse;
 
         foreach my $pnum (@patchlist) {
           $prepscript .= qq(echo "Patch ).($pnum eq '' ? '' : "#$pnum ").qq(($pkgdata{main}{$pnum}):"\n);
