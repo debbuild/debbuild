@@ -285,21 +285,16 @@ if ($cmdopts{type} eq 'd') {
 # Stick --rebuild handling in here - basically install_sdeb()
 # followed by tweaking options to run with -ba
 if ($cmdopts{type} eq 's') {
+  my $specfile;
   if ($srcpkg =~ /\.src\.rpm$/) {
-    my @srclist = qx { rpm -qlp $srcpkg };
-    foreach (@srclist) {
-      chomp;
-      $specglobals{specfile} = "$topdir/SPECS/$_" if /\.spec$/;
-    }
+    my @srclist = grep { /\.spec/ } qx { rpm -qlp $srcpkg };
+    chomp( $specfile = $srclist[0] );
     qx { rpm -i $srcpkg };
   } else {
     install_sdeb();
-    my @srclist = qx { pax < $srcpkg };
-    foreach (@srclist) {
-      chomp;
-      $specglobals{specfile} = "$topdir/$_" if /SPECS/;
-    }
+    chomp( $specfile = basename( qx { pax -f $srcpkg *.spec } ) );
   }
+  $specglobals{specfile} = "$topdir/SPECS/$specfile";
   $cmdopts{type} = 'b';
   $cmdopts{stage} = 'a';
 }
