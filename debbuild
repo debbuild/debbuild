@@ -424,7 +424,6 @@ sub parse_cmd {
   Getopt::Long::GetOptions(
     'buildroot=s'   => \$cmdbuildroot,
     'short-circuit' => sub { $cmdopts{short} = 'y' },
-    'rebuild'       => sub { $cmdopts{type} = 'r' },
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
     'define|D=s' => sub {
         my ($opt_name,$opt_value) = @_;
@@ -434,6 +433,11 @@ sub parse_cmd {
         } else {
           warn "WARNING: missing value for macro $macro in --define! Ignoring.\n";
         }
+      },
+    'rebuild=s' => sub {
+        my ($opt_name,$opt_value) = @_;
+        $cmdopts{type} = 'r';
+        $srcpkg = $opt_value;
       },
     'i=s' => sub {
         my ($opt_name,$opt_value) = @_;
@@ -496,14 +500,10 @@ debbuild-specific options:
     exit;
   }
 
-  # --buildroot, --define|-D, and -i are the only options that take an
-  # argument.  Therefore, any *other* bare arguments are the spec file,
-  # tarball, or source package we're operating on - depending on which
-  # one we meet.
-  if ($cmdopts{type} eq 'r') {
-    # Source package
-    $srcpkg = $ARGV[0];
-  } elsif ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
+  # --buildroot, --define|-D, --rebuild, and -i are the only options that take
+  # an argument.  Therefore, any *other* bare arguments are the spec file or
+  # the tarball we're operating on - depending on which one we meet.
+  if ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
     # Spec file
     $specglobals{specfile} = $ARGV[0];
   } else {
