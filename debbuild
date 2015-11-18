@@ -248,21 +248,14 @@ my $buildscript = '';
 my $installscript = '';
 my $cleanscript = '[ "$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf $RPM_BUILD_ROOT';
 
-# Snag some environment data
-my $tmpdir;
-if (defined $ENV{TMP} && $ENV{TMP} =~ /^(\/var)?\/tmp$/) {
-  $tmpdir = $ENV{TMP};
-} else {
-  $tmpdir = "/var/tmp";
-}
-
 ##main
 
 load_config();
 parse_cmd();
 
-# global shortcut
+# global shortcuts
 my $topdir = expandmacros($specglobals{_topdir});
+my $tmpdir = expandmacros($specglobals{_tmppath});
 
 if ($cmdopts{install}) {
   install_sdeb();
