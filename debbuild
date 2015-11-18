@@ -31,6 +31,7 @@ use warnings;
 use Cwd 'abs_path';	# for finding where files really are
 use Fcntl;		# for sysopen flags
 use File::Basename;
+use Getopt::Long qw(:config no_ignore_case bundling);
 
 my $version = "0.11.3";	#VERSION#
 
@@ -358,7 +359,6 @@ if ($cmdopts{stage} =~ /[ilab]/) {
 #foreach my $pkg (@pkglist) {
 #  print "files in $pkg:\n ".$filelist{$pkg}."\n";
 #}
-
 }
 # -> binpkg and srcpkg if -.a
 if ($cmdopts{stage} eq 'a') {
@@ -371,7 +371,6 @@ if ($cmdopts{stage} eq 'b') {
   binpackage();
   clean();
 }
-
 # -> srcpkg if -.s
 if ($cmdopts{stage} eq 's') {
   srcpackage();
@@ -954,60 +953,32 @@ ENDIF: if (/^%endif/) {
           push @patchlist, '';
         }
 
-# options:
-# -P  patch number
-# -p  path strip.  passed to patch as-is
-# -b, -z  backup file postfix.  literal, if eg "bkfile", backup files will be
-#     "filebkfile", not "file.bkfile".  Passed to patch as-is, with a minor
-#     flag adjustment
-# -E  Remove empty files.  Passed to patch as-is
-# -R  Reverse patch.  Passed to patch as-is
-# -F  fuzz factor.  Passed to patch as-is
-# -d  alternative directory.  Passed to patch as-is
-# -o  redirect output.  Passed to patch as-is
+        # %patch options:
+        my ($fuzz, $plev, $psuff, $noempty, $reverse, $altdir, $output)
+          = ($specglobals{_default_patch_fuzz}, 0, '', '', '', '', '');
 
-        my $plev = 0;
-        my $psuff = '';
-        my $noempty = '';
-        my $reverse = '';
-        my $altdir = '';
-        my $output = '';
-        my $fuzz = $specglobals{_default_patch_fuzz};
+        Getopt::Long::GetOptionsFromArray(\@pbits,
+          'P=i'   => \@patchlist, # patch number(s)
+          'p=i'   => \$plev,      # path strip.  Passed to patch as-is
+          'F=i'   => \$fuzz,      # fuzz factor.  Passed to patch as-is
+          'd=s'   => \$altdir,    # alternative directory.  Passed to patch as-is
+          'o=s'   => \$output,    # redirect output.  Passed to patch as-is
+          'E'     => \$noempty,   # remove empty files.  Passed to patch as-is
+          'R'     => \$reverse,   # reverse patch.  Passed to patch as-is
+          'b|z=s' => \$psuff,     # backup file postfix.
+            # Literal, if e.g. "bkfile", backup files will be "filebkfile",
+            # not "file.bkfile".  Passed as-is, with a minor flag adjustment
+        );
 
-        while (my $popt = shift @pbits) {
-          if ($popt =~ /^-P(\d*)/) {
-            # push the patchnum onto the list
-            if ($1 ne '') {
-              push @patchlist, "$1";
-            } else {
-              my $tmp = shift @pbits;
-              die "Invalid patch number $tmp: $line" if $tmp !~ /^\d+$/;
-              push @patchlist, $tmp;
-            }
-          } elsif ($popt =~ /^-[bz]([^\s]*)/) {
-            $psuff = "-b --suffix ".($1 || shift @pbits);
-          } elsif ($popt =~ /^-p(\d*)/) {
-            $plev = ($1 ne '' ? $1 : shift @pbits);
-          } elsif ($popt =~ /^-F(\d*)/) {
-            $fuzz = ($1 ne '' ? $1 : shift @pbits);
-          } elsif ($popt =~ /^-d([^\s]*)/) {
-            $altdir = "-d ".($1 || shift @pbits);
-          } elsif ($popt =~ /^-o([^\s]*)/) {
-            $output = "-o ".($1 || shift @pbits);
-          } elsif ($popt =~ /^(-E)/) {
-            $noempty = $1;
-          } elsif ($popt =~ /^(-R)/) {
-            $reverse = $1;
-          } elsif ($popt =~ /^(-[^\s]+)/) {
-            die "Unknown \%patch option $1: $line\n";
-          } elsif ($popt =~ /(\d+)/) {
-            push @patchlist, $1;
-          }
-        } # while (shift @pbits)
+        push @patchlist, @pbits; # all other arguments are patch numbers
 
         my $patchopts = $specglobals{_default_patch_flags};
-        $patchopts .= " -p$plev $psuff $noempty $reverse $altdir $output";
-        $patchopts .= " --fuzz=$fuzz";
+        $patchopts .= " --fuzz=$fuzz -p$plev";
+        $patchopts .= " -b --suffix=$psuff" if $psuff ne '';
+        $patchopts .= " -d $altdir" if $altdir ne '';
+        $patchopts .= " -o $output" if $output ne '';
+        $patchopts .= " -E" if $noempty;
+        $patchopts .= " -R" if $reverse;
 
         foreach my $pnum (@patchlist) {
           $prepscript .= qq(echo "Patch ).($pnum eq '' ? '' : "#$pnum ").qq(($pkgdata{main}{$pnum}):"\n);
