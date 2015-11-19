@@ -286,6 +286,7 @@ if ($cmdopts{type} eq 'd') {
 
 # Stick --rebuild handling in here - basically install_sdeb()
 # followed by tweaking options to run with -ba
+# --recompile is the same, except it reconfigures -bi
 if ($cmdopts{type} eq 'r') {
   my $specfile;
   if ($srcpkg =~ /\.src\.rpm$/) {
@@ -299,8 +300,7 @@ if ($cmdopts{type} eq 'r') {
     die "Can't --rebuild with $srcpkg\n";
   }
   $specglobals{specfile} = "$topdir/SPECS/$specfile";
-  $cmdopts{type} = 'b';
-  $cmdopts{stage} = 'a';
+  $cmdopts{type} = 'b'; # fall through
 }
 
 if ($cmdopts{type} eq 't') {
@@ -437,6 +437,13 @@ sub parse_cmd {
     'rebuild=s' => sub {
         my ($opt_name,$opt_value) = @_;
         $cmdopts{type} = 'r';
+        $cmdopts{stage} = 'a';
+        $srcpkg = $opt_value;
+      },
+    'recompile=s' => sub {
+        my ($opt_name,$opt_value) = @_;
+        $cmdopts{type} = 'r';
+        $cmdopts{stage} = 'i';
         $srcpkg = $opt_value;
       },
     'install|i=s' => sub {
@@ -487,6 +494,7 @@ Build options with [ <specfile> | <tarball> | <source package> ]:
       -tb                        build binary package only from <tarball>
       -ts                        build source package only from <tarball>
       --rebuild                  build binary package from <source package>
+      --recompile                build through %install from <source package>
       --buildroot=DIRECTORY      override build root
       --short-circuit            skip straight to specified stage (only for c,i)
 
@@ -500,9 +508,10 @@ debbuild-specific options:
     exit;
   }
 
-  # --buildroot, --define|-D, --rebuild, and -i are the only options that take
-  # an argument.  Therefore, any *other* bare arguments are the spec file or
-  # the tarball we're operating on - depending on which one we meet.
+  # --buildroot, --define|-D, --rebuild, --recompile, and --install|-i are the
+  # only options that take an argument.  Therefore, any *other* bare arguments
+  # are the spec file or the tarball we're operating on - depending on which
+  # one we meet.
   if ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
     # Spec file
     $specglobals{specfile} = $ARGV[0];
@@ -1836,7 +1845,7 @@ debbuild - Build Debian-compatible .deb packages from RPM .spec files
 
  debbuild {-ta|-tb|-tp|-tc|-ti|-tl|-ts} [build-options] file.{tgz|zip|tar.{gz|bz2|xz|Z}}
 
- debbuild --rebuild file.{src.rpm|sdeb}
+ debbuild {--rebuild|--recompile} file.{src.rpm|sdeb}
 
  debbuild --showpkgs
 
@@ -1853,7 +1862,6 @@ a .spec template.
 As far as possible, the command-line options are identical to those from rpmbuild, although 
 several rpmbuild options are not supported:
 
- --recompile
  --showrc
  --clean
  --nobuild
