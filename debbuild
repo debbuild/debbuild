@@ -244,9 +244,7 @@ my $buildreq = '';
 
 # Scriptlets
 my $scriptletbase = q(%{___build_template});
-my $prepscript = '';
-my $buildscript = '';
-my $installscript = '';
+my ($prepscript, $buildscript, $installscript) = ('')x3;
 my $cleanscript = '[ "$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf $RPM_BUILD_ROOT';
 
 ##main
@@ -782,24 +780,21 @@ ENDIF: if (/^%endif/) {
     if ($stage eq 'prep') {
       # Actual handling for %prep section.  May have %setup macro;  may
       # include %patch tags, may be just a bare shell script.
-      if (/^\%setup/) {
+      if (s/^\%setup//) {
         $pkgdata{main}{hassetup} = 1;  # flag the fact that we've got %setup
-        # Parse out the %setup macro.
-        chomp;
-        # rpmbuild doesn't complain about gibberish immediately following %setup, but we will
-        warn "Suspect \%setup tag '$_', continuing\n" if ! /^\%setup(?:\s|$)/;
+        # Parse out the %setup macro.  rpmbuild doesn't complain about
+        # gibberish immediately following %setup, but we will
+        if (! /^(?:\s|$)/) {
+          chomp;
+          warn "Suspect \%setup tag '\%setup$_', continuing\n";
+          s/^[^\s]+//;
+        }
 
         # Prepare some flags
-        my $createdir = 0;
-        my $leavedirs = 0;
-        my $quietunpack = 0;
-        my $skipdefault = 0;
-        my @sbefore;
-        my @safter;
+        my ($createdir, $leavedirs, $quietunpack, $skipdefault) = (0)x4;
+        my (@sbefore, @safter);
 
-        my @sbits = split /\s+/;
-        shift @sbits;
-        Getopt::Long::GetOptionsFromArray(\@sbits,
+        Getopt::Long::GetOptionsFromString($_,
           'n=s' => \$specglobals{buildsubdir},
           'c'   => \$createdir,   # flag, create and change directory before unpack
           'D'   => \$leavedirs,   # flag, do not delete directory before unpack
