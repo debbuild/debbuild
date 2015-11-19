@@ -39,7 +39,7 @@ my $version = "0.11.3";	#VERSION#
 #use re "debug";
 
 # Behavioural compatibility FTW!  Yes, rpmbuild does this too.
-die "No .spec file to work with!  Exiting.\n" if scalar(@ARGV) == 0;
+die "No .spec file to work with!  Exiting.\n" if 0 == @ARGV;
 
 # Program flow:
 # -> Parse/execute "system" config/macros (if any - should be rare)
@@ -171,7 +171,7 @@ my %ubnt_vermap = (
     }
     close LSBREL;
 
-  } elsif ( ! -e '/usr/bin/dpkg-query' ) {
+  } elsif (not -e '/usr/bin/dpkg-query' ) {
     # call it woody, since sarge and newer have dpkg-query, and we don't much care about obsolete^n releases
     $basever = "3.0";
     $baseos = 'debian';
@@ -207,7 +207,7 @@ my %ubnt_vermap = (
       }
     }
 
-    if (!$basever) {
+    if (not $basever) {
       # Your llama is on fire
       $basever = '99';
       print "Warning:  couldn't autodetect OS version, assuming sid/unstable\n";
@@ -244,7 +244,7 @@ my $buildreq = '';
 
 # Scriptlets
 my $scriptletbase = q(%{___build_template});
-my ($prepscript, $buildscript, $installscript) = ('')x3;
+my ($prepscript, $buildscript, $installscript) = ('') x 3;
 my $cleanscript = '[ "$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf $RPM_BUILD_ROOT';
 
 ##main
@@ -342,7 +342,7 @@ if ($cmdopts{type} eq 'b') {
   # this also generates most of the shell script required.
   parse_spec($specglobals{specfile});
   die "Can't build $pkgdata{main}{name}:  build requirements not met.\n"
-    if !checkbuildreq();
+    unless checkbuildreq();
 }
 
 # Hokay.  Need to:
@@ -597,8 +597,7 @@ LINE: while (<SPECFILE>) {
     s/^%ifnarch/%if %{_arch}!=/;
 
     # Generic %if..%else..%endif construct
-    if (/^%if/) {
-      s/^%if//;
+    if (s/^%if//) {
       chomp;
       my $expr = lc expandmacros($_);
 
@@ -789,14 +788,14 @@ ENDIF: if (/^%endif/) {
         $pkgdata{main}{hassetup} = 1;  # flag the fact that we've got %setup
         # Parse out the %setup macro.  rpmbuild doesn't complain about
         # gibberish immediately following %setup, but we will
-        if (! /^(?:\s|$)/) {
+        if (not /^(?:\s|$)/) {
           chomp;
           warn "Suspect \%setup tag '\%setup$_', continuing\n";
           s/^[^\s]+//;
         }
 
         # Prepare some flags
-        my ($createdir, $leavedirs, $quietunpack, $skipdefault) = (0)x4;
+        my ($createdir, $leavedirs, $quietunpack, $skipdefault) = (0) x 4;
         my (@sbefore, @safter);
 
         Getopt::Long::GetOptionsFromString($_,
@@ -862,7 +861,7 @@ ENDIF: if (/^%endif/) {
           push @patchlist, "$1";
         }
         # add the "null" patch to the list unless we've got a -P flag
-        elsif (! /-P/) {
+        elsif (not /-P/) {
           push @patchlist, '';
         }
 
@@ -976,10 +975,9 @@ ENDIF: if (/^%endif/) {
 ##fixme
 # also need to handle missingok (file that doesn't exist, but should be removed on uninstall)
 # hmm.  not sure if such is **POSSIBLE** with Debian...  maybe an addition to %post?
-      if ($filesline =~ /%config\b(?:\s*\(\s*noreplace\s*\)\s*)?/) {
+      if ($filesline =~ s/%config\b(?:\s*\(\s*noreplace\s*\)\s*)?//) {
         $pkgdata{$subname}{conffiles} = 1;  # Flag it for later
-	$conf = 'y';
-	$filesline =~ s/%config\b(?:\s*\(\s*noreplace\s*\)\s*)?//;
+        $conf = 'y';
       }
 
       # %doc needs extra processing, because it can be a space-separated list, and may
@@ -989,8 +987,7 @@ ENDIF: if (/^%endif/) {
       # in /usr/share/doc/<packagename>.)
 ##fixme:  unhandled case: %doc %defattr.  Eeep.
 # don't really know what to do with %defattr, generally.  :(
-      if ($filesline =~ /%doc\b/) {
-        $filesline =~ s/\s*%doc\s+//;
+      if ($filesline =~ s/%doc\s+//) {
 
 # this could probably go elsewhere.
 	my $pkgname = $pkgdata{$subname}{name};
@@ -998,7 +995,7 @@ ENDIF: if (/^%endif/) {
 
 	# have to extract the partial pathnames that %doc installs automagically
 	foreach (split /\s+/, $filesline) {
-	  if (! (/^%/ or m|^/|) ) {
+	  if (not m|^[\%/]|) {
 	    $doclist{$subname} .= " $_";
 	    my ($element) = m|([^/\s]+/?)$|;
 	    $filesline =~ s|$_|%{_docdir}/$pkgname/$element|;
@@ -1239,10 +1236,10 @@ sub binpackage {
 
   foreach my $pkg (@pkglist) {
 
-    $pkgdata{$pkg}{arch} = $pkgdata{main}{arch} if !$pkgdata{$pkg}{arch};  # Just In Case.
+    $pkgdata{$pkg}{arch} = $pkgdata{main}{arch} unless $pkgdata{$pkg}{arch};  # Just In Case.
 
     # Make sure we have somewhere to write the .deb file
-    if (!-e "$topdir/DEBS/$pkgdata{$pkg}{arch}") {
+    if (not -e "$topdir/DEBS/$pkgdata{$pkg}{arch}") {
       mkdir "$topdir/DEBS/$pkgdata{$pkg}{arch}";
     }
 
@@ -1250,9 +1247,9 @@ sub binpackage {
     # metapackages don't have any files, but they depend on a bunch of things.
     # Packages with neither have, essentially, no content.
     next if 
-        (!$filelist{$pkg} or $filelist{$pkg} =~ /^\s*$/) &&
-        (!$pkgdata{$pkg}{requires});
-    $filelist{$pkg} = '' if !$filelist{$pkg};
+        (not $filelist{$pkg} or $filelist{$pkg} =~ /^\s*$/) &&
+        (not $pkgdata{$pkg}{requires});
+    $filelist{$pkg} = '' unless $filelist{$pkg};
 
     # Gotta do this first, otherwise we don't have a place to move files from %files
     mkdir "$specglobals{buildroot}/$pkg";
@@ -1304,7 +1301,7 @@ sub binpackage {
     # Get the "Depends" (Requires) a la RPM.  Ish.  We strip the leading
     # comma and space here (if needed) in case there were "Requires" specified
     # in the spec file - those would precede these.
-    $pkgdata{$pkg}{requires} .= getreqs("$specglobals{buildroot}/$pkg") if ! $NoAutoReq;
+    $pkgdata{$pkg}{requires} .= getreqs("$specglobals{buildroot}/$pkg") unless $NoAutoReq;
 
     # magic needed to properly version dependencies...
     # only provided deps will really be included
@@ -1522,7 +1519,7 @@ sub checkbuildreq {
   # expand macros 
   $buildreq = expandmacros($buildreq);
 
-  if ( ! -e "/usr/bin/dpkg-query" ) {
+  if ( not -e "/usr/bin/dpkg-query" ) {
     print "**WARNING**  dpkg-query not found.  Can't check build-deps.\n".
 	"  Required for sucessful build:\n".$buildreq."\n".
 	"  Continuing anyway.\n";
@@ -1559,7 +1556,7 @@ sub checkbuildreq {
 ## packages".  I don't think there's really a solution until/unless Debian's tools properly register virtual
 ## packages as installed.
     my @pkglist = qx { dpkg-query --showformat '\${status}\t\${version}\n' -W $pkg };
-    if (!$pkglist[0]) {
+    if (not $pkglist[0]) {
       print " * Missing build-dependency $pkg!\n  $pkglist[0]";
       $reqflag = 0;
       push @missinglist, $pkg;
@@ -1612,7 +1609,7 @@ sub getreqs() {
   print "Checking library requirements...\n";
   my @binlist = qx { find $pkgtree -type f -perm 755 };
 
-  if (scalar(@binlist) == 0) {
+  if (0 == @binlist) {
     return '';
   }
 
@@ -1764,7 +1761,7 @@ sub expandmacros {
       if ($specglobals{$macro}) {
 	$value = '' if $neg;
       } else {
-	$value = '' if !$neg;
+	$value = '' unless $neg;
       }
       $macrostring =~ s/%{[?!]+[a-z0-9_.-]+(?:\:([a-z0-9_.\/\-\\]+)?)?}/$value/;
 
