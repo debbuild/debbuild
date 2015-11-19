@@ -431,7 +431,7 @@ sub parse_cmd {
         if ($value ne '') {
           $specglobals{$macro} = $value;
         } else {
-          warn "WARNING: missing value for macro $macro in --define! Ignoring.\n";
+          warn "WARNING: missing value for macro $macro in --$opt_name! Ignoring.\n";
         }
       },
     'rebuild=s' => sub {
@@ -439,7 +439,7 @@ sub parse_cmd {
         $cmdopts{type} = 'r';
         $srcpkg = $opt_value;
       },
-    'i=s' => sub {
+    'install|i=s' => sub {
         my ($opt_name,$opt_value) = @_;
         $cmdopts{type} = 's';
         $srcpkg = $opt_value;
@@ -456,7 +456,7 @@ sub parse_cmd {
   sub actionhandler {
     my ($opt_name,$opt_value) = @_;
     if ($cmdopts{type} eq 'r') {
-    # Mutually exclusive options.
+      # Mutually exclusive options.
       die "Can't use -$opt_name$opt_value with --rebuild\n";
     } else {
       $cmdopts{type} = $opt_name;
@@ -494,7 +494,7 @@ Common options:
   -D, --define='MACRO EXPR'      define MACRO with value EXPR
 
 debbuild-specific options:
-      -i                         Unpack a .sdeb in the %_topdir tree
+      -i, --install              Unpack a .sdeb in the %_topdir tree
       --showpkgs                 Show package names that would be built.  Only works with .spec files.
 };
     exit;
@@ -1840,7 +1840,7 @@ debbuild - Build Debian-compatible .deb packages from RPM .spec files
 
  debbuild --showpkgs
 
- debbuild -i foo.sdeb
+ debbuild {--install|-i} foo.sdeb
 
 =head1 DESCRIPTION
 
