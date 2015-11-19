@@ -470,7 +470,6 @@ sub parse_cmd {
       $specglobals{tarball} = $opt_arg;
     }
   }
-
   ## actionhandler()
   # You can't use 'b|t=s' in Getopt::Long::GetOptions(), because 't' will be
   # treated as an 'alias' to the 'primary' option 'b' and will NOT receive its
@@ -484,7 +483,7 @@ sub parse_cmd {
       $cmdopts{type} = $opt_name;
       $cmdopts{stage} = $opt_value;
     }
-  } # end actionhandler()
+  }
   ## helphandler()
   # Factor-out the 'help' text. Could as well be SYNOPSIS in pod.
   sub helphandler {
@@ -806,8 +805,7 @@ ENDIF: if (/^%endif/) {
           'T'   => \$skipdefault, # flag, do not unpack first source
           'q'   => \$quietunpack, # SSH!  Unpack quietly
           'b=i' => \@sbefore,
-          'a=i' => \@safter
-        );
+          'a=i' => \@safter);
 
 # Note that this is an incomplete match to rpmbuild's full %setup expression.
 # Known differences
