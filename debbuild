@@ -452,8 +452,25 @@ sub parse_cmd {
     'v+' => \$verbosity, # bump verbosity.  Not sure what I'll actually do here...
     'b=s' => \&actionhandler, # do NOT use 'b|t=s' here!
     't=s' => \&actionhandler, # see 'actionhandler' for details
-    'help' => \&helphandler
+    'help' => \&helphandler,
+    '<>' => \&catchall
   ); # Getopt::Long::Getoptions()
+  ## catchall()
+  # --buildroot, --define|-D, --rebuild, --recompile, and --install|-i are the
+  # only options that take an argument.  Therefore, any *other* bare arguments
+  # are the spec file or the tarball we're operating on - depending on which
+  # one we meet.
+  sub catchall {
+    my ($opt_arg) = @_;
+    if ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
+      # Spec file
+      $specglobals{specfile} = $opt_arg;
+    } else {
+      # Tarball build.  Need to extract tarball to find spec file.  Whee.
+      $specglobals{tarball} = $opt_arg;
+    }
+  }
+
   ## actionhandler()
   # You can't use 'b|t=s' in Getopt::Long::GetOptions(), because 't' will be
   # treated as an 'alias' to the 'primary' option 'b' and will NOT receive its
@@ -504,18 +521,6 @@ debbuild-specific options:
       --showpkgs                 Show package names that would be built.  Only works with .spec files.
 };
     exit;
-  }
-
-  # --buildroot, --define|-D, --rebuild, --recompile, and --install|-i are the
-  # only options that take an argument.  Therefore, any *other* bare arguments
-  # are the spec file or the tarball we're operating on - depending on which
-  # one we meet.
-  if ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
-    # Spec file
-    $specglobals{specfile} = $ARGV[0];
-  } else {
-    # Tarball build.  Need to extract tarball to find spec file.  Whee.
-    $specglobals{tarball} = $ARGV[0];
   }
 
   # Some cross-checks.  rpmbuild limits --short-circuit to just
