@@ -306,6 +306,7 @@ if ($cmdopts{type} eq 't') {
   # Note that rpmbuild doesn't seem to support this operation from a
   # .zip file properly, but we try our best.
   my $cmdline;
+  die "No tarfile specified!  Exiting.\n" unless defined $specglobals{tarball};
   my $tarball = $specglobals{tarball};
   if ($tarball =~ /\.zip$/) {
     # .zip files are not really tarballs
