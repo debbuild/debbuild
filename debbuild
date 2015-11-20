@@ -439,6 +439,7 @@ sub parse_cmd {
     'install|i=s' => \&srcpkg_handler,
     'b=s'         => \&build_handler, # do NOT use 'b|t=s' here!
     't=s'         => \&build_handler, # see 'build_handler' for details
+    'r=s'         => \&build_handler,
     'with=s'      => \&with_handler, # dito for 'with|without=s'
     'without=s'   => \&with_handler,
     'help'        => \&help_handler,
@@ -454,9 +455,12 @@ sub parse_cmd {
     if ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
       # Spec file
       $specglobals{specfile} = $opt_arg;
-    } else {
+    } elsif ($cmdopts{type} eq 't') {
       # Tarball build.  Need to extract tarball to find spec file.  Whee.
       $specglobals{tarball} = $opt_arg;
+    } else {
+      # Source package
+      $srcpkg = $opt_arg;
     }
   }
   ## srcpkg_handler()
@@ -519,8 +523,14 @@ Build options with [ <specfile> | <tarball> | <source package> ]:
       -ta                        build source and binary packages from <tarball>
       -tb                        build binary package only from <tarball>
       -ts                        build source package only from <tarball>
-      --rebuild                  build binary package from <source package>
-      --recompile                build through %install from <source package>
+      -rp                        build through %prep (unpack sources and apply patches) from <source package>
+      -rc                        build through %build (%prep, then compile) from <source package>
+      -ri                        build through %install (%prep, %build, then install) from <source package>
+      -ra                        build source and binary packages from <source package>
+      -rb                        build binary package only from <source package>
+      -rs                        build source package only from <source package>
+      --rebuild (-rb)            build binary package from <source package>
+      --recompile (-ri)          build through %install from <source package>
       --buildroot=DIRECTORY      override build root
       --short-circuit            skip straight to specified stage (only for c,i)
 
@@ -576,8 +586,8 @@ sub parse_spec {
 #	parsing right now
 
 LINE: while (<SPECFILE>) {
-    next if /^#/ && $stage eq 'preamble';       # Ignore comments...
-    next if /^\s*$/ && $stage eq 'preamble';    # ... and blank lines.
+    next if /^#/;       # Ignore comments...
+    next if /^\s*$/;    # ... and blank lines.
 
 # no sense in continuing if we find something we don't grok
     # Yes, this is really horribly fugly.  But it's a cheap crosscheck against invalid
@@ -1713,6 +1723,8 @@ sub install_sdeb {
 sub expandmacros {
   my ($macrostring) = @_;
 
+  return if $macrostring =~ /^\s*#/;
+
   # Replace global macros
   $macrostring =~ s/%configure/%{configure}/g;
   $macrostring =~ s/%make_install/%{make_install}/;
@@ -1849,6 +1861,7 @@ debbuild - Build Debian-compatible .deb packages from RPM .spec files
  debbuild {-ba|-bb|-bp|-bc|-bi|-bl|-bs} [build-options] file.spec
 
  debbuild {-ta|-tb|-tp|-tc|-ti|-tl|-ts} [build-options] file.{tgz|zip|tar.{gz|bz2|xz|Z}}
+ debbuild {-ra|-rb|-rp|-rc|-ri|-rl|-rs} [build-options] file.{.src.rpm|sdeb}
 
  debbuild {--rebuild|--recompile} file.{src.rpm|sdeb}
 
