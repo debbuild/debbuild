@@ -46,14 +46,6 @@ die "No .spec file to work with!  Exiting.\n" unless @ARGV;
 # -> Parse/execute "user" config/macros (if any - *my* requirement is %_topdir)
 # -> Parse command line for options, spec file/tarball/.src.deb (NB - also accept .src.rpm)
 
-sub expandmacros;
-sub unpackcmd;
-
-# Globals
-my $finalmessages = '';	# A place to stuff messages that I want printed at the *very* end of any processing.
-my $srcpkg;
-my $cmdbuildroot;
-
 # Initialized globals
 my $verbosity = 0;
 my $NoAutoReq = 0;
@@ -72,7 +64,6 @@ my @ifexpr = (); # Nested %if..%else..%endif conditionals
 # /usr/lib/rpm/rpmrc  /usr/lib/rpm/redhat/rpmrc  /etc/rpmrc      ~/.rpmrc
 # /usr/lib/rpm/macros /usr/lib/rpm/redhat/macros /etc/rpm/macros ~/.rpmmacros
 # **NOTE:  May be possible to (ab)use bits of debhelper
-
 my %specglobals = ( # For %define's in specfile, among other things.
 	# this can be changed by the Vendor: header in the spec file
 	vendor => 'debbuild');
@@ -126,7 +117,6 @@ my %distmap = (
 	"99"	=> "sid");
 
 # Map Ubuntu base-files versions to the nominal public versions
-
 my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
 		   "7.2ubuntu5" => "14.04");
 
@@ -236,6 +226,7 @@ my $buildreq = '';
 my $scriptletbase = q(%{___build_template});
 my ($prepscript, $buildscript, $installscript) = ('') x 3;
 my $cleanscript = '[ "$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf $RPM_BUILD_ROOT';
+my $finalmessages = ''; # A place to stuff messages that I want printed at the *very* end of any processing.
 
 ##main
 
@@ -247,8 +238,7 @@ my $topdir = expandmacros($specglobals{_topdir});
 my $tmpdir = expandmacros($specglobals{_tmppath});
 
 if ($cmdopts{type} eq 's') {
-  die "Can't install $srcpkg\n" unless $srcpkg =~ /\.sdeb$/;
-  install_sdeb();
+  install_sdeb($specglobals{srcpkg});
   exit 0;
 }
 
@@ -277,15 +267,15 @@ if ($cmdopts{type} eq 'd') {
 # --recompile is the same, except it reconfigures -bi
 if ($cmdopts{type} eq 'r') {
   my $specfile;
-  if ($srcpkg =~ /\.src\.rpm$/) {
-    my @srclist = grep { /\.spec/ } qx { rpm -qlp $srcpkg };
+  if ($specglobals{srcpkg} =~ /\.src\.rpm$/) {
+    my @srclist = grep { /\.spec/ } qx ( rpm -qlp $specglobals{srcpkg} );
     chomp( $specfile = $srclist[0] );
-    qx { rpm -i $srcpkg };
-  } elsif ($srcpkg =~ /\.sdeb$/) {
-    install_sdeb();
-    chomp( $specfile = basename( qx { pax -f $srcpkg *.spec } ) );
+    qx ( rpm -i $specglobals{srcpkg} );
+  } elsif ($specglobals{srcpkg} =~ /\.sdeb$/) {
+    install_sdeb($specglobals{srcpkg});
+    chomp( $specfile = basename( qx ( pax -f $specglobals{srcpkg} *.spec ) ) );
   } else {
-    die "Can't --rebuild with $srcpkg\n";
+    die "Can't --rebuild with $specglobals{srcpkg}\n";
   }
   $specglobals{specfile} = "$topdir/SPECS/$specfile";
   $cmdopts{type} = 'b'; # fall through
@@ -348,9 +338,6 @@ if ($cmdopts{stage} eq 'c' || ($cmdopts{stage} =~ /[ilab]/ && $cmdopts{short} ne
 #if ($cmdopts{stage} eq 'i' || ($cmdopts{stage} =~ /[lab]/ && $cmdopts{short} ne 'y')) {
 if ($cmdopts{stage} =~ /[ilab]/) {
   install();
-#foreach my $pkg (@pkglist) {
-#  print "files in $pkg:\n ".$filelist{$pkg}."\n";
-#}
 }
 # -> binpkg and srcpkg if -.a
 if ($cmdopts{stage} eq 'a') {
@@ -388,7 +375,7 @@ sub load_config {
     next unless -e $macros; # should we warn about missing macro files?
     open MACROS,"<$macros";
     while (<MACROS>) {
-      next unless (my ($macro,$value) = /^\%([a-z0-9_]+)\s+(.+)$/);
+      next unless (my ($macro,$value) = /^%([a-z0-9_]+)\s+(.+)$/);
       if ($value =~ /\\$/) {
         while (<MACROS>) {
           $specglobals{$macro} .= $_;
@@ -409,7 +396,7 @@ sub load_config {
 sub parse_cmd {
   # Don't feel like coding my own option parser...
   Getopt::Long::GetOptions(
-    'buildroot=s'   => \$cmdbuildroot,
+    'buildroot=s'   => \$specglobals{buildroot},
     'short-circuit' => sub { $cmdopts{short} = 'y' },
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
     'define|D=s' => sub {
@@ -452,14 +439,14 @@ sub parse_cmd {
       $specglobals{tarball} = $opt_arg;
     } else {
       # Source package
-      $srcpkg = $opt_arg;
+      $specglobals{srcpkg} = $opt_arg;
     }
   }
   ## srcpkg_handler()
-  # prepare $srcpkg in dependence of the calling option
+  # prepare $specglobals{srcpkg} in dependence of the calling option
   sub srcpkg_handler {
     my ($opt_name,$opt_value) = @_;
-    $srcpkg = $opt_value;
+    $specglobals{srcpkg} = $opt_value;
     $cmdopts{type} = 's'; # --install
     if ($opt_name eq 'rebuild') {
       $cmdopts{type} = 'r';
@@ -1067,9 +1054,9 @@ ENDIF: if (/^%endif/) {
       } elsif (/^packager:\s*(.+)/i) {
         $pkgdata{main}{packager} = $1 unless defined $pkgdata{main}{packager};
       } elsif (/^vendor:\s*(.+)/i) {
-        $specglobals{vendor} = $1;
+        $specglobals{vendor} = $1 unless defined $specglobals{vendor};
       } elsif (/^buildroot:\s*(.+)/i) {
-        $specglobals{buildroot} = $1;
+        $specglobals{buildroot} = $1 unless defined $specglobals{buildroot};
       } elsif (my ($srcnum, $src) = (/^source(\d*):\s*(.+)/i)) {
         $src =~ s/\s*$//;
         $srcnum = 0 unless $srcnum;
@@ -1118,11 +1105,6 @@ ENDIF: if (/^%endif/) {
     } # preamble
 
   } # while <SPEC>
-
-  # Parse and replace some more macros.  More will be replaced even later.
-
-  # --buildroot override
-  $specglobals{buildroot} = $cmdbuildroot if $cmdbuildroot;
 
   # Expand macros as necessary.
   $specglobals{buildroot} = expandmacros($specglobals{buildroot});
@@ -1696,6 +1678,8 @@ sub getreqs() {
 ## install_sdeb()
 # Extracts .sdeb contents to %_topdir as appropriate
 sub install_sdeb {
+  my ($srcpkg) = @_;
+  die "Can't install $srcpkg\n" unless $srcpkg =~ /\.sdeb$/;
   $srcpkg = abs_path($srcpkg);
 
   my $paxcmd = "(cd %{_topdir}; %{__pax} -r -f $srcpkg)";
@@ -1789,9 +1773,8 @@ sub expandmacros {
       $macrostring =~ s/%{[?!]+[a-z0-9_.-]+(?:\:([A-Za-z0-9_.\/\-\\\s]+)?)?}/$value/;
 
 # not certain about this, but I don't want to run away.  It *can* happen if planned carefully.  :/
-$tmpcount++;
 # %makeinstall has 13 occurrences.  D'Oh!
-die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
+die "excessive recursive macro replacement;  dying.\n" if $tmpcount++ > 14;
 
     } # while()
 
@@ -1831,9 +1814,7 @@ sub unpackcmd {
       $cmdstring .= decompress("%{_sourcedir}/$sourcedrop").
          " | %{__tar} -x".( $quietunpack ? '' : 'vv' )."f -";
    }
-   $cmdstring .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
-
-   return $cmdstring;
+   return $cmdstring .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
 } # end unpackcmd()
 
 
