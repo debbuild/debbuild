@@ -39,7 +39,7 @@ my $version = "0.11.3";	#VERSION#
 #use re "debug";
 
 # Behavioural compatibility FTW!  Yes, rpmbuild does this too.
-die "No .spec file to work with!  Exiting.\n" if 0 == @ARGV;
+die "No .spec file to work with!  Exiting.\n" unless @ARGV;
 
 # Program flow:
 # -> Parse/execute "system" config/macros (if any - should be rare)
@@ -59,13 +59,11 @@ my $verbosity = 0;
 my $NoAutoReq = 0;
 my %cmdopts = (type => '',
 		stage => 'a',
-		short => 'n'
-	);
+		short => 'n');
 my %defattr = (filemode => '-',
 		owner => '-',
 		group => '-',
-		dirmode => '-'
-	);
+		dirmode => '-');
 my @ifexpr = (); # Nested %if..%else..%endif conditionals
 
 # User's prefs for dirs, environment, etc,etc,etc.
@@ -77,8 +75,7 @@ my @ifexpr = (); # Nested %if..%else..%endif conditionals
 
 my %specglobals = ( # For %define's in specfile, among other things.
 	# this can be changed by the Vendor: header in the spec file
-	vendor => 'debbuild',
-);
+	vendor => 'debbuild');
 
 # "Constants"
 my %targets = ('p' => 'Prep',
@@ -87,14 +84,12 @@ my %targets = ('p' => 'Prep',
 		'l' => 'Verify %files',
 		'a' => 'Build binary and source',
 		'b' => 'Build binary',
-		's' => 'Build source'
-	);
+		's' => 'Build source');
 # Ah, the joys of multiple architectures.  :(  Feh.
 # As copied from rpm
-my %optflags = ( 'i386'	=>	'-O2 -g -march=i386 -mcpu=i686',
-		'amd64'	=>	'-O2 -g',
-		  'all'	=>	''
-	);
+my %optflags = ( 'i386' => '-O2 -g -march=i386 -mcpu=i686',
+		'amd64'	=> '-O2 -g',
+		  'all'	=> '');
 
 # Hackery to try to bring some semblance of sanity to packages built for more
 # than one Debian version at the same time.  Whee.
@@ -128,15 +123,12 @@ my %distmap = (
 	"7"	=> "wheezy",
 	"8"	=> "jessie",
 	"9"	=> "stretch",
-	"99"	=> "sid",
-);
+	"99"	=> "sid");
 
 # Map Ubuntu base-files versions to the nominal public versions
 
-my %ubnt_vermap = (
-	"6.5ubuntu6"	=> "12.04",
-	"7.2ubuntu5"	=> "14.04",
-);
+my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
+		   "7.2ubuntu5" => "14.04");
 
 # Enh.  There doesn't seem to be any better way to do this...  :(
 {
@@ -156,7 +148,7 @@ my %ubnt_vermap = (
     # Look for ID and VERSION_ID lines.
     while (<OSREL>) {
       $baseos = $1 if /^ID=(\w+)/;
-      $basever = $1 if /^VERSION_ID="?([\d.]+)/;
+      $basever = $1 if /^VERSION_ID="?([\d.]+)/; # " closed
     }
     close OSREL;
 
@@ -201,9 +193,7 @@ my %ubnt_vermap = (
         # Debian, or more "pure" derivative
         $baseos = 'debian';
         ($basever,$majver) = ($basever =~ /^((\d+)(?:\.\d)?)/);
-        if ($majver > 3) {
-          $basever = $majver;
-        }
+        $basever = $majver if $majver > 3;
       }
     }
 
@@ -395,22 +385,20 @@ sub load_config {
   foreach my $macros ( ('/usr/lib/debbuild/macros',
                         '/etc/debbuild/macros',
                         "$homedir/.debmacros") ) {
-    if (-e $macros) { # should we warn about missing macro files?
-      open MACROS,"<$macros";
-      while (<MACROS>) {
-        if (my ($macro,$value) = /^\%([a-z0-9_]+)\s+(.+)$/) {
-          if ($value =~ /\\$/) {
-            while (<MACROS>) {
-              $specglobals{$macro} .= $_;
-              last unless /\\$/;
-            }
-          } else {
-            $specglobals{$macro} = $value;
-          }
+    next unless -e $macros; # should we warn about missing macro files?
+    open MACROS,"<$macros";
+    while (<MACROS>) {
+      next unless (my ($macro,$value) = /^\%([a-z0-9_]+)\s+(.+)$/);
+      if ($value =~ /\\$/) {
+        while (<MACROS>) {
+          $specglobals{$macro} .= $_;
+          last unless /\\$/;
         }
+      } else {
+        $specglobals{$macro} = $value;
       }
-      close MACROS;
     }
+    close MACROS;
   }
 } # end load_config()
 
@@ -427,8 +415,12 @@ sub parse_cmd {
     'define|D=s' => sub {
         my ($opt_name,$opt_value) = @_;
         my ($macro,$value) = ($opt_value =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i);
-        if ($value ne '') {
-          $specglobals{$macro} = $value;
+        if ($value) {
+          if ($macro =~ /(?:summary|name|epoch|version|release|group|copyright|url|packager)/i) {
+            $pkgdata{main}{$macro} = $value;
+          } else {
+            $specglobals{$macro} = $value;
+          }
         } else {
           warn "WARNING: missing value for macro $macro in --$opt_name! Ignoring.\n";
         }
@@ -555,7 +547,7 @@ debbuild-specific options:
 
   # Did we catch an action option?
   # rpmbuild quits silently.
-  exit 0 if '' eq $cmdopts{type};
+  exit 0 unless $cmdopts{type};
 
 } # end parse_cmd()
 
@@ -564,7 +556,7 @@ debbuild-specific options:
 # Parse the .spec file.
 sub parse_spec {
   my ($specfile) = @_;
-  die "No .spec file specified!  Exiting.\n" if !$specfile;
+  die "No .spec file specified!  Exiting.\n" unless $specfile;
   open SPECFILE,"<$specfile" or die "specfile ($specfile) barfed: $!";
 
   my $buildarch = expandmacros("%{_arch}");
@@ -608,7 +600,11 @@ LINE: while (<SPECFILE>) {
 
 # preprocess %define's
     if (my ($key, $def) = (/^\%(?:define|global)\s+([^\s]+)\s+(.+)$/) ) {
-      $specglobals{$key} = expandmacros($def);
+      if ($key =~ /(?:summary|name|epoch|version|release|group|copyright|url|packager)/i) {
+        $pkgdata{main}{$key} = expandmacros($def) unless defined $pkgdata{main}{$key};
+      } else {
+        $specglobals{$key} = expandmacros($def) unless defined $specglobals{$key};
+      }
     }
 
     # RPM conditionals – transform to generic form
@@ -635,8 +631,7 @@ LINE: while (<SPECFILE>) {
 	foreach my $bit (@bits) {
 	  next if $bit eq '"';
 	  $bit =~ s/"//g;
-	  $expr .= qq("$bit") if $bit =~ /^\w+$/;
-	  $expr .= $bit if $bit !~ /^\w+$/;
+	  $expr .= ( $bit =~ /^\w+$/ ? qq("$bit") : $bit );
 	}
 
         # Done in this order so we don't cascade incorrectly.  Yes, those spaces ARE correct in the replacements!
@@ -700,7 +695,7 @@ ENDIF: if (/^%endif/) {
       $subname = "main";
       if ($1) {       # Magic to add entries to the right package
         my $tmp = expandmacros("$1");
-        if (/-n/) { $subname = $tmp; } else { $subname = "$pkgdata{main}{name}-$tmp"; }
+        $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
       next LINE;
     } # %description
@@ -709,7 +704,7 @@ ENDIF: if (/^%endif/) {
       $stage = 'package';
       if ($1) {       # Magic to add entries to the right package
         my $tmp = expandmacros("$1");
-        if (/-n/) { $subname = $tmp; } else { $subname = "$pkgdata{main}{name}-$tmp"; }
+        $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
       push @pkglist, $subname;
       $pkgdata{$subname}{name} = $subname;
@@ -752,7 +747,7 @@ ENDIF: if (/^%endif/) {
       $subname = 'main';
       if ($2) {       # Magic to add entries to the right package
         my $tmp = expandmacros("$2");
-        if (/-n/) { $subname = $tmp; } else { $subname = "$pkgdata{main}{name}-$tmp"; }
+        $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
       next LINE;
     } # %pre/%post/%preun/%postun
@@ -762,7 +757,7 @@ ENDIF: if (/^%endif/) {
       $subname = 'main';
       if ($1) {       # Magic to add entries to the right list of files
         my $tmp = expandmacros("$1");
-        if (/-n/) { $subname = $tmp; } else { $subname = "$pkgdata{main}{name}-$tmp"; }
+        $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
       next LINE;
     } # %files
@@ -908,9 +903,9 @@ ENDIF: if (/^%endif/) {
 
         my $patchopts = $specglobals{_default_patch_flags};
         $patchopts .= " --fuzz=$fuzz -p$plev";
-        $patchopts .= " -b --suffix=$psuff" if $psuff ne '';
-        $patchopts .= " -d $altdir" if $altdir ne '';
-        $patchopts .= " -o $output" if $output ne '';
+        $patchopts .= " -b --suffix=$psuff" if $psuff;
+        $patchopts .= " -d $altdir" if $altdir;
+        $patchopts .= " -o $output" if $output;
         $patchopts .= " -E" if $noempty;
         $patchopts .= " -R" if $reverse;
 
@@ -1054,23 +1049,23 @@ ENDIF: if (/^%endif/) {
 
     if ($stage eq 'preamble') {
       if (/^summary:\s*(.+)/i) {
-        $pkgdata{main}{summary} = $1;
+        $pkgdata{main}{summary} = $1 unless defined $pkgdata{main}{summary};
       } elsif (/^name:\s*(.+)/i) {
-        $pkgdata{main}{name} = $1;
+        $pkgdata{main}{name} = $1 unless defined $pkgdata{main}{name};
       } elsif (/^epoch:\s*(.+)/i) {
-        $pkgdata{main}{epoch} = $1;
+        $pkgdata{main}{epoch} = $1 unless defined $pkgdata{main}{epoch};
       } elsif (/^version:\s*(.+)/i) {
-        $pkgdata{main}{version} = $1;
+        $pkgdata{main}{version} = $1 unless defined $pkgdata{main}{version};
       } elsif (/^release:\s*(.+)/i) {
-        $pkgdata{main}{release} = expandmacros($1);
+        $pkgdata{main}{release} = expandmacros($1) unless defined $pkgdata{main}{release};
       } elsif (/^group:\s*(.+)/i) {
-        $pkgdata{main}{group} = $1;
+        $pkgdata{main}{group} = $1 unless defined $pkgdata{main}{group};
       } elsif (/^copyright:\s*(.+)/i) {
-        $pkgdata{main}{copyright} = $1;
+        $pkgdata{main}{copyright} = $1 unless defined $pkgdata{main}{copyright};
       } elsif (/^url:\s*(.+)/i) {
-        $pkgdata{main}{url} = $1;
+        $pkgdata{main}{url} = $1 unless defined $pkgdata{main}{url};
       } elsif (/^packager:\s*(.+)/i) {
-        $pkgdata{main}{packager} = $1;
+        $pkgdata{main}{packager} = $1 unless defined $pkgdata{main}{packager};
       } elsif (/^vendor:\s*(.+)/i) {
         $specglobals{vendor} = $1;
       } elsif (/^buildroot:\s*(.+)/i) {
@@ -1314,8 +1309,7 @@ sub binpackage {
       }
 
       my ($fpath,$fname) = ($pkgfile =~ m|(.+?/?)?([^/]+/?)$|);	# We don't need $fname now, but we might.
-      qx { $specglobals{__mkdir} -p $specglobals{buildroot}/$pkg$fpath }
-	if $fpath && $fpath ne '';
+      qx { $specglobals{__mkdir} -p $specglobals{buildroot}/$pkg$fpath } if $fpath;
       qx { $specglobals{__cp} -ar $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath };
     }
 
@@ -1535,7 +1529,7 @@ sub clean {
 # Spits out a rude warning and returns a true-false error if any
 # requirements are not met.
 sub checkbuildreq {
-  return 1 if $buildreq eq '';	# No use doing extra work.
+  return 1 unless $buildreq; # No use doing extra work.
 
   # expand macros 
   $buildreq = expandmacros($buildreq);
@@ -1630,9 +1624,7 @@ sub getreqs() {
   print "Checking library requirements...\n";
   my @binlist = qx { find $pkgtree -type f -perm 755 };
 
-  if (0 == @binlist) {
-    return '';
-  }
+  return '' unless @binlist;
 
   my @reqlist;
   foreach (@binlist) {
@@ -1720,10 +1712,14 @@ sub install_sdeb {
 # Expands all %{blah} macros in the passed string
 # Split up a bit with some sections so we don't spend time trying to
 # expand macros that are only used in a few specific places.
+my $nest_level = 0;
 sub expandmacros {
   my ($macrostring) = @_;
 
-  return if $macrostring =~ /^\s*#/;
+  return '' if $macrostring =~ /^\s*#/; # skip comments
+  return $macrostring unless $macrostring =~ /%/; # nothing to substitute
+
+  die "Runaway recursive macro expansion aborted.\n" if $nest_level++ > 8;
 
   # Replace global macros
   $macrostring =~ s/%configure/%{configure}/g;
@@ -1738,7 +1734,7 @@ sub expandmacros {
       $macrostring =~ s|%{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
     }
     $macrostring =~ s|%{patch(\d+)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
-    $macrostring =~ s/%{(name|version|release)}/$pkgdata{main}{$1}/gi;
+    $macrostring =~ s/%{(summary|name|epoch|version|release|group|copyright|url|packager)}/$pkgdata{main}{$1}/gi;
 
   # Globals, and not-so-globals
     # special %define's.  Handle the general case where we eval anything.
@@ -1809,6 +1805,8 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
         $macrostring = expandmacros($macrostring);
       }
     }
+
+  $nest_level--;
 
   return $macrostring;
 } # end expandmacros()
