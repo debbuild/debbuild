@@ -375,7 +375,7 @@ sub load_config {
     next unless -e $macros; # should we warn about missing macro files?
     open MACROS,"<$macros";
     while (<MACROS>) {
-      next unless (my ($macro,$value) = (/^%([a-z0-9_]+)\s+(.+)$/);
+      next unless (my ($macro,$value) = (/^%([a-z0-9_]+)\s+(.+)$/));
       if ($value =~ /\\$/) {
         while (<MACROS>) {
           $specglobals{$macro} .= $_;
