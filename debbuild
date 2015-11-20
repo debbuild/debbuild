@@ -1775,7 +1775,7 @@ sub expandmacros {
     # there's no value specified...  but so does rpm.
 
     my $tmpcount = 0;	# runaway shutdown.  Not really sure how else to avoid getting stuck.
-    while ($macrostring =~ m/%{([?!]+)([a-z0-9_.-]+)(?:\:([a-z0-9_.\/\-\\]+)?)?}/g) {       #Whew....
+    while ($macrostring =~ m/%{([?!]+)([a-z0-9_.-]+)(?:\:([A-Za-z0-9_.\/\-\\\s]+)?)?}/g) {       #Whew....
       my $qex = $1;
       my $macro = $2;
       my $value = '';
@@ -1790,7 +1790,7 @@ sub expandmacros {
       } else {
 	$value = '' unless $neg;
       }
-      $macrostring =~ s/%{[?!]+[a-z0-9_.-]+(?:\:([a-z0-9_.\/\-\\]+)?)?}/$value/;
+      $macrostring =~ s/%{[?!]+[a-z0-9_.-]+(?:\:([A-Za-z0-9_.\/\-\\\s]+)?)?}/$value/;
 
 # not certain about this, but I don't want to run away.  It *can* happen if planned carefully.  :/
 $tmpcount++;
