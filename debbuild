@@ -1763,8 +1763,8 @@ sub expandmacros {
     }
 
     # %{defined <flag>}, %{undefined <flag>}
-    $macrostring =~ s/%{defined (.+?)}/defined $specglobals{$1} ? 1 : 0/eg;
-    $macrostring =~ s/%{undefined (.+?)}/defined $specglobals{$1} ? 0 : 1/eg;
+    $macrostring =~ s/%{defined (.+?)}/defined $specglobals{$1} || 0/eg;
+    $macrostring =~ s/%{undefined (.+?)}/not defined $specglobals{$1} || 0/eg;
 
     # unescape multi-line macros
     $macrostring =~ s/\\"/"/g;
