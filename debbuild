@@ -439,6 +439,8 @@ sub parse_cmd {
     'install|i=s' => \&srcpkg_handler,
     'b=s'         => \&build_handler, # do NOT use 'b|t=s' here!
     't=s'         => \&build_handler, # see 'build_handler' for details
+    'with=s'      => \&with_handler, # dito for 'with|without=s'
+    'without=s'   => \&with_handler,
     'help'        => \&help_handler,
     '<>'          => \&catchall # process non-option arguments
   ); # Getopt::Long::Getoptions()
@@ -484,6 +486,15 @@ sub parse_cmd {
       $cmdopts{type} = $opt_name;
       $cmdopts{stage} = $opt_value;
     }
+  }
+  ## with_handler()
+  # create 'configure' options from '--with <flag>' and '--without <flag>':
+  # rpmbuild literally defines these options as 'aliases' for
+  # --define="_with_<flag> --with-<flag>" and
+  # --define="_without_<flag> --without-<flag>" resp.
+  sub with_handler {
+    my ($opt_name,$opt_value) = @_;
+    $specglobals{"\_$opt_name\_$opt_value"} = "--$opt_name-$opt_value";
   }
   ## help_handler()
   # Factor-out the 'help' text. Could as well be SYNOPSIS in pod.
@@ -668,7 +679,7 @@ ENDIF: if (/^%endif/) {
     } # %if..%else..%endif
 
     if (/^\%{echo:(.+)}/) {
-      print expandmacros($1);
+      print expandmacros($1),"\n";
       next LINE;
     }
 
