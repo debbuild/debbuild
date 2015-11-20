@@ -1762,6 +1762,10 @@ sub expandmacros {
       $macrostring =~ s/%{u2p:$url}/$expand/g;
     }
 
+    # %{defined <flag>}, %{undefined <flag>}
+    $macrostring =~ s/%{defined (.+?)}/defined $specglobals{$1} ? 1 : 0/eg;
+    $macrostring =~ s/%{undefined (.+?)}/defined $specglobals{$1} ? 0 : 1/eg;
+
     # unescape multi-line macros
     $macrostring =~ s/\\"/"/g;
     $macrostring =~ s/\\\\/\\/g;
