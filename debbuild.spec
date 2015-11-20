@@ -22,7 +22,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 
 %define da dpkg-architecture
-%define s %{__sed} -n -e
+%define s %{__sed}
 
 %description
 debbuild attempts to build Debian-friendly semi-native packages from
@@ -61,11 +61,11 @@ rebuild .src.rpm source packages as .deb binary packages.
 %post
 if [ -x %{_bindir}/%{da} ]
 then
-%{s} "s/%_arch.*/`%{da} | %{s} 's/^DEB_HOST_ARCH\=/%_arch /p'`/" \
-     "s/%_build_arch.*/`%{da} | %{s} 's/^DEB_BUILD_ARCH\=/%_build_arch /p'`/" \
-     "s/%_os.*/`%{da} | %{s} 's/^DEB_BUILD_ARCH_OS\=/%_os /p'`/" \
-     "s/%_host_cpu.*/`%{da} | %{s} 's/^DEB_HOST_GNU_CPU\=/%_host_cpu /p'`/" \
-     "s/%_host_os.*/`%{da} | %{s} 's/^DEB_HOST_ARCH_OS\=/%_host_os /p'`/" \
+%{s} -e "s/%_arch.*/`%{da} | %{s} -n -e 's/^DEB_HOST_ARCH\=/%_arch /p'`/" \
+     -e "s/%_build_arch.*/`%{da} | %{s} -n -e 's/^DEB_BUILD_ARCH\=/%_build_arch /p'`/" \
+     -e "s/%_os.*/`%{da} | %{s} -n -e 's/^DEB_BUILD_ARCH_OS\=/%_os /p'`/" \
+     -e "s/%_host_cpu.*/`%{da} | %{s} -n -e 's/^DEB_HOST_GNU_CPU\=/%_host_cpu /p'`/" \
+     -e "s/%_host_os.*/`%{da} | %{s} -n -e 's/^DEB_HOST_ARCH_OS\=/%_host_os /p'`/" \
      -i %{_libdir}/%{name}/macros
 fi
 
