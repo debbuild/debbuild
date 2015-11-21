@@ -268,16 +268,15 @@ if ($cmdopts{type} eq 'd') {
 if ($cmdopts{type} eq 'r') {
   my $specfile;
   if ($specglobals{srcpkg} =~ /\.src\.rpm$/) {
-    my @srclist = grep { /\.spec/ } qx ( rpm -qlp $specglobals{srcpkg} );
-    chomp( $specfile = $srclist[0] );
+    ($specfile) = grep { /\.spec/ } qx ( rpm -qlp $specglobals{srcpkg} );
     qx ( rpm -i $specglobals{srcpkg} );
   } elsif ($specglobals{srcpkg} =~ /\.sdeb$/) {
     install_sdeb($specglobals{srcpkg});
-    chomp( $specfile = basename( qx ( pax -f $specglobals{srcpkg} *.spec ) ) );
+    $specfile = basename( qx ( pax -f $specglobals{srcpkg} *.spec ) );
   } else {
     die "Can't --rebuild with $specglobals{srcpkg}\n";
   }
-  $specglobals{specfile} = "$topdir/SPECS/$specfile";
+  chomp( $specglobals{specfile} = "$topdir/SPECS/$specfile" );
   $cmdopts{type} = 'b'; # fall through
 }
 
@@ -376,14 +375,13 @@ sub load_config {
     open MACROS,"<$macros";
     while (<MACROS>) {
       next unless (my ($macro,$value) = (/^%([a-z0-9_]+)\s+(.+)$/));
-      if ($value =~ /\\$/) {
+      if ($value =~ s/.*\\$//) { # multi-line macro
         while (<MACROS>) {
-          $specglobals{$macro} .= $_;
+          $value .= $_;
           last unless /\\$/;
         }
-      } else {
-        $specglobals{$macro} = $value;
       }
+      $specglobals{$macro} = $value;
     }
     close MACROS;
   }
@@ -447,13 +445,14 @@ sub parse_cmd {
   sub srcpkg_handler {
     my ($opt_name,$opt_value) = @_;
     $specglobals{srcpkg} = $opt_value;
-    $cmdopts{type} = 's'; # --install
     if ($opt_name eq 'rebuild') {
       $cmdopts{type} = 'r';
       $cmdopts{stage} = 'a';
     } elsif ($opt_name eq 'recompile') {
       $cmdopts{type} = 'r';
       $cmdopts{stage} = 'i';
+    } else {
+      $cmdopts{type} = 's'; # --install
     }
   }
   ## build_handler()
@@ -515,6 +514,7 @@ Build options with [ <specfile> | <tarball> | <source package> ]:
 
 Common options:
   -D, --define='MACRO EXPR'      define MACRO with value EXPR
+      --with/--without FLAG      define build conditionals from FLAG
 
 debbuild-specific options:
       -i, --install              Unpack a .sdeb in the %_topdir tree
@@ -681,7 +681,7 @@ ENDIF: if (/^%endif/) {
       $stage = 'desc';
       $subname = "main";
       if ($1) {       # Magic to add entries to the right package
-        my $tmp = expandmacros("$1");
+        my $tmp = expandmacros($1);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
       next LINE;
@@ -690,7 +690,7 @@ ENDIF: if (/^%endif/) {
     if (/^\%package\s+(?:-n\s+)?(.+)/) {
       $stage = 'package';
       if ($1) {       # Magic to add entries to the right package
-        my $tmp = expandmacros("$1");
+        my $tmp = expandmacros($1);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
       push @pkglist, $subname;
@@ -733,7 +733,7 @@ ENDIF: if (/^%endif/) {
       $scriptlet = lc $1;
       $subname = 'main';
       if ($2) {       # Magic to add entries to the right package
-        my $tmp = expandmacros("$2");
+        my $tmp = expandmacros($2);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
       next LINE;
@@ -743,7 +743,7 @@ ENDIF: if (/^%endif/) {
       $stage = 'files';
       $subname = 'main';
       if ($1) {       # Magic to add entries to the right list of files
-        my $tmp = expandmacros("$1");
+        my $tmp = expandmacros($1);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
       next LINE;
@@ -861,7 +861,7 @@ ENDIF: if (/^%endif/) {
 
         # add patch{nn} to the list
         if (s/^(\d+)//) {
-          push @patchlist, "$1";
+          push @patchlist, $1;
         }
         # add the "null" patch to the list unless we've got a -P flag
         elsif (not /-P/) {
@@ -1291,7 +1291,7 @@ sub binpackage {
       }
 
       my ($fpath,$fname) = ($pkgfile =~ m|(.+?/?)?([^/]+/?)$|);	# We don't need $fname now, but we might.
-      qx { $specglobals{__mkdir} -p $specglobals{buildroot}/$pkg$fpath } if $fpath;
+      qx { $specglobals{__mkdir_p} $specglobals{buildroot}/$pkg$fpath } if $fpath;
       qx { $specglobals{__cp} -ar $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath };
     }
 
@@ -1480,7 +1480,7 @@ sub srcpackage {
   # In case of %-macros...
   $paxcmd = expandmacros($paxcmd);
   
-  system("$paxcmd") == 0 and
+  system($paxcmd) == 0 and
   $finalmessages .= "Wrote source package $pkgsrcname in $topdir/SDEBS.\n";
 } # end srcpackage()
 
@@ -1619,7 +1619,7 @@ sub getreqs() {
   my $provlist = '';
   foreach (@intprovlist) {
     s/$pkgtree//;
-    $provlist .= "$_";
+    $provlist .= $_;
   }
 
   my %reqs;
@@ -1687,7 +1687,7 @@ sub install_sdeb {
   # In case of %-macros...
   $paxcmd = expandmacros($paxcmd);
   
-  system("$paxcmd") == 0 and
+  system($paxcmd) == 0 and
   print "Extracted source package $srcpkg to $topdir.\n";
 } # end install_sdeb()
 
@@ -1801,7 +1801,6 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount++ > 14;
 sub unpackcmd {
    my ($sourcedrop,$quietunpack) = @_;
    my $cmdstring;
-
    if ($sourcedrop =~ /\.zip$/) {
       # .zip files are not really tarballs
       $cmdstring .= "%{__unzip}".( $quietunpack ? ' -qq ' : ' ' ).
