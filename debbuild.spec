@@ -7,7 +7,7 @@
 
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 Name: debbuild
-Version: 0.11.3
+Version: 0.15.11
 Release: ascherer.%{dist}
 Source: https://secure.deepnet.cx/releases/debbuild/debbuild-%{version}.tar.gz
 Group: Development/Tools

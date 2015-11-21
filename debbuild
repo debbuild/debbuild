@@ -33,7 +33,7 @@ use Fcntl;		# for sysopen flags
 use File::Basename;
 use Getopt::Long qw(:config no_ignore_case bundling);
 
-my $version = "0.11.3";	#VERSION#
+my $version = "0.15.11";	#VERSION#
 
 # regex debugger
 #use re "debug";
