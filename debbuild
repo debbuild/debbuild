@@ -1059,23 +1059,21 @@ sub process_filesline {
   my ($subname) = @_;
 
   # create and initialize flags
-  my ($perms, $owner, $group, $conf, $filesline) =
-    ($defattr{filemode}, $defattr{owner}, $defattr{group}, '-', $_);
+  my ($perms, $owner, $group, $conf) =
+    ($defattr{filemode}, $defattr{owner}, $defattr{group}, '-');
 
   # Debian dpkg doesn't speak "%docdir".  Meh.
-  $filesline =~ s/^%dir\s*//;
-  $filesline =~ s/^%docdir\s*//;
+  s/^%dir\s*//;
+  s/^%docdir\s*//;
 
-  # strip and flag %attr constructs
-  if ($filesline =~ /%attr\b/) {
+  # strip and flag %attr constructs ... and wipe it when we're done.
+  if (s/(%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\))//) {
     # Extract %attr...
-    my ($args) = /(\%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\))/;
+    my $args = $1;
     $args =~ s/\s//g;
     $args =~ s/"//g;    # don't think quotes are ever necessary, but they're *allowed*
     # ... and parse it ...
     ($perms,$owner,$group) = $args =~ /\(([\d-]+),([a-zA-Z0-9-]+),([a-zA-Z0-9-]+)/;
-    # ... and wipe it when we're done.
-    $filesline =~ s/%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\)//;
   }
 
   # Conffiles.  Note that Debian and RH have similar, but not
@@ -1085,7 +1083,7 @@ sub process_filesline {
 ##fixme
 # also need to handle missingok (file that doesn't exist, but should be removed on uninstall)
 # hmm.  not sure if such is **POSSIBLE** with Debian...  maybe an addition to %post?
-  if ($filesline =~ s/%config\b(?:\s*\(\s*noreplace\s*\)\s*)?//) {
+  if (s/%config\b(?:\s*\(\s*noreplace\s*\)\s*)?//) {
     $pkgdata{$subname}{conffiles} = 1;  # Flag it for later
     $conf = 'y';
   }
@@ -1097,40 +1095,39 @@ sub process_filesline {
   # in /usr/share/doc/<packagename>.)
 ##fixme:  unhandled case: %doc %defattr.  Eeep.
 # don't really know what to do with %defattr, generally.  :(
-  if ($filesline =~ s/%doc\s+//) {
+  if (s/%doc\s+//) {
 
 # this could probably go elsewhere.
     my $pkgname = $pkgdata{$subname}{name};
     $pkgname =~ tr/_/-/;
 
     # have to extract the partial pathnames that %doc installs automagically
-    foreach (split /\s+/, $filesline) {
-      if (not m|^[\%/]|) {
-        $doclist{$subname} .= " $_";
-        my ($element) = m|([^/\s]+/?)$|;
-        $filesline =~ s|$_|%{_docdir}/$pkgname/$element|;
+    foreach my $pp (split /\s+/) {
+      if (not $pp =~ m|^[\%/]|) {
+        $doclist{$subname} .= " $pp";
+        my ($element) = $pp =~ m|([^/\s]+/?)$|;
+        s|$pp|%{_docdir}/$pkgname/$element|;
       }
     }
   } # $filesline =~ /%doc\b/
 
-  $filesline =~ s/^\s*//;	# Just In Case.  For, uh, neatness.
-  chomp $filesline;
+  s/^\s*//; chomp;	# Just In Case.  For, uh, neatness.
 
 # due to Debian's total lack of real permissions-processing in its actual package
 # handling component (dpkg-deb), this can't really be done "properly".  We'll have
 # to add chown/chmod commands to the postinst instead.  Feh.
-  $pkgdata{$subname}{post} .= "%{__chown} -Rh $owner $filesline\n" if $owner ne '-';
-  $pkgdata{$subname}{post} .= "%{__chgrp} -Rh $group $filesline\n" if $group ne '-';
-  $pkgdata{$subname}{post} .= "if [ -d $filesline ]; then %{__chmod} $defattr{dirmode} $filesline; fi\n" if $defattr{dirmode} ne '-';
-  $pkgdata{$subname}{post} .= "if [ -f $filesline ]; then %{__chmod} $perms $filesline; fi\n" if $perms ne '-';
+  $pkgdata{$subname}{post} .= "%{__chown} -Rh $owner $_\n" if $owner ne '-';
+  $pkgdata{$subname}{post} .= "%{__chgrp} -Rh $group $_\n" if $group ne '-';
+  $pkgdata{$subname}{post} .= "if [ -d $_ ]; then %{__chmod} $defattr{dirmode} $_; fi\n" if $defattr{dirmode} ne '-';
+  $pkgdata{$subname}{post} .= "if [ -f $_ ]; then %{__chmod} $perms $_; fi\n" if $perms ne '-';
 
 ##fixme
 # need hackery to assure only one filespec per %config.  NB:  "*" is one filespec.  <g>
-  push @{$pkgdata{$subname}{conflist}}, $filesline if $conf ne '-';
+  push @{$pkgdata{$subname}{conflist}}, $_ if $conf ne '-';
 
   # now that we've got the specials out of the way, we can add things to the appropriate list of files.
   # ... and finally everything else
-  $filelist{$subname} .= " $filesline";
+  $filelist{$subname} .= " $_";
 } # end process_filesline()
 
 
