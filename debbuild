@@ -190,7 +190,7 @@ my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
     if (not $basever) {
       # Your llama is on fire
       $basever = '99';
-      print "Warning:  couldn't autodetect OS version, assuming sid/unstable\n";
+      warn "Warning:  couldn't autodetect OS version, assuming sid/unstable\n";
     }
   } # got dpkg-query?
 
@@ -670,18 +670,15 @@ ENDIF: if (/^%endif/) {
     } # %if..%else..%endif
 
     if (/^\%{echo:(.+)}/) {
-      print STDOUT expandmacros($1),"\n";
+      print expandmacros($1),"\n";
       next LINE;
     }
-
     if (/^\%{warn:(.+)}/) {
-      print STDERR expandmacros($1),"\n";
+      warn expandmacros($1),"\n";
       next LINE;
     }
-
     if (/^\%{error:(.+)}/) {
-      print STDERR expandmacros($1),"\n";
-      exit 1;
+      die expandmacros($1),"\n";
     }
 
 # now we pick out the sections and set "state" to parse that section.  Fugly but I can't see a better way.  >:(
@@ -1532,7 +1529,7 @@ sub checkbuildreq {
   $buildreq = expandmacros($buildreq);
 
   if ( not -e "/usr/bin/dpkg-query" ) {
-    print "**WARNING**  dpkg-query not found.  Can't check build-deps.\n".
+    warn "**WARNING**  dpkg-query not found.  Can't check build-deps.\n".
 	"  Required for sucessful build:\n".$buildreq."\n".
 	"  Continuing anyway.\n";
     return 1;
@@ -1569,7 +1566,7 @@ sub checkbuildreq {
 ## packages as installed.
     my @pkglist = qx { dpkg-query --showformat '\${status}\t\${version}\n' -W $pkg };
     if (not $pkglist[0]) {
-      print " * Missing build-dependency $pkg!\n  $pkglist[0]";
+      warn " * Missing build-dependency $pkg!\n  $pkglist[0]";
       $reqflag = 0;
       push @missinglist, $pkg;
     } else {
@@ -1586,16 +1583,16 @@ sub checkbuildreq {
       my ($reqstat,undef,undef,$reqver) = split /\s+/, $pkglist[0];
       if ($reqstat =~ /^unknown/) {
 	# this seems to be a virtual package.
-	print " * Warning: $pkg is probably installed but seems to be a virtual package.\n";
+	warn " * Warning: $pkg is probably installed but seems to be a virtual package.\n";
       } elsif ($reqstat =~ /^install/) {
 	my ($resp) = qx { dpkg --compare-versions $reqver '$rel' $ver && echo "ok" };
 	if ($resp !~ /^ok/) {
 	  $reqflag = 0;
-	  print " * Buildreq $pkg is installed, but wrong version ($reqver):  Need $ver\n"
+	  warn " * Buildreq $pkg is installed, but wrong version ($reqver):  Need $ver\n"
         }
       } else {
 	# whatever state it's in, it's not completely installed, therefore it's missing.
-	print " * Missing build-dependency $pkg!\n  $pkglist[0]";
+	warn " * Missing build-dependency $pkg!\n  $pkglist[0]";
 	$reqflag = 0;
         push @missinglist, $pkg;
       } # end not installed/installed check
