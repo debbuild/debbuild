@@ -828,12 +828,7 @@ ENDIF: if (/^%endif/) {
 
     if ($stage eq 'files') {
       # need to deal with these someday
-      next LINE if /^\%verify/;
-      # dunno what to do with this; not sure if there's space in Debian's package structure for it.
-      next LINE if /^\%ghost/;
-#      my $singleton = 0;	# don't recall what this was for
-      next LINE if /^\s*#/;
-      next LINE if /^\s*$/;
+      next LINE if /^\%verify/ or /^\%ghost/ or /^\s*#/ or /^\s*$/;
 
       if (/^%defattr\s*\(\s*((?:-|\d+)),?\s*(\w+),?\s*(\w+),?\s*((?:-|\d+))\s*\)/) {
         ($defattr{filemode}, $defattr{owner}, $defattr{group}, $defattr{dirmode}) =
@@ -924,12 +919,11 @@ ENDIF: if (/^%endif/) {
 
   } # while <SPEC>
 
+  close SPECFILE;
+
   # Expand macros as necessary.
   $specglobals{buildroot} = expandmacros($specglobals{buildroot});
-
   $scriptletbase = expandmacros($scriptletbase);
-
-  close SPECFILE;
 } # end parse_spec()
 
 
@@ -959,11 +953,9 @@ sub process_setup {
 
 # Note that this is an incomplete match to rpmbuild's full %setup expression.
 # Known differences
-# - -q appears to be somewhat positional in rpm
 # - rpmbuild requires -n on all %setup macros, but carries the first down to
 #   %install etc, debbuild sets the global on the first call, and keeps using
 #   it for further %setup calls
-
   my $setupscript = "cd '%{_builddir}'\n";
   $setupscript .= "%{__rm} -rf '%{buildsubdir}'\n" unless $leavedirs;
 
@@ -1080,8 +1072,7 @@ sub process_filesline {
   if (s/(%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\))//) {
     # Extract %attr...
     my $args = $1;
-    $args =~ s/\s//g;
-    $args =~ s/"//g;    # don't think quotes are ever necessary, but they're *allowed*
+    $args =~ s/[\s"]//g;    # don't think quotes are ever necessary, but they're *allowed*
     # ... and parse it ...
     ($perms,$owner,$group) = $args =~ /\(([\d-]+),([a-zA-Z0-9-]+),([a-zA-Z0-9-]+)/;
   }
@@ -1196,7 +1187,7 @@ sub install {
     $installscript .= "DOCDIR=\$RPM_BUILD_ROOT\%{_docdir}/$pkgname\nexport DOCDIR\n";
     $installscript .= "%{__mkdir_p} \$DOCDIR\n";
     $doclist{$docpkg} =~ s/^\s*//;
-    foreach (split(' ',$doclist{$docpkg})) {
+    foreach (split ' ',$doclist{$docpkg}) {
       $installscript .= "%{__cp} -pr $_ \$DOCDIR/\n";
     }
   }
@@ -1263,9 +1254,7 @@ sub binpackage {
     $pkgdata{$pkg}{arch} = $pkgdata{main}{arch} unless $pkgdata{$pkg}{arch};  # Just In Case.
 
     # Make sure we have somewhere to write the .deb file
-    if (not -e "$topdir/DEBS/$pkgdata{$pkg}{arch}") {
-      mkdir "$topdir/DEBS/$pkgdata{$pkg}{arch}";
-    }
+    mkdir "$topdir/DEBS/$pkgdata{$pkg}{arch}" unless -e "$topdir/DEBS/$pkgdata{$pkg}{arch}";
 
     # Skip building a package that doesn't have any files or dependencies.  True
     # metapackages don't have any files, but they depend on a bunch of things.
@@ -1631,7 +1620,6 @@ sub getreqs() {
 
   print "Checking library requirements...\n";
   my @binlist = qx { find $pkgtree -type f -perm 755 };
-
   return '' unless @binlist;
 
   my @reqlist;
@@ -1779,7 +1767,6 @@ sub expandmacros {
 
     # support for **some** %if constructs.  Note that this breaks somewhat if
     # there's no value specified...  but so does rpm.
-
     my $tmpcount = 0;	# runaway shutdown.  Not really sure how else to avoid getting stuck.
     while ($macrostring =~ m/%{([?!]+)([a-z0-9_.-]+)(?:\:([A-Za-z0-9_.\/\-\\\s]+)?)?}/g) {       #Whew....
       my $qex = $1;
