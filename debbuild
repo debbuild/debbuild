@@ -374,7 +374,7 @@ sub load_config {
     next unless -e $macros; # should we warn about missing macro files?
     open MACROS,"<$macros";
     while (<MACROS>) {
-      next unless (my ($macro,$value) = /^%([a-z0-9_]+)\s+(.+)$/);
+      next unless my ($macro,$value) = /^%([a-z0-9_]+)\s+(.+)$/;
       if ($value =~ s/.*\\$//) { # multi-line macro
         while (<MACROS>) {
           $value .= $_;
@@ -670,8 +670,18 @@ ENDIF: if (/^%endif/) {
     } # %if..%else..%endif
 
     if (/^\%{echo:(.+)}/) {
-      print expandmacros($1),"\n";
+      print STDOUT expandmacros($1),"\n";
       next LINE;
+    }
+
+    if (/^\%{warn:(.+)}/) {
+      print STDERR expandmacros($1),"\n";
+      next LINE;
+    }
+
+    if (/^\%{error:(.+)}/) {
+      print STDERR expandmacros($1),"\n";
+      exit 1;
     }
 
 # now we pick out the sections and set "state" to parse that section.  Fugly but I can't see a better way.  >:(
