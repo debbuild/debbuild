@@ -199,7 +199,7 @@ my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
   $specglobals{debver} = $basever;   # this may have trouble with Ubuntu versions?
 
   # Set the standard generic OS-class globals;
-  $baseos = lc($baseos);
+  $baseos = lc $baseos;
   $specglobals{ubuntu} = $basever if $baseos eq 'ubuntu';
   $specglobals{debian} = $basever if $baseos eq 'debian';
 
