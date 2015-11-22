@@ -520,7 +520,7 @@ debbuild-specific options:
       -i, --install              Unpack a .sdeb in the %_topdir tree
       --showpkgs                 Show package names that would be built.  Only works with .spec files.
 };
-    exit;
+    exit 0;
   }
 
   # Some cross-checks.  rpmbuild limits --short-circuit to just
