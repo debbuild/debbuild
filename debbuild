@@ -1413,7 +1413,7 @@ sub binpackage {
     # found the point of scripts on subpackages.
     foreach my $scr ('pre','post','preun','postun') {
       my $scrfile = $scr;
-      if ($scrfile !~ s/un/rm/) { $scrfile .= 'inst'; }
+      $scrfile .= 'inst' unless $scrfile =~ s/un/rm/;
       if ($pkgdata{$pkg}{$scr}) {
         open SCRIPT, ">$specglobals{buildroot}/$pkg/DEBIAN/$scrfile";
         print SCRIPT "#!/bin/sh\nset -e\n\n";
