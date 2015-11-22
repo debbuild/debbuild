@@ -784,131 +784,12 @@ ENDIF: if (/^%endif/) {
     } # package
 
     if ($stage eq 'prep') {
-      # Actual handling for %prep section.  May have %setup macro;  may
-      # include %patch tags, may be just a bare shell script.
+      # Actual handling for %prep section.  May have %setup macro, may include
+      # %patch tags, may be just a bare shell script.
       if (s/^\%setup//) {
-        $pkgdata{main}{hassetup} = 1;  # flag the fact that we've got %setup
-        # Parse out the %setup macro.  rpmbuild doesn't complain about
-        # gibberish immediately following %setup, but we will
-        if (not /^(?:\s|$)/) {
-          chomp;
-          warn "Suspect \%setup tag '\%setup$_', continuing\n";
-          s/^[^\s]+//;
-        }
-
-        # Prepare some flags
-        my ($createdir, $leavedirs, $quietunpack, $skipdefault) = (0) x 4;
-        my (@sbefore, @safter);
-
-        Getopt::Long::GetOptionsFromString($_,
-          'n=s' => \$specglobals{buildsubdir},
-          'c'   => \$createdir,   # flag, create and change directory before unpack
-          'D'   => \$leavedirs,   # flag, do not delete directory before unpack
-          'T'   => \$skipdefault, # flag, do not unpack first source
-          'q'   => \$quietunpack, # SSH!  Unpack quietly
-          'b=i' => \@sbefore,
-          'a=i' => \@safter);
-
-# Note that this is an incomplete match to rpmbuild's full %setup expression.
-# Known differences
-# - -q appears to be somewhat positional in rpm
-# - rpmbuild requires -n on all %setup macros, but carries the first down to
-#   %install etc, debbuild sets the global on the first call, and keeps using
-#   it for further %setup calls
-
-        $prepscript .= "cd '%{_builddir}'\n";
-        $prepscript .= "%{__rm} -rf '%{buildsubdir}'\n" unless $leavedirs;
-
-        foreach (@sbefore) {
-          $prepscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
-        }
-
-        if ($createdir) {
-          $prepscript .= "%{__mkdir_p} %{buildsubdir}\n";
-          $prepscript .= "cd '%{buildsubdir}'\n";
-        }
-        elsif (not $skipdefault) {
-          $prepscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
-        }
-
-        if (not $createdir) {
-          $prepscript .= "cd '%{buildsubdir}'\n";
-        }
-        elsif (not $skipdefault) {
-          $prepscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
-        }
-
-        foreach (@safter) {
-          $prepscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
-        }
-
-# rpm doesn't seem to do the chowns any more
-#		qq([ `%{__id_u}` = '0' ] && %{__chown} -Rhf root .\n).
-#		qq([ `%{__id_u}` = '0' ] && %{__chgrp} -Rhf root .\n).
-        $prepscript .=
-		qq(%{__chmod} -Rf a+rX,u+w,g-w,o-w .\n);
-
+        $prepscript .= process_setup();
       } elsif (s/^\%patch//) {
-        # Things rpmbuild Does
-        # -> blindly follows Patch(.*):  ==>  %patch$1
-        # %patch0 does not in fact equal %patch without -P
-        # spaces optional between flag and argument
-        # multiple -P options actually trigger multiple patch events.  >_<
-        # can we emulate this?
-        # yes we can!
-        my @patchlist;
-
-        # add patch{nn} to the list
-        if (s/^(\d+)//) {
-          push @patchlist, $1;
-        }
-        # add the "null" patch to the list unless we've got a -P flag
-        elsif (not /-P/) {
-          push @patchlist, '';
-        }
-
-        # %patch options:
-        my ($fuzz, $plev, $psuff, $noempty, $reverse, $altdir, $output)
-          = ($specglobals{_default_patch_fuzz}, 0, '', '', '', '', '');
-
-        Getopt::Long::GetOptionsFromString($_,
-          'P=i'   => \@patchlist, # patch number(s)
-          'p=i'   => \$plev,      # path strip.  Passed to patch as-is
-          'F=i'   => \$fuzz,      # fuzz factor.  Passed to patch as-is
-          'd=s'   => \$altdir,    # alternative directory.  Passed to patch as-is
-          'o=s'   => \$output,    # redirect output.  Passed to patch as-is
-          'E'     => \$noempty,   # remove empty files.  Passed to patch as-is
-          'R'     => \$reverse,   # reverse patch.  Passed to patch as-is
-          'b|z=s' => \$psuff,     # backup file postfix.
-            # Literal, if e.g. "bkfile", backup files will be "filebkfile",
-            # not "file.bkfile".  Passed as-is, with a minor flag adjustment
-          '<>' => sub {
-              push @patchlist, @_; # all other arguments are patch numbers
-            }
-        );
-
-        my $patchopts = $specglobals{_default_patch_flags};
-        $patchopts .= " --fuzz=$fuzz -p$plev";
-        $patchopts .= " -b --suffix=$psuff" if $psuff;
-        $patchopts .= " -d $altdir" if $altdir;
-        $patchopts .= " -o $output" if $output;
-        $patchopts .= " -E" if $noempty;
-        $patchopts .= " -R" if $reverse;
-
-        foreach my $pnum (@patchlist) {
-          $prepscript .= qq(echo "Patch ).($pnum eq '' ? '' : "#$pnum ").qq(($pkgdata{main}{$pnum}):"\n);
-          if ( $pkgdata{main}{$pnum} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
-            # Compressed patch.  You weirdo.
-            $prepscript .= decompress("%{_sourcedir}/$pkgdata{main}{$pnum}");
-          } elsif ( $pkgdata{main}{$pnum} =~ /\.zip$/ ) {
-            # .zip'ed patch.  *backs away slowly*
-            $prepscript .= "%{__unzip} -p %{_sourcedir}/$pkgdata{main}{$pnum}";
-          } else {
-            $prepscript .= "%{__cat} %{_sourcedir}/$pkgdata{main}{$pnum}";
-          }
-          $prepscript .= " | %{__patch} $patchopts\n\n";
-        }
-
+        $prepscript .= process_patch();
       } else {
         $prepscript .= $_;
       }
@@ -950,79 +831,7 @@ ENDIF: if (/^%endif/) {
         next LINE;
       }
 
-# create and initialize flags
-      my ($perms, $owner, $group, $conf, $filesline) =
-        ($defattr{filemode}, $defattr{owner}, $defattr{group}, '-', $_);
-
-      # Debian dpkg doesn't speak "%docdir".  Meh.
-      $filesline =~ s/^%dir\s*//;
-      $filesline =~ s/^%docdir\s*//;
-
-      # strip and flag %attr constructs
-      if ($filesline =~ /%attr\b/) {
-	# Extract %attr...
-	my ($args) = /(\%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\))/;
-	$args =~ s/\s//g;
-	$args =~ s/"//g;    # don't think quotes are ever necessary, but they're *allowed*
-	# ... and parse it ...
-	($perms,$owner,$group) = $args =~ /\(([\d-]+),([a-zA-Z0-9-]+),([a-zA-Z0-9-]+)/;
-	# ... and wipe it when we're done.
-	$filesline =~ s/%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\)//;
-      }
-
-      # Conffiles.  Note that Debian and RH have similar, but not
-      # *quite* identical ideas of what constitutes a conffile.  Nrgh.
-      # Note that dpkg will always ask if you want to replace the file - noreplace
-      # is more or less permanently enabled.
-##fixme
-# also need to handle missingok (file that doesn't exist, but should be removed on uninstall)
-# hmm.  not sure if such is **POSSIBLE** with Debian...  maybe an addition to %post?
-      if ($filesline =~ s/%config\b(?:\s*\(\s*noreplace\s*\)\s*)?//) {
-        $pkgdata{$subname}{conffiles} = 1;  # Flag it for later
-        $conf = 'y';
-      }
-
-      # %doc needs extra processing, because it can be a space-separated list, and may
-      # include both full and partial pathnames.  The partial pathnames must be fiddled
-      # into place in the %install script, because Debian doesn't really have the concept
-      # of "documentation file" that rpm does.  (Debian "documentation files" are files
-      # in /usr/share/doc/<packagename>.)
-##fixme:  unhandled case: %doc %defattr.  Eeep.
-# don't really know what to do with %defattr, generally.  :(
-      if ($filesline =~ s/%doc\s+//) {
-
-# this could probably go elsewhere.
-	my $pkgname = $pkgdata{$subname}{name};
-	$pkgname =~ tr/_/-/;
-
-	# have to extract the partial pathnames that %doc installs automagically
-	foreach (split /\s+/, $filesline) {
-	  if (not m|^[\%/]|) {
-	    $doclist{$subname} .= " $_";
-	    my ($element) = m|([^/\s]+/?)$|;
-	    $filesline =~ s|$_|%{_docdir}/$pkgname/$element|;
-	  }
-	}
-      } # $filesline =~ /%doc\b/
-
-      $filesline =~ s/^\s*//;	# Just In Case.  For, uh, neatness.
-      chomp $filesline;
-
-# due to Debian's total lack of real permissions-processing in its actual package
-# handling component (dpkg-deb), this can't really be done "properly".  We'll have
-# to add chown/chmod commands to the postinst instead.  Feh.
-      $pkgdata{$subname}{'post'} .= "%{__chown} -Rh $owner $filesline\n" if $owner ne '-';
-      $pkgdata{$subname}{'post'} .= "%{__chgrp} -Rh $group $filesline\n" if $group ne '-';
-      $pkgdata{$subname}{'post'} .= "if [ -d $filesline ]; then %{__chmod} $defattr{dirmode} $filesline; fi\n" if $defattr{dirmode} ne '-';
-      $pkgdata{$subname}{'post'} .= "if [ -f $filesline ]; then %{__chmod} $perms $filesline; fi\n" if $perms ne '-';
-
-##fixme
-# need hackery to assure only one filespec per %config.  NB:  "*" is one filespec.  <g>
-      push @{$pkgdata{$subname}{conflist}}, $filesline if $conf ne '-';
-
-      # now that we've got the specials out of the way, we can add things to the appropriate list of files.
-      # ... and finally everything else
-      $filelist{$subname} .= " $filesline";
+      process_filesline($subname);
 
       next LINE;
     } # files
@@ -1112,6 +921,217 @@ ENDIF: if (/^%endif/) {
 
   close SPECFILE;
 } # end parse_spec()
+
+
+## process_setup()
+sub process_setup {
+  $pkgdata{main}{hassetup} = 1;  # flag the fact that we've got %setup
+  # Parse out the %setup macro.  rpmbuild doesn't complain about
+  # gibberish immediately following %setup, but we will
+  if (not /^(?:\s|$)/) {
+    chomp;
+    warn "Suspect \%setup tag '\%setup$_', continuing\n";
+    s/^[^\s]+//;
+  }
+
+  # Prepare some flags
+  my ($createdir, $leavedirs, $quietunpack, $skipdefault) = (0) x 4;
+  my (@sbefore, @safter);
+
+  Getopt::Long::GetOptionsFromString($_,
+    'n=s' => \$specglobals{buildsubdir},
+    'c'   => \$createdir,   # flag, create and change directory before unpack
+    'D'   => \$leavedirs,   # flag, do not delete directory before unpack
+    'T'   => \$skipdefault, # flag, do not unpack first source
+    'q'   => \$quietunpack, # SSH!  Unpack quietly
+    'b=i' => \@sbefore,
+    'a=i' => \@safter);
+
+# Note that this is an incomplete match to rpmbuild's full %setup expression.
+# Known differences
+# - -q appears to be somewhat positional in rpm
+# - rpmbuild requires -n on all %setup macros, but carries the first down to
+#   %install etc, debbuild sets the global on the first call, and keeps using
+#   it for further %setup calls
+
+  my $setupscript = "cd '%{_builddir}'\n";
+  $setupscript .= "%{__rm} -rf '%{buildsubdir}'\n" unless $leavedirs;
+
+  foreach (@sbefore) {
+    $setupscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
+  }
+
+  if ($createdir) {
+    $setupscript .= "%{__mkdir_p} %{buildsubdir}\n";
+    $setupscript .= "cd '%{buildsubdir}'\n";
+  }
+  elsif (not $skipdefault) {
+    $setupscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
+  }
+
+  if (not $createdir) {
+    $setupscript .= "cd '%{buildsubdir}'\n";
+  }
+  elsif (not $skipdefault) {
+    $setupscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
+  }
+
+  foreach (@safter) {
+    $setupscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
+  }
+
+# rpm doesn't seem to do the chowns any more
+#		qq([ `%{__id_u}` = '0' ] && %{__chown} -Rhf root .\n).
+#		qq([ `%{__id_u}` = '0' ] && %{__chgrp} -Rhf root .\n).
+  return $setupscript .= qq(%{__chmod} -Rf a+rX,u+w,g-w,o-w .\n);
+} # end process_setup()
+
+
+## process_patch()
+sub process_patch {
+  # Things rpmbuild Does
+  # -> blindly follows Patch(.*):  ==>  %patch$1
+  # %patch0 does not in fact equal %patch without -P
+  # spaces optional between flag and argument
+  # multiple -P options actually trigger multiple patch events.  >_<
+  # can we emulate this?
+  # yes we can!
+  my @patchlist;
+
+  # add patch{nn} to the list
+  if (s/^(\d+)//) {
+    push @patchlist, $1;
+  }
+  # add the "null" patch to the list unless we've got a -P flag
+  elsif (not /-P/) {
+    push @patchlist, '';
+  }
+
+  # %patch options:
+  my ($fuzz, $plev, $psuff, $noempty, $reverse, $altdir, $output)
+    = ($specglobals{_default_patch_fuzz}, 0, '', '', '', '', '');
+
+  Getopt::Long::GetOptionsFromString($_,
+    'P=i'   => \@patchlist, # patch number(s)
+    'p=i'   => \$plev,      # path strip.  Passed to patch as-is
+    'F=i'   => \$fuzz,      # fuzz factor.  Passed to patch as-is
+    'd=s'   => \$altdir,    # alternative directory.  Passed to patch as-is
+    'o=s'   => \$output,    # redirect output.  Passed to patch as-is
+    'E'     => \$noempty,   # remove empty files.  Passed to patch as-is
+    'R'     => \$reverse,   # reverse patch.  Passed to patch as-is
+    'b|z=s' => \$psuff,     # backup file postfix.
+      # Literal, if e.g. "bkfile", backup files will be "filebkfile",
+      # not "file.bkfile".  Passed as-is, with a minor flag adjustment
+    '<>' => sub {
+      push @patchlist, @_; # all other arguments are patch numbers
+    }
+  );
+
+  my $patchopts = $specglobals{_default_patch_flags};
+  $patchopts .= " --fuzz=$fuzz -p$plev";
+  $patchopts .= " -b --suffix=$psuff" if $psuff;
+  $patchopts .= " -d $altdir" if $altdir;
+  $patchopts .= " -o $output" if $output;
+  $patchopts .= " -E" if $noempty;
+  $patchopts .= " -R" if $reverse;
+
+  my $patchscript;
+  foreach my $pnum (@patchlist) {
+    $patchscript .= qq(echo "Patch ).
+      ($pnum eq '' ? '' : "#$pnum ").qq(\($pkgdata{main}{$pnum}\):"\n);
+    if ( $pkgdata{main}{$pnum} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
+      # Compressed patch.  You weirdo.
+      $patchscript .= decompress("%{_sourcedir}/$pkgdata{main}{$pnum}");
+    } elsif ( $pkgdata{main}{$pnum} =~ /\.zip$/ ) {
+      # .zip'ed patch.  *backs away slowly*
+      $patchscript .= "%{__unzip} -p %{_sourcedir}/$pkgdata{main}{$pnum}";
+    } else {
+      $patchscript .= "%{__cat} %{_sourcedir}/$pkgdata{main}{$pnum}";
+    }
+    $patchscript .= " | %{__patch} $patchopts\n\n";
+  }
+  return $patchscript;
+} # end process_patch()
+
+
+## process_filesline()
+sub process_filesline {
+  my ($subname) = @_;
+
+  # create and initialize flags
+  my ($perms, $owner, $group, $conf, $filesline) =
+    ($defattr{filemode}, $defattr{owner}, $defattr{group}, '-', $_);
+
+  # Debian dpkg doesn't speak "%docdir".  Meh.
+  $filesline =~ s/^%dir\s*//;
+  $filesline =~ s/^%docdir\s*//;
+
+  # strip and flag %attr constructs
+  if ($filesline =~ /%attr\b/) {
+    # Extract %attr...
+    my ($args) = /(\%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\))/;
+    $args =~ s/\s//g;
+    $args =~ s/"//g;    # don't think quotes are ever necessary, but they're *allowed*
+    # ... and parse it ...
+    ($perms,$owner,$group) = $args =~ /\(([\d-]+),([a-zA-Z0-9-]+),([a-zA-Z0-9-]+)/;
+    # ... and wipe it when we're done.
+    $filesline =~ s/%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\)//;
+  }
+
+  # Conffiles.  Note that Debian and RH have similar, but not
+  # *quite* identical ideas of what constitutes a conffile.  Nrgh.
+  # Note that dpkg will always ask if you want to replace the file - noreplace
+  # is more or less permanently enabled.
+##fixme
+# also need to handle missingok (file that doesn't exist, but should be removed on uninstall)
+# hmm.  not sure if such is **POSSIBLE** with Debian...  maybe an addition to %post?
+  if ($filesline =~ s/%config\b(?:\s*\(\s*noreplace\s*\)\s*)?//) {
+    $pkgdata{$subname}{conffiles} = 1;  # Flag it for later
+    $conf = 'y';
+  }
+
+  # %doc needs extra processing, because it can be a space-separated list, and may
+  # include both full and partial pathnames.  The partial pathnames must be fiddled
+  # into place in the %install script, because Debian doesn't really have the concept
+  # of "documentation file" that rpm does.  (Debian "documentation files" are files
+  # in /usr/share/doc/<packagename>.)
+##fixme:  unhandled case: %doc %defattr.  Eeep.
+# don't really know what to do with %defattr, generally.  :(
+  if ($filesline =~ s/%doc\s+//) {
+
+# this could probably go elsewhere.
+    my $pkgname = $pkgdata{$subname}{name};
+    $pkgname =~ tr/_/-/;
+
+    # have to extract the partial pathnames that %doc installs automagically
+    foreach (split /\s+/, $filesline) {
+      if (not m|^[\%/]|) {
+        $doclist{$subname} .= " $_";
+        my ($element) = m|([^/\s]+/?)$|;
+        $filesline =~ s|$_|%{_docdir}/$pkgname/$element|;
+      }
+    }
+  } # $filesline =~ /%doc\b/
+
+  $filesline =~ s/^\s*//;	# Just In Case.  For, uh, neatness.
+  chomp $filesline;
+
+# due to Debian's total lack of real permissions-processing in its actual package
+# handling component (dpkg-deb), this can't really be done "properly".  We'll have
+# to add chown/chmod commands to the postinst instead.  Feh.
+  $pkgdata{$subname}{post} .= "%{__chown} -Rh $owner $filesline\n" if $owner ne '-';
+  $pkgdata{$subname}{post} .= "%{__chgrp} -Rh $group $filesline\n" if $group ne '-';
+  $pkgdata{$subname}{post} .= "if [ -d $filesline ]; then %{__chmod} $defattr{dirmode} $filesline; fi\n" if $defattr{dirmode} ne '-';
+  $pkgdata{$subname}{post} .= "if [ -f $filesline ]; then %{__chmod} $perms $filesline; fi\n" if $perms ne '-';
+
+##fixme
+# need hackery to assure only one filespec per %config.  NB:  "*" is one filespec.  <g>
+  push @{$pkgdata{$subname}{conflist}}, $filesline if $conf ne '-';
+
+  # now that we've got the specials out of the way, we can add things to the appropriate list of files.
+  # ... and finally everything else
+  $filelist{$subname} .= " $filesline";
+} # end process_filesline()
 
 
 ## prep()
