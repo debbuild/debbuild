@@ -177,12 +177,12 @@ my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
         # Ubuntu, at least until they upset their versioning scheme again
         # note that we remap the basefiles version to the public release number, to match the
         # behaviour for Debian, and to match the unofficial standard for RHEL/Centos etc and Fedora
-        ($basefiles,$basever) = ($basever =~ /^(([\d.]+)ubuntu)\d/);
+        ($basefiles,$basever) = $basever =~ /^(([\d.]+)ubuntu)\d/;
         $baseos = 'ubuntu';
       } else {
         # Debian, or more "pure" derivative
         $baseos = 'debian';
-        ($basever,$majver) = ($basever =~ /^((\d+)(?:\.\d)?)/);
+        ($basever,$majver) = $basever =~ /^((\d+)(?:\.\d)?)/;
         $basever = $majver if $majver > 3;
       }
     }
@@ -374,7 +374,7 @@ sub load_config {
     next unless -e $macros; # should we warn about missing macro files?
     open MACROS,"<$macros";
     while (<MACROS>) {
-      next unless (my ($macro,$value) = (/^%([a-z0-9_]+)\s+(.+)$/));
+      next unless (my ($macro,$value) = /^%([a-z0-9_]+)\s+(.+)$/);
       if ($value =~ s/.*\\$//) { # multi-line macro
         while (<MACROS>) {
           $value .= $_;
@@ -399,7 +399,7 @@ sub parse_cmd {
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
     'define|D=s' => sub {
         my ($opt_name,$opt_value) = @_;
-        my ($macro,$value) = ($opt_value =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i);
+        my ($macro,$value) = $opt_value =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i;
         if ($value) {
           if ($macro =~ /(?:summary|name|epoch|version|release|group|copyright|url|packager)/i) {
             $pkgdata{main}{$macro} = $value;
@@ -575,18 +575,17 @@ LINE: while (<SPECFILE>) {
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /\%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
     if (/^%[a-z]/ &&
-		$_ !~ /^%(?:attr|build|changelog|check|clean|config|configure|
+		not /^%(?:attr|build|changelog|check|clean|config|configure|
 		defattr|define|description|dir|doc|docdir|else|endif|files|ghost|
 		if|ifarch|ifnarch|ifnos|ifos|install|make_install|makeinstall|
 		package|patch\d*|post|postun|pre|prep|preun|readme|setup\d*|
-		triggerin|triggerpostun|triggerun|verify|verifyscript)\b/x
-	) {
-	my ($badtag) = (/^%([a-z]+)/i);
+		triggerin|triggerpostun|triggerun|verify|verifyscript)\b/x) {
+	my ($badtag) = /^%([a-z]+)/i;
 	die "Unknown tag \%$badtag at line $. of $specfile\n";
     }
 
 # preprocess %define's
-    if (my ($key, $def) = (/^\%(?:define|global)\s+([^\s]+)\s+(.+)$/) ) {
+    if (my ($key, $def) = /^\%(?:define|global)\s+([^\s]+)\s+(.+)$/) {
       if ($key =~ /(?:summary|name|epoch|version|release|group|copyright|url|packager)/i) {
         $pkgdata{main}{$key} = expandmacros($def) unless defined $pkgdata{main}{$key};
       } else {
@@ -618,7 +617,7 @@ LINE: while (<SPECFILE>) {
 	foreach my $bit (@bits) {
 	  next if $bit eq '"';
 	  $bit =~ s/"//g;
-	  $expr .= ( $bit =~ /^\w+$/ ? qq("$bit") : $bit );
+	  $expr .= $bit =~ /^\w+$/ ? qq("$bit") : $bit;
 	}
 
         # Done in this order so we don't cascade incorrectly.  Yes, those spaces ARE correct in the replacements!
@@ -769,7 +768,7 @@ ENDIF: if (/^%endif/) {
 # an rpmbuild-compatible .spec file
 # NB: NOT going to support Pre-Depends, since it's a "Don't Use" (mis)feature, and
 # RPM's support for a similar tag (PreReq) has been recently dropped.
-      if (my ($dname,$dvalue) = (/^(Recommends|Suggests|Enhances|Replaces|Summary|Group|Version|Requires|Conflicts|Provides|BuildArch(?:itecture)?):\s+(.+)$/i)) {
+      if (my ($dname,$dvalue) = /^(Recommends|Suggests|Enhances|Replaces|Summary|Group|Version|Requires|Conflicts|Provides|BuildArch(?:itecture)?):\s+(.+)$/i) {
         $dname =~ tr/[A-Z]/[a-z]/;
         if ($dname =~ /^BuildArch/i) {
           $dvalue =~ s/^noarch/all/ig;
@@ -962,11 +961,11 @@ ENDIF: if (/^%endif/) {
       # strip and flag %attr constructs
       if ($filesline =~ /%attr\b/) {
 	# Extract %attr...
-	my ($args) = (/(\%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\))/);
+	my ($args) = /(\%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\))/;
 	$args =~ s/\s//g;
 	$args =~ s/"//g;    # don't think quotes are ever necessary, but they're *allowed*
 	# ... and parse it ...
-	($perms,$owner,$group) = ($args =~ /\(([\d-]+),([a-zA-Z0-9-]+),([a-zA-Z0-9-]+)/);
+	($perms,$owner,$group) = $args =~ /\(([\d-]+),([a-zA-Z0-9-]+),([a-zA-Z0-9-]+)/;
 	# ... and wipe it when we're done.
 	$filesline =~ s/%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\)//;
       }
@@ -1057,12 +1056,12 @@ ENDIF: if (/^%endif/) {
         $specglobals{vendor} = $1 unless defined $specglobals{vendor};
       } elsif (/^buildroot:\s*(.+)/i) {
         $specglobals{buildroot} = $1 unless defined $specglobals{buildroot};
-      } elsif (my ($srcnum, $src) = (/^source(\d*):\s*(.+)/i)) {
+      } elsif (my ($srcnum, $src) = /^source(\d*):\s*(.+)/i) {
         $src =~ s/\s*$//;
         $srcnum = 0 unless $srcnum;
         $pkgdata{sources}{$srcnum} = basename($src);
         $pkgdata{main}{source} = $pkgdata{sources}{0} if 0 == $srcnum;
-      } elsif (my ($patchnum, $patch) = (/^patch(\d*):\s*(.+)/i)) {
+      } elsif (my ($patchnum, $patch) = /^patch(\d*):\s*(.+)/i) {
         $patch =~ s/\s*$//;
         $patchnum = '' unless defined($patchnum);
         $pkgdata{main}{$patchnum} = basename($patch);
@@ -1290,7 +1289,7 @@ sub binpackage {
 	}
       }
 
-      my ($fpath,$fname) = ($pkgfile =~ m|(.+?/?)?([^/]+/?)$|);	# We don't need $fname now, but we might.
+      my ($fpath,$fname) = $pkgfile =~ m|(.+?/?)?([^/]+/?)$|;	# We don't need $fname now, but we might.
       qx { $specglobals{__mkdir_p} $specglobals{buildroot}/$pkg$fpath } if $fpath;
       qx { $specglobals{__cp} -ar $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath };
     }
@@ -1310,7 +1309,7 @@ sub binpackage {
       # Hack up the perl(Class::SubClass) deps into something dpkg can understand.
       # May or may not be versioned.
       # We do this first so the version rewriter can do its magic next.
-      if (my ($mod,$ver) = ($dep =~ /^perl\(([A-Za-z0-9\:\-]+)\)([><=]+.+)?/) ) {
+      if (my ($mod,$ver) = $dep =~ /^perl\(([A-Za-z0-9\:\-]+)\)([><=]+.+)?/) {
 	$mod =~ s/^perl\(//;
 	$mod =~ s/\)$//;
 	$mod =~ s/::/-/g;
@@ -1319,7 +1318,7 @@ sub binpackage {
 	$mod .= $ver if $ver;
 	$dep = $mod;
       }
-      if (my ($name,$rel,$value) = ($dep =~ /^([a-zA-Z0-9._-]+)([><=]+)([a-zA-Z0-9._-]+)$/)) {
+      if (my ($name,$rel,$value) = $dep =~ /^([a-zA-Z0-9._-]+)([><=]+)([a-zA-Z0-9._-]+)$/) {
         $tmp .= ", $name ($rel $value)";
       } else {
         $tmp .= ", $dep";
@@ -1538,7 +1537,7 @@ sub checkbuildreq {
     # We have two classes of requirements - versioned and unversioned.
     if ($req =~ /[><=]/) {
       # Pick up the details of versioned buildreqs
-      ($pkg,$rel,$ver) = ($req =~ /([a-z0-9._-]+)\s+([><=]+)\s+([a-z0-9._-]+)/);
+      ($pkg,$rel,$ver) = $req =~ /([a-z0-9._-]+)\s+([><=]+)\s+([a-z0-9._-]+)/;
     } else {
       # And the unversioned ones.
       $pkg = $req;
@@ -1640,7 +1639,7 @@ sub getreqs() {
       next if qx { find $specglobals{buildroot} -name "*$a" };
     }
 
-    my ($req) = (m|=\>\s+([a-zA-Z0-9._/+-]+)|); # dig out the actual library (so)name.
+    my ($req) = m|=\>\s+([a-zA-Z0-9._/+-]+)|; # dig out the actual library (so)name.
 	# And feh, we need the *path*, since I've discovered a new edge case where
 	# the same libnnn.1.2.3 *file*name is found across *several* lib dirs.  >:(
 
@@ -1781,7 +1780,7 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount++ > 14;
 # should probably stick a "no runaway" flag in here...  Just In Case...
     # %define's
 # note to self: find out valid chars for %define name/label so we can parse them
-    while (my ($key) = ($macrostring =~ /%{([a-z0-9_:-]+)}/i) ) {
+    while (my ($key) = $macrostring =~ /%{([a-z0-9_:-]+)}/i) {
       if (defined $specglobals{$key}) {
         $macrostring =~ s|%{$key}|expandmacros($specglobals{$key})|eg;
       } else {
