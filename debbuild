@@ -228,7 +228,7 @@ my ($prepscript, $buildscript, $installscript) = ('') x 3;
 my $cleanscript = '[ "$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf $RPM_BUILD_ROOT';
 my $finalmessages = ''; # A place to stuff messages that I want printed at the *very* end of any processing.
 
-##main
+#### main ####
 
 load_config();
 parse_cmd();
@@ -253,7 +253,6 @@ if ($cmdopts{type} eq 'd') {
 	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb";
 
     print "$pkgfullname\n" if $filelist{$pkg};
-
   }
   # Source package
   print "$pkgdata{main}{name}-".
@@ -359,6 +358,8 @@ print $finalmessages;
 
 # Just in case.
 exit 0;
+
+#### end main ####
 
 
 ## load_config()
@@ -535,7 +536,6 @@ debbuild-specific options:
   # Did we catch an action option?
   # rpmbuild quits silently.
   exit 0 unless $cmdopts{type};
-
 } # end parse_cmd()
 
 
@@ -1062,8 +1062,7 @@ sub process_filesline {
     ($defattr{filemode}, $defattr{owner}, $defattr{group}, '-');
 
   # Debian dpkg doesn't speak "%docdir".  Meh.
-  s/^%dir\s*//;
-  s/^%docdir\s*//;
+  s/^%(?:dir|docdir)\s*//;
 
   # strip and flag %attr constructs ... and wipe it when we're done.
   if (s/(%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\))//) {
@@ -1256,7 +1255,7 @@ sub binpackage {
     # Skip building a package that doesn't have any files or dependencies.  True
     # metapackages don't have any files, but they depend on a bunch of things.
     # Packages with neither have, essentially, no content.
-    next if 
+    next if
         (not $filelist{$pkg} or $filelist{$pkg} =~ /^\s*$/) &&
         (not $pkgdata{$pkg}{requires});
     $filelist{$pkg} = '' unless $filelist{$pkg};
@@ -1365,7 +1364,7 @@ sub binpackage {
 	"$pkgdata{$pkg}{name}_".
 	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
 	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb\n";
-      # %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
+    # %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
     close DEBSCRIPT;
 
     $pkgdata{$pkg}{summary} = expandmacros($pkgdata{$pkg}{summary});
@@ -1428,14 +1427,14 @@ sub binpackage {
     system("/bin/sh -e $debscriptfile") == 0
 	or die "Can't exec: $!\n";
 
+    # and clean up
+    unlink $debscriptfile;
+
     $finalmessages .= "Wrote binary package ".
 	"$pkgdata{$pkg}{name}_".
 	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
 	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb".
 	" in $topdir/DEBS/$pkgdata{$pkg}{arch}\n";
-    # and clean up
-    unlink $debscriptfile;
-
   } # subpackage loop
 
 } # end binpackage()
@@ -1490,9 +1489,7 @@ sub srcpackage {
   $paxcmd .= "SPECS/$barespec -f %{_srcdebdir}/$pkgsrcname)";
 
   # In case of %-macros...
-  $paxcmd = expandmacros($paxcmd);
-  
-  system($paxcmd) == 0 and
+  system(expandmacros($paxcmd)) == 0 and
   $finalmessages .= "Wrote source package $pkgsrcname in $topdir/SDEBS.\n";
 } # end srcpackage()
 
@@ -1525,7 +1522,7 @@ sub clean {
 sub checkbuildreq {
   return 1 unless $buildreq; # No use doing extra work.
 
-  # expand macros 
+  # expand macros
   $buildreq = expandmacros($buildreq);
 
   if ( not -e "/usr/bin/dpkg-query" ) {
@@ -1673,16 +1670,12 @@ sub getreqs() {
     }
   }
 
-  my $deplist = '';
-  foreach (keys %reqs) {
-    $deplist .= ", $_";
-  }
-
 # For now, we're done.  We're not going to meddle with versions yet.
 # Among other things, it's messier than handling "simple" yes/no "do
 # we have this lib?" deps.  >:(
 
-  return $deplist;
+  return ', ' . join(', ', keys %reqs);
+
 } # end getreqs()
 
 
@@ -1696,9 +1689,7 @@ sub install_sdeb {
   my $paxcmd = "(cd %{_topdir}; %{__pax} -r -f $srcpkg)";
 
   # In case of %-macros...
-  $paxcmd = expandmacros($paxcmd);
-  
-  system($paxcmd) == 0 and
+  system(expandmacros($paxcmd)) == 0 and
   print "Extracted source package $srcpkg to $topdir.\n";
 } # end install_sdeb()
 
@@ -1717,87 +1708,84 @@ sub expandmacros {
   die "Runaway recursive macro expansion aborted.\n" if $nest_level++ > 8;
 
   # Replace global macros
-  $macrostring =~ s/%configure/%{configure}/g;
-  $macrostring =~ s/%make_install/%{make_install}/;
-  $macrostring =~ s/%makeinstall/%{makeinstall}/;
-  $macrostring =~ s|%optflags|%{optflags}|g;
+  $macrostring =~ s/%(configure|make_install|makeinstall|optflags)/%{$1}/g;
   $macrostring =~ s|%{optflags}|$optflags{$pkgdata{main}{arch}}|g;
 
   # Package data
-    $macrostring =~ s|%{source0?}|%{_sourcedir}/$pkgdata{main}{source}|gi;
-    foreach my $source (keys %{$pkgdata{sources}}) {
-      $macrostring =~ s|%{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
-    }
-    $macrostring =~ s|%{patch(\d+)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
-    $macrostring =~ s/%{(summary|name|epoch|version|release|group|copyright|url|packager)}/$pkgdata{main}{$1}/gi;
+  $macrostring =~ s|%{source0?}|%{_sourcedir}/$pkgdata{main}{source}|gi;
+  foreach my $source (keys %{$pkgdata{sources}}) {
+    $macrostring =~ s|%{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
+  }
+  $macrostring =~ s|%{patch(\d+)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
+  $macrostring =~ s/%{(summary|name|epoch|version|release|group|copyright|url|packager)}/$pkgdata{main}{$1}/gi;
 
   # Globals, and not-so-globals
-    # special %define's.  Handle the general case where we eval anything.
-    # Even more general:  %(...) is a spec-parse-time shell code wrapper.
-    # Prime example:
-    #%define perl_vendorlib %(eval "`perl -V:installvendorlib`"; echo $installvendorlib)
-      # Oy vey this gets silly for the perl bits.  Executing a shell to
-      # call Perl to get the vendorlib/sitelib/whatever "core" globals.
-      # This can do more, but...  eww.
-    $macrostring =~ s|%\((.+?)\)|my $res = qx{/bin/sh -c '$1'}; chomp $res; $res;|eg;
-      # Yay!  ' characters apparently get properly exscapededed.
+  # special %define's.  Handle the general case where we eval anything.
+  # Even more general:  %(...) is a spec-parse-time shell code wrapper.
+  # Prime example:
+  #%define perl_vendorlib %(eval "`perl -V:installvendorlib`"; echo $installvendorlib)
+    # Oy vey this gets silly for the perl bits.  Executing a shell to
+    # call Perl to get the vendorlib/sitelib/whatever "core" globals.
+    # This can do more, but...  eww.
+  $macrostring =~ s|%\((.+?)\)|my $res = qx{/bin/sh -c '$1'}; chomp $res; $res;|eg;
+    # Yay!  ' characters apparently get properly exscapededed.
 
-    # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
-    $macrostring =~ s/%{getenv:([A-Z_]+)}/$ENV{$1}/g;
+  # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
+  $macrostring =~ s/%{getenv:([A-Z_]+)}/$ENV{$1}/g;
 
-    # curious form of 'basename'? – strip domain host (and port)
-    while ($macrostring =~ /%{u2p:(%{.+?})}/) {
-      my $url = $1;
-      my $expand = expandmacros($1);
-      $expand =~ s|\w+://[\w\-.:]+||;
-      $macrostring =~ s/%{u2p:$url}/$expand/g;
+  # curious form of 'basename'? – strip domain host (and port)
+  while ($macrostring =~ /%{u2p:(%{.+?})}/) {
+    my $url = $1;
+    my $expand = expandmacros($1);
+    $expand =~ s|\w+://[\w\-.:]+||;
+    $macrostring =~ s/%{u2p:$url}/$expand/g;
+  }
+
+  # %{defined <flag>}, %{undefined <flag>}
+  $macrostring =~ s/%{defined (.+?)}/defined $specglobals{$1} || 0/eg;
+  $macrostring =~ s/%{undefined (.+?)}/not defined $specglobals{$1} || 0/eg;
+
+  # unescape multi-line macros
+  $macrostring =~ s/\\"/"/g;
+  $macrostring =~ s/\\\\/\\/g;
+  $macrostring =~ s/([^\s])\\+\n/$1\n/g;
+
+  # support for **some** %if constructs.  Note that this breaks somewhat if
+  # there's no value specified...  but so does rpm.
+  my $tmpcount = 0;	# runaway shutdown.  Not really sure how else to avoid getting stuck.
+  while ($macrostring =~ m/%{([?!]+)([a-z0-9_.-]+)(?:\:([A-Za-z0-9_.\/\-\\\s]+)?)?}/g) {       #Whew....
+    my $qex = $1;
+    my $macro = $2;
+    my $value = '';
+    if (defined($3)) {
+      $value = $3;
+    } else {
+      $value = $specglobals{$macro} if $specglobals{$macro};
     }
-
-    # %{defined <flag>}, %{undefined <flag>}
-    $macrostring =~ s/%{defined (.+?)}/defined $specglobals{$1} || 0/eg;
-    $macrostring =~ s/%{undefined (.+?)}/not defined $specglobals{$1} || 0/eg;
-
-    # unescape multi-line macros
-    $macrostring =~ s/\\"/"/g;
-    $macrostring =~ s/\\\\/\\/g;
-    $macrostring =~ s/([^\s])\\+\n/$1\n/g;
-
-    # support for **some** %if constructs.  Note that this breaks somewhat if
-    # there's no value specified...  but so does rpm.
-    my $tmpcount = 0;	# runaway shutdown.  Not really sure how else to avoid getting stuck.
-    while ($macrostring =~ m/%{([?!]+)([a-z0-9_.-]+)(?:\:([A-Za-z0-9_.\/\-\\\s]+)?)?}/g) {       #Whew....
-      my $qex = $1;
-      my $macro = $2;
-      my $value = '';
-      if (defined($3)) {
-        $value = $3;
-      } else {
-        $value = $specglobals{$macro} if $specglobals{$macro};
-      }
-      my $neg = '1' if $qex =~ /\!/;
-      if ($specglobals{$macro}) {
-	$value = '' if $neg;
-      } else {
-	$value = '' unless $neg;
-      }
-      $macrostring =~ s/%{[?!]+[a-z0-9_.-]+(?:\:([A-Za-z0-9_.\/\-\\\s]+)?)?}/$value/;
+    my $neg = '1' if $qex =~ /\!/;
+    if ($specglobals{$macro}) {
+      $value = '' if $neg;
+    } else {
+      $value = '' unless $neg;
+    }
+    $macrostring =~ s/%{[?!]+[a-z0-9_.-]+(?:\:([A-Za-z0-9_.\/\-\\\s]+)?)?}/$value/;
 
 # not certain about this, but I don't want to run away.  It *can* happen if planned carefully.  :/
 # %makeinstall has 13 occurrences.  D'Oh!
 die "excessive recursive macro replacement;  dying.\n" if $tmpcount++ > 14;
 
-    } # while()
+  } # while()
 
 # should probably stick a "no runaway" flag in here...  Just In Case...
-    # %define's
+  # %define's
 # note to self: find out valid chars for %define name/label so we can parse them
-    while (my ($key) = $macrostring =~ /%{([a-z0-9_:-]+)}/i) {
-      if (defined $specglobals{$key}) {
-        $macrostring =~ s|%{$key}|expandmacros($specglobals{$key})|eg;
-      } else {
-        $macrostring = expandmacros($macrostring);
-      }
+  while (my ($key) = $macrostring =~ /%{([a-z0-9_:-]+)}/i) {
+    if (defined $specglobals{$key}) {
+      $macrostring =~ s|%{$key}|expandmacros($specglobals{$key})|eg;
+    } else {
+      $macrostring = expandmacros($macrostring);
     }
+  }
 
   $nest_level--;
 
@@ -1853,6 +1841,7 @@ debbuild - Build Debian-compatible .deb packages from RPM .spec files
  debbuild {-ba|-bb|-bp|-bc|-bi|-bl|-bs} [build-options] file.spec
 
  debbuild {-ta|-tb|-tp|-tc|-ti|-tl|-ts} [build-options] file.{tgz|zip|tar.{gz|bz2|xz|Z}}
+
  debbuild {-ra|-rb|-rp|-rc|-ri|-rl|-rs} [build-options] file.{.src.rpm|sdeb}
 
  debbuild {--rebuild|--recompile} file.{src.rpm|sdeb}
@@ -1863,13 +1852,13 @@ debbuild - Build Debian-compatible .deb packages from RPM .spec files
 
 =head1 DESCRIPTION
 
-debbuild attempts to build Debian-friendly semi-native packages from RPM spec files, 
-RPM-friendly tarballs, and RPM source packages (.src.rpm files).  It accepts I<most> of the 
-options rpmbuild does, and should be able to interpret most spec files usefully.  Perl 
+debbuild attempts to build Debian-friendly semi-native packages from RPM spec files,
+RPM-friendly tarballs, and RPM source packages (.src.rpm files).  It accepts I<most> of the
+options rpmbuild does, and should be able to interpret most spec files usefully.  Perl
 modules should be handled via CPAN+dh-make-perl instead as it's simpler than even tweaking
 a .spec template.
 
-As far as possible, the command-line options are identical to those from rpmbuild, although 
+As far as possible, the command-line options are identical to those from rpmbuild, although
 several rpmbuild options are not supported:
 
  --showrc
@@ -1882,10 +1871,10 @@ several rpmbuild options are not supported:
 
 Some of these could probably be trivially added.  Feel free to send me a patch.  ;)
 
-Complex spec files will most likely not work well, if at all.  Rewrite them from scratch - 
+Complex spec files will most likely not work well, if at all.  Rewrite them from scratch -
 you'll have to make heavy modifications anyway.
 
-If you see something you don't like, mail me.  Send a patch if you feel inspired.  I don't 
+If you see something you don't like, mail me.  Send a patch if you feel inspired.  I don't
 promise I'll do anything other than say "Yup, that's broken" or "Got your message".
 
 The source package container I invented for debbuild, the .sdeb file, can be "installed"
@@ -1901,30 +1890,30 @@ As with rpmbuild, debbuild makes some assumptions about your system.
 
 =item *
 
-Either you have rights to do as you please under /usr/src/debian, or you have created a file 
+Either you have rights to do as you please under /usr/src/debian, or you have created a file
 ~/.debmacros containing a suitable %_topdir definition.
 
-Both rpmbuild and debbuild require the directories %_topdir/{BUILD,SOURCES,SPECS}.  However, 
-where rpmbuild requires the %_topdir/{RPMS,SRPMS} directories, debbuild  
-requires %_topdir/{DEBS,SDEBS} instead.  Create them in advance;  
+Both rpmbuild and debbuild require the directories %_topdir/{BUILD,SOURCES,SPECS}.  However,
+where rpmbuild requires the %_topdir/{RPMS,SRPMS} directories, debbuild
+requires %_topdir/{DEBS,SDEBS} instead.  Create them in advance;
 some subdirectories are created automatically as needed, but most are not.
 
 =item *
 
-/var/tmp must allow script execution - rpmbuild and debbuild both rely on creating and 
-executing shell scripts for much of their functionality.  By default, debbuild also creates 
-install trees under /var/tmp - however this is (almost) entirely under the control of the 
+/var/tmp must allow script execution - rpmbuild and debbuild both rely on creating and
+executing shell scripts for much of their functionality.  By default, debbuild also creates
+install trees under /var/tmp - however this is (almost) entirely under the control of the
 package's .spec file.
 
 =item *
-  
-If you wish to --rebuild a .src.rpm, your %_topdir for both debbuild and rpmbuild must either 
-match, or be suitably symlinked one direction or another so that both programs are effectively 
+
+If you wish to --rebuild a .src.rpm, your %_topdir for both debbuild and rpmbuild must either
+match, or be suitably symlinked one direction or another so that both programs are effectively
 working in the same tree.  (Or you could just manually wrestle files around your system.)
 
-You could symlink ~/.rpmmacros to ~/.debmacros (or vice versa) and save yourself some hassle 
-if you need to rebuild .src.rpm packages on a regular basis.  Currently debbuild only uses the 
-%_topdir macro definition, although there are many more things that rpmbuild can use from 
+You could symlink ~/.rpmmacros to ~/.debmacros (or vice versa) and save yourself some hassle
+if you need to rebuild .src.rpm packages on a regular basis.  Currently debbuild only uses the
+%_topdir macro definition, although there are many more things that rpmbuild can use from
 ~/.rpmmacros.
 
 =back
@@ -1935,9 +1924,9 @@ debbuild deliberately does a few things differently from rpm.
 
 =head2 BuildArch or BuildArchitecture
 
-rpm takes the last BuildArch entry it finds in the .spec file, whatever it is, and runs with 
-that for all packages.  Debian's repository system is fairly heavily designed around the 
-assumption that a single source package may generate small binary (executable) packages 
+rpm takes the last BuildArch entry it finds in the .spec file, whatever it is, and runs with
+that for all packages.  Debian's repository system is fairly heavily designed around the
+assumption that a single source package may generate small binary (executable) packages
 for each arch, and large binary arch-all packages containing shared data.
 
 debbuild allows this by using the architecture specified by (in order of preference):
@@ -1956,31 +1945,31 @@ debbuild allows this by using the architecture specified by (in order of prefere
 
 =head2 Finding out what packages should be built (--showpkgs)
 
-rpmbuild does not include any convenient method I know of to list the packages a spec file 
+rpmbuild does not include any convenient method I know of to list the packages a spec file
 will produce.  Since I needed this ability for another tool, I added it.
 
-It requires the .spec file for the package, and produces a list of full package filenames 
-(without path data) that would be generated by one of --rebuild, -ta, -tb, -ba, or -bb.  
+It requires the .spec file for the package, and produces a list of full package filenames
+(without path data) that would be generated by one of --rebuild, -ta, -tb, -ba, or -bb.
 This includes the .sdeb source package.
 
 =head1 AUTHOR
 
-debbuild was written by Kris Deugau <kdeugau@deepnet.cx>.  A version that approximates 
+debbuild was written by Kris Deugau <kdeugau@deepnet.cx>.  A version that approximates
 current is available at http://www.deepnet.cx/debbuild/.
 
 =head1 BUGS
 
-Funky Things Happen if you forget a command-line option or two.  I've been too lazy to bother 
+Funky Things Happen if you forget a command-line option or two.  I've been too lazy to bother
 fixing this.
 
 Many macro expansions are unsupported or incompletely supported.
 
-The generated scriptlets don't quite match those from rpmbuild exactly.  There are extra 
+The generated scriptlets don't quite match those from rpmbuild exactly.  There are extra
 environment variables and preprocessing that I haven't needed (yet).
 
 Dcumentation, such as it is, will likely remain perpetually out of date.
 
-%_topdir and the five "working" directories under %_topdir could arguably be created by 
+%_topdir and the five "working" directories under %_topdir could arguably be created by
 debbuild.  However, rpmbuild doesn't create these directories either.
 
 =head1 SEE ALSO
