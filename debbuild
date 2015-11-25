@@ -575,11 +575,12 @@ LINE: while (<SPECFILE>) {
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /\%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
     if (/^%[a-z]/ &&
-		not /^%(?:attr|build|changelog|check|clean|config|configure|
-		defattr|define|description|dir|doc|docdir|else|endif|files|ghost|
-		if|ifarch|ifnarch|ifnos|ifos|install|make_install|makeinstall|
-		package|patch\d*|post|postun|pre|prep|preun|readme|setup\d*|
-		triggerin|triggerpostun|triggerun|verify|verifyscript)\b/x) {
+		not /^%(?:attr|bcond_with|bcond_without|build|changelog|
+		check|clean|config|configure|defattr|define|description|
+		dir|doc|docdir|else|endif|files|ghost|if|ifarch|ifnarch|
+		ifnos|ifos|install|make_install|makeinstall|package|patch\d*|
+		post|postun|pre|prep|preun|readme|setup\d*|triggerin|
+		triggerpostun|triggerun|verify|verifyscript)\b/x) {
 	my ($badtag) = /^%([a-z]+)/i;
 	die "Unknown tag \%$badtag at line $. of $specfile\n";
     }
@@ -591,6 +592,19 @@ LINE: while (<SPECFILE>) {
       } else {
         $specglobals{$key} = expandmacros($def) unless defined $specglobals{$key};
       }
+      next LINE;
+    }
+
+    # conditional build stuff
+    # define 'with_foo' if '--with foo' was specified on command-line.
+    if (/^%bcond_with\s+(\w+)/) {
+      $specglobals{"with_$1"} = 1 if defined $specglobals{"_with_$1"};
+      next LINE;
+    }
+    # define 'with_foo' if '--without foo' was *not* specified on command-line.
+    if (/^%bcond_without\s+(\w+)/) {
+      $specglobals{"with_$1"} = 1 unless defined $specglobals{"_without_$1"};
+      next LINE;
     }
 
     # RPM conditionals – transform to generic form
@@ -635,7 +649,7 @@ LINE: while (<SPECFILE>) {
       }
 
       # Turn it into something that evals to a number.  Maybe not needed?  O_o
-      unshift @ifexpr, (eval $expr || 0);
+      unshift @ifexpr, (eval $expr or 0);
 
       next LINE if $ifexpr[0] != 0; # This appears to be the only case we call false.
       my $iflevel = @ifexpr;
@@ -1741,9 +1755,21 @@ sub expandmacros {
     $macrostring =~ s/%{u2p:$url}/$expand/g;
   }
 
-  # %{defined <flag>}, %{undefined <flag>}
-  $macrostring =~ s/%{defined (.+?)}/defined $specglobals{$1} || 0/eg;
-  $macrostring =~ s/%{undefined (.+?)}/not defined $specglobals{$1} || 0/eg;
+  # conditional build stuff: although (glo)macros aka /usr/lib/debbuild/macros
+  # already contains definitions for these three pairs of macros, they can not
+  # be used directly, because of lack of the 'expand' processor and missing
+  # support for 'function macros' that take arguments. instead we implement
+  # their genuine functionality in plain perl.
+  #
+  # %{defined <flag>}, %{undefined <flag>}: check if <flag> is defined.
+  $macrostring =~ s/%{defined (.+?)}/defined $specglobals{$1} or 0/eg;
+  $macrostring =~ s/%{undefined (.+?)}/not defined $specglobals{$1} or 0/eg;
+  #
+  # %{with <flag>}, %{without <flag>}: shorthand for %{defined with_<flag>}
+  $macrostring =~ s/%{with (.+?)}/defined $specglobals{"with_$1"} or 0/eg;
+  $macrostring =~ s/%{without (.+?)}/not defined $specglobals{"with_$1"} or 0/eg;
+  #
+  # %bcond_with and %bcond_without are processed in 'parse_spec() directly.
 
   # unescape multi-line macros
   $macrostring =~ s/\\"/"/g;
