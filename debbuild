@@ -398,19 +398,6 @@ sub parse_cmd {
     'buildroot=s'   => \$specglobals{buildroot},
     'short-circuit' => sub { $cmdopts{short} = 'y' },
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
-    'define|D=s' => sub {
-        my ($opt_name,$opt_value) = @_;
-        my ($macro,$value) = $opt_value =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i;
-        if ($value) {
-          if ($macro =~ /(?:summary|name|epoch|version|release|group|copyright|url|packager)/i) {
-            $pkgdata{main}{$macro} = $value;
-          } else {
-            $specglobals{$macro} = $value;
-          }
-        } else {
-          warn "WARNING: missing value for macro $macro in --$opt_name! Ignoring.\n";
-        }
-      },
     'v+' => \$verbosity, # bump verbosity.  Not sure what I'll actually do here...
     'rebuild=s'   => \&srcpkg_handler,
     'recompile=s' => \&srcpkg_handler,
@@ -418,8 +405,9 @@ sub parse_cmd {
     'b=s'         => \&build_handler, # do NOT use 'b|t=s' here!
     't=s'         => \&build_handler, # see 'build_handler' for details
     'r=s'         => \&build_handler,
-    'with=s'      => \&with_handler, # dito for 'with|without=s'
-    'without=s'   => \&with_handler,
+    'with=s'      => \&define_handler, # dito for 'with|without=s'
+    'without=s'   => \&define_handler,
+    'define|D=s'  => \&define_handler,
     'help'        => \&help_handler,
     '<>'          => \&catchall # process non-option arguments
   ); # Getopt::Long::Getoptions()
@@ -470,14 +458,25 @@ sub parse_cmd {
       $cmdopts{stage} = $opt_value;
     }
   }
-  ## with_handler()
-  # create 'configure' options from '--with <flag>' and '--without <flag>':
-  # rpmbuild literally defines these options as 'aliases' for
-  # --define="_with_<flag> --with-<flag>" and
-  # --define="_without_<flag> --without-<flag>" resp.
-  sub with_handler {
+  ## define_handler()
+  sub define_handler {
     my ($opt_name,$opt_value) = @_;
-    $specglobals{"\_$opt_name\_$opt_value"} = "--$opt_name-$opt_value";
+    if ($opt_name =~ /with/) {
+      # create 'configure' options from '--with <flag>' and '--without <flag>':
+      # 'with/without <flag>' are 'aliases' for 'define _with_<flag>'.
+      $opt_value = "\_$opt_name\_$opt_value --$opt_name-$opt_value";
+      $opt_name = "define";
+    }
+    my ($macro,$value) = $opt_value =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i;
+    if ($value) {
+      if ($macro =~ /(?:summary|name|epoch|version|release|group|copyright|url|packager)/i) {
+        $pkgdata{main}{$macro} = $value;
+      } else {
+        $specglobals{$macro} = $value;
+      }
+    } else {
+      warn "WARNING: missing value for macro $macro in --$opt_name! Ignoring.\n";
+    }
   }
   ## help_handler()
   # Factor-out the 'help' text. Could as well be SYNOPSIS in pod.
@@ -1761,13 +1760,13 @@ sub expandmacros {
   # support for 'function macros' that take arguments. instead we implement
   # their genuine functionality in plain perl.
   #
+  # %{with <flag>}, %{without <flag>}: shorthand for %{defined with_<flag>}
+  $macrostring =~ s/%{with (.+?)}/%{defined with_$1}/g;
+  $macrostring =~ s/%{without (.+?)}/%{undefined with_$1}/g;
+  #
   # %{defined <flag>}, %{undefined <flag>}: check if <flag> is defined.
   $macrostring =~ s/%{defined (.+?)}/defined $specglobals{$1} or 0/eg;
   $macrostring =~ s/%{undefined (.+?)}/not defined $specglobals{$1} or 0/eg;
-  #
-  # %{with <flag>}, %{without <flag>}: shorthand for %{defined with_<flag>}
-  $macrostring =~ s/%{with (.+?)}/defined $specglobals{"with_$1"} or 0/eg;
-  $macrostring =~ s/%{without (.+?)}/not defined $specglobals{"with_$1"} or 0/eg;
   #
   # %bcond_with and %bcond_without are processed in 'parse_spec() directly.
 
