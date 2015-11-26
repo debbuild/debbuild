@@ -395,7 +395,7 @@ sub load_config {
 sub parse_cmd {
   # Don't feel like coding my own option parser...
   Getopt::Long::GetOptions(
-    'buildroot=s'   => \$specglobals{buildroot},
+    'buildroot=s'   => \$specglobals{cbr},
     'short-circuit' => sub { $cmdopts{short} = 'y' },
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
     'v+' => \$verbosity, # bump verbosity.  Not sure what I'll actually do here...
@@ -877,9 +877,9 @@ ENDIF: if (/^%endif/) {
       } elsif (/^packager:\s*(.+)/i) {
         $pkgdata{main}{packager} = $1 unless defined $pkgdata{main}{packager};
       } elsif (/^vendor:\s*(.+)/i) {
-        $specglobals{vendor} = $1 unless defined $specglobals{vendor};
+        $specglobals{vendor} = $1;
       } elsif (/^buildroot:\s*(.+)/i) {
-        $specglobals{buildroot} = $1 unless defined $specglobals{buildroot};
+        $specglobals{buildroot} = $1;
       } elsif (my ($srcnum, $src) = /^source(\d*):\s*(.+)/i) {
         $src =~ s/\s*$//;
         $srcnum = 0 unless $srcnum;
@@ -932,6 +932,7 @@ ENDIF: if (/^%endif/) {
   close SPECFILE;
 
   # Expand macros as necessary.
+  $specglobals{buildroot} = $specglobals{cbr} if defined $specglobals{cbr};
   $specglobals{buildroot} = expandmacros($specglobals{buildroot});
   $scriptletbase = expandmacros($scriptletbase);
 } # end parse_spec()
