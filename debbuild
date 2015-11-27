@@ -436,7 +436,7 @@ sub parse_cmd {
     $specglobals{srcpkg} = $opt_value;
     if ($opt_name eq 'rebuild') {
       $cmdopts{type} = 'r';
-      $cmdopts{stage} = 'a';
+      $cmdopts{stage} = 'b';
     } elsif ($opt_name eq 'recompile') {
       $cmdopts{type} = 'r';
       $cmdopts{stage} = 'i';
