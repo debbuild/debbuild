@@ -133,8 +133,7 @@ my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
   # Check for /etc/os-release.  If that doesn't exist, try /etc/lsb-release.  If that doesn't exist,
   # check for existence of dpkg-query, and either call it Debian Woody (if missing), or fall through
   # to guessing based on the version of the base-files package.
-  if (-e '/etc/os-release') {
-    open OSREL, "</etc/os-release";
+  if (open OSREL, "</etc/os-release") {
     # Look for ID and VERSION_ID lines.
     while (<OSREL>) {
       $baseos = $1 if /^ID=(\w+)/;
@@ -142,8 +141,7 @@ my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
     }
     close OSREL;
 
-  } elsif (-e '/etc/lsb-release') {
-    open LSBREL, "</etc/lsb-release";
+  } elsif (open LSBREL, "</etc/lsb-release") {
     # Look for DISTRIB_ID and DISTRIB_RELEASE lines.
     # We could also theoretically extract the dist codename, but since we have to hand-map
     # it in so many other cases there's little point.
