@@ -395,7 +395,7 @@ sub load_config {
 sub parse_cmd {
   # Don't feel like coding my own option parser...
   Getopt::Long::GetOptions(
-    'buildroot=s'   => \$specglobals{cbr},
+    'buildroot=s'   => \$specglobals{CBR},
     'short-circuit' => sub { $cmdopts{short} = 'y' },
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
     'v+' => \$verbosity, # bump verbosity.  Not sure what I'll actually do here...
@@ -932,7 +932,7 @@ ENDIF: if (/^%endif/) {
   close SPECFILE;
 
   # Expand macros as necessary.
-  $specglobals{buildroot} = $specglobals{cbr} if defined $specglobals{cbr};
+  $specglobals{buildroot} = $specglobals{CBR} if defined $specglobals{CBR};
   $specglobals{buildroot} = expandmacros($specglobals{buildroot});
   $scriptletbase = expandmacros($scriptletbase);
 } # end parse_spec()
@@ -1710,16 +1710,14 @@ sub install_sdeb {
 
 ## expandmacros()
 # Expands all %{blah} macros in the passed string
-# Split up a bit with some sections so we don't spend time trying to
-# expand macros that are only used in a few specific places.
-my $nest_level = 0;
 sub expandmacros {
   my ($macrostring) = @_;
 
+  local $specglobals{NEST} = $specglobals{NEST} or 0;
+  die "Runaway recursive macro expansion aborted.\n" if $specglobals{NEST}++ > 8;
+
   return '' if $macrostring =~ /^\s*#/; # skip comments
   return $macrostring unless $macrostring =~ /%/; # nothing to substitute
-
-  die "Runaway recursive macro expansion aborted.\n" if $nest_level++ > 8;
 
   # Replace global macros
   $macrostring =~ s/%(configure|make_install|makeinstall|optflags)/%{$1}/g;
@@ -1812,8 +1810,6 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount++ > 14;
       $macrostring = expandmacros($macrostring);
     }
   }
-
-  $nest_level--;
 
   return $macrostring;
 } # end expandmacros()
