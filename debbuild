@@ -1318,6 +1318,19 @@ sub binpackage {
       qx { $specglobals{__cp} -ar $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath };
     }
 
+    # EXPERIMENTAL: Add 'changelog' section as a 'doc' file.
+    # This may also be useful for the planned '%copyrightdata' section.
+    if ($pkgdata{main}{changelog}) {
+      $pkgdata{main}{changelog} =~ s/\s+$//g; # Trim trailing blanks
+      my $clpath = expandmacros("$specglobals{buildroot}/$pkg$specglobals{_docdir}/$pkgdata{main}{name}");
+      qx { $specglobals{__mkdir_p} $clpath };
+      if (open CHANGELOG, ">$clpath/changelog") {
+        print CHANGELOG $pkgdata{main}{changelog};
+        close CHANGELOG;
+      }
+      qx { gzip -f -9 -n $clpath/changelog };
+    }
+
     # Get the "Depends" (Requires) a la RPM.  Ish.  We strip the leading
     # comma and space here (if needed) in case there were "Requires" specified
     # in the spec file - those would precede these.
