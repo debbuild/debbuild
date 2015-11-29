@@ -561,8 +561,8 @@ sub parse_spec {
 #	parsing right now
 
 LINE: while (<SPECFILE>) {
-    next if /^#/;       # Ignore comments...
-    next if /^\s*$/;    # ... and blank lines.
+    next if /^\s*#/ and $stage !~ /(?:changelog)/; # Ignore comments...
+    next if /^\s*$/ and $stage !~ /(?:changelog|desc)/; # ... and blank lines.
 
 # no sense in continuing if we find something we don't grok
     # Yes, this is really horribly fugly.  But it's a cheap crosscheck against invalid
@@ -774,8 +774,8 @@ ENDIF: if (/^%endif/) {
 # now we handle individual lines from the various sections
 
     if ($stage eq 'desc') {
-      next LINE if /^\s*#/;
       $pkgdata{$subname}{desc} .= " $_";
+      next LINE;
     } # description
 
     if ($stage eq 'package') {
@@ -798,6 +798,7 @@ ENDIF: if (/^%endif/) {
           $pkgdata{$subname}{$dname} = expandmacros($dvalue);
         }
       }
+      next LINE;
     } # package
 
     if ($stage eq 'prep') {
@@ -835,7 +836,7 @@ ENDIF: if (/^%endif/) {
 
     if ($stage eq 'files') {
       # need to deal with these someday
-      next LINE if /^\%verify/ or /^\%ghost/ or /^\s*#/ or /^\s*$/;
+      next LINE if /^\%verify/ or /^\%ghost/;
 
       if (/^%defattr\s*\(\s*((?:-|\d+)),?\s*(\w+),?\s*(\w+),?\s*((?:-|\d+))\s*\)/) {
         ($defattr{filemode}, $defattr{owner}, $defattr{group}, $defattr{dirmode}) =
@@ -1713,7 +1714,6 @@ sub expandmacros {
   local $specglobals{NEST} = $specglobals{NEST} or 0;
   die "Runaway recursive macro expansion aborted.\n" if $specglobals{NEST}++ > 8;
 
-  return '' if /^\s*#/; # skip comments
   return $_ unless /%/; # nothing to substitute
 
   # Replace global macros
