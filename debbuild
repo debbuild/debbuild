@@ -223,7 +223,7 @@ my $buildreq = '';
 # Scriptlets
 my $scriptletbase = q(%{___build_template});
 my ($prepscript, $buildscript, $installscript) = ('') x 3;
-my $cleanscript = '[ "$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf $RPM_BUILD_ROOT';
+my $cleanscript = qq([ "\$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf \$RPM_BUILD_ROOT\n);
 my $finalmessages = ''; # A place to stuff messages that I want printed at the *very* end of any processing.
 
 #### main ####
