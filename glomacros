@@ -26,9 +26,16 @@
 %__chmod		/bin/chmod
 %__chown		/bin/chown
 %__cp			/bin/cp
+%__dpkg			/usr/bin/dpkg
+%__dpkg_deb		/usr/bin/dpkg-deb
+%__dpkg_query		/usr/bin/dpkg-query
+%__echo			/bin/echo
+%__fakeroot		/usr/bin/fakeroot
+%__find			/usr/bin/find
 %__gzip			/bin/gzip
 %__id			/usr/bin/id
 %__id_u			%{__id} -u
+%__ldd			/usr/bin/ldd
 %__ln_s			ln -s
 %__make			/usr/bin/make
 %__mkdir		/bin/mkdir
@@ -37,6 +44,7 @@
 %__patch		/usr/bin/patch
 %__pax			/bin/pax
 %__rm			/bin/rm
+%__rpm			/usr/bin/rpm
 %__sed			/bin/sed
 %__tar			/bin/tar
 %__unzip		/usr/bin/unzip

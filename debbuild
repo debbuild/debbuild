@@ -123,7 +123,7 @@ my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
 # Enh.  There doesn't seem to be any better way to do this...  :(
 {
 # could theoretically also do something with this...  it's about as stable as "dpkg-query ..." below...  :(
-#  my $releasever = qx { cat /etc/debian_version };
+#  my $releasever = qx ( $specglobals{__cat} /etc/debian_version );
 #  chomp $releasever;
   my $basefiles;
   my $basever;
@@ -151,7 +151,7 @@ my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
     }
     close LSBREL;
 
-  } elsif (not -e '/usr/bin/dpkg-query' ) {
+  } elsif (not -e "$specglobals{__dpkg_query}" ) {
     # call it woody, since sarge and newer have dpkg-query, and we don't much care about obsolete^n releases
     $basever = "3.0";
     $baseos = 'debian';
@@ -167,7 +167,7 @@ my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
     my $majver;
     # for the lazy copy-paster:  dpkg-query --showformat '${version}\n' -W base-files
     # avoid shellisms
-    if (open BASEGETTER, "-|", "dpkg-query", "--showformat", '${version}', "-W", "base-files") {
+    if (open BASEGETTER, "-|", "$specglobals{__dpkg_query}", "--showformat", '${version}', "-W", "base-files") {
       $basever = <BASEGETTER>;
       close BASEGETTER;
 
@@ -265,11 +265,11 @@ if ($cmdopts{type} eq 'd') {
 if ($cmdopts{type} eq 'r') {
   my $specfile;
   if ($specglobals{srcpkg} =~ /\.src\.rpm$/) {
-    ($specfile) = grep { /\.spec/ } qx ( rpm -qlp $specglobals{srcpkg} );
-    qx ( rpm -i $specglobals{srcpkg} );
+    ($specfile) = grep { /\.spec/ } qx ( $specglobals{__rpm} -qlp $specglobals{srcpkg} );
+    qx ( $specglobals{__rpm} -i $specglobals{srcpkg} );
   } elsif ($specglobals{srcpkg} =~ /\.sdeb$/) {
     install_sdeb($specglobals{srcpkg});
-    $specfile = basename( qx ( pax -f $specglobals{srcpkg} *.spec ) );
+    $specfile = basename( qx ( $specglobals{__pax} -f $specglobals{srcpkg} *.spec ) );
   } else {
     die "Can't --rebuild with $specglobals{srcpkg}\n";
   }
@@ -1153,7 +1153,7 @@ sub prep {
 
   # execute
   print "Calling \%prep script $prepscriptfile...\n";
-  system("/bin/sh -e $prepscriptfile") == 0
+  system("$specglobals{_buildshell} -e $prepscriptfile") == 0
 	or die "Can't exec: $!\n";
 
   # and clean up
@@ -1174,7 +1174,7 @@ sub build {
 
   # execute
   print "Calling \%build script $buildscriptfile...\n";
-  system("/bin/sh -e $buildscriptfile") == 0
+  system("$specglobals{_buildshell} -e $buildscriptfile") == 0
 	or die "Can't exec: $!\n";
 
   # and clean up
@@ -1210,7 +1210,7 @@ sub install {
 
   # execute
   print "Calling \%install script $installscriptfile...\n";
-  system("/bin/sh -e $installscriptfile") == 0
+  system("$specglobals{_buildshell} -e $installscriptfile") == 0
 	or die "Can't exec: $!\n";
 
   # and clean up
@@ -1232,11 +1232,11 @@ sub install {
         if ( -f $manpage) {
 	  if ($manpage =~ /^(.+)\.(?:Z|gz|bz2)\n?$/) {
 	    my $newpage = $1;
-	    `gunzip $manpage` if $manpage =~ /\.(?:Z|gz)$/;
-	    `bunzip2 $manpage` if $manpage =~ /\.bz2$/;
+	    qx($specglobals{__gzip} -d $manpage) if $manpage =~ /\.(?:Z|gz)$/;
+	    qx($specglobals{__bzip2} -d $manpage) if $manpage =~ /\.bz2$/;
 	    $manpage = $newpage;
 	  }
-	  `gzip -f -9 -n $manpage`;
+	  qx($specglobals{__gzip} -f -9 -n $manpage);
         } elsif ( -l $manpage) {
 	  my $linkdest = readlink $manpage;
 	  $linkdest =~ s/\.(?:Z|gz|bz2)//;
@@ -1294,11 +1294,11 @@ sub binpackage {
 	  # entry will do just fine.
 	  if ( -d "$specglobals{buildroot}$pkgfile") {
 	    foreach my $globfile (glob("$specglobals{buildroot}$pkgfile/*")) {
-	      qx { gzip $globfile } if $globfile !~ m|\.gz$|;
+	      qx ( $specglobals{__gzip} $globfile ) if $globfile !~ m|\.gz$|;
 	    }
 	  } else {
 	    if ($pkgfile !~ m|\.gz$|) {
-	      qx { gzip $specglobals{buildroot}$pkgfile };
+	      qx ( $specglobals{__gzip} $specglobals{buildroot}$pkgfile );
 	      $pkgfile .= ".gz";
 	    }
 	  }
@@ -1307,15 +1307,15 @@ sub binpackage {
 	    $pkgfile .= ".gz" unless $pkgfile =~ /\*$/;
 	  } else {
 	    $pkgfile =~ s/\.gz$//;
-	    qx { gzip $specglobals{buildroot}$pkgfile };
+	    qx ( $specglobals{__gzip} $specglobals{buildroot}$pkgfile );
 	    $pkgfile .= ".gz";
 	  }
 	}
       }
 
       my ($fpath,$fname) = $pkgfile =~ m|(.+?/?)?([^/]+/?)$|;	# We don't need $fname now, but we might.
-      qx { $specglobals{__mkdir_p} $specglobals{buildroot}/$pkg$fpath } if $fpath;
-      qx { $specglobals{__cp} -ar $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath };
+      qx ( $specglobals{__mkdir_p} $specglobals{buildroot}/$pkg$fpath ) if $fpath;
+      qx ( $specglobals{__cp} -ar $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath );
     }
 
     # EXPERIMENTAL: Add 'changelog' section as a 'doc' file.
@@ -1323,12 +1323,11 @@ sub binpackage {
     if ($pkgdata{main}{changelog}) {
       $pkgdata{main}{changelog} =~ s/\s+$//g; # Trim trailing blanks
       my $clpath = expandmacros("$specglobals{buildroot}/$pkg$specglobals{_docdir}/$pkgdata{main}{name}");
-      qx { $specglobals{__mkdir_p} $clpath };
-      if (open CHANGELOG, ">$clpath/changelog") {
+      qx ( $specglobals{__mkdir_p} $clpath );
+      if (open CHANGELOG, "| $specglobals{__gzip} -cf9n >$clpath/changelog.gz") {
         print CHANGELOG $pkgdata{main}{changelog};
         close CHANGELOG;
       }
-      qx { gzip -f -9 -n $clpath/changelog };
     }
 
     # Get the "Depends" (Requires) a la RPM.  Ish.  We strip the leading
@@ -1385,7 +1384,7 @@ sub binpackage {
     sysopen(DEBSCRIPT, $debscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die "Can't open/create package-creation script file $debscriptfile: $!\n";
     print DEBSCRIPT $scriptletbase;
-    print DEBSCRIPT "fakeroot -- dpkg-deb -b $specglobals{buildroot}/$pkg $topdir/DEBS/$pkgdata{$pkg}{arch}/".
+    print DEBSCRIPT "$specglobals{__fakeroot} -- $specglobals{__dpkg_deb} -b $specglobals{buildroot}/$pkg $topdir/DEBS/$pkgdata{$pkg}{arch}/".
 	"$pkgdata{$pkg}{name}_".
 	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
 	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb\n";
@@ -1449,7 +1448,7 @@ sub binpackage {
 
     # execute
     print "Calling package creation script $debscriptfile for $pkgdata{$pkg}{name}...\n";
-    system("/bin/sh -e $debscriptfile") == 0
+    system("$specglobals{_buildshell} -e $debscriptfile") == 0
 	or die "Can't exec: $!\n";
 
     # and clean up
@@ -1532,7 +1531,7 @@ sub clean {
 
   # execute
   print "Calling \%clean script $cleanscriptfile...\n";
-  system("/bin/sh -e $cleanscriptfile") == 0
+  system("$specglobals{_buildshell} -e $cleanscriptfile") == 0
 	or die "Can't exec: $!\n";
 
   # and clean up
@@ -1550,8 +1549,8 @@ sub checkbuildreq {
   # expand macros
   $buildreq = expandmacros($buildreq);
 
-  if ( not -e "/usr/bin/dpkg-query" ) {
-    warn "**WARNING**  dpkg-query not found.  Can't check build-deps.\n".
+  if ( not -e "$specglobals{__dpkg_query}" ) {
+    warn "**WARNING**  $specglobals{__dpkg_query} not found.  Can't check build-deps.\n".
 	"  Required for sucessful build:\n".$buildreq."\n".
 	"  Continuing anyway.\n";
     return 1;
@@ -1586,7 +1585,7 @@ sub checkbuildreq {
 ## This causes real packages to be misdetected as installed "possible virtual packages" instead of "missing
 ## packages".  I don't think there's really a solution until/unless Debian's tools properly register virtual
 ## packages as installed.
-    my @pkglist = qx { dpkg-query --showformat '\${status}\t\${version}\n' -W $pkg };
+    my @pkglist = qx ( $specglobals{__dpkg_query} --showformat '\${status}\t\${version}\n' -W $pkg );
     if (not $pkglist[0]) {
       warn " * Missing build-dependency $pkg!\n  $pkglist[0]";
       $reqflag = 0;
@@ -1607,7 +1606,7 @@ sub checkbuildreq {
 	# this seems to be a virtual package.
 	warn " * Warning: $pkg is probably installed but seems to be a virtual package.\n";
       } elsif ($reqstat =~ /^install/) {
-	my ($resp) = qx { dpkg --compare-versions $reqver '$rel' $ver && echo "ok" };
+	my ($resp) = qx ( $specglobals{__dpkg} --compare-versions $reqver '$rel' $ver && $specglobals{__echo} "ok" );
 	if ($resp !~ /^ok/) {
 	  $reqflag = 0;
 	  warn " * Buildreq $pkg is installed, but wrong version ($reqver):  Need $ver\n"
@@ -1638,17 +1637,17 @@ sub getreqs() {
   my ($pkgtree) = @_;
 
   print "Checking library requirements...\n";
-  my @binlist = qx { find $pkgtree -type f -perm 755 };
+  my @binlist = qx ( $specglobals{__find} $pkgtree -type f -perm 755 );
   return '' unless @binlist;
 
   my @reqlist;
   foreach (@binlist) {
-    push @reqlist, qx { LANG=C ldd $_ };
+    push @reqlist, qx ( LANG=C $specglobals{__ldd} $_ );
   }
 
   # Get the list of libs provided by this package.  Still doesn't
   # handle the case where the lib gets stuffed into a subpackage.  :/
-  my @intprovlist = qx { find $pkgtree -type f -name "*.so*" };
+  my @intprovlist = qx ( $specglobals{__find} $pkgtree -type f -name "*.so*" );
   my $provlist = '';
   foreach (@intprovlist) {
     s/$pkgtree//;
@@ -1670,7 +1669,7 @@ sub getreqs() {
     my ($a,$b) = split / => /;
     $a =~ s/\s//g;
     if ($b =~ /not found/) {
-      next if qx { find $specglobals{buildroot} -name "*$a" };
+      next if qx ( $specglobals{__find} $specglobals{buildroot} -name "*$a" );
     }
 
     my ($req) = m|=\>\s+([a-zA-Z0-9._/+-]+)|; # dig out the actual library (so)name.
@@ -1689,7 +1688,7 @@ sub getreqs() {
 
   if (%reqliblist) {
     foreach my $rlib (keys %reqliblist) {
-      my $libpkg = qx { dpkg -S $rlib };
+      my $libpkg = qx ( $specglobals{__dpkg} -S $rlib );
       ($libpkg,undef) = split /:/, $libpkg;
       $reqs{$libpkg} = 1;
     }
@@ -1750,7 +1749,7 @@ sub expandmacros {
     # Oy vey this gets silly for the perl bits.  Executing a shell to
     # call Perl to get the vendorlib/sitelib/whatever "core" globals.
     # This can do more, but...  eww.
-  s|%\((.+?)\)|my $res = qx{/bin/sh -c '$1'}; chomp $res; $res;|eg;
+  s|%\((.+?)\)|my $res = qx($specglobals{_buildshell} -c '$1'); chomp $res; $res;|eg;
     # Yay!  ' characters apparently get properly exscapededed.
 
   # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
