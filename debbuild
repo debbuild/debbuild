@@ -1399,6 +1399,7 @@ sub binpackage {
 	"Priority: optional\n".
 	"Architecture: $pkgdata{$pkg}{arch}\n".
 	"Maintainer: $pkgdata{main}{packager}\n".
+	( defined $pkgdata{main}{url} ? "Homepage: $pkgdata{main}{url}\n" : '' ).
 	( $pkgdata{$pkg}{requires} ne '' ? "Depends: $pkgdata{$pkg}{requires}\n" : '' ).
 	( defined($pkgdata{$pkg}{provides}) ? "Provides: $pkgdata{$pkg}{provides}\n" : '' ).
 	( defined($pkgdata{$pkg}{conflicts}) ? "Conflicts: $pkgdata{$pkg}{conflicts}\n" : '' ).
