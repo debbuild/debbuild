@@ -561,8 +561,8 @@ sub parse_spec {
 #	parsing right now
 
 LINE: while (<SPECFILE>) {
-    next if /^\s*#/ and $stage !~ /(?:changelog)/; # Ignore comments...
-    next if /^\s*$/ and $stage !~ /(?:changelog|desc)/; # ... and blank lines.
+    next if /^\s*#/ and $stage !~ /(?:changelog|copy)/; # Ignore comments...
+    next if /^\s*$/ and $stage !~ /(?:changelog|copy|desc)/; # ... and blank lines.
 
 # no sense in continuing if we find something we don't grok
     # Yes, this is really horribly fugly.  But it's a cheap crosscheck against invalid
@@ -571,8 +571,8 @@ LINE: while (<SPECFILE>) {
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /\%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
     if (/^%[a-z]/ &&
-		not /^%(?:attr|bcond_with|bcond_without|build|changelog|
-		check|clean|config|configure|defattr|define|description|
+		not /^%(?:attr|bcond_with|bcond_without|build|changelog|check|
+		clean|config|configure|copyrightdata|defattr|define|description|
 		dir|doc|docdir|else|endif|files|ghost|if|ifarch|ifnarch|
 		ifnos|ifos|install|make_install|makeinstall|package|patch\d*|
 		post|postun|pre|prep|preun|readme|setup\d*|triggerin|
@@ -703,6 +703,16 @@ ENDIF: if (/^%endif/) {
       next LINE;
     } # %description
 
+    if (/^\%copyrightdata(?:\s+(?:-n\s+)?(.+))?/) {
+      $stage = 'copy';
+      $subname = "main";
+      if ($1) {       # Magic to add entries to the right package
+        my $tmp = expandmacros($1);
+        $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
+      }
+      next LINE;
+    } # %copyrightdata
+
     if (/^\%package\s+(?:-n\s+)?(.+)/) {
       $stage = 'package';
       if ($1) {       # Magic to add entries to the right package
@@ -777,6 +787,11 @@ ENDIF: if (/^%endif/) {
       $pkgdata{$subname}{desc} .= " $_";
       next LINE;
     } # description
+
+    if ($stage eq 'copy') {
+      $pkgdata{$subname}{copy} .= "$_";
+      next LINE;
+    } # copyrightdata
 
     if ($stage eq 'package') {
       # gotta expand %defines here.  Whee.
@@ -1327,6 +1342,16 @@ sub binpackage {
       if (open CHANGELOG, "| $specglobals{__gzip} -cf9n >$clpath/changelog.gz") {
         print CHANGELOG $pkgdata{main}{changelog};
         close CHANGELOG;
+      }
+    }
+
+    if ($pkgdata{main}{copy}) {
+      $pkgdata{main}{copy} =~ s/\s+$//g; # Trim trailing blanks
+      my $crpath = expandmacros("$specglobals{buildroot}/$pkg$specglobals{_docdir}/$pkgdata{main}{name}");
+      qx ( $specglobals{__mkdir_p} $crpath );
+      if (open COPYRIGHT, "| $specglobals{__gzip} -cf9n >$crpath/copyright.gz") {
+        print COPYRIGHT $pkgdata{main}{copy};
+        close COPYRIGHT;
       }
     }
 
