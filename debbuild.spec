@@ -7,12 +7,15 @@
 
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 Name: debbuild
-Version: 0.15.11
+Version: 0.15.11a
 Release: ascherer.%{dist}
-Source: https://secure.deepnet.cx/releases/debbuild/debbuild-%{version}.tar.gz
+
+Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
+URL: https://github.com/ascherer/debbuild
 Group: Development/Tools
 License: GPLv2+
-Packager: Kris Deugau <kdeugau@deepnet.cx>
+Packager: Andreas Scherer <andreas@komputer.de>
+
 Requires: perl, build-essential, fakeroot, bash
 %if %{_vendor} == "debbuild"
 Recommends: patch, bzip2, xz-utils, pax
@@ -31,7 +34,7 @@ RPM spec files, RPM-friendly tarballs, and RPM source packages
 should be able to interpret most spec files usefully.  Perl modules
 should be handled via CPAN+dh-make-perl instead as it's simpler
 than even tweaking a .spec template.
-.
+
 Note that patch is not strictly required unless you have .spec files
 with %patch directives, and RPM is not required unless you wish to
 rebuild .src.rpm source packages as .deb binary packages.
@@ -46,10 +49,10 @@ rebuild .src.rpm source packages as .deb binary packages.
 %install
 # Steps to install to a temporary location for packaging
 %make_install
-%{__mkdir_p} $RPM_BUILD_ROOT%{_libdir}/%{name}
-%{__cp} glomacros $RPM_BUILD_ROOT%{_libdir}/%{name}/macros
-%{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}
-%{__cp} sysmacros $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/macros
+%{__mkdir_p} %{buildroot}%{_libdir}/%{name}
+%{__cp} glomacros %{buildroot}%{_libdir}/%{name}/macros
+%{__mkdir_p} %{buildroot}%{_sysconfdir}/%{name}
+%{__cp} sysmacros %{buildroot}%{_sysconfdir}/%{name}/macros
 
 # Fill in the pathnames to be packaged here
 %files
