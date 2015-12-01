@@ -777,7 +777,11 @@ ENDIF: if (/^%endif/) {
 
     if (/^\%changelog/) {
       $stage = 'changelog';
-      $pkgdata{main}{changelog} = '';
+      if ($pkgdata{main}{changelog}) { # Multi-part changelog
+        $pkgdata{main}{changelog} =~ s/\s+$/\n\n/g; # Trim trailing blanks
+      } else {
+        $pkgdata{main}{changelog} = '';
+      }
       next LINE;
     }
 
@@ -1274,7 +1278,10 @@ sub binpackage {
 
   foreach my $pkg (@pkglist) {
 
-    $pkgdata{$pkg}{arch} = $pkgdata{main}{arch} unless $pkgdata{$pkg}{arch};  # Just In Case.
+    # Just In Case.
+    $pkgdata{$pkg}{arch} = $pkgdata{main}{arch} unless $pkgdata{$pkg}{arch};
+    $pkgdata{$pkg}{copy} = $pkgdata{main}{copy} unless $pkgdata{$pkg}{copy};
+    $pkgdata{$pkg}{changelog} = $pkgdata{main}{changelog} unless $pkgdata{$pkg}{changelog};
 
     # Make sure we have somewhere to write the .deb file
     mkdir "$topdir/DEBS/$pkgdata{$pkg}{arch}" unless -e "$topdir/DEBS/$pkgdata{$pkg}{arch}";
@@ -1333,24 +1340,22 @@ sub binpackage {
       qx ( $specglobals{__cp} -ar $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath );
     }
 
-    # EXPERIMENTAL: Add 'changelog' section as a 'doc' file.
-    # This may also be useful for the planned '%copyrightdata' section.
-    if ($pkgdata{main}{changelog}) {
-      $pkgdata{main}{changelog} =~ s/\s+$//g; # Trim trailing blanks
-      my $clpath = expandmacros("$specglobals{buildroot}/$pkg$specglobals{_docdir}/$pkgdata{main}{name}");
+    # EXPERIMENTAL: Add 'changelog' and 'copyrightdata' sections as 'doc' files.
+    if ($pkgdata{$pkg}{changelog}) {
+      $pkgdata{$pkg}{changelog} =~ s/\s+$//g; # Trim trailing blanks
+      my $clpath = expandmacros("$specglobals{buildroot}/$pkg$specglobals{_docdir}/$pkgdata{$pkg}{name}");
       qx ( $specglobals{__mkdir_p} $clpath );
       if (open CHANGELOG, "| $specglobals{__gzip} -cf9n >$clpath/changelog.gz") {
-        print CHANGELOG $pkgdata{main}{changelog};
+        print CHANGELOG $pkgdata{$pkg}{changelog};
         close CHANGELOG;
       }
     }
-
-    if ($pkgdata{main}{copy}) {
-      $pkgdata{main}{copy} =~ s/\s+$//g; # Trim trailing blanks
-      my $crpath = expandmacros("$specglobals{buildroot}/$pkg$specglobals{_docdir}/$pkgdata{main}{name}");
+    if ($pkgdata{$pkg}{copy}) {
+      $pkgdata{$pkg}{copy} =~ s/\s+$//g; # Trim trailing blanks
+      my $crpath = expandmacros("$specglobals{buildroot}/$pkg$specglobals{_docdir}/$pkgdata{$pkg}{name}");
       qx ( $specglobals{__mkdir_p} $crpath );
       if (open COPYRIGHT, "| $specglobals{__gzip} -cf9n >$crpath/copyright.gz") {
-        print COPYRIGHT $pkgdata{main}{copy};
+        print COPYRIGHT $pkgdata{$pkg}{copy};
         close COPYRIGHT;
       }
     }
