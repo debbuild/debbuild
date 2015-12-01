@@ -684,12 +684,10 @@ ENDIF: if (/^%endif/) {
     if (/^\%{echo:(.+)}/) {
       print expandmacros($1),"\n";
       next LINE;
-    }
-    if (/^\%{warn:(.+)}/) {
+    } elsif (/^\%{warn:(.+)}/) {
       warn expandmacros($1),"\n";
       next LINE;
-    }
-    if (/^\%{error:(.+)}/) {
+    } elsif (/^\%{error:(.+)}/) {
       die expandmacros($1),"\n";
     }
 
