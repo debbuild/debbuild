@@ -899,7 +899,7 @@ ENDIF: if (/^%endif/) {
         $specglobals{buildroot} = $1;
       } elsif (my ($srcnum, $src) = /^source(\d*):\s*(.+)/i) {
         $src =~ s/\s*$//;
-        $srcnum = 0 unless $srcnum;
+        $srcnum ||= 0;
         $pkgdata{sources}{$srcnum} = basename($src);
         $pkgdata{main}{source} = $pkgdata{sources}{0} if 0 == $srcnum;
       } elsif (my ($patchnum, $patch) = /^patch(\d*):\s*(.+)/i) {
