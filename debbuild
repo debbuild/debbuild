@@ -1751,11 +1751,10 @@ sub install_sdeb {
 # Expands all %{blah} macros in the passed string
 sub expandmacros {
   local ($_) = @_;
+  return $_ unless /%/; # nothing to substitute
 
   local $specglobals{NEST} = $specglobals{NEST} or 0;
   die "Runaway recursive macro expansion aborted.\n" if $specglobals{NEST}++ > 8;
-
-  return $_ unless /%/; # nothing to substitute
 
   # Replace global macros
   s/%(configure|make_install|makeinstall|optflags)/%{$1}/g;
@@ -1806,7 +1805,7 @@ sub expandmacros {
   s/%{defined (.+?)}/defined $specglobals{$1} or 0/eg;
   s/%{undefined (.+?)}/not defined $specglobals{$1} or 0/eg;
   #
-  # %bcond_with and %bcond_without are processed in 'parse_spec() directly.
+  # %bcond_with and %bcond_without are processed in 'parse_spec()' directly.
 
   # unescape multi-line macros
   s/\\"/"/g;
