@@ -1845,7 +1845,7 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount++ > 14;
     if (defined $specglobals{$key}) {
       s|%{$key}|expandmacros($specglobals{$key})|eg;
     } else {
-      expandmacros($_);
+      $_ = expandmacros($_);
     }
   }
 
