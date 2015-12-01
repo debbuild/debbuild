@@ -448,7 +448,7 @@ sub parse_cmd {
   sub build_handler {
     my ($opt_name,$opt_value) = @_;
     die "Unknown stage '$opt_value' for option '-$opt_name'.\n"
-      unless grep(/$opt_value/, keys %targets);
+      unless grep { /$opt_value/ } keys %targets;
     if ($cmdopts{type} eq 'r') {
       # Mutually exclusive options.
       die "Can't use -$opt_name$opt_value with --rebuild\n";
