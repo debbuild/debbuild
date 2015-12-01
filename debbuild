@@ -1038,8 +1038,8 @@ sub process_patch {
   }
 
   # %patch options:
-  my ($fuzz, $plev, $psuff, $noempty, $reverse, $altdir, $output)
-    = ($specglobals{_default_patch_fuzz}, 0, '', '', '', '', '');
+  my ($fuzz, $plev) = ($specglobals{_default_patch_fuzz}, 0);
+  my ($psuff, $noempty, $reverse, $altdir, $output) = ('') x 5;
 
   Getopt::Long::GetOptionsFromString($_,
     'P=i'   => \@patchlist, # patch number(s)
