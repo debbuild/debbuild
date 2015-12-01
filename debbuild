@@ -586,9 +586,9 @@ LINE: while (<SPECFILE>) {
 # preprocess %define's
     if (my ($key, $def) = /^\%(?:define|global)\s+([^\s]+)\s+(.+)$/) {
       if ($key =~ /(?:summary|name|epoch|version|release|group|copyright|url|packager)/i) {
-        $pkgdata{main}{$key} = expandmacros($def) unless defined $pkgdata{main}{$key};
+        $pkgdata{main}{$key} //= expandmacros($def);
       } else {
-        $specglobals{$key} = expandmacros($def) unless defined $specglobals{$key};
+        $specglobals{$key} //= expandmacros($def);
       }
       next LINE;
     }
@@ -878,23 +878,23 @@ ENDIF: if (/^%endif/) {
 
     if ($stage eq 'preamble') {
       if (/^summary:\s*(.+)/i) {
-        $pkgdata{main}{summary} = $1 unless defined $pkgdata{main}{summary};
+        $pkgdata{main}{summary} //= $1;
       } elsif (/^name:\s*(.+)/i) {
-        $pkgdata{main}{name} = $1 unless defined $pkgdata{main}{name};
+        $pkgdata{main}{name} //= $1;
       } elsif (/^epoch:\s*(.+)/i) {
-        $pkgdata{main}{epoch} = $1 unless defined $pkgdata{main}{epoch};
+        $pkgdata{main}{epoch} //= $1;
       } elsif (/^version:\s*(.+)/i) {
-        $pkgdata{main}{version} = $1 unless defined $pkgdata{main}{version};
+        $pkgdata{main}{version} //= $1;
       } elsif (/^release:\s*(.+)/i) {
-        $pkgdata{main}{release} = expandmacros($1) unless defined $pkgdata{main}{release};
+        $pkgdata{main}{release} //= expandmacros($1);
       } elsif (/^group:\s*(.+)/i) {
-        $pkgdata{main}{group} = $1 unless defined $pkgdata{main}{group};
+        $pkgdata{main}{group} //= $1;
       } elsif (/^copyright:\s*(.+)/i) {
-        $pkgdata{main}{copyright} = $1 unless defined $pkgdata{main}{copyright};
+        $pkgdata{main}{copyright} //= $1;
       } elsif (/^url:\s*(.+)/i) {
-        $pkgdata{main}{url} = $1 unless defined $pkgdata{main}{url};
+        $pkgdata{main}{url} //= $1;
       } elsif (/^packager:\s*(.+)/i) {
-        $pkgdata{main}{packager} = $1 unless defined $pkgdata{main}{packager};
+        $pkgdata{main}{packager} //= $1;
       } elsif (/^vendor:\s*(.+)/i) {
         $specglobals{vendor} = $1;
       } elsif (/^buildroot:\s*(.+)/i) {
@@ -906,7 +906,7 @@ ENDIF: if (/^%endif/) {
         $pkgdata{main}{source} = $pkgdata{sources}{0} if 0 == $srcnum;
       } elsif (my ($patchnum, $patch) = /^patch(\d*):\s*(.+)/i) {
         $patch =~ s/\s*$//;
-        $patchnum = '' unless defined($patchnum);
+        $patchnum //= '';
         $pkgdata{main}{$patchnum} = basename($patch);
       } elsif (/^buildarch(?:itecture)?:\s*(.+)/i) {
         $pkgdata{main}{arch} = $1;
@@ -1281,9 +1281,9 @@ sub binpackage {
   foreach my $pkg (@pkglist) {
 
     # Just In Case.
-    $pkgdata{$pkg}{arch} = $pkgdata{main}{arch} unless $pkgdata{$pkg}{arch};
-    $pkgdata{$pkg}{copy} = $pkgdata{main}{copy} unless $pkgdata{$pkg}{copy};
-    $pkgdata{$pkg}{changelog} = $pkgdata{main}{changelog} unless $pkgdata{$pkg}{changelog};
+    $pkgdata{$pkg}{arch} //= $pkgdata{main}{arch};
+    $pkgdata{$pkg}{copy} //= $pkgdata{main}{copy};
+    $pkgdata{$pkg}{changelog} //= $pkgdata{main}{changelog};
 
     # Make sure we have somewhere to write the .deb file
     mkdir "$topdir/DEBS/$pkgdata{$pkg}{arch}" unless -e "$topdir/DEBS/$pkgdata{$pkg}{arch}";
@@ -1294,7 +1294,7 @@ sub binpackage {
     next if
         (not $filelist{$pkg} or $filelist{$pkg} =~ /^\s*$/) &&
         (not $pkgdata{$pkg}{requires});
-    $filelist{$pkg} = '' unless $filelist{$pkg};
+    $filelist{$pkg} //= '';
 
     # Gotta do this first, otherwise we don't have a place to move files from %files
     mkdir "$specglobals{buildroot}/$pkg";
@@ -1653,7 +1653,8 @@ sub checkbuildreq {
     }
   } # end req loop
 
-  print "To install all missing dependencies, run 'apt-get install ".join(' ', @missinglist)."'.\n" unless $reqflag;
+  print "To install all missing dependencies, run 'apt-get install ".
+    join(' ', @missinglist)."'.\n" unless $reqflag;
 
   return $reqflag;
 } # end checkbuildreq()
