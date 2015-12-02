@@ -28,6 +28,8 @@
 use strict;
 use warnings;
 
+use v5.10.1; # experimental switch statement: given..when..default
+
 use Cwd 'abs_path';	# for finding where files really are
 use Fcntl;		# for sysopen flags
 use File::Basename;
@@ -264,14 +266,14 @@ if ($cmdopts{type} eq 'd') {
 # --recompile is the same, except it reconfigures -bi
 if ($cmdopts{type} eq 'r') {
   my $specfile;
-  if ($specglobals{srcpkg} =~ /\.src\.rpm$/) {
+  given ($specglobals{srcpkg}) {
+  when (/\.src\.rpm$/) {
     ($specfile) = grep { /\.spec/ } qx ( $specglobals{__rpm} -qlp $specglobals{srcpkg} );
-    qx ( $specglobals{__rpm} -i $specglobals{srcpkg} );
-  } elsif ($specglobals{srcpkg} =~ /\.sdeb$/) {
+    qx ( $specglobals{__rpm} -i $specglobals{srcpkg} ); }
+  when (/\.sdeb$/) {
     install_sdeb($specglobals{srcpkg});
-    $specfile = basename( qx ( $specglobals{__pax} -f $specglobals{srcpkg} *.spec ) );
-  } else {
-    die "Can't --rebuild with $specglobals{srcpkg}\n";
+    $specfile = basename( qx ( $specglobals{__pax} -f $specglobals{srcpkg} *.spec ) ); }
+  default { die "Can't --rebuild with $specglobals{srcpkg}\n"; }
   }
   chomp( $specglobals{specfile} = "$topdir/SPECS/$specfile" );
   $cmdopts{type} = 'b'; # fall through
@@ -284,28 +286,30 @@ if ($cmdopts{type} eq 't') {
   my $cmdline;
   die "No tarfile specified!  Exiting.\n" unless defined $specglobals{tarball};
   my $tarball = $specglobals{tarball};
-  if ($tarball =~ /\.zip$/) {
+  given ($tarball) {
+  when (/\.zip$/) {
     # .zip files are not really tarballs
-    $cmdline = "%{__unzip} -Z1 %{tarball} '*.spec'";
-  } elsif ($tarball =~ /\.tar$/) {
+    $cmdline = "%{__unzip} -Z1 %{tarball} '*.spec'"; }
+  when (/\.tar$/) {
     # plain .tar files don't need to be uncompressed
-    $cmdline = "%{__tar} -tf %{tarball} --wildcards '*.spec'";
-  } else {
-    $cmdline = decompress($tarball)." | %{__tar} -tf - --wildcards '*.spec'";
+    $cmdline = "%{__tar} -tf %{tarball} --wildcards '*.spec'"; }
+  default {
+    $cmdline = decompress($tarball)." | %{__tar} -tf - --wildcards '*.spec'"; }
   }
   $cmdline = expandmacros($cmdline);
   chomp( $specglobals{specfile} = "$topdir/SPECS/".basename( qx { $cmdline } ) );
 
   $tarball = abs_path($tarball);
 
-  if ($tarball =~ /\.zip$/) {
+  given ($tarball) {
+  when (/\.zip$/) {
     # .zip files are not really tarballs
-    $cmdline = "%{__unzip} -p %{tarball} '*.spec'";
-  } elsif ($tarball =~ /\.tar$/) {
+    $cmdline = "%{__unzip} -p %{tarball} '*.spec'"; }
+  when (/\.tar$/) {
     # plain .tar files don't need to be uncompressed
-    $cmdline = "%{__tar} -xOf %{tarball} --wildcards '*.spec'";
-  } else {
-    $cmdline = decompress($tarball)." | %{__tar} -xOf - --wildcards '*.spec'";
+    $cmdline = "%{__tar} -xOf %{tarball} --wildcards '*.spec'"; }
+  default {
+    $cmdline = decompress($tarball)." | %{__tar} -xOf - --wildcards '*.spec'"; }
   }
   $cmdline .= " > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir}";
   system expandmacros($cmdline);
@@ -415,15 +419,16 @@ sub parse_cmd {
   # one we meet.
   sub catchall {
     my ($opt_arg) = @_;
-    if ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
+    given ($cmdopts{type}) {
+    when (/(?:b|d)/) {
       # Spec file
-      $specglobals{specfile} = $opt_arg;
-    } elsif ($cmdopts{type} eq 't') {
+      $specglobals{specfile} = $opt_arg; }
+    when (/t/) {
       # Tarball build.  Need to extract tarball to find spec file.  Whee.
-      $specglobals{tarball} = $opt_arg;
-    } else {
+      $specglobals{tarball} = $opt_arg; }
+    default {
       # Source package
-      $specglobals{srcpkg} = $opt_arg;
+      $specglobals{srcpkg} = $opt_arg; }
     }
   }
   ## srcpkg_handler()
@@ -431,14 +436,15 @@ sub parse_cmd {
   sub srcpkg_handler {
     my ($opt_name,$opt_value) = @_;
     $specglobals{srcpkg} = $opt_value;
-    if ($opt_name eq 'rebuild') {
+    given ($opt_name) {
+    when ('rebuild') {
       $cmdopts{type} = 'r';
-      $cmdopts{stage} = 'b';
-    } elsif ($opt_name eq 'recompile') {
+      $cmdopts{stage} = 'b'; }
+    when ('recompile') {
       $cmdopts{type} = 'r';
-      $cmdopts{stage} = 'i';
-    } else {
-      $cmdopts{type} = 's'; # --install
+      $cmdopts{stage} = 'i'; }
+    default { # --install
+      $cmdopts{type} = 's'; }
     }
   }
   ## build_handler()
@@ -875,71 +881,59 @@ ENDIF: if (/^%endif/) {
     }
 
     if ($stage eq 'preamble') {
-      if (/^summary:\s*(.+)/i) {
-        $pkgdata{main}{summary} //= $1;
-      } elsif (/^name:\s*(.+)/i) {
-        $pkgdata{main}{name} //= $1;
-      } elsif (/^epoch:\s*(.+)/i) {
-        $pkgdata{main}{epoch} //= $1;
-      } elsif (/^version:\s*(.+)/i) {
-        $pkgdata{main}{version} //= $1;
-      } elsif (/^release:\s*(.+)/i) {
-        $pkgdata{main}{release} //= expandmacros($1);
-      } elsif (/^group:\s*(.+)/i) {
-        $pkgdata{main}{group} //= $1;
-      } elsif (/^copyright:\s*(.+)/i) {
-        $pkgdata{main}{copyright} //= $1;
-      } elsif (/^url:\s*(.+)/i) {
-        $pkgdata{main}{url} //= $1;
-      } elsif (/^packager:\s*(.+)/i) {
-        $pkgdata{main}{packager} //= $1;
-      } elsif (/^vendor:\s*(.+)/i) {
-        $specglobals{vendor} = $1;
-      } elsif (/^buildroot:\s*(.+)/i) {
-        $specglobals{buildroot} = $1;
-      } elsif (my ($srcnum, $src) = /^source(\d*):\s*(.+)/i) {
+      given ($_) {
+      when (/^summary:\s*(.+)/i) {   $pkgdata{main}{summary}   //= $1; }
+      when (/^name:\s*(.+)/i) {      $pkgdata{main}{name}      //= $1; }
+      when (/^epoch:\s*(.+)/i) {     $pkgdata{main}{epoch}     //= $1; }
+      when (/^version:\s*(.+)/i) {   $pkgdata{main}{version}   //= $1; }
+      when (/^release:\s*(.+)/i) {   $pkgdata{main}{release} //= expandmacros($1); }
+      when (/^group:\s*(.+)/i) {     $pkgdata{main}{group}     //= $1; }
+      when (/^copyright:\s*(.+)/i) { $pkgdata{main}{copyright} //= $1; }
+      when (/^url:\s*(.+)/i) {       $pkgdata{main}{url}       //= $1; }
+      when (/^packager:\s*(.+)/i) {  $pkgdata{main}{packager}  //= $1; }
+      when (/^vendor:\s*(.+)/i) {    $specglobals{vendor}    = $1; }
+      when (/^buildroot:\s*(.+)/i) { $specglobals{buildroot} = $1; }
+      when (/^source(\d*):\s*(.+)/i) {
+        my ($srcnum,$src) = ($1,$2);
         $src =~ s/\s*$//;
         $srcnum ||= 0;
         $pkgdata{sources}{$srcnum} = basename($src);
-        $pkgdata{main}{source} = $pkgdata{sources}{0} if 0 == $srcnum;
-      } elsif (my ($patchnum, $patch) = /^patch(\d*):\s*(.+)/i) {
+        $pkgdata{main}{source} = $pkgdata{sources}{0} if 0 == $srcnum; }
+      when (/^patch(\d*):\s*(.+)/i) {
+        my ($patchnum,$patch) = ($1,$2);
         $patch =~ s/\s*$//;
         $patchnum //= '';
-        $pkgdata{main}{$patchnum} = basename($patch);
-      } elsif (/^buildarch(?:itecture)?:\s*(.+)/i) {
+        $pkgdata{main}{$patchnum} = basename($patch); }
+      when (/^buildarch(?:itecture)?:\s*(.+)/i) {
         $pkgdata{main}{arch} = $1;
         $pkgdata{main}{arch} =~ s/^noarch$/all/;
-        $buildarch = $pkgdata{main}{arch};
-      } elsif (/^buildrequires:\s*(.+)/i) {
-        $buildreq .= ", $1";
-      } elsif (/^requires:\s*(.+)/i) {
-        $pkgdata{main}{requires} .= ", $1";
-      } elsif (/^provides:\s*(.+)/i) {
-        $pkgdata{main}{provides} .= ", $1";
-      } elsif (/^conflicts:\s*(.+)/i) {
-        $pkgdata{main}{conflicts} .= ", $1";
-      } elsif (/^recommends:\s*(.+)/i) {
+        $buildarch = $pkgdata{main}{arch}; }
+      when (/^buildrequires:\s*(.+)/i) { $buildreq .= ", $1"; }
+      when (/^requires:\s*(.+)/i) {  $pkgdata{main}{requires}  .= ", $1"; }
+      when (/^provides:\s*(.+)/i) {  $pkgdata{main}{provides}  .= ", $1"; }
+      when (/^conflicts:\s*(.+)/i) { $pkgdata{main}{conflicts} .= ", $1"; }
+      when (/^recommends:\s*(.+)/i) {
         $pkgdata{main}{recommends} .= ", $1";
 	warn "Warning:  Debian-specific 'Recommends:' outside \%if wrapper\n" if 0 == @ifexpr;
 # As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
 # along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
-      } elsif (/^suggests:\s*(.+)/i) {
+      }
+      when (/^suggests:\s*(.+)/i) {
         $pkgdata{main}{suggests} .= ", $1";
-	warn "Warning:  'Suggests:' outside \%if wrapper\n" if 0 == @ifexpr;
-      } elsif (/^enhances:\s*(.+)/i) {
+	warn "Warning:  'Suggests:' outside \%if wrapper\n" if 0 == @ifexpr; }
+      when (/^enhances:\s*(.+)/i) {
         $pkgdata{main}{enhances} .= ", $1";
-	warn "Warning:  'Enhances:' outside \%if wrapper\n" if 0 == @ifexpr;
-      } elsif (/^supplements:\s*(.+)/i) {
+	warn "Warning:  'Enhances:' outside \%if wrapper\n" if 0 == @ifexpr; }
+      when (/^supplements:\s*(.+)/i) {
         $pkgdata{main}{enhances} .= ", $1";
-        warn "Warning:  'Supplements:' is not natively supported by .deb packages.  Downgrading relationship to Enhances:.\n";
-      } elsif (/^replaces:\s*(.+)/i) {
+        warn "Warning:  'Supplements:' is not natively supported by .deb packages.  Downgrading relationship to Enhances:.\n"; }
+      when (/^replaces:\s*(.+)/i) {
         $pkgdata{main}{replaces} .= ", $1";
-	warn "Warning:  'Replaces:' outside \%if wrapper\n" if 0 == @ifexpr;
-      } elsif (/^obsoletes:\s*(.+)/i) {
-        $pkgdata{main}{replaces} .= ", $1";
-      } elsif (/^autoreq(?:prov)?:\s*(.+)/i) {
+	warn "Warning:  'Replaces:' outside \%if wrapper\n" if 0 == @ifexpr; }
+      when (/^obsoletes:\s*(.+)/i) { $pkgdata{main}{replaces} .= ", $1"; }
+      when (/^autoreq(?:prov)?:\s*(.+)/i) {
 	# we don't handle auto-provides (yet)
-	$NoAutoReq = 1 if $1 =~ /(?:no|0)/i;
+	$NoAutoReq = 1 if $1 =~ /(?:no|0)/i; }
       }
       next LINE;
     } # preamble
@@ -1069,14 +1063,15 @@ sub process_patch {
   foreach my $pnum (@patchlist) {
     $patchscript .= qq(echo "Patch ).
       ($pnum eq '' ? '' : "#$pnum ").qq(\($pkgdata{main}{$pnum}\):"\n);
-    if ( $pkgdata{main}{$pnum} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
+    given ($pkgdata{main}{$pnum}) {
+    when (/\.(?:Z|gz|bz2|xz)$/) {
       # Compressed patch.  You weirdo.
-      $patchscript .= decompress("%{_sourcedir}/$pkgdata{main}{$pnum}");
-    } elsif ( $pkgdata{main}{$pnum} =~ /\.zip$/ ) {
+      $patchscript .= decompress("%{_sourcedir}/$pkgdata{main}{$pnum}"); }
+    when (/\.zip$/) {
       # .zip'ed patch.  *backs away slowly*
-      $patchscript .= "%{__unzip} -p %{_sourcedir}/$pkgdata{main}{$pnum}";
-    } else {
-      $patchscript .= "%{__cat} %{_sourcedir}/$pkgdata{main}{$pnum}";
+      $patchscript .= "%{__unzip} -p %{_sourcedir}/$pkgdata{main}{$pnum}"; }
+    default {
+      $patchscript .= "%{__cat} %{_sourcedir}/$pkgdata{main}{$pnum}"; }
     }
     $patchscript .= " | %{__patch} $patchopts\n\n";
   }
@@ -1633,20 +1628,23 @@ sub checkbuildreq {
 #dpkg-query: no packages found matching libdb4.8-dbg
 
       my ($reqstat,undef,undef,$reqver) = split /\s+/, $pkglist[0];
-      if ($reqstat =~ /^unknown/) {
+      given ($reqstat) {
+      when (/^unknown/) {
 	# this seems to be a virtual package.
 	warn " * Warning: $pkg is probably installed but seems to be a virtual package.\n";
-      } elsif ($reqstat =~ /^install/) {
+      }
+      when (/^install/) {
 	my ($resp) = qx ( $specglobals{__dpkg} --compare-versions $reqver '$rel' $ver && $specglobals{__echo} "ok" );
 	if ($resp !~ /^ok/) {
 	  $reqflag = 0;
 	  warn " * Buildreq $pkg is installed, but wrong version ($reqver):  Need $ver\n"
         }
-      } else {
+      }
+      default {
 	# whatever state it's in, it's not completely installed, therefore it's missing.
 	warn " * Missing build-dependency $pkg!\n  $pkglist[0]";
 	$reqflag = 0;
-        push @missinglist, $pkg;
+        push @missinglist, $pkg; }
       } # end not installed/installed check
     }
   } # end req loop
@@ -1859,17 +1857,18 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount++ > 14;
 sub unpackcmd {
    my ($sourcedrop,$quietunpack) = @_;
    my $cmdstring;
-   if ($sourcedrop =~ /\.zip$/) {
+   given ($sourcedrop) {
+   when (/\.zip$/) {
       # .zip files are not really tarballs
       $cmdstring .= "%{__unzip}".( $quietunpack ? ' -qq ' : ' ' ).
-         "'%{_sourcedir}/$sourcedrop'";
-   } elsif ($sourcedrop =~ /\.tar$/) {
+         "'%{_sourcedir}/$sourcedrop'"; }
+   when (/\.tar$/) {
       # plain .tar files don't need to be uncompressed
       $cmdstring .= "%{__tar} -x".( $quietunpack ? '' : 'vv' )."f ".
-         "'%{_sourcedir}/$sourcedrop'";
-   } else {
+         "'%{_sourcedir}/$sourcedrop'"; }
+   default {
       $cmdstring .= decompress("%{_sourcedir}/$sourcedrop").
-         " | %{__tar} -x".( $quietunpack ? '' : 'vv' )."f -";
+         " | %{__tar} -x".( $quietunpack ? '' : 'vv' )."f -"; }
    }
    return $cmdstring .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
 } # end unpackcmd()
