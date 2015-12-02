@@ -875,28 +875,11 @@ ENDIF: if (/^%endif/) {
     }
 
     if ($stage eq 'preamble') {
-      if (/^summary:\s*(.+)/i) {
-        $pkgdata{main}{summary} //= $1;
-      } elsif (/^name:\s*(.+)/i) {
-        $pkgdata{main}{name} //= $1;
-      } elsif (/^epoch:\s*(.+)/i) {
-        $pkgdata{main}{epoch} //= $1;
-      } elsif (/^version:\s*(.+)/i) {
-        $pkgdata{main}{version} //= $1;
-      } elsif (/^release:\s*(.+)/i) {
-        $pkgdata{main}{release} //= expandmacros($1);
-      } elsif (/^group:\s*(.+)/i) {
-        $pkgdata{main}{group} //= $1;
-      } elsif (/^copyright:\s*(.+)/i) {
-        $pkgdata{main}{copyright} //= $1;
-      } elsif (/^url:\s*(.+)/i) {
-        $pkgdata{main}{url} //= $1;
-      } elsif (/^packager:\s*(.+)/i) {
-        $pkgdata{main}{packager} //= $1;
-      } elsif (/^vendor:\s*(.+)/i) {
-        $specglobals{vendor} = $1;
-      } elsif (/^buildroot:\s*(.+)/i) {
-        $specglobals{buildroot} = $1;
+      if (/^(summary|name|epoch|version|release|
+             group|copyright|url|packager):\s*(.+)/i) {
+        $pkgdata{main}{lc $1} //= expandmacros($2);
+      } elsif (/^(vendor|buildroot):\s*(.+)/i) {
+        $specglobals{lc $1} = $2;
       } elsif (my ($srcnum, $src) = /^source(\d*):\s*(.+)/i) {
         $src =~ s/\s*$//;
         $srcnum ||= 0;
@@ -912,29 +895,19 @@ ENDIF: if (/^%endif/) {
         $buildarch = $pkgdata{main}{arch};
       } elsif (/^buildrequires:\s*(.+)/i) {
         $buildreq .= ", $1";
-      } elsif (/^requires:\s*(.+)/i) {
-        $pkgdata{main}{requires} .= ", $1";
-      } elsif (/^provides:\s*(.+)/i) {
-        $pkgdata{main}{provides} .= ", $1";
-      } elsif (/^conflicts:\s*(.+)/i) {
-        $pkgdata{main}{conflicts} .= ", $1";
+      } elsif (/^(requires|provides|conflicts):\s*(.+)/i) {
+        $pkgdata{main}{lc $1} .= ", $2";
       } elsif (/^recommends:\s*(.+)/i) {
         $pkgdata{main}{recommends} .= ", $1";
 	warn "Warning:  Debian-specific 'Recommends:' outside \%if wrapper\n" if 0 == @ifexpr;
 # As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
 # along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
-      } elsif (/^suggests:\s*(.+)/i) {
-        $pkgdata{main}{suggests} .= ", $1";
-	warn "Warning:  'Suggests:' outside \%if wrapper\n" if 0 == @ifexpr;
-      } elsif (/^enhances:\s*(.+)/i) {
-        $pkgdata{main}{enhances} .= ", $1";
-	warn "Warning:  'Enhances:' outside \%if wrapper\n" if 0 == @ifexpr;
+      } elsif (/^(suggests|enhances|replaces):\s*(.+)/i) {
+        $pkgdata{main}{lc $1} .= ", $2";
+	warn "Warning:  '$1:' outside \%if wrapper\n" if 0 == @ifexpr;
       } elsif (/^supplements:\s*(.+)/i) {
         $pkgdata{main}{enhances} .= ", $1";
         warn "Warning:  'Supplements:' is not natively supported by .deb packages.  Downgrading relationship to Enhances:.\n";
-      } elsif (/^replaces:\s*(.+)/i) {
-        $pkgdata{main}{replaces} .= ", $1";
-	warn "Warning:  'Replaces:' outside \%if wrapper\n" if 0 == @ifexpr;
       } elsif (/^obsoletes:\s*(.+)/i) {
         $pkgdata{main}{replaces} .= ", $1";
       } elsif (/^autoreq(?:prov)?:\s*(.+)/i) {
