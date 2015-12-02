@@ -882,17 +882,10 @@ ENDIF: if (/^%endif/) {
 
     if ($stage eq 'preamble') {
       given ($_) {
-      $pkgdata{main}{summary}   //= $1 when /^summary:\s*(.+)/i;
-      $pkgdata{main}{name}      //= $1 when /^name:\s*(.+)/i;
-      $pkgdata{main}{epoch}     //= $1 when /^epoch:\s*(.+)/i;
-      $pkgdata{main}{version}   //= $1 when /^version:\s*(.+)/i;
-      $pkgdata{main}{group}     //= $1 when /^group:\s*(.+)/i;
-      $pkgdata{main}{copyright} //= $1 when /^copyright:\s*(.+)/i;
-      $pkgdata{main}{url}       //= $1 when /^url:\s*(.+)/i;
-      $pkgdata{main}{packager}  //= $1 when /^packager:\s*(.+)/i;
-      $pkgdata{main}{release}   //= expandmacros($1) when /^release:\s*(.+)/i;
-      $specglobals{vendor}    = $1 when /^vendor:\s*(.+)/i;
-      $specglobals{buildroot} = $1 when /^buildroot:\s*(.+)/i;
+      $pkgdata{main}{lc $1} //= expandmacros($2) when
+        /^(summary|name|epoch|version|release|group|
+           copyright|url|packager):\s*(.+)/i;
+      $specglobals{lc $1} = $2 when /^(vendor|buildroot):\s*(.+)/i;
       when (/^source(\d*):\s*(.+)/i) {
         my ($srcnum,$src) = ($1,$2);
         $src =~ s/\s*$//;
@@ -909,28 +902,21 @@ ENDIF: if (/^%endif/) {
         $pkgdata{main}{arch} =~ s/^noarch$/all/;
         $buildarch = $pkgdata{main}{arch}; }
       $buildreq .= ", $1" when /^buildrequires:\s*(.+)/i;
-      $pkgdata{main}{requires}  .= ", $1" when /^requires:\s*(.+)/i;
-      $pkgdata{main}{provides}  .= ", $1" when /^provides:\s*(.+)/i;
-      $pkgdata{main}{conflicts} .= ", $1" when /^conflicts:\s*(.+)/i;
-      $pkgdata{main}{replaces}  .= ", $1" when /^obsoletes:\s*(.+)/i;
+      $pkgdata{main}{lc $1} .= ", $2" when
+        /^(requires|provides|conflicts):\s*(.+)/i;
+      $pkgdata{main}{replaces} .= ", $1" when /^obsoletes:\s*(.+)/i;
       when (/^recommends:\s*(.+)/i) {
         $pkgdata{main}{recommends} .= ", $1";
         warn "Warning:  Debian-specific 'Recommends:' outside \%if wrapper\n" if 0 == @ifexpr;
 # As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
 # along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
       }
-      when (/^suggests:\s*(.+)/i) {
-        $pkgdata{main}{suggests} .= ", $1";
-        warn "Warning:  'Suggests:' outside \%if wrapper\n" if 0 == @ifexpr; }
-      when (/^enhances:\s*(.+)/i) {
-        $pkgdata{main}{enhances} .= ", $1";
-        warn "Warning:  'Enhances:' outside \%if wrapper\n" if 0 == @ifexpr; }
+      when (/^(suggests|enhances|replaces):\s*(.+)/i) {
+        $pkgdata{main}{lc $1} .= ", $2";
+        warn "Warning:  '$1:' outside \%if wrapper\n" if 0 == @ifexpr; }
       when (/^supplements:\s*(.+)/i) {
         $pkgdata{main}{enhances} .= ", $1";
         warn "Warning:  'Supplements:' is not natively supported by .deb packages.  Downgrading relationship to Enhances:.\n"; }
-      when (/^replaces:\s*(.+)/i) {
-        $pkgdata{main}{replaces} .= ", $1";
-        warn "Warning:  'Replaces:' outside \%if wrapper\n" if 0 == @ifexpr; }
       when (/^autoreq(?:prov)?:\s*(.+)/i) {
         # we don't handle auto-provides (yet)
         $NoAutoReq = 1 if $1 =~ /(?:no|0)/i; }
