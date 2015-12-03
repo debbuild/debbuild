@@ -175,8 +175,7 @@ my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
         # Ubuntu, at least until they upset their versioning scheme again
         # note that we remap the basefiles version to the public release number, to match the
         # behaviour for Debian, and to match the unofficial standard for RHEL/Centos etc and Fedora
-        ($basefiles,$basever) = $basever =~ /^(([\d.]+)ubuntu)\d/;
-        $baseos = 'ubuntu';
+        ($basefiles,$basever,$baseos) = $basever =~ /^(([\d.]+)(ubuntu))\d/;
       } else {
         # Debian, or more "pure" derivative
         $baseos = 'debian';
@@ -1811,8 +1810,7 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount++ > 14;
 
   } # while()
 
-# should probably stick a "no runaway" flag in here...  Just In Case...
-  # %define's
+  # %define's and %{all_the_rest}
 # note to self: find out valid chars for %define name/label so we can parse them
   while (my ($key) = /%{([a-z0-9_:-]+)}/i) {
     if (defined $specglobals{lc $key}) {
