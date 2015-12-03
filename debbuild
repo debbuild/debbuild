@@ -1741,8 +1741,6 @@ sub expandmacros {
     s|%{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
   }
   s|%{patch(\d+)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
-  s/%{(summary|name|epoch|version|release|
-    group|copyright|url|packager)}/$pkgdata{main}{$1}/gi;
 
   # Globals, and not-so-globals
   # special %define's.  Handle the general case where we eval anything.
@@ -1817,9 +1815,11 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount++ > 14;
   # %define's
 # note to self: find out valid chars for %define name/label so we can parse them
   while (my ($key) = /%{([a-z0-9_:-]+)}/i) {
-    if (defined $specglobals{$key}) {
-      s|%{$key}|expandmacros($specglobals{$key})|eg;
-    } else {
+    if (defined $specglobals{lc $key}) {
+      s|%{$key}|expandmacros($specglobals{lc $key})|egi;
+    } elsif (defined $pkgdata{main}{lc $key}) {
+      s|%{$key}|expandmacros($pkgdata{main}{lc $key})|egi;
+    } else { # go into recursion; will probably be %{undefined} and die.
       $_ = expandmacros($_);
     }
   }
