@@ -1727,7 +1727,9 @@ sub expandmacros {
   return $_ unless /%/; # nothing to substitute
 
   local $specglobals{NEST} = $specglobals{NEST} or 0;
-  die "Runaway recursive macro expansion aborted.\n" if $specglobals{NEST}++ > 8;
+  die "Runaway recursive macro expansion ".
+      "at line $. of $specglobals{specfile}:\n".
+      "<<<$_>>>. Aborting!\n" if $specglobals{NEST}++ > 8;
 
   # Replace global macros
   s/%(configure|make_install|makeinstall|optflags)/%{$1}/g;
