@@ -177,10 +177,10 @@ package or when debugging this package.\
 #	Macros that are specific to an individual platform. The values here
 #	will be used if the per-platform macro file does not exist..
 #
-%_arch			i386
-%_build_arch		i386
+%_arch			@HOST_ARCH@
+%_build_arch		@BUILD_ARCH@
 %_vendor		debbuild
-%_os			linux
+%_os			@HOST_OS@
 
 #==============================================================================
 # ---- Scriptlet template templates.
@@ -254,11 +254,11 @@ package or when debugging this package.\
 %_build_cpu		%{_host_cpu}
 %_build_vendor		%{_host_vendor}
 %_build_os		%{_host_os}
-%_host			i686-pc-linux-gnu
+%_host			@HOST_CPU@-pc-@HOST_SYSTEM@
 %_host_alias		%{nil}
-%_host_cpu		i686
+%_host_cpu		@HOST_CPU@
 %_host_vendor		pc
-%_host_os		linux
+%_host_os		@HOST_OS@
 %_target		%{_host}
 %_target_alias		%{_host_alias}
 %_target_cpu		%{_host_cpu}
@@ -297,6 +297,10 @@ package or when debugging this package.\
 	--sharedstatedir=%{_sharedstatedir} \\\
 	--mandir=%{_mandir} \\\
 	--infodir=%{_infodir}
+
+#------------------------------------------------------------------------------
+# The "make" analogue, hiding the _smp_mflags magic from specs
+%make_build %{__make} %{?_smp_mflags}
 
 #------------------------------------------------------------------------------
 # The make install analogue of %configure for modern autotools:

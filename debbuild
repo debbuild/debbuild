@@ -191,14 +191,20 @@ my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
     }
   } # got dpkg-query?
 
+  # rpmbuild expects either integers or strings, and some distros (*cough*Ubuntu*cough*)
+  # have versions that get interpreted as strings, which creates comparison problems.
+  # This will make sure it's an integer to remain compatible.
+  my $specbasever;
+  $specbasever = $basever;
+  $specbasever =~ s?[\.]??;
+
   # Set some legacy globals.
   $specglobals{debdist} = $distmap{$basever};
-  $specglobals{debver} = $basever;   # this may have trouble with Ubuntu versions?
+  $specglobals{debver} = $specbasever;   # this may have trouble with Ubuntu versions?
 
   # Set the standard generic OS-class globals;
   $baseos = lc $baseos;
-  $specglobals{ubuntu} = $basever if $baseos eq 'ubuntu';
-  $specglobals{debian} = $basever if $baseos eq 'debian';
+  $specglobals{$baseos} = $specbasever;
 
   # Default %{dist} to something marginally sane.  Note this should be overrideable by --define.
   # This has been chosen to most closely follow the usage in RHEL/CentOS and Fedora, ie "el5" or "fc20".
@@ -574,9 +580,9 @@ LINE: while (<SPECFILE>) {
     if (/^%[a-z]/ &&
 		not /^%(?:attr|bcond_with|bcond_without|build|changelog|check|
 		clean|config|configure|copyrightdata|defattr|define|description|
-		dir|doc|docdir|else|endif|files|ghost|if|ifarch|ifnarch|
-		ifnos|ifos|install|make_install|makeinstall|package|patch\d*|
-		post|postun|pre|prep|preun|readme|setup\d*|triggerin|
+		dir|doc|docdir|else|endif|files|ghost|global|if|ifarch|ifnarch|
+		ifnos|ifos|install|make_build|make_install|makeinstall|package|
+		patch\d*|post|postun|pre|prep|preun|readme|setup\d*|triggerin|
 		triggerpostun|triggerun|verify|verifyscript)\b/x) {
 	my ($badtag) = /^%([a-z]+)/i;
 	die "Unknown tag \%$badtag at line $. of $specfile\n";
@@ -1731,7 +1737,7 @@ sub expandmacros {
       "<<<$_>>>. Aborting!\n" if $specglobals{NEST}++ > 8;
 
   # Replace global macros
-  s/%(configure|make_install|makeinstall|optflags)/%{$1}/g;
+  s/%(configure|make_build|make_install|makeinstall|optflags)/%{$1}/g;
   s|%{optflags}|$optflags{$pkgdata{main}{arch}}|g;
 
   # Package data
