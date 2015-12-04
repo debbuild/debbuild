@@ -191,22 +191,20 @@ my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
     }
   } # got dpkg-query?
 
+  # rpmbuild expects either integers or strings, and some distros (*cough*Ubuntu*cough*)
+  # have versions that get interpreted as strings, which creates comparison problems.
+  # This will make sure it's an integer to remain compatible.
+  my $specbasever;
+  $specbasever = $basever;
+  $specbasever =~ s?[\.]??;
+
   # Set some legacy globals.
   $specglobals{debdist} = $distmap{$basever};
-  $specglobals{debver} = $basever;   # this may have trouble with Ubuntu versions?
+  $specglobals{debver} = $specbasever;   # this may have trouble with Ubuntu versions?
 
   # Set the standard generic OS-class globals;
   $baseos = lc $baseos;
-  $specglobals{debian} = $basever if $baseos eq 'debian';
-
-  # rpmbuild expects either integers or strings, and Ubuntu version becomes a string
-  # This will make sure it's an integer to remain compatible
-  if ($baseos eq 'ubuntu') {
-      my $baseveralt;
-      $baseveralt = $basever;
-      $baseveralt =~ s?[\.]??;
-      $specglobals{ubuntu} = $baseveralt;
-  }
+  $specglobals{$baseos} = $specbasever;
 
   # Default %{dist} to something marginally sane.  Note this should be overrideable by --define.
   # This has been chosen to most closely follow the usage in RHEL/CentOS and Fedora, ie "el5" or "fc20".
