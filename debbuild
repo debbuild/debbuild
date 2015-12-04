@@ -197,8 +197,16 @@ my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
 
   # Set the standard generic OS-class globals;
   $baseos = lc $baseos;
-  $specglobals{ubuntu} = $basever if $baseos eq 'ubuntu';
   $specglobals{debian} = $basever if $baseos eq 'debian';
+
+  # rpmbuild expects either integers or strings, and Ubuntu version becomes a string
+  # This will make sure it's an integer to remain compatible
+  if ($baseos eq 'ubuntu') {
+      my $baseveralt;
+      $baseveralt = $basever;
+      $baseveralt =~ s?[\.]??;
+      $specglobals{ubuntu} = $baseveralt;
+  }
 
   # Default %{dist} to something marginally sane.  Note this should be overrideable by --define.
   # This has been chosen to most closely follow the usage in RHEL/CentOS and Fedora, ie "el5" or "fc20".
