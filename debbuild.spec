@@ -12,7 +12,7 @@ Release: ascherer.%{dist}
 
 Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
 URL: https://github.com/ascherer/debbuild
-%if %{_vendor} = "debbuild"
+%if %{_vendor} == "debbuild"
 # Use Debian sections here
 Group: devel
 %else
