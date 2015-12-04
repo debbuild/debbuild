@@ -574,7 +574,7 @@ LINE: while (<SPECFILE>) {
     if (/^%[a-z]/ &&
 		not /^%(?:attr|bcond_with|bcond_without|build|changelog|check|
 		clean|config|configure|copyrightdata|defattr|define|description|
-		dir|doc|docdir|else|endif|files|ghost|if|ifarch|ifnarch|
+		dir|doc|docdir|else|endif|files|ghost|global|if|ifarch|ifnarch|
 		ifnos|ifos|install|make_build|make_install|makeinstall|package|
 		patch\d*|post|postun|pre|prep|preun|readme|setup\d*|triggerin|
 		triggerpostun|triggerun|verify|verifyscript)\b/x) {
