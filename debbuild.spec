@@ -12,7 +12,12 @@ Release: ascherer.%{dist}
 
 Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
 URL: https://github.com/ascherer/debbuild
+%if %{_vendor} = "debbuild"
+# Use Debian sections here
+Group: devel
+%else
 Group: Development/Tools
+%endif
 License: GPLv2+
 Packager: Andreas Scherer <andreas@komputer.de>
 
@@ -24,16 +29,13 @@ Suggests: rpm, subversion
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 
-%define da dpkg-architecture
-%define s %{__sed}
+%define darch dpkg-architecture
 
 %description
 debbuild attempts to build Debian-friendly semi-native packages from
 RPM spec files, RPM-friendly tarballs, and RPM source packages
 (.src.rpm files).  It accepts most of the options rpmbuild does, and
-should be able to interpret most spec files usefully.  Perl modules
-should be handled via CPAN+dh-make-perl instead as it's simpler
-than even tweaking a .spec template.
+should be able to interpret most spec files usefully.
 
 Note that patch is not strictly required unless you have .spec files
 with %patch directives, and RPM is not required unless you wish to
@@ -49,8 +51,8 @@ rebuild .src.rpm source packages as .deb binary packages.
 %install
 # Steps to install to a temporary location for packaging
 %make_install
-%{__mkdir_p} %{buildroot}%{_libdir}/%{name}
-%{__cp} glomacros %{buildroot}%{_libdir}/%{name}/macros
+%{__mkdir_p} %{buildroot}%{_prefix}/lib/%{name}
+%{__cp} glomacros %{buildroot}%{_prefix}/lib/%{name}/macros
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/%{name}
 %{__cp} sysmacros %{buildroot}%{_sysconfdir}/%{name}/macros
 
@@ -58,26 +60,35 @@ rebuild .src.rpm source packages as .deb binary packages.
 %files
 %{_bindir}/*
 %{_mandir}/man8/*
-%{_libdir}/%{name}/macros
+%{_prefix}/lib/%{name}/macros
 %{_sysconfdir}/%{name}/macros
 
 %post
-if [ -x %{_bindir}/%{da} ]
-then
-%{s} -e "s/%_arch.*/`%{da} | %{s} -n -e 's/^DEB_HOST_ARCH\=/%_arch /p'`/" \
-     -e "s/%_build_arch.*/`%{da} | %{s} -n -e 's/^DEB_BUILD_ARCH\=/%_build_arch /p'`/" \
-     -e "s/%_os.*/`%{da} | %{s} -n -e 's/^DEB_BUILD_ARCH_OS\=/%_os /p'`/" \
-     -e "s/%_host_cpu.*/`%{da} | %{s} -n -e 's/^DEB_HOST_GNU_CPU\=/%_host_cpu /p'`/" \
-     -e "s/%_host_os.*/`%{da} | %{s} -n -e 's/^DEB_HOST_ARCH_OS\=/%_host_os /p'`/" \
-     -i %{_libdir}/%{name}/macros
+if [ -x %{_bindir}/%{darch} ]; then
+DEB_HOST_CPU=`%{darch} -qDEB_HOST_GNU_CPU 2>/dev/null`
+DEB_HOST_OS=`%{darch} -qDEB_HOST_ARCH_OS 2>/dev/null`
+DEB_HOST_SYSTEM=`%{darch} -qDEB_HOST_GNU_SYSTEM 2>/dev/null`
+DEB_HOST_ARCH=`%{darch} -qDEB_HOST_ARCH_CPU 2>/dev/null`
+DEB_BUILD_ARCH=`%{darch} -qDEB_BUILD_ARCH 2>/dev/null`
+
+%{__sed} -e "s/@HOST_ARCH@/${DEB_HOST_ARCH}/g" \
+         -e "s/@BUILD_ARCH@/${DEB_BUILD_ARCH}/g" \
+         -e "s/@BUILD_OS@/${DEB_BUILD_OS}/g" \
+         -e "s/@HOST_CPU@/${DEB_HOST_CPU}/g" \
+         -e "s/@HOST_OS@/${DEB_HOST_OS}/g" \
+	 -e "s/@HOST_SYSTEM@/${DEB_HOST_SYSTEM}/g" \
+         -i %{_prefix}/lib/%{name}/macros
 fi
 
 %changelog
+* Fri Dec  4 2015  Neal Gompa <ngompa13@gmail.com>
+- Update spec and host/build auto-configure
+
 * Tue Nov 17 2015  Andreas Scherer <andreas_tex@freenet.de>
 - Auto-configure host/build environment
 
 * Sat Nov 14 2015  Andreas Scherer <andreas_tex@freenet.de>
-- Add debbuild's own set of %{macros}
+- Add debbuild's own set of macros
 
 * Sun Jul 19 2015  Kris Deugau <kdeugau@deepnet.cx>
 - Remove the stack of %if's determining the Debian dist;  use the recently
