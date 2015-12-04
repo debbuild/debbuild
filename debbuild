@@ -575,8 +575,8 @@ LINE: while (<SPECFILE>) {
 		not /^%(?:attr|bcond_with|bcond_without|build|changelog|check|
 		clean|config|configure|copyrightdata|defattr|define|description|
 		dir|doc|docdir|else|endif|files|ghost|if|ifarch|ifnarch|
-		ifnos|ifos|install|make_install|makeinstall|package|patch\d*|
-		post|postun|pre|prep|preun|readme|setup\d*|triggerin|
+		ifnos|ifos|install|make_build|make_install|makeinstall|package|
+		patch\d*|post|postun|pre|prep|preun|readme|setup\d*|triggerin|
 		triggerpostun|triggerun|verify|verifyscript)\b/x) {
 	my ($badtag) = /^%([a-z]+)/i;
 	die "Unknown tag \%$badtag at line $. of $specfile\n";
@@ -1731,7 +1731,7 @@ sub expandmacros {
       "<<<$_>>>. Aborting!\n" if $specglobals{NEST}++ > 8;
 
   # Replace global macros
-  s/%(configure|make_install|makeinstall|optflags)/%{$1}/g;
+  s/%(configure|make_build|make_install|makeinstall|optflags)/%{$1}/g;
   s|%{optflags}|$optflags{$pkgdata{main}{arch}}|g;
 
   # Package data
