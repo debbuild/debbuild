@@ -635,6 +635,7 @@ LINE: while (<SPECFILE>) {
       if ($expr !~ /^[\d\s<=>&|\-+\(\)]+$/) {
         # got a logic statement we want to turn into a 1 or a 0.
         # most likely by eval'ing it.
+        # "plain" numeric expressions are evaluated as-is
 
         $expr =~ s/\s//g;
 
@@ -656,10 +657,6 @@ LINE: while (<SPECFILE>) {
         $expr =~ s/>=/ ge /g;
         $expr =~ s/</ lt /g;
         $expr =~ s/>/ gt /g;
-
-      } else {
-        # "plain" numeric expressions are evaluated as-is
-        $expr =~ s/(\d+)/0$1/g; # in octal; e.g., 0%{?ubuntu}
       }
 
       # Turn it into something that evals to a number.  Maybe not needed?  O_o
