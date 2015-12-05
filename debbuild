@@ -373,7 +373,9 @@ sub load_config {
   # Load user configuration, permitting local override
   my $homedir = (getpwuid($<))[7];
   foreach my $macros ( ('/usr/lib/debbuild/macros',
+                        </usr/lib/debbuild/macros.d/macros.*>,
                         '/etc/debbuild/macros',
+                        </etc/debbuild/macros.*>,
                         "$homedir/.debmacros") ) {
     open MACROS,"<$macros" or next; # should we warn about missing macro files?
     while (<MACROS>) {

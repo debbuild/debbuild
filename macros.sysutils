@@ -1,0 +1,15 @@
+#/*! \page config_macros Default configuration: /etc/debbuild/macros.sysutils
+# \verbatim
+#
+# This is a per-system DEBBUILD configuration file.
+# Per-user configuration should be added to ~/.debmacros.
+#
+#==============================================================================
+# ---- System utilities
+#
+%__ps2pdf %{_bindir}/ps2pdf
+%__recode %{_bindir}/recode
+%__touch %{_bindir}/touch
+
+# \endverbatim
+#*/

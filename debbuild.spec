@@ -29,7 +29,7 @@ Suggests: rpm, subversion
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 
-%define darch dpkg-architecture
+%define darch %{_bindir}/dpkg-architecture
 
 %description
 debbuild attempts to build Debian-friendly semi-native packages from
@@ -54,17 +54,19 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{__mkdir_p} %{buildroot}%{_prefix}/lib/%{name}
 %{__cp} glomacros %{buildroot}%{_prefix}/lib/%{name}/macros
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/%{name}
-%{__cp} sysmacros %{buildroot}%{_sysconfdir}/%{name}/macros
+%{__cp} macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
+%{__cp} macros.texlive %{buildroot}%{_sysconfdir}/%{name}
 
 # Fill in the pathnames to be packaged here
 %files
 %{_bindir}/*
 %{_mandir}/man8/*
 %{_prefix}/lib/%{name}/macros
-%{_sysconfdir}/%{name}/macros
+%{_sysconfdir}/%{name}/macros.sysutils
+%{_sysconfdir}/%{name}/macros.texlive
 
 %post
-if [ -x %{_bindir}/%{darch} ]; then
+if [ -x %{darch} ]; then
 DEB_HOST_CPU=`%{darch} -qDEB_HOST_GNU_CPU 2>/dev/null`
 DEB_HOST_OS=`%{darch} -qDEB_HOST_ARCH_OS 2>/dev/null`
 DEB_HOST_SYSTEM=`%{darch} -qDEB_HOST_GNU_SYSTEM 2>/dev/null`
@@ -76,7 +78,7 @@ DEB_BUILD_ARCH=`%{darch} -qDEB_BUILD_ARCH 2>/dev/null`
          -e "s/@BUILD_OS@/${DEB_BUILD_OS}/g" \
          -e "s/@HOST_CPU@/${DEB_HOST_CPU}/g" \
          -e "s/@HOST_OS@/${DEB_HOST_OS}/g" \
-	 -e "s/@HOST_SYSTEM@/${DEB_HOST_SYSTEM}/g" \
+         -e "s/@HOST_SYSTEM@/${DEB_HOST_SYSTEM}/g" \
          -i %{_prefix}/lib/%{name}/macros
 fi
 

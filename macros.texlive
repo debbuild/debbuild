@@ -1,4 +1,4 @@
-#/*! \page config_macros Default configuration: /etc/debbuild/macros
+#/*! \page config_macros Default configuration: /etc/debbuild/macros.texlive
 # \verbatim
 #
 # This is a per-system DEBBUILD configuration file.
@@ -13,13 +13,6 @@
 %__pdftex %{__texlive_bin}/pdftex
 %__texhash %{__texlive_bin}/texhash
 %__updmap_sys %{__texlive_bin}/updmap-sys
-
-#==============================================================================
-# ---- System utilities
-#
-%__ps2pdf %{_usr}/bin/ps2pdf
-%__recode %{_usr}/bin/recode
-%__touch %{_usr}/bin/touch
 
 # \endverbatim
 #*/
