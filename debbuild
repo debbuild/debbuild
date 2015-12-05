@@ -194,13 +194,12 @@ my %ubnt_vermap = ("6.5ubuntu6" => "12.04",
   # rpmbuild expects either integers or strings, and some distros (*cough*Ubuntu*cough*)
   # have versions that get interpreted as strings, which creates comparison problems.
   # This will make sure it's an integer to remain compatible.
-  my $specbasever;
-  $specbasever = $basever;
-  $specbasever =~ s?[\.]??;
+  my $specbasever = $basever;
+  $specbasever =~ s/\.//;
 
   # Set some legacy globals.
   $specglobals{debdist} = $distmap{$basever};
-  $specglobals{debver} = $specbasever;   # this may have trouble with Ubuntu versions?
+  $specglobals{debver} = $specbasever;
 
   # Set the standard generic OS-class globals;
   $baseos = lc $baseos;
@@ -476,7 +475,7 @@ sub parse_cmd {
     }
     my ($macro,$value) = $opt_value =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i;
     if ($value) {
-      if ($macro =~ /(?:summary|name|epoch|version|release|group|copyright|url|packager)/i) {
+      if ($macro =~ /summary|name|epoch|version|release|group|copyright|url|packager/i) {
         $pkgdata{main}{$macro} = $value;
       } else {
         $specglobals{$macro} = $value;
@@ -490,7 +489,7 @@ sub parse_cmd {
   sub eval_handler {
     my ($opt_name,$opt_value) = @_;
     my $res = $opt_value;
-    $opt_value =~ s/^%(\w+)/%{$1}/;
+    $opt_value =~ s/%(\w+)/%{$1}/;
     eval { $res = expandmacros($opt_value); }; # death if undefined %macro
     print "$res\n";
   }
@@ -580,8 +579,8 @@ sub parse_spec {
 #	parsing right now
 
 LINE: while (<SPECFILE>) {
-    next if /^\s*#/ and $stage !~ /(?:changelog|copy)/; # Ignore comments...
-    next if /^\s*$/ and $stage !~ /(?:changelog|copy|desc)/; # ... and blank lines.
+    next if /^\s*#/ and $stage !~ /changelog|copy/; # Ignore comments...
+    next if /^\s*$/ and $stage !~ /changelog|copy|desc/; # ... and blank lines.
 
 # no sense in continuing if we find something we don't grok
     # Yes, this is really horribly fugly.  But it's a cheap crosscheck against invalid
@@ -601,8 +600,8 @@ LINE: while (<SPECFILE>) {
     }
 
 # preprocess %define's
-    if (my ($key, $def) = /^\%(?:define|global)\s+([^\s]+)\s+(.+)$/) {
-      if ($key =~ /(?:summary|name|epoch|version|release|group|copyright|url|packager)/i) {
+    if (my ($key, $def) = /^\%(?:define|global)\s+([\S]+)\s+(.+)$/) {
+      if ($key =~ /summary|name|epoch|version|release|group|copyright|url|packager/i) {
         $pkgdata{main}{$key} //= expandmacros($def);
       } else {
         $specglobals{$key} //= expandmacros($def);
@@ -953,7 +952,7 @@ sub process_setup {
   if (not /^(?:\s|$)/) {
     chomp;
     warn "Suspect \%setup tag '\%setup$_', continuing\n";
-    s/^[^\s]+//;
+    s/^[\S]+//;
   }
 
   # Prepare some flags
@@ -1800,7 +1799,7 @@ sub expandmacros {
   # unescape multi-line macros
   s/\\"/"/g;
   s/\\\\/\\/g;
-  s/([^\s])\\+\n/$1\n/g;
+  s/([\S])\\+\n/$1\n/g;
 
   # support for **some** %if constructs.  Note that this breaks somewhat if
   # there's no value specified...  but so does rpm.
