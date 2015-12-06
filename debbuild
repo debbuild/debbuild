@@ -600,7 +600,7 @@ LINE: while (<SPECFILE>) {
     }
 
 # preprocess %define's
-    if (my ($key, $def) = /^\%(?:define|global)\s+([\S]+)\s+(.+)$/) {
+    if (my ($key, $def) = /^\%(?:define|global)\s+(\S+)\s+(.+)$/) {
       if ($key =~ /summary|name|epoch|version|release|group|copyright|url|packager/i) {
         $pkgdata{main}{$key} //= expandmacros($def);
       } else {
@@ -629,15 +629,14 @@ LINE: while (<SPECFILE>) {
 
     # Generic %if..%else..%endif construct
     if (s/^%if//) {
-      chomp;
+      chomp; s/\s//g; # initial clean-out
       my $expr = lc expandmacros($_);
 
-      if ($expr !~ /^[\d\s<=>&|\-+\(\)]+$/) {
+      if ($expr =~ /^[\d\s<=>&|\-+\(\)]+$/) {
+        # "plain" numeric expressions are evaluated as-is, except
+        $expr =~ s/(\D)0(\d+)/$1$2/g; # shortcut 0%{?ubuntu} == 1204
+      } else {
         # got a logic statement we want to turn into a 1 or a 0.
-        # most likely by eval'ing it.
-        # "plain" numeric expressions are evaluated as-is
-
-        $expr =~ s/\s//g;
 
 # For Great w00tness!  New and Improved multilayered logic handling.
 
@@ -649,7 +648,8 @@ LINE: while (<SPECFILE>) {
 	  $expr .= $bit =~ /^\w+$/ ? qq("$bit") : $bit;
 	}
 
-        # Done in this order so we don't cascade incorrectly.  Yes, those spaces ARE correct in the replacements!
+        # Done in this order so we don't cascade incorrectly.
+        # Yes, those spaces ARE correct in the replacements!
         $expr =~ s/==/ eq /g;
         $expr =~ s/!=/ ne /g;
         $expr =~ s/<=>/ cmp /g;
@@ -659,7 +659,6 @@ LINE: while (<SPECFILE>) {
         $expr =~ s/>/ gt /g;
       }
 
-      # Turn it into something that evals to a number.  Maybe not needed?  O_o
       unshift @ifexpr, (eval $expr or 0);
 
       next LINE if $ifexpr[0] != 0; # This appears to be the only case we call false.
@@ -949,7 +948,7 @@ sub process_setup {
   if (not /^(?:\s|$)/) {
     chomp;
     warn "Suspect \%setup tag '\%setup$_', continuing\n";
-    s/^[\S]+//;
+    s/^\S+//;
   }
 
   # Prepare some flags
@@ -1796,7 +1795,7 @@ sub expandmacros {
   # unescape multi-line macros
   s/\\"/"/g;
   s/\\\\/\\/g;
-  s/([\S])\\+\n/$1\n/g;
+  s/(\S)\\+\n/$1\n/g;
 
   # support for **some** %if constructs.  Note that this breaks somewhat if
   # there's no value specified...  but so does rpm.
