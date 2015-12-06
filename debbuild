@@ -594,17 +594,17 @@ LINE: while (<SPECFILE>) {
 		dir|doc|docdir|else|endif|files|ghost|global|if|ifarch|ifnarch|
 		ifnos|ifos|install|make_build|make_install|makeinstall|package|
 		patch\d*|post|postun|pre|prep|preun|readme|setup\d*|triggerin|
-		triggerpostun|triggerun|verify|verifyscript)\b/x) {
+		triggerpostun|triggerun|undefine|verify|verifyscript)\b/x) {
 	my ($badtag) = /^%([a-z]+)/i;
 	die "Unknown tag \%$badtag at line $. of $specfile\n";
     }
 
 # preprocess %define's
-    if (my ($key, $def) = /^\%(?:define|global)\s+(\S+)\s+(.+)$/) {
+    if (my ($macro, $key, $def) = /^\%(define|global|undefine)\s+(\S+)(?:\s+(.+))?$/) {
       if ($key =~ /^(?:summary|name|epoch|version|release|group|copyright|url|packager)$/i) {
-        $pkgdata{main}{$key} = expandmacros($def);
+        $pkgdata{main}{$key} = ($macro eq 'undefine' ? undef : expandmacros($def));
       } else {
-        $specglobals{$key} = expandmacros($def);
+        $specglobals{$key} = ($macro eq 'undefine' ? undef : expandmacros($def));
       }
       next LINE;
     }
