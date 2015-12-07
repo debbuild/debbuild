@@ -641,7 +641,7 @@ LINE: while (<SPECFILE>) {
       chomp;
       my $expr = lc expandmacros($_);
 
-      if ($expr =~ /^[\d\s<=>&|\-+\(\)]+$/) {
+      if ($expr =~ /^[\d\s<=>&|\(\)+-]+$/) {
         # "plain" numeric expressions are evaluated as-is, except
         $expr =~ s/(\D)0(\d+)/$1$2/g; # shortcut 0%{?ubuntu} == 1204
       } else {
@@ -1369,7 +1369,7 @@ sub binpackage {
       # Hack up the perl(Class::SubClass) deps into something dpkg can understand.
       # May or may not be versioned.
       # We do this first so the version rewriter can do its magic next.
-      if (my ($mod,$ver) = $dep =~ /^perl\(([A-Za-z0-9\:\-]+)\)([><=]+.+)?/) {
+      if (my ($mod,$ver) = $dep =~ /^perl\(([A-Za-z0-9:-]+)\)([><=]+.+)?/) {
 	$mod =~ s/^perl\(//;
 	$mod =~ s/\)$//;
 	$mod =~ s/::/-/g;
@@ -1378,7 +1378,7 @@ sub binpackage {
 	$mod .= $ver if $ver;
 	$dep = $mod;
       }
-      if (my ($name,$rel,$value) = $dep =~ /^([a-zA-Z0-9._-]+)([><=]+)([a-zA-Z0-9._-]+)$/) {
+      if (my ($name,$rel,$value) = $dep =~ /^([\w.-]+)([><=]+)([\w.-]+)$/) {
         $tmp .= ", $name ($rel $value)";
       } else {
         $tmp .= ", $dep";
@@ -1695,7 +1695,7 @@ sub getreqs() {
       next if qx ( $specglobals{__find} $specglobals{buildroot} -name "*$a" );
     }
 
-    my ($req) = m|=\>\s+([a-zA-Z0-9._/+-]+)|; # dig out the actual library (so)name.
+    my ($req) = m|=\>\s+([\w./+-]+)|; # dig out the actual library (so)name.
 	# And feh, we need the *path*, since I've discovered a new edge case where
 	# the same libnnn.1.2.3 *file*name is found across *several* lib dirs.  >:(
 
@@ -1784,7 +1784,7 @@ sub expandmacros {
   while (/%{u2p:(%{.+?})}/) {
     my $url = $1;
     my $expand = expandmacros($1);
-    $expand =~ s|\w+://[\w\-.:]+||;
+    $expand =~ s|\w+://[\w.:-]+||;
     s/%{u2p:$url}/$expand/g;
   }
 
@@ -1812,7 +1812,7 @@ sub expandmacros {
   # support for **some** %if constructs.  Note that this breaks somewhat if
   # there's no value specified...  but so does rpm.
   my $tmpcount = 0;	# runaway shutdown.  Not really sure how else to avoid getting stuck.
-  while (m/%{([?!]+)([a-z0-9_.-]+?)(?:\:((?:%{)?[A-Za-z0-9_.\/\-\\\s]+?}?)?)?}/g) { # Whew....
+  while (m|%{([?!]+)([a-z0-9_.-]+?)(?:\:((?:%{)?[\w\s./\\-]+?}?)?)?}|g) { # Whew....
     my $qex = $1;
     my $macro = $2;
     my $value = '';
@@ -1827,7 +1827,7 @@ sub expandmacros {
     } else {
       $value = '' unless $neg;
     }
-    s/%{[?!]+[a-z0-9_.-]+?(?:\:((?:%{)?[A-Za-z0-9_.\/\-\\\s]+?}?)?)?}/$value/;
+    s|%{[?!]+[a-z0-9_.-]+?(?:\:((?:%{)?[\w\s./\\-]+?}?)?)?}|$value|;
 
 # not certain about this, but I don't want to run away.  It *can* happen if planned carefully.  :/
 # %makeinstall has 13 occurrences.  D'Oh!
