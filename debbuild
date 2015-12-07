@@ -601,10 +601,11 @@ LINE: while (<SPECFILE>) {
 
 # preprocess %define's
     if (my ($macro, $key, $def) = /^\%(define|global|undefine)\s+(\S+)(?:\s+(.+))?$/) {
+      my $value = $macro eq 'undefine' ? undef : expandmacros($def);
       if ($key =~ /^(?:summary|name|epoch|version|release|group|copyright|url|packager)$/i) {
-        $pkgdata{main}{$key} = ($macro eq 'undefine' ? undef : expandmacros($def));
+        $pkgdata{main}{$key} = $value;
       } else {
-        $specglobals{$key} = ($macro eq 'undefine' ? undef : expandmacros($def));
+        $specglobals{$key} = $value;
       }
       next LINE;
     }
