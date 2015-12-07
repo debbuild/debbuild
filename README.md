@@ -15,4 +15,4 @@ tree](https://secure.deepnet.cx/svn/debbuild/trunk/debbuild).
 
 ## result
 
-after four months this effort resulted in the release of debbuild 0.15.11.
+after four months this effort resulted in the release of debbuild 15.12.0.
