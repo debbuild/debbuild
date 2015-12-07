@@ -1748,14 +1748,14 @@ sub expandmacros {
   s|%{optflags}|$optflags{$pkgdata{main}{arch}}|g;
 
   # Package data
+  s|%{S:0}|%{source0}|g;
   s|%{source0?}|%{_sourcedir}/$pkgdata{main}{source}|gi;
-  s|%{S:0}|%{_sourcedir}/$pkgdata{main}{source}|g;
   foreach my $source (keys %{$pkgdata{sources}}) {
+    s|%{S:$source}|%{source$source}|g;
     s|%{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
-    s|%{S:$source}|%{_sourcedir}/$pkgdata{sources}{$source}|g;
   }
+  s|%{P:(\d+)}|%{patch$1}|g;
   s|%{patch(\d+)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
-  s|%{P:(\d+)}|%{_sourcedir}/$pkgdata{main}{$1}|g;
 
   # Globals, and not-so-globals
   # special %define's.  Handle the general case where we eval anything.
