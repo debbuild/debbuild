@@ -591,12 +591,20 @@ LINE: while (<SPECFILE>) {
     if (/^%[a-z]/ &&
 		not /^%(?:attr|bcond_with|bcond_without|build|changelog|check|
 		clean|config|configure|copyrightdata|defattr|define|description|
-		dir|doc|docdir|else|endif|files|ghost|global|if|ifarch|ifnarch|
+		dir|doc|docdir|dump|else|endif|files|ghost|global|if|ifarch|ifnarch|
 		ifnos|ifos|install|make_build|make_install|makeinstall|package|
 		patch\d*|post|postun|pre|prep|preun|readme|setup\d*|triggerin|
 		triggerpostun|triggerun|undefine|verify|verifyscript)\b/x) {
 	my ($badtag) = /^%([a-z]+)/i;
 	die "Unknown tag \%$badtag at line $. of $specfile\n";
+    }
+
+    # print the active macro table
+    if (/%dump/) {
+      for (sort keys %specglobals) {
+        print "%$_ ==> $specglobals{$_}\n" unless $_ =~ /^[A-Z]+$/;
+      }
+      next LINE;
     }
 
 # preprocess %define's
