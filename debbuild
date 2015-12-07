@@ -1747,11 +1747,6 @@ sub expandmacros {
   local ($_) = @_;
   return $_ unless /%/; # nothing to substitute
 
-  local $specglobals{NEST} = $specglobals{NEST} or 0;
-  die "Runaway recursive macro expansion ".
-      ($specglobals{specfile} ? "at line $. of $specglobals{specfile}:\n" : '').
-      "<<<$_>>>. Aborting!\n" if $specglobals{NEST}++ > 8;
-
   # Replace global macros
   s/%(configure|make_build|make_install|makeinstall|optflags)/%{$1}/g;
   s|%{optflags}|$optflags{$pkgdata{main}{arch}}|g;
@@ -1837,13 +1832,12 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount++ > 14;
 
   # %define's and %{all_the_rest}
 # note to self: find out valid chars for %define name/label so we can parse them
-  while (my ($key) = /%{([a-z0-9_:-]+)}/i) {
+  while (/%{([a-z0-9_:-]+)}/ig) {
+    my $key = $1;
     if (defined $specglobals{lc $key}) {
       s|%{$key}|expandmacros($specglobals{lc $key})|egi;
     } elsif (defined $pkgdata{main}{lc $key}) {
       s|%{$key}|expandmacros($pkgdata{main}{lc $key})|egi;
-    } else { # go into recursion; will probably be %{undefined} and die.
-      $_ = expandmacros($_);
     }
   }
 
