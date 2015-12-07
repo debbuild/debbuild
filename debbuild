@@ -399,6 +399,7 @@ sub parse_cmd {
   # Don't feel like coding my own option parser...
   Getopt::Long::GetOptions(
     'buildroot=s'   => \$specglobals{CBR},
+    'eval=s'        => sub { print expandmacros($_[1]),"\n" },
     'short-circuit' => sub { $cmdopts{short} = 'y' },
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
     'v+' => \$verbosity, # bump verbosity.  Not sure what I'll actually do here...
@@ -411,7 +412,6 @@ sub parse_cmd {
     'with=s'      => \&define_handler, # dito for 'with|without=s'
     'without=s'   => \&define_handler,
     'define|D=s'  => \&define_handler,
-    'eval=s'      => \&eval_handler,
     'help'        => \&help_handler,
     '<>'          => \&catchall # process non-option arguments
   ); # Getopt::Long::Getoptions()
@@ -483,15 +483,6 @@ sub parse_cmd {
     } else {
       warn "WARNING: missing value for macro $macro in --$opt_name! Ignoring.\n";
     }
-  }
-  ## eval_handler()
-  # debbuild --eval "%macro" ==> expanded macro definition, or '%macro'
-  sub eval_handler {
-    my ($opt_name,$opt_value) = @_;
-    my $res = $opt_value;
-    $opt_value =~ s/%(\w+)/%{$1}/;
-    eval { $res = expandmacros($opt_value); }; # death if undefined %macro
-    print "$res\n";
   }
   ## help_handler()
   # Factor-out the 'help' text. Could as well be SYNOPSIS in pod.
@@ -1748,7 +1739,7 @@ sub expandmacros {
   return $_ unless /%/; # nothing to substitute
 
   # Replace global macros
-  s/%(configure|make_build|make_install|makeinstall|optflags)/%{$1}/g;
+  s/%(\w+)/%{$1}/g;
   s/%{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
 
   # Package data
