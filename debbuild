@@ -1804,7 +1804,7 @@ sub expandmacros {
   # support for **some** %if constructs.  Note that this breaks somewhat if
   # there's no value specified...  but so does rpm.
   my $tmpcount = 0;	# runaway shutdown.  Not really sure how else to avoid getting stuck.
-  while (m/%{([?!]+)([a-z0-9_.-]+)(?:\:([A-Za-z0-9_.\/\-\\\s]+)?)?}/g) { # Whew....
+  while (m/%{([?!]+)([a-z0-9_.-]+?)(?:\:((?:%{)?[A-Za-z0-9_.\/\-\\\s]+?}?)?)?}/g) { # Whew....
     my $qex = $1;
     my $macro = $2;
     my $value = '';
@@ -1819,7 +1819,7 @@ sub expandmacros {
     } else {
       $value = '' unless $neg;
     }
-    s/%{[?!]+[a-z0-9_.-]+(?:\:([A-Za-z0-9_.\/\-\\\s]+)?)?}/$value/;
+    s/%{[?!]+[a-z0-9_.-]+?(?:\:((?:%{)?[A-Za-z0-9_.\/\-\\\s]+?}?)?)?}/$value/;
 
 # not certain about this, but I don't want to run away.  It *can* happen if planned carefully.  :/
 # %makeinstall has 13 occurrences.  D'Oh!
