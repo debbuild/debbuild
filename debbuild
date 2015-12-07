@@ -1749,16 +1749,16 @@ sub expandmacros {
 
   # Replace global macros
   s/%(configure|make_build|make_install|makeinstall|optflags)/%{$1}/g;
-  s|%{optflags}|$optflags{$pkgdata{main}{arch}}|g;
+  s/%{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
 
   # Package data
-  s|%{S:0}|%{source0}|g;
+  s/%{S:0}/%{source0}/g;
   s|%{source0?}|%{_sourcedir}/$pkgdata{main}{source}|gi;
   foreach my $source (keys %{$pkgdata{sources}}) {
-    s|%{S:$source}|%{source$source}|g;
+    s/%{S:$source}/%{source$source}/g;
     s|%{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
   }
-  s|%{P:(\d+)}|%{patch$1}|g;
+  s/%{P:(\d+)}/%{patch$1}/g;
   s|%{patch(\d+)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
 
   # Globals, and not-so-globals
@@ -1769,7 +1769,7 @@ sub expandmacros {
     # Oy vey this gets silly for the perl bits.  Executing a shell to
     # call Perl to get the vendorlib/sitelib/whatever "core" globals.
     # This can do more, but...  eww.
-  s|%\((.+?)\)|my $res = qx($specglobals{_buildshell} -c '$1'); chomp $res; $res;|eg;
+  s/%\((.+?)\)/my $res = qx($specglobals{_buildshell} -c '$1'); chomp $res; $res;/eg;
     # Yay!  ' characters apparently get properly exscapededed.
 
   # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
@@ -1835,9 +1835,9 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount++ > 14;
   while (/%{([a-z0-9_:-]+)}/ig) {
     my $key = $1;
     if (defined $specglobals{lc $key}) {
-      s|%{$key}|expandmacros($specglobals{lc $key})|egi;
+      s/%{$key}/expandmacros($specglobals{lc $key})/egi;
     } elsif (defined $pkgdata{main}{lc $key}) {
-      s|%{$key}|expandmacros($pkgdata{main}{lc $key})|egi;
+      s/%{$key}/expandmacros($pkgdata{main}{lc $key})/egi;
     }
   }
 
