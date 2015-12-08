@@ -385,7 +385,7 @@ sub load_config {
           last unless /\\$/;
         }
       }
-      $specglobals{$macro} = $value;
+      chomp( $specglobals{$macro} = $value );
     }
     close MACROS;
   }
