@@ -869,9 +869,9 @@ ENDIF: if (/^%endif/) {
       # need to deal with these someday
       next LINE if /^\%verify/ or /^\%ghost/;
 
-      if (/^%defattr\s*\(\s*((?:-|\d+)),?\s*(\w+),?\s*(\w+),?\s*((?:-|\d+))\s*\)/) {
-        ($defattr{filemode}, $defattr{owner}, $defattr{group}, $defattr{dirmode}) =
-          ($1, $2, $3, $4);
+      if (/^%defattr\s*\(\s*(-|\d+)\s*,\s*(-|\w+)\s*,\s*(-|\w+)\s*,?\s*(-|\d+)?\s*\)/) {
+        ($defattr{filemode}, $defattr{owner}, $defattr{group}) = ($1, $2, $3);
+         $defattr{dirmode} = $4 if $4; # default directory setting is optional
         next LINE;
       }
 
@@ -1081,12 +1081,8 @@ sub process_filesline {
   s/^%(?:dir|docdir)\s*//;
 
   # strip and flag %attr constructs ... and wipe it when we're done.
-  if (s/(%attr\s*\(\s*[\d-]+\s*,\s*["a-zA-Z0-9-]+\s*,\s*["a-zA-Z0-9-]+\s*\))//) {
-    # Extract %attr...
-    my $args = $1;
-    $args =~ s/[\s"]//g;    # don't think quotes are ever necessary, but they're *allowed*
-    # ... and parse it ...
-    ($perms,$owner,$group) = $args =~ /\(([\d-]+),([a-zA-Z0-9-]+),([a-zA-Z0-9-]+)/;
+  if (s/%attr\s*\(\s*(-|\d+)\s*,\s*"?(-|\w+)"?\s*,\s*"?(-|\w+)"?\s*\)\s*//) {
+    ($perms,$owner,$group) = ($1,$2,$3);
   }
 
   # Conffiles.  Note that Debian and RH have similar, but not
@@ -1106,8 +1102,6 @@ sub process_filesline {
   # into place in the %install script, because Debian doesn't really have the concept
   # of "documentation file" that rpm does.  (Debian "documentation files" are files
   # in /usr/share/doc/<packagename>.)
-##fixme:  unhandled case: %doc %defattr.  Eeep.
-# don't really know what to do with %defattr, generally.  :(
   if (s/%doc\s+//) {
 
 # this could probably go elsewhere.
