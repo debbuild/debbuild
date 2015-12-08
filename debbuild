@@ -1217,34 +1217,25 @@ sub install {
   # final bit: compress manpages if present
   # done here cuz I don't grok shell well
   # should probably error-check all kinds of things.  <g>
-  if (opendir MANROOT, "$specglobals{buildroot}/usr/share/man") {
-    my @mansects = readdir MANROOT;
-    closedir MANROOT;
-    foreach my $mandir (@mansects) {
-      next if $mandir !~ /^man/;
-      opendir MANPAGES, "$specglobals{buildroot}/usr/share/man/$mandir";
-      my @pagelist = readdir MANPAGES;
-      closedir MANPAGES;			# Slightly safer to to this;  no accidental recursion.  O_o
-      foreach my $manpage (@pagelist) {
-        $manpage = "$specglobals{buildroot}/usr/share/man/$mandir/$manpage";
-        if ( -f $manpage) {
-	  if ($manpage =~ /^(.+)\.(?:Z|gz|bz2)\n?$/) {
-	    my $newpage = $1;
-	    qx($specglobals{__gzip} -d $manpage) if $manpage =~ /\.(?:Z|gz)$/;
-	    qx($specglobals{__bzip2} -d $manpage) if $manpage =~ /\.bz2$/;
-	    $manpage = $newpage;
-	  }
-	  qx($specglobals{__gzip} -f -9 -n $manpage);
-        } elsif ( -l $manpage) {
-	  my $linkdest = readlink $manpage;
-	  $linkdest =~ s/\.(?:Z|gz|bz2)//;
-	  unlink $manpage;
-	  $manpage =~ s/\.(?:Z|gz|bz2)//;
-	  symlink "$linkdest.gz", "$manpage.gz" or print "DEBUG: wibble: symlinking manpage failed: $!\n";
-        }
+  foreach my $mandir (<$specglobals{buildroot}/usr/share/man/man*>) {
+    foreach my $manpage (<$mandir/*>) {
+      if ( -f $manpage) {
+	if ($manpage =~ /^(.+)\.(?:Z|gz|bz2)\n?$/) {
+	  my $newpage = $1;
+	  qx($specglobals{__gzip} -d $manpage) if $manpage =~ /\.(?:Z|gz)$/;
+	  qx($specglobals{__bzip2} -d $manpage) if $manpage =~ /\.bz2$/;
+	  $manpage = $newpage;
+	}
+	qx($specglobals{__gzip} -f -9 -n $manpage);
+      } elsif ( -l $manpage) {
+	my $linkdest = readlink $manpage;
+	$linkdest =~ s/\.(?:Z|gz|bz2)//;
+	unlink $manpage;
+	$manpage =~ s/\.(?:Z|gz|bz2)//;
+	symlink "$linkdest.gz", "$manpage.gz" or print "DEBUG: wibble: symlinking manpage failed: $!\n";
       }
     }
-  } # if opendir MANROOT
+  }
 } # end install()
 
 
