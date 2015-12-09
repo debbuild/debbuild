@@ -1746,6 +1746,7 @@ sub expandmacros {
   s/%{getenv:([A-Z_]+)}/$ENV{$1}/g;
 
   # curious form of 'basename'? – strip domain host (and port)
+  s/%{url2path:/%{u2p:/g;
   while (/%{u2p:(%{.+?})}/) {
     my $url = $1;
     my $expand = expandmacros($1);
