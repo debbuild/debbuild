@@ -1821,20 +1821,16 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount++ > 14;
 # of the source drop according to the file extension.
 sub unpackcmd {
    my ($sourcedrop,$quietunpack) = @_;
-   my $cmdstring;
-   if ($sourcedrop =~ /\.zip$/) {
-      # .zip files are not really tarballs
-      $cmdstring .= '%{__unzip}'.( $quietunpack ? ' -qq ' : ' ' ).
-         "'%{_sourcedir}/$sourcedrop'";
-   } elsif ($sourcedrop =~ /\.tar$/) {
-      # plain .tar files don't need to be uncompressed
-      $cmdstring .= '%{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f '.
-         "'%{_sourcedir}/$sourcedrop'";
-   } else {
-      $cmdstring .= decompress("%{_sourcedir}/$sourcedrop").
-         ' | %{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f -';
-   }
-   return $cmdstring .= qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+   return (
+      $sourcedrop =~ /\.zip$/ ? # .zip files are not really tarballs
+         '%{__unzip}'.( $quietunpack ? ' -qq ' : ' ' ).
+         "'%{_sourcedir}/$sourcedrop'" :
+      $sourcedrop =~ /\.tar$/ ? # plain .tar files don't need to be uncompressed
+         '%{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f '.
+         "'%{_sourcedir}/$sourcedrop'" :
+      decompress("%{_sourcedir}/$sourcedrop").
+          ' | %{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f -' ).
+      qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
 } # end unpackcmd()
 
 
@@ -1842,12 +1838,12 @@ sub unpackcmd {
 # Determine the suitable decompressor according to the file extension.
 sub decompress {
    my ($filename) = @_;
-   my $decompressor =
-      ( $filename =~ /\.(?:tgz|(?:gz|Z))$/ ? '%{__gzip}'  :
-        $filename =~ /\.bz2$/              ? '%{__bzip2}' :
-        $filename =~ /\.xz$/               ? '%{__xz}'    :
-      die("Can't handle unknown file type '$filename'.") );
-   return "$decompressor -dc '$filename'";
+   return (
+      $filename =~ /\.(?:tgz|(?:gz|Z))$/ ? '%{__gzip}'  :
+      $filename =~ /\.bz2$/              ? '%{__bzip2}' :
+      $filename =~ /\.xz$/               ? '%{__xz}'    :
+      die("Can't handle unknown file type '$filename'.") ).
+      " -dc '$filename'";
 } # end decompress()
 
 
