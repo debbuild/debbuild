@@ -194,8 +194,7 @@ my %ubnt_vermap = ('6.5ubuntu6' => '12.04',
   # rpmbuild expects either integers or strings, and some distros (*cough*Ubuntu*cough*)
   # have versions that get interpreted as strings, which creates comparison problems.
   # This will make sure it's an integer to remain compatible.
-  my $specbasever = $basever;
-  $specbasever =~ s/\.//;
+  (my $specbasever = $basever) =~ s/\.//;
 
   # Set some legacy globals.
   $specglobals{debdist} = $distmap{$basever};
@@ -902,8 +901,7 @@ ENDIF: if (/^%endif/) {
         $patchnum //= '';
         $pkgdata{main}{$patchnum} = basename($patch);
       } elsif (/^buildarch(?:itecture)?:\s*(.+)/i) {
-        $pkgdata{main}{arch} = $1;
-        $pkgdata{main}{arch} =~ s/^noarch$/all/;
+        ($pkgdata{main}{arch} = $1) =~ s/^noarch$/all/;
         $buildarch = $pkgdata{main}{arch};
       } elsif (/^buildrequires:\s*(.+)/i) {
         $buildreq .= ", $1";
@@ -1187,8 +1185,7 @@ sub install {
   # munge %doc entries into place
   # rpm handles this with a separate executed %doc script, we're not going to bother.
   foreach my $docpkg (keys %doclist) {
-    my $pkgname = $pkgdata{$docpkg}{name};
-    $pkgname =~ s/_/-/g;
+    (my $pkgname = $pkgdata{$docpkg}{name}) =~ s/_/-/g;
 
     $installscript .= "DOCDIR=\$RPM_BUILD_ROOT\%{_docdir}/$pkgname\nexport DOCDIR\n";
     $installscript .= "%{__mkdir_p} \$DOCDIR\n";
@@ -1227,8 +1224,7 @@ sub install {
       }
       qx($specglobals{__gzip} -f -9 -n $manpage);
     } elsif ( -l $manpage) {
-      my $linkdest = readlink $manpage;
-      $linkdest =~ s/\.(?:Z|gz|bz2)//;
+      (my $linkdest = readlink $manpage) =~ s/\.(?:Z|gz|bz2)//;
       unlink $manpage;
       $manpage =~ s/\.(?:Z|gz|bz2)//;
       symlink "$linkdest.gz", "$manpage.gz" or print "DEBUG: wibble: symlinking manpage failed: $!\n";
