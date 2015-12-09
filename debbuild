@@ -1641,11 +1641,7 @@ sub getreqs() {
   # Get the list of libs provided by this package.  Still doesn't
   # handle the case where the lib gets stuffed into a subpackage.  :/
   my @intprovlist = qx ( $specglobals{__find} $pkgtree -type f -name "*.so*" );
-  my $provlist = '';
-  foreach (@intprovlist) {
-    s/$pkgtree//;
-    $provlist .= $_;
-  }
+  my $provlist = join('', map { s/$pkgtree//; $_ } @intprovlist);
 
   my %reqs;
   my $reqlibs = '';
