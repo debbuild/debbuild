@@ -1103,8 +1103,7 @@ sub process_filesline {
   if (s/%doc\s+//) {
 
 # this could probably go elsewhere.
-    my $pkgname = $pkgdata{$subname}{name};
-    $pkgname =~ tr/_/-/;
+    (my $pkgname = $pkgdata{$subname}{name}) =~ tr/_/-/;
 
     # have to extract the partial pathnames that %doc installs automagically
     foreach my $pp (split /\s+/) {
@@ -1266,8 +1265,6 @@ sub binpackage {
 
     my @pkgfilelist = split ' ', $filelist{$pkg};
     foreach my $pkgfile (@pkgfilelist) {
-      $pkgfile = expandmacros($pkgfile);
-
       # Feh.  Manpages don't **NEED** to be gzipped, but rpmbuild does, and so shall we.
       # ... and your little info page too!
       if ($pkgfile =~ m{/usr/share/(?:man/man|info)}) {
@@ -1551,8 +1548,6 @@ sub checkbuildreq {
     return 1;
   }
 
-  my $reqflag = 1;  # unset iff a buildreq is missing
-
   $buildreq =~ s/^, //;	# Strip the leading comma and space
   my @reqlist = split /,\s+/, $buildreq;
 
@@ -1583,7 +1578,6 @@ sub checkbuildreq {
     my @pkglist = qx ( $specglobals{__dpkg_query} --showformat '\${status}\t\${version}\n' -W $pkg );
     if (not $pkglist[0]) {
       warn " * Missing build-dependency $pkg!\n  $pkglist[0]";
-      $reqflag = 0;
       push @missinglist, $pkg;
     } else {
 # real package, installed
@@ -1603,22 +1597,20 @@ sub checkbuildreq {
       } elsif ($reqstat =~ /^install/) {
 	my ($resp) = qx ( $specglobals{__dpkg} --compare-versions $reqver '$rel' $ver && $specglobals{__echo} "ok" );
 	if ($resp !~ /^ok/) {
-	  $reqflag = 0;
 	  warn " * Buildreq $pkg is installed, but wrong version ($reqver):  Need $ver\n"
         }
       } else {
 	# whatever state it's in, it's not completely installed, therefore it's missing.
 	warn " * Missing build-dependency $pkg!\n  $pkglist[0]";
-	$reqflag = 0;
         push @missinglist, $pkg;
       } # end not installed/installed check
     }
   } # end req loop
 
   print "To install all missing dependencies, run 'apt-get install ".
-    join(' ', @missinglist)."'.\n" unless $reqflag;
+    join(' ', @missinglist)."'.\n" if @missinglist;
 
-  return $reqflag;
+  return (0 == @missinglist) or 0;
 } # end checkbuildreq()
 
 
@@ -1640,12 +1632,10 @@ sub getreqs() {
 
   # Get the list of libs provided by this package.  Still doesn't
   # handle the case where the lib gets stuffed into a subpackage.  :/
-  my @intprovlist = qx ( $specglobals{__find} $pkgtree -type f -name "*.so*" );
-  my $provlist = join('', map { s/$pkgtree//; $_ } @intprovlist);
+  my @intprovlist = qx ( $specglobals{__find} $pkgtree -type f -name "*.so*" -printf "%P\n" );
 
-  my %reqs;
-  my $reqlibs = '';
-  my %reqliblist;
+  my @reqs;
+  my @reqliblist;
 
   foreach (@reqlist) {
     next if /^$pkgtree/;
@@ -1669,25 +1659,22 @@ sub getreqs() {
     # on word-boundary at the *end* of the lib we're looking for, as the
     # looked-for lib may not have the full soname version. (ie, it may
     # "just" point to one of the symlinks that get created somewhere.)
-    next if $provlist =~ /\b$req/;
+    next if grep { /\b$req/ } @intprovlist;
 
-    $reqlibs .= " $req";
-    $reqliblist{$req} = 1;
+    push @reqliblist, $req;
   }
 
-  if (%reqliblist) {
-    foreach my $rlib (keys %reqliblist) {
-      my $libpkg = qx ( $specglobals{__dpkg} -S $rlib );
-      ($libpkg,undef) = split /:/, $libpkg;
-      $reqs{$libpkg} = 1;
-    }
+  foreach my $rlib (@reqliblist) {
+    my $libpkg = qx ( $specglobals{__dpkg} -S $rlib );
+    ($libpkg,undef) = split /:/, $libpkg;
+    push @reqs, $libpkg;
   }
 
 # For now, we're done.  We're not going to meddle with versions yet.
 # Among other things, it's messier than handling "simple" yes/no "do
 # we have this lib?" deps.  >:(
 
-  return ', ' . join(', ', keys %reqs);
+  return ', ' . join(', ', @reqs);
 
 } # end getreqs()
 
@@ -1780,8 +1767,8 @@ sub expandmacros {
     my $value = '';
     if (defined($3)) {
       $value = $3;
-    } else {
-      $value = $specglobals{$macro} if $specglobals{$macro};
+    } elsif ($specglobals{$macro}) {
+      $value = $specglobals{$macro};
     }
     my $neg = '1' if $qex =~ /\!/;
     if ($specglobals{$macro}) {
