@@ -1215,8 +1215,7 @@ sub install {
   # should probably error-check all kinds of things.  <g>
   foreach my $manpage (glob("$specglobals{buildroot}/usr/share/man/man*/*")) {
     if ( -f $manpage) {
-      if ($manpage =~ /^(.+)\.(?:Z|gz|bz2)\n?$/) {
-       my $newpage = $1;
+      if (my ($newpage) = $manpage =~ /^(.+)\.(?:Z|gz|bz2)\n?$/) {
        qx($specglobals{__gzip} -d $manpage) if $manpage =~ /\.(?:Z|gz)$/;
        qx($specglobals{__bzip2} -d $manpage) if $manpage =~ /\.bz2$/;
        $manpage = $newpage;
@@ -1634,11 +1633,8 @@ sub getreqs() {
   # handle the case where the lib gets stuffed into a subpackage.  :/
   my @intprovlist = qx ( $specglobals{__find} $pkgtree -type f -name "*.so*" -printf "%P\n" );
 
-  my @reqs;
   my @reqliblist;
-
   foreach (@reqlist) {
-    next if /^$pkgtree/;
     next if /not a dynamic executable/;
     next if m|/lib(?:64)?/ld-linux|;	# Hack! Hack!  PTHBTT!  (libc suxx0rz)
     next if /linux-gate.so/;		# Kernel hackery for teh W1n!!1!1eleventy-one!1  (Don't ask.  Feh.)
@@ -1664,6 +1660,7 @@ sub getreqs() {
     push @reqliblist, $req;
   }
 
+  my @reqs;
   foreach my $rlib (@reqliblist) {
     my $libpkg = qx ( $specglobals{__dpkg} -S $rlib );
     ($libpkg,undef) = split /:/, $libpkg;
@@ -1730,10 +1727,8 @@ sub expandmacros {
 
   # curious form of 'basename'? – strip domain host (and port)
   s/%{url2path:/%{u2p:/g;
-  while (/%{u2p:(%{.+?})}/) {
-    my $url = $1;
-    my $expand = expandmacros($1);
-    $expand =~ s|\w+://[\w.:-]+||;
+  while ((my $url) = /%{u2p:(%{.+?})}/) {
+    (my $expand = expandmacros($url)) =~ s|\w+://[\w.:-]+||;
     s/%{u2p:$url}/$expand/g;
   }
 
@@ -1761,15 +1756,9 @@ sub expandmacros {
   # support for **some** %if constructs.  Note that this breaks somewhat if
   # there's no value specified...  but so does rpm.
   my $tmpcount = 0;	# runaway shutdown.  Not really sure how else to avoid getting stuck.
-  while (m|%{([?!]+)([a-z0-9_.-]+?)(?:\:((?:%{)?[\w\s./\\-]+?}?)?)?}|g) { # Whew....
-    my $qex = $1;
-    my $macro = $2;
-    my $value = '';
-    if (defined($3)) {
-      $value = $3;
-    } elsif ($specglobals{$macro}) {
-      $value = $specglobals{$macro};
-    }
+  while (my ($qex,$macro,$value) =
+      m|%{([?!]+)([a-z0-9_.-]+?)(?:\:((?:%{)?[\w\s./\\-]+?}?)?)?}|g) { # Whew....
+    $value //= ($specglobals{$macro} or '');
     my $neg = '1' if $qex =~ /\!/;
     if ($specglobals{$macro}) {
       $value = '' if $neg;
