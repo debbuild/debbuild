@@ -1733,6 +1733,9 @@ sub expandmacros {
         s/%{$prefix:$arg}/$path/g;
       } elsif ($prefix =~ /basename|dirname/) {
         s/%{$prefix:$arg}/&$prefix(expandmacros($arg))/eg;
+      } elsif ($prefix =~ /suffix/) {
+        my ($suffix) = expandmacros($arg) =~ /.*\.(\w+)$/;
+        s/%{$prefix:$arg}/$suffix/g;
       } elsif ($prefix =~ /getenv/) {
         # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
         s/%{$prefix:$arg}/$ENV{$arg}/g;
