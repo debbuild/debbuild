@@ -1724,13 +1724,22 @@ sub expandmacros {
   # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
   s/%{getenv:([A-Z_]+)}/$ENV{$1}/g;
 
-  # curious form of 'basename'? – strip domain host (and port)
+  # handle prefixed macros with nested curly braces, all in one go!
   s/%{url2path:/%{u2p:/g;
-  if (/%{u2p:/) {
-    while ((my $url) = map { /{u2p:(.+)}/ } extract_multiple($_,
+  if (/%{\w+:/) { # avoid conditional macros '%{?\w...}' here!
+    while ((my $url) = map { /{(\w+:.+)}/ } extract_multiple($_,
         [ sub { extract_bracketed($_[0],'{}') } ]) ) {
-      (my $path = expandmacros($url)) =~ s|\w+://[\w.:-]+||;
-      s/%{u2p:$url}/$path/g;
+      if ($url =~ s/u2p://) {
+        # curious form of 'basename'? – strip domain host (and port)
+        (my $path = expandmacros($url)) =~ s|\w+://[\w.:-]+||;
+        s/%{u2p:$url}/$path/g;
+      } elsif ($url =~ s/basename://) {
+        my $basename = basename(expandmacros($url));
+        s/%{basename:$url}/$basename/g;
+      } elsif ($url =~ s/dirname://) {
+        my $dirname = dirname(expandmacros($url));
+        s/%{dirname:$url}/$dirname/g;
+      }
     }
   }
 
