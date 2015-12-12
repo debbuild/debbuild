@@ -22,6 +22,7 @@
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 use strict;
+no strict qw(refs);
 use warnings;
 
 use Cwd 'abs_path';	# for finding where files really are
@@ -1721,24 +1722,20 @@ sub expandmacros {
   s/%\((.+?)\)/my $res = qx($specglobals{_buildshell} -c '$1'); chomp $res; $res;/eg;
     # Yay!  ' characters apparently get properly exscapededed.
 
-  # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
-  s/%{getenv:([A-Z_]+)}/$ENV{$1}/g;
-
-  # handle prefixed macros with nested curly braces, all in one go!
+  # handle '%{prefixed:macros}' with nested curly braces, all in one go!
   s/%{url2path:/%{u2p:/g;
   if (/%{\w+:/) { # avoid conditional macros '%{?\w...}' here!
-    while ((my $url) = map { /{(\w+:.+)}/ } extract_multiple($_,
+    while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ } extract_multiple($_,
         [ sub { extract_bracketed($_[0],'{}') } ]) ) {
-      if ($url =~ s/u2p://) {
+      if ($prefix =~ /u2p/) {
         # curious form of 'basename'? – strip domain host (and port)
-        (my $path = expandmacros($url)) =~ s|\w+://[\w.:-]+||;
-        s/%{u2p:$url}/$path/g;
-      } elsif ($url =~ s/basename://) {
-        my $basename = basename(expandmacros($url));
-        s/%{basename:$url}/$basename/g;
-      } elsif ($url =~ s/dirname://) {
-        my $dirname = dirname(expandmacros($url));
-        s/%{dirname:$url}/$dirname/g;
+        (my $path = expandmacros($arg)) =~ s|\w+://[\w.:-]+||;
+        s/%{$prefix:$arg}/$path/g;
+      } elsif ($prefix =~ /basename|dirname/) {
+        s/%{$prefix:$arg}/&$prefix(expandmacros($arg))/eg;
+      } elsif ($prefix =~ /getenv/) {
+        # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
+        s/%{$prefix:$arg}/$ENV{$arg}/g;
       }
     }
   }
