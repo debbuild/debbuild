@@ -43,6 +43,7 @@
 %__mv			/bin/mv
 %__patch		/usr/bin/patch
 %__pax			/bin/pax
+%__perl			/usr/bin/perl
 %__rm			/bin/rm
 %__rpm			/usr/bin/rpm
 %__sed			/bin/sed

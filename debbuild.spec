@@ -19,7 +19,7 @@ Group: devel
 Group: Development/Tools
 %endif
 License: GPLv2+
-Packager: Andreas Scherer <andreas@komputer.de>
+Packager: Andreas Scherer <https://ascherer.github.io/>
 
 Requires: perl, build-essential, fakeroot, bash
 %if %{_vendor} == "debbuild"
@@ -46,7 +46,9 @@ rebuild .src.rpm source packages as .deb binary packages.
 %setup -q
 
 %build
-# nothing to do here
+# Transfer $VERSION into the live system
+%{__sed} -e "s/'@VERSION@'/%{version}/" -i debbuild
+%{__sed} -e "s/@VERSION@/%{version}/" -i Makefile
 
 %install
 # Steps to install to a temporary location for packaging
@@ -83,6 +85,9 @@ DEB_BUILD_ARCH=`%{darch} -qDEB_BUILD_ARCH 2>/dev/null`
 fi
 
 %changelog
+* Sat Dec 12 2015  Andreas Scherer <https://ascherer.github.io/>
+- Centrally control and distribute the 'version' number
+
 * Fri Dec  4 2015  Neal Gompa <ngompa13@gmail.com>
 - Update spec and host/build auto-configure
 

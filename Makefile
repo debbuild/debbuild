@@ -5,7 +5,7 @@ MANIFEST = \
 	debbuild Makefile COPYING debbuild.spec
 
 PKGNAME=debbuild
-VERSION=15.12.0
+VERSION=@VERSION@
 
 MANDIR=/usr/share/man
 CONFDIR=/etc
