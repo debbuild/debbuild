@@ -1783,7 +1783,7 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount++ > 14;
 
   # %define's and %{all_the_rest}
 # note to self: find out valid chars for %define name/label so we can parse them
-  while (/%{([a-z0-9_:-]+)}/ig) {
+  while (/%{([a-z0-9_-]+)}/ig) {
     my $key = lc $1;
     if (defined $specglobals{$key}) {
       s/%{$key}/expandmacros($specglobals{$key})/egi;
