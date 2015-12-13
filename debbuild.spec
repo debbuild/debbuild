@@ -7,7 +7,7 @@
 
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 Name: debbuild
-Version: 15.12.0
+Version: 15.12.1
 Release: ascherer.%{dist}
 
 Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
@@ -47,7 +47,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 
 %build
 # Transfer $VERSION into the live system
-%{__sed} -e "s/'@VERSION@'/%{version}/" -i debbuild
+%{__sed} -e "s/@VERSION@/%{version}/" -i debbuild
 %{__sed} -e "s/@VERSION@/%{version}/" -i Makefile
 
 %install
@@ -85,6 +85,9 @@ DEB_BUILD_ARCH=`%{darch} -qDEB_BUILD_ARCH 2>/dev/null`
 fi
 
 %changelog
+* Sun Dec 13 2015  Andreas Scherer <https://ascherer.github.io/>
+- New release 15.12.1
+
 * Sat Dec 12 2015  Andreas Scherer <https://ascherer.github.io/>
 - Centrally control and distribute the 'version' number
 
