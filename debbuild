@@ -1767,16 +1767,11 @@ sub expandmacros {
   # with nested curly braces, all in one go!
   while (my ($qex,$macro,$value) = map { /{([?!]+)(\w+)(?::(.+))?}/ }
       extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]) ) {
-    my $initvalue = defined $value ? ":$value" : '';
+    (my $initvalue = "%{$qex$macro".(defined $value ? ":$value" : '').'}')
+      =~ s/([?!])/\\$1/g; # neutralize quantifiers
     $value //= ($specglobals{$macro} or '');
-    my $neg = '1' if $qex =~ /\!/;
-    if ($specglobals{$macro}) {
-      $value = '' if $neg;
-    } else {
-      $value = '' unless $neg;
-    }
-    $qex =~ s/([?!])/\\$1/g; # neutralize quantifiers
-    s/%{$qex$macro$initvalue}/expandmacros($value)/eg;
+    $value = '' unless $specglobals{$macro} xor $qex =~ /!/; # equivalence
+    s/$initvalue/expandmacros($value)/eg;
   }
   pos = 0; # reset to start of $_
 
