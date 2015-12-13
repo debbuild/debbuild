@@ -1722,27 +1722,6 @@ sub expandmacros {
   s/%\((.+?)\)/my $res = qx($specglobals{_buildshell} -c '$1'); chomp $res; $res;/eg;
     # Yay!  ' characters apparently get properly exscapededed.
 
-  # handle '%{prefixed:macros}' with nested curly braces, all in one go!
-  s/%{url2path:/%{u2p:/g;
-  if (/%{\w+:/) { # avoid conditional macros '%{?\w...}' here!
-    while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ } extract_multiple($_,
-        [ sub { extract_bracketed($_[0],'{}') } ]) ) {
-      if ($prefix =~ /u2p/) {
-        # curious form of 'basename'? – strip domain host (and port)
-        (my $path = expandmacros($arg)) =~ s|\w+://[\w.:-]+||;
-        s/%{$prefix:$arg}/$path/g;
-      } elsif ($prefix =~ /basename|dirname/) {
-        s/%{$prefix:$arg}/&$prefix(expandmacros($arg))/eg;
-      } elsif ($prefix =~ /suffix/) {
-        my ($suffix) = expandmacros($arg) =~ /.*\.(\w+)$/;
-        s/%{$prefix:$arg}/$suffix/g;
-      } elsif ($prefix =~ /getenv/) {
-        # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
-        s/%{$prefix:$arg}/$ENV{$arg}/g;
-      }
-    }
-  }
-
   # conditional build stuff: although (glo)macros aka /usr/lib/debbuild/macros
   # already contains definitions for these three pairs of macros, they can not
   # be used directly, because of lack of the 'expand' processor and missing
@@ -1764,25 +1743,44 @@ sub expandmacros {
   s/\\\\/\\/g;
   s/(\S)\\+\n/$1\n/g;
 
-  # support for **some** %if constructs.  Note that this breaks somewhat if
-  # there's no value specified...  but so does rpm.
-  my $tmpcount = 0;	# runaway shutdown.  Not really sure how else to avoid getting stuck.
-  while (my ($qex,$macro,$value) =
-      m|%{([?!]+)([a-z0-9_.-]+?)(?:\:((?:%{)?[\w\s./\\-]+?}?)?)?}|g) { # Whew....
-    $value //= ($specglobals{$macro} or '');
-    my $neg = '1' if $qex =~ /\!/;
-    if ($specglobals{$macro}) {
-      $value = '' if $neg;
-    } else {
-      $value = '' unless $neg;
+  # handle '%{prefixed:macros}' with nested curly braces, all in one go!
+  s/%{url2path:/%{u2p:/g;
+  if (/%{\w+:/) { # avoid conditional macros '%{?\w...}' here!
+    while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ } extract_multiple($_,
+        [ sub { extract_bracketed($_[0],'{}') } ]) ) {
+      if ($prefix =~ /u2p/) {
+        # curious form of 'basename'? – strip domain host (and port)
+        (my $path = expandmacros($arg)) =~ s|\w+://[\w.:-]+||;
+        s/%{$prefix:$arg}/$path/g;
+      } elsif ($prefix =~ /basename|dirname/) {
+        s/%{$prefix:$arg}/&$prefix(expandmacros($arg))/eg;
+      } elsif ($prefix =~ /suffix/) {
+        my ($suffix) = expandmacros($arg) =~ /.*\.(\w+)$/;
+        s/%{$prefix:$arg}/$suffix/g;
+      } elsif ($prefix =~ /getenv/) {
+        # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
+        s/%{$prefix:$arg}/$ENV{$arg}/g;
+      }
     }
-    s|%{[?!]+[a-z0-9_.-]+?(?:\:((?:%{)?[\w\s./\\-]+?}?)?)?}|$value|;
+  }
 
-# not certain about this, but I don't want to run away.  It *can* happen if planned carefully.  :/
-# %makeinstall has 13 occurrences.  D'Oh!
-die "excessive recursive macro replacement;  dying.\n" if $tmpcount++ > 14;
-
-  } # while()
+  # support for **some** %if constructs: handle '%{?conditional:macros}'
+  # with nested curly braces, all in one go!
+  if (/%{[?!]+\w+/) {
+    while (my ($qex,$macro,$value) = map { /{([?!]+)(\w+)(?::(.+))?}/ }
+        extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]) ) {
+      my $initvalue = defined $value ? ":$value" : '';
+      $value //= ($specglobals{$macro} or '');
+      my $neg = '1' if $qex =~ /\!/;
+      if ($specglobals{$macro}) {
+        $value = '' if $neg;
+      } else {
+        $value = '' unless $neg;
+      }
+      $qex =~ s/([?!])/\\$1/g; # neutralize quantifiers
+      s/%{$qex$macro$initvalue}/expandmacros($value)/eg;
+    } # while()
+  }
 
   # %define's and %{all_the_rest}
 # note to self: find out valid chars for %define name/label so we can parse them
