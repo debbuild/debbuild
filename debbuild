@@ -609,14 +609,8 @@ LINE: while (<SPECFILE>) {
     }
 
     # conditional build stuff
-    # define 'with_foo' if '--with foo' was specified on command-line.
-    if (/^%bcond_with\s+(\w+)/) {
-      $specglobals{"with_$1"} = 1 if defined $specglobals{"_with_$1"};
-      next LINE;
-    }
-    # define 'with_foo' if '--without foo' was *not* specified on command-line.
-    if (/^%bcond_without\s+(\w+)/) {
-      $specglobals{"with_$1"} = 1 unless defined $specglobals{"_without_$1"};
+    if (/^%bcond_with/) {
+      expandmacros($_);
       next LINE;
     }
 
@@ -1736,7 +1730,14 @@ sub expandmacros {
   s/%{defined (.+?)}/defined $specglobals{$1} or 0/eg;
   s/%{undefined (.+?)}/not defined $specglobals{$1} or 0/eg;
   #
-  # %bcond_with and %bcond_without are processed in 'parse_spec()' directly.
+  # define 'with_foo' if '--with foo' was specified on command-line.
+  if (s/%{bcond_with}\s+(\w+)//) {
+    $specglobals{"with_$1"} = 1 if defined $specglobals{"_with_$1"};
+  }
+  # define 'with_foo' if '--without foo' was *not* specified on command-line.
+  if (s/%{bcond_without}\s+(\w+)//) {
+    $specglobals{"with_$1"} = 1 unless defined $specglobals{"_without_$1"};
+  }
 
   # unescape multi-line macros
   s/\\"/"/g;
