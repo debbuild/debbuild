@@ -1760,6 +1760,9 @@ sub expandmacros {
     } elsif ($prefix =~ /getenv/) {
       # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
       s/%{$prefix:$arg}/$ENV{$arg}/g;
+    } elsif ($prefix =~ /expand/) {
+      # helper for parametrized macros
+      print "EXPAND: $arg\n";
     }
   }
   pos = 0; # reset to start of $_
