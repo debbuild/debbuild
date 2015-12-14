@@ -569,7 +569,7 @@ sub parse_spec {
 #	parsing right now
 
 LINE: while (<SPECFILE>) {
-    next if /^\s*#/ and $stage !~ /changelog|copy/; # Ignore comments...
+    s/\s*#.*$// unless $stage =~ /changelog|copy/; # Ignore comments...
     next if /^\s*$/ and $stage !~ /changelog|copy|desc/; # ... and blank lines.
 
 # no sense in continuing if we find something we don't grok
