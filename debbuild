@@ -241,6 +241,12 @@ if ($cmdopts{type} eq 's') {
   exit 0;
 }
 
+# debbuild --nobuild <SPECFILE>
+if ($cmdopts{type} eq 'n') {
+  parse_spec($specglobals{specfile});
+  exit 0;
+}
+
 # output stage of --showpkgs
 if ($cmdopts{type} eq 'd') {
   parse_spec($specglobals{specfile});
@@ -399,6 +405,7 @@ sub parse_cmd {
     'eval=s'        => sub { print expandmacros($_[1]),"\n" },
     'short-circuit' => sub { $cmdopts{short} = 'y' },
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
+    'nobuild=s'     => sub { $cmdopts{type} = 'n', $specglobals{specfile} = $_[1] },
     'v+' => \$verbosity, # bump verbosity.  Not sure what I'll actually do here...
     'rebuild=s'   => \&srcpkg_handler,
     'recompile=s' => \&srcpkg_handler,
@@ -524,6 +531,7 @@ Common options:
 debbuild-specific options:
       -i, --install              Unpack a .sdeb in the %_topdir tree
       --showpkgs                 Show package names that would be built.  Only works with .spec files.
+      --nobuild <specfile>       Parse <specfile>, but do no processing
 };
     exit 0;
   }
@@ -1845,6 +1853,8 @@ debbuild - Build Debian-compatible .deb packages from RPM .spec files
 
  debbuild --showpkgs
 
+ debbuild --nobuild file.spec
+
  debbuild {--install|-i} foo.sdeb
 
 =head1 DESCRIPTION
@@ -1860,7 +1870,6 @@ several rpmbuild options are not supported:
 
  --showrc
  --clean
- --nobuild
  --rmsource
  --rmspec
  --sign
