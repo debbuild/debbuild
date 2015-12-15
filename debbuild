@@ -375,7 +375,7 @@ sub load_config {
                         "$homedir/.debmacros") ) {
     open MACROS,"<$macros" or next; # should we warn about missing macro files?
     while (<MACROS>) {
-      next unless my ($macro,$value) = /^%([a-z0-9_]+)\s+(.+)$/;
+      next unless my ($macro,$value) = /^%([a-z0-9_]+(?:\(\))?)\s+(.+)$/;
       if ($value =~ s/.*\\$//) { # multi-line macro
         while (<MACROS>) {
           $value .= $_;
