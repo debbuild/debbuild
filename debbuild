@@ -1724,29 +1724,6 @@ sub expandmacros {
   s/%\((.+?)\)/my $res = qx($specglobals{_buildshell} -c '$1'); chomp $res; $res;/eg;
     # Yay!  ' characters apparently get properly exscapededed.
 
-  # conditional build stuff: although (glo)macros aka /usr/lib/debbuild/macros
-  # already contains definitions for these three pairs of macros, they can not
-  # be used directly, because of lack of the 'expand' processor and missing
-  # support for 'function macros' that take arguments. instead we implement
-  # their genuine functionality in plain perl.
-  #
-  # %{with <flag>}, %{without <flag>}: shorthand for %{defined with_<flag>}
-  s/%{with (\w+)}/%{defined with_$1}/g;
-  s/%{without (\w+)}/%{undefined with_$1}/g;
-  #
-  # %{defined <flag>}, %{undefined <flag>}: check if <flag> is defined.
-  s/%{defined (\w+)}/defined $specglobals{$1} or 0/eg;
-  s/%{undefined (\w+)}/not defined $specglobals{$1} or 0/eg;
-  #
-  # define 'with_foo' if '--with foo' was specified on command-line.
-  if (s/%{bcond_with (\w+)}//) {
-    $specglobals{"with_$1"} = 1 if defined $specglobals{"_with_$1"};
-  }
-  # define 'with_foo' if '--without foo' was *not* specified on command-line.
-  if (s/%{bcond_without (\w+)}//) {
-    $specglobals{"with_$1"} = 1 unless defined $specglobals{"_without_$1"};
-  }
-
   # unescape multi-line macros
   s/\\"/"/g;
   s/\\\\/\\/g;
