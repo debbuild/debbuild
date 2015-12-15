@@ -334,7 +334,7 @@ if ($cmdopts{type} eq 'b') {
 # Hokay.  Need to:
 # -> prep if -.p OR (-.[cilabs] AND !--short-circuit)
 if ($cmdopts{stage} eq 'p' || ($cmdopts{stage} =~ /[cilab]/ && $cmdopts{short} ne 'y')) {
-  prep();
+  execute_script('prep');
 }
 # -> build if -.c OR (-.[ilabs] AND !--short-circuit)
 if ($cmdopts{stage} eq 'c' || ($cmdopts{stage} =~ /[ilab]/ && $cmdopts{short} ne 'y')) {
@@ -1140,25 +1140,28 @@ sub process_filesline {
 } # end process_filesline()
 
 
-## prep()
-# Writes and executes the %prep script (mostly) built while reading the spec file.
-sub prep {
+## execute_script()
+# Writes and executes a %script (mostly) built while reading the spec file.
+sub execute_script {
+  my ($stage) = @_;
+  return unless $script{$stage};
+
   # create script filename
-  my $prepscriptfile = "$tmpdir/deb-tmp.prep.".int(rand(99998)+1);
-  sysopen(PREPSCRIPT, $prepscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
-	or die "Can't open/create prep script file $prepscriptfile: $!\n";
-  print PREPSCRIPT $scriptletbase;
-  print PREPSCRIPT expandmacros($script{prep});
-  close PREPSCRIPT;
+  my $scriptfile = "$tmpdir/deb-tmp.$stage.".int(rand(99998)+1);
+  sysopen(SCRIPT, $scriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
+	or die "Can't open/create $stage script file $scriptfile: $!\n";
+  print SCRIPT $scriptletbase;
+  print SCRIPT expandmacros($script{prep});
+  close SCRIPT;
 
   # execute
-  print "Calling \%prep script $prepscriptfile...\n";
-  system("$specglobals{_buildshell} -e $prepscriptfile") == 0
+  print "Calling \%$stage script $scriptfile...\n";
+  system("$specglobals{_buildshell} -e $scriptfile") == 0
 	or die "Can't exec: $!\n";
 
   # and clean up
-  unlink $prepscriptfile;
-} # end prep()
+  unlink $scriptfile;
+} # end execute_script()
 
 
 ## build()
