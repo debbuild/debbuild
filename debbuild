@@ -226,6 +226,7 @@ my $scriptletbase = q(%{___build_template});
 my %script = ( prep => '',
 		build => '',
 		install => '',
+		check => '',
 		clean => '[ "\$RPM_BUILD_ROOT" != "/" ] && '.
 			"%{__rm} -rf \$RPM_BUILD_ROOT\n" );
 my $finalmessages = ''; # A place to stuff messages that I want printed at the *very* end of any processing.
@@ -764,6 +765,12 @@ ENDIF: if (/^%endif/) {
       next LINE;
     } # %install
 
+    if (/^\%check/) {
+      $stage = 'check';
+      $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
+      next LINE;
+    } # %install
+
     if (/^\%clean/) {
       $stage = 'clean';
       $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
@@ -858,6 +865,11 @@ ENDIF: if (/^%endif/) {
       $script{$stage} .= $_;
       next LINE;
     } # install
+
+    if ($stage eq 'check') {
+      $script{$stage} .= $_;
+      next LINE;
+    } # clean
 
     if ($stage eq 'clean') {
       $script{$stage} .= $_;
@@ -1203,6 +1215,8 @@ sub install {
       symlink "$linkdest.gz", "$manpage.gz" or print "DEBUG: wibble: symlinking manpage failed: $!\n";
     }
   }
+
+  execute_script('check');
 } # end install()
 
 
