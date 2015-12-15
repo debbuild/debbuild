@@ -385,7 +385,7 @@ sub load_config {
                         "$homedir/.debmacros") ) {
     open MACROS,"<$macros" or next; # should we warn about missing macro files?
     while (<MACROS>) {
-      next unless my ($macro,$value) = /^%([a-z0-9_]+)\s+(.+)$/;
+      next unless my ($macro,$value) = /^%([a-z0-9_]+(?:\(\))?)\s+(.+)$/;
       if ($value =~ s/.*\\$//) { # multi-line macro
         while (<MACROS>) {
           $value .= $_;
@@ -484,11 +484,7 @@ sub parse_cmd {
     }
     my ($macro,$value) = $opt_value =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i;
     if ($value) {
-      if ($macro =~ /^(?:summary|name|epoch|version|release|group|copyright|url|packager)$/i) {
-        $pkgdata{main}{$macro} = $value;
-      } else {
-        $specglobals{$macro} = $value;
-      }
+      store_value($macro,$value);
     } else {
       warn "WARNING: missing value for macro $macro in --$opt_name! Ignoring.\n";
     }
@@ -581,7 +577,7 @@ sub parse_spec {
 #	parsing right now
 
 LINE: while (<SPECFILE>) {
-    s/\s*#.*$// unless $stage =~ /changelog|copy/; # Ignore comments...
+    next if /^\s*#.*$/ and $stage !~ /changelog|copy/; # Ignore comments...
     next if /^\s*$/ and $stage !~ /changelog|copy|desc/; # ... and blank lines.
 
 # no sense in continuing if we find something we don't grok
@@ -612,16 +608,12 @@ LINE: while (<SPECFILE>) {
 # preprocess %define's
     if (my ($macro, $key, $def) = /^\%(define|global|undefine)\s+(\S+)(?:\s+(.+))?$/) {
       my $value = $macro eq 'undefine' ? undef : expandmacros($def);
-      if ($key =~ /^(?:summary|name|epoch|version|release|group|copyright|url|packager)$/i) {
-        $pkgdata{main}{$key} = $value;
-      } else {
-        $specglobals{$key} = $value;
-      }
+      store_value($key,$value);
       next LINE;
     }
 
     # conditional build stuff
-    if (/^%bcond_with/) {
+    if (s/%(bcond_with(?:out)?)\s+(\w+)/%{$1 $2}/) {
       expandmacros($_);
       next LINE;
     }
@@ -1617,11 +1609,27 @@ sub install_sdeb {
 } # end install_sdeb()
 
 
+## store_value()
+# Helper function for writing to the %macro storage(s)
+sub store_value {
+  my ($key,$value) = @_;
+
+  if ($key =~ /^(?:summary|name|epoch|version|release|group|copyright|url|packager)$/i) {
+    $pkgdata{main}{$key} = $value;
+  } else {
+    $specglobals{$key} = $value;
+  }
+} # end store_value()
+
+
 ## expandmacros()
 # Expands all %{blah} macros in the passed string
 sub expandmacros {
   local ($_) = @_;
   return $_ unless /%/; # nothing to substitute
+
+  # Store %globals
+  s/%global (\w+) (\w+)/store_value($1,$2)/eg;
 
   # Replace global macros
   s/%(\w+)/%{$1}/g;
@@ -1648,33 +1656,19 @@ sub expandmacros {
   s/%\((.+?)\)/my $res = qx($specglobals{_buildshell} -c '$1'); chomp $res; $res;/eg;
     # Yay!  ' characters apparently get properly exscapededed.
 
-  # conditional build stuff: although (glo)macros aka /usr/lib/debbuild/macros
-  # already contains definitions for these three pairs of macros, they can not
-  # be used directly, because of lack of the 'expand' processor and missing
-  # support for 'function macros' that take arguments. instead we implement
-  # their genuine functionality in plain perl.
-  #
-  # %{with <flag>}, %{without <flag>}: shorthand for %{defined with_<flag>}
-  s/%{with (.+?)}/%{defined with_$1}/g;
-  s/%{without (.+?)}/%{undefined with_$1}/g;
-  #
-  # %{defined <flag>}, %{undefined <flag>}: check if <flag> is defined.
-  s/%{defined (.+?)}/defined $specglobals{$1} or 0/eg;
-  s/%{undefined (.+?)}/not defined $specglobals{$1} or 0/eg;
-  #
-  # define 'with_foo' if '--with foo' was specified on command-line.
-  if (s/%{bcond_with}\s+(\w+)//) {
-    $specglobals{"with_$1"} = 1 if defined $specglobals{"_with_$1"};
-  }
-  # define 'with_foo' if '--without foo' was *not* specified on command-line.
-  if (s/%{bcond_without}\s+(\w+)//) {
-    $specglobals{"with_$1"} = 1 unless defined $specglobals{"_without_$1"};
-  }
-
   # unescape multi-line macros
   s/\\"/"/g;
   s/\\\\/\\/g;
   s/(\S)\\+\n/$1\n/g;
+
+  # handle '%{parametrized macros}' with nested curly braces, all in one go!
+  while (my ($prefix,$arg) = map { /{(\w+) (\w+)}/ } extract_multiple($_,
+      [ sub { extract_bracketed($_[0],'{}') } ]) ) {
+    (my $paramac = $specglobals{"$prefix\(\)"}) =~ s/\%\{1\}/$arg/g;
+    $paramac =~ s/%%/%/g;
+    s/%{$prefix $arg}/$paramac/g;
+  }
+  pos = 0; # reset to start of $_
 
   # handle '%{prefixed:macros}' with nested curly braces, all in one go!
   s/%{url2path:/%{u2p:/g;
@@ -1694,7 +1688,7 @@ sub expandmacros {
       s/%{$prefix:$arg}/$ENV{$arg}/g;
     } elsif ($prefix =~ /expand/) {
       # helper for parametrized macros
-      print "EXPAND: $arg\n";
+      s/%{$prefix:.+}/$arg/g;
     }
   }
   pos = 0; # reset to start of $_
