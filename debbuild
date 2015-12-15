@@ -609,7 +609,7 @@ LINE: while (<SPECFILE>) {
     }
 
     # conditional build stuff
-    if (/^%bcond_with/) {
+    if (s/%(bcond_with(?:out)?)\s+(\w+)/%{$1 $2}/) {
       expandmacros($_);
       next LINE;
     }
@@ -1723,19 +1723,19 @@ sub expandmacros {
   # their genuine functionality in plain perl.
   #
   # %{with <flag>}, %{without <flag>}: shorthand for %{defined with_<flag>}
-  s/%{with (.+?)}/%{defined with_$1}/g;
-  s/%{without (.+?)}/%{undefined with_$1}/g;
+  s/%{with (\w+)}/%{defined with_$1}/g;
+  s/%{without (\w+)}/%{undefined with_$1}/g;
   #
   # %{defined <flag>}, %{undefined <flag>}: check if <flag> is defined.
-  s/%{defined (.+?)}/defined $specglobals{$1} or 0/eg;
-  s/%{undefined (.+?)}/not defined $specglobals{$1} or 0/eg;
+  s/%{defined (\w+)}/defined $specglobals{$1} or 0/eg;
+  s/%{undefined (\w+)}/not defined $specglobals{$1} or 0/eg;
   #
   # define 'with_foo' if '--with foo' was specified on command-line.
-  if (s/%{bcond_with}\s+(\w+)//) {
+  if (s/%{bcond_with (\w+)}//) {
     $specglobals{"with_$1"} = 1 if defined $specglobals{"_with_$1"};
   }
   # define 'with_foo' if '--without foo' was *not* specified on command-line.
-  if (s/%{bcond_without}\s+(\w+)//) {
+  if (s/%{bcond_without (\w+)}//) {
     $specglobals{"with_$1"} = 1 unless defined $specglobals{"_without_$1"};
   }
 
