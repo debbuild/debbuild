@@ -223,8 +223,12 @@ my $buildreq = '';
 
 # Scriptlets
 my $scriptletbase = q(%{___build_template});
-my ($prepscript, $buildscript, $installscript) = ('') x 3;
-my $cleanscript = qq([ "\$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf \$RPM_BUILD_ROOT\n);
+my %script = ( prep => '',
+		build => '',
+		install => '',
+		check => '',
+		clean => '[ "\$RPM_BUILD_ROOT" != "/" ] && '.
+			"%{__rm} -rf \$RPM_BUILD_ROOT\n" );
 my $finalmessages = ''; # A place to stuff messages that I want printed at the *very* end of any processing.
 
 #### main ####
@@ -331,11 +335,11 @@ if ($cmdopts{type} eq 'b') {
 # Hokay.  Need to:
 # -> prep if -.p OR (-.[cilabs] AND !--short-circuit)
 if ($cmdopts{stage} eq 'p' || ($cmdopts{stage} =~ /[cilab]/ && $cmdopts{short} ne 'y')) {
-  prep();
+  execute_script('prep');
 }
 # -> build if -.c OR (-.[ilabs] AND !--short-circuit)
 if ($cmdopts{stage} eq 'c' || ($cmdopts{stage} =~ /[ilab]/ && $cmdopts{short} ne 'y')) {
-  build();
+  execute_script('build');
 }
 # -> install if -.[ilabs]
 #if ($cmdopts{stage} eq 'i' || ($cmdopts{stage} =~ /[lab]/ && $cmdopts{short} ne 'y')) {
@@ -346,12 +350,12 @@ if ($cmdopts{stage} =~ /[ilab]/) {
 if ($cmdopts{stage} eq 'a') {
   binpackage();
   srcpackage();
-  clean();
+  execute_script('clean');
 }
 # -> binpkg if -.b
 if ($cmdopts{stage} eq 'b') {
   binpackage();
-  clean();
+  execute_script('clean');
 }
 # -> srcpkg if -.s
 if ($cmdopts{stage} eq 's') {
@@ -749,23 +753,11 @@ ENDIF: if (/^%endif/) {
       next LINE;
     } # %prep
 
-    if (/^\%build/) {
-      $stage = 'build';
-      $buildscript .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
+    if (/^\%(build|install|check|clean)/) {
+      $stage = $1;
+      $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
       next LINE;
-    } # %build
-
-    if (/^\%install/) {
-      $stage = 'install';
-      $installscript .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
-      next LINE;
-    } # %install
-
-    if (/^\%clean/) {
-      $stage = 'clean';
-      $cleanscript .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
-      next LINE;
-    } # %clean
+    } # %build,install,check,clean
 
     if (/^\%(pre|post|preun|postun)\b(?:\s+(?:-n\s+)?(.+))?/i) {
       $stage = 'prepost';
@@ -837,29 +829,19 @@ ENDIF: if (/^%endif/) {
       # Actual handling for %prep section.  May have %setup macro, may include
       # %patch tags, may be just a bare shell script.
       if (s/^\%setup//) {
-        $prepscript .= process_setup();
+        $script{$stage} .= process_setup();
       } elsif (s/^\%patch//) {
-        $prepscript .= process_patch();
+        $script{$stage} .= process_patch();
       } else {
-        $prepscript .= $_;
+        $script{$stage} .= $_;
       }
       next LINE;
     } # prep
 
-    if ($stage eq 'build') {
-      $buildscript .= $_;
+    if ($stage =~ /build|install|check|clean/) {
+      $script{$stage} .= $_;
       next LINE;
-    } # build
-
-    if ($stage eq 'install') {
-      $installscript .= $_;
-      next LINE;
-    } # install
-
-    if ($stage eq 'clean') {
-      $cleanscript .= $_;
-      next LINE;
-    } # clean
+    } # build,install,check,clean
 
     if ($stage eq 'prepost') {
       $pkgdata{$subname}{$scriptlet} .= $_;
@@ -1137,46 +1119,32 @@ sub process_filesline {
 } # end process_filesline()
 
 
-## prep()
-# Writes and executes the %prep script (mostly) built while reading the spec file.
-sub prep {
+## execute_script()
+# Writes and executes a %script (mostly) built while reading the spec file.
+sub execute_script {
+  my ($stage, $what, $for) = @_;
+
+  # anything to do?
+  return unless $script{$stage};
+
   # create script filename
-  my $prepscriptfile = "$tmpdir/deb-tmp.prep.".int(rand(99998)+1);
-  sysopen(PREPSCRIPT, $prepscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
-	or die "Can't open/create prep script file $prepscriptfile: $!\n";
-  print PREPSCRIPT $scriptletbase;
-  print PREPSCRIPT expandmacros($prepscript);
-  close PREPSCRIPT;
+  my $scriptfile = "$tmpdir/deb-tmp.$stage.".int(rand(99998)+1);
+  sysopen(SCRIPT, $scriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
+	or die "Can't open/create ".(defined $what ? $what : $stage).
+		"script file $scriptfile: $!\n";
+  print SCRIPT $scriptletbase;
+  print SCRIPT expandmacros($script{$stage});
+  close SCRIPT;
 
   # execute
-  print "Calling \%prep script $prepscriptfile...\n";
-  system("$specglobals{_buildshell} -e $prepscriptfile") == 0
+  print "Calling ".(defined $what ? $what : "\%$stage")." script $scriptfile".
+    (defined $for ? $for : '')."...\n";
+  system("$specglobals{_buildshell} -e $scriptfile") == 0
 	or die "Can't exec: $!\n";
 
   # and clean up
-  unlink $prepscriptfile;
-} # end prep()
-
-
-## build()
-# Writes and executes the %build script (mostly) built while reading the spec file.
-sub build {
-  # create script filename
-  my $buildscriptfile = "$tmpdir/deb-tmp.build.".int(rand(99998)+1);
-  sysopen(BUILDSCRIPT, $buildscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
-	or die "Can't open/create build script file $buildscriptfile: $!\n";
-  print BUILDSCRIPT $scriptletbase;
-  print BUILDSCRIPT expandmacros($buildscript);
-  close BUILDSCRIPT;
-
-  # execute
-  print "Calling \%build script $buildscriptfile...\n";
-  system("$specglobals{_buildshell} -e $buildscriptfile") == 0
-	or die "Can't exec: $!\n";
-
-  # and clean up
-  unlink $buildscriptfile;
-} # end build()
+  unlink $scriptfile;
+} # end execute_script()
 
 
 ## install()
@@ -1188,29 +1156,15 @@ sub install {
   foreach my $docpkg (keys %doclist) {
     (my $pkgname = $pkgdata{$docpkg}{name}) =~ s/_/-/g;
 
-    $installscript .= "DOCDIR=\$RPM_BUILD_ROOT\%{_docdir}/$pkgname\nexport DOCDIR\n";
-    $installscript .= "%{__mkdir_p} \$DOCDIR\n";
+    $script{install} .= "DOCDIR=\$RPM_BUILD_ROOT\%{_docdir}/$pkgname\nexport DOCDIR\n";
+    $script{install} .= "%{__mkdir_p} \$DOCDIR\n";
     $doclist{$docpkg} =~ s/^\s*//;
     foreach (split ' ',$doclist{$docpkg}) {
-      $installscript .= "%{__cp} -pr $_ \$DOCDIR/\n";
+      $script{install} .= "%{__cp} -pr $_ \$DOCDIR/\n";
     }
   }
 
-  # create script filename
-  my $installscriptfile = "$tmpdir/deb-tmp.inst.".int(rand(99998)+1);
-  sysopen(INSTSCRIPT, $installscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
-	or die "Can't open/create install script file $installscriptfile: $!\n";
-  print INSTSCRIPT $scriptletbase;
-  print INSTSCRIPT expandmacros($installscript);
-  close INSTSCRIPT;
-
-  # execute
-  print "Calling \%install script $installscriptfile...\n";
-  system("$specglobals{_buildshell} -e $installscriptfile") == 0
-	or die "Can't exec: $!\n";
-
-  # and clean up
-  unlink $installscriptfile;
+  execute_script('install');
 
   # final bit: compress manpages if present
   # done here cuz I don't grok shell well
@@ -1230,6 +1184,8 @@ sub install {
       symlink "$linkdest.gz", "$manpage.gz" or print "DEBUG: wibble: symlinking manpage failed: $!\n";
     }
   }
+
+  execute_script('check');
 } # end install()
 
 
@@ -1371,18 +1327,6 @@ sub binpackage {
     # Have I mentioned I hate Debian Policy?
     $pkgdata{$pkg}{name} =~ tr/_/-/;
 
-    # create script filename
-    my $debscriptfile = "$tmpdir/deb-tmp.pkg.".int(rand(99998)+1);
-    sysopen(DEBSCRIPT, $debscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
-	or die "Can't open/create package-creation script file $debscriptfile: $!\n";
-    print DEBSCRIPT $scriptletbase;
-    print DEBSCRIPT "$specglobals{__fakeroot} -- $specglobals{__dpkg_deb} -b $specglobals{buildroot}/$pkg $topdir/DEBS/$pkgdata{$pkg}{arch}/".
-	"$pkgdata{$pkg}{name}_".
-	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
-	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb\n";
-    # %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
-    close DEBSCRIPT;
-
     $pkgdata{$pkg}{summary} = expandmacros($pkgdata{$pkg}{summary});
     my $control = "Package: $pkgdata{$pkg}{name}\n".
 	"Version: ".(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
@@ -1439,13 +1383,14 @@ sub binpackage {
       }
     }
 
-    # execute
-    print "Calling package creation script $debscriptfile for $pkgdata{$pkg}{name}...\n";
-    system("$specglobals{_buildshell} -e $debscriptfile") == 0
-	or die "Can't exec: $!\n";
+    $script{pkg} = "$specglobals{__fakeroot} -- $specglobals{__dpkg_deb} ".
+        "-b $specglobals{buildroot}/$pkg $topdir/DEBS/$pkgdata{$pkg}{arch}/".
+	"$pkgdata{$pkg}{name}_".
+	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
+	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb\n";
+    # %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
 
-    # and clean up
-    unlink $debscriptfile;
+    execute_script('pkg', 'package-creation', " for $pkgdata{$pkg}{name}");
 
     $finalmessages .= "Wrote binary package ".
 	"$pkgdata{$pkg}{name}_".
@@ -1509,27 +1454,6 @@ sub srcpackage {
   system(expandmacros($paxcmd)) == 0 and
   $finalmessages .= "Wrote source package $pkgsrcname in $topdir/SDEBS.\n";
 } # end srcpackage()
-
-
-## clean()
-# Writes and executes the %clean script (mostly) built while reading the spec file.
-sub clean {
-  # create script filename
-  my $cleanscriptfile = "$tmpdir/deb-tmp.clean.".int(rand(99998)+1);
-  sysopen(CLEANSCRIPT, $cleanscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
-	or die $!;
-  print CLEANSCRIPT $scriptletbase;
-  print CLEANSCRIPT expandmacros($cleanscript);
-  close CLEANSCRIPT;
-
-  # execute
-  print "Calling \%clean script $cleanscriptfile...\n";
-  system("$specglobals{_buildshell} -e $cleanscriptfile") == 0
-	or die "Can't exec: $!\n";
-
-  # and clean up
-  unlink $cleanscriptfile;
-} # end clean()
 
 
 ## checkbuildreq()
