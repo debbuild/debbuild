@@ -1744,6 +1744,15 @@ sub expandmacros {
   s/\\\\/\\/g;
   s/(\S)\\+\n/$1\n/g;
 
+  # handle '%{parametrized macros}' with nested curly braces, all in one go!
+  while (my ($prefix,$arg) = map { /{(\w+) (\w+)}/ } extract_multiple($_,
+      [ sub { extract_bracketed($_[0],'{}') } ]) ) {
+    (my $paramac = $specglobals{"$prefix\(\)"}) =~ s/\%\{1\}/$arg/g;
+    $paramac =~ s/%%/%/g;
+    s/%{$prefix $arg}/$paramac/g;
+  }
+  pos = 0; # reset to start of $_
+
   # handle '%{prefixed:macros}' with nested curly braces, all in one go!
   s/%{url2path:/%{u2p:/g;
   while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ } extract_multiple($_,
