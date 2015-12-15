@@ -753,29 +753,11 @@ ENDIF: if (/^%endif/) {
       next LINE;
     } # %prep
 
-    if (/^\%build/) {
-      $stage = 'build';
+    if (/^\%(build|install|check|clean)/) {
+      $stage = $1;
       $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
       next LINE;
-    } # %build
-
-    if (/^\%install/) {
-      $stage = 'install';
-      $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
-      next LINE;
-    } # %install
-
-    if (/^\%check/) {
-      $stage = 'check';
-      $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
-      next LINE;
-    } # %install
-
-    if (/^\%clean/) {
-      $stage = 'clean';
-      $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
-      next LINE;
-    } # %clean
+    } # %build,install,check,clean
 
     if (/^\%(pre|post|preun|postun)\b(?:\s+(?:-n\s+)?(.+))?/i) {
       $stage = 'prepost';
@@ -856,25 +838,10 @@ ENDIF: if (/^%endif/) {
       next LINE;
     } # prep
 
-    if ($stage eq 'build') {
+    if ($stage =~ /build|install|check|clean/) {
       $script{$stage} .= $_;
       next LINE;
-    } # build
-
-    if ($stage eq 'install') {
-      $script{$stage} .= $_;
-      next LINE;
-    } # install
-
-    if ($stage eq 'check') {
-      $script{$stage} .= $_;
-      next LINE;
-    } # clean
-
-    if ($stage eq 'clean') {
-      $script{$stage} .= $_;
-      next LINE;
-    } # clean
+    } # build,install,check,clean
 
     if ($stage eq 'prepost') {
       $pkgdata{$subname}{$scriptlet} .= $_;
