@@ -473,11 +473,7 @@ sub parse_cmd {
     }
     my ($macro,$value) = $opt_value =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i;
     if ($value) {
-      if ($macro =~ /^(?:summary|name|epoch|version|release|group|copyright|url|packager)$/i) {
-        $pkgdata{main}{$macro} = $value;
-      } else {
-        $specglobals{$macro} = $value;
-      }
+      store_value($macro,$value);
     } else {
       warn "WARNING: missing value for macro $macro in --$opt_name! Ignoring.\n";
     }
@@ -600,11 +596,7 @@ LINE: while (<SPECFILE>) {
 # preprocess %define's
     if (my ($macro, $key, $def) = /^\%(define|global|undefine)\s+(\S+)(?:\s+(.+))?$/) {
       my $value = $macro eq 'undefine' ? undef : expandmacros($def);
-      if ($key =~ /^(?:summary|name|epoch|version|release|group|copyright|url|packager)$/i) {
-        $pkgdata{main}{$key} = $value;
-      } else {
-        $specglobals{$key} = $value;
-      }
+      store_value($key,$value);
       next LINE;
     }
 
@@ -1685,11 +1677,27 @@ sub install_sdeb {
 } # end install_sdeb()
 
 
+## store_value()
+# Helper function for writing to the %macro storage(s)
+sub store_value {
+  my ($key,$value) = @_;
+
+  if ($key =~ /^(?:summary|name|epoch|version|release|group|copyright|url|packager)$/i) {
+    $pkgdata{main}{$key} = $value;
+  } else {
+    $specglobals{$key} = $value;
+  }
+} # end store_value()
+
+
 ## expandmacros()
 # Expands all %{blah} macros in the passed string
 sub expandmacros {
   local ($_) = @_;
   return $_ unless /%/; # nothing to substitute
+
+  # Store %globals
+  s/%global (\w+) (\w+)/store_value($1,$2)/eg;
 
   # Replace global macros
   s/%(\w+)/%{$1}/g;
