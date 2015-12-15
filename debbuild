@@ -1325,18 +1325,6 @@ sub binpackage {
     # Have I mentioned I hate Debian Policy?
     $pkgdata{$pkg}{name} =~ tr/_/-/;
 
-    # create script filename
-    my $debscriptfile = "$tmpdir/deb-tmp.pkg.".int(rand(99998)+1);
-    sysopen(DEBSCRIPT, $debscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
-	or die "Can't open/create package-creation script file $debscriptfile: $!\n";
-    print DEBSCRIPT $scriptletbase;
-    print DEBSCRIPT "$specglobals{__fakeroot} -- $specglobals{__dpkg_deb} -b $specglobals{buildroot}/$pkg $topdir/DEBS/$pkgdata{$pkg}{arch}/".
-	"$pkgdata{$pkg}{name}_".
-	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
-	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb\n";
-    # %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
-    close DEBSCRIPT;
-
     $pkgdata{$pkg}{summary} = expandmacros($pkgdata{$pkg}{summary});
     my $control = "Package: $pkgdata{$pkg}{name}\n".
 	"Version: ".(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
@@ -1392,6 +1380,21 @@ sub binpackage {
         chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/$scrfile";
       }
     }
+
+    $script{deb} = "$specglobals{__fakeroot} -- $specglobals{__dpkg_deb} ".
+        "-b $specglobals{buildroot}/$pkg $topdir/DEBS/$pkgdata{$pkg}{arch}/".
+	"$pkgdata{$pkg}{name}_".
+	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
+	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb\n";
+    # %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
+
+    # create script filename
+    my $debscriptfile = "$tmpdir/deb-tmp.pkg.".int(rand(99998)+1);
+    sysopen(DEBSCRIPT, $debscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
+	or die "Can't open/create package-creation script file $debscriptfile: $!\n";
+    print DEBSCRIPT $scriptletbase;
+    print DEBSCRIPT $script{deb};
+    close DEBSCRIPT;
 
     # execute
     print "Calling package creation script $debscriptfile for $pkgdata{$pkg}{name}...\n";
