@@ -1122,7 +1122,7 @@ sub process_filesline {
 ## execute_script()
 # Writes and executes a %script (mostly) built while reading the spec file.
 sub execute_script {
-  my ($stage) = @_;
+  my ($stage, $what, $for) = @_;
 
   # anything to do?
   return unless $script{$stage};
@@ -1130,13 +1130,15 @@ sub execute_script {
   # create script filename
   my $scriptfile = "$tmpdir/deb-tmp.$stage.".int(rand(99998)+1);
   sysopen(SCRIPT, $scriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
-	or die "Can't open/create $stage script file $scriptfile: $!\n";
+	or die "Can't open/create ".(defined $what ? $what : $stage).
+		"script file $scriptfile: $!\n";
   print SCRIPT $scriptletbase;
   print SCRIPT expandmacros($script{$stage});
   close SCRIPT;
 
   # execute
-  print "Calling \%$stage script $scriptfile...\n";
+  print "Calling ".(defined $what ? $what : "\%$stage")." script $scriptfile".
+    (defined $for ? $for : '')."...\n";
   system("$specglobals{_buildshell} -e $scriptfile") == 0
 	or die "Can't exec: $!\n";
 
@@ -1381,28 +1383,14 @@ sub binpackage {
       }
     }
 
-    $script{deb} = "$specglobals{__fakeroot} -- $specglobals{__dpkg_deb} ".
+    $script{pkg} = "$specglobals{__fakeroot} -- $specglobals{__dpkg_deb} ".
         "-b $specglobals{buildroot}/$pkg $topdir/DEBS/$pkgdata{$pkg}{arch}/".
 	"$pkgdata{$pkg}{name}_".
 	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
 	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb\n";
     # %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
 
-    # create script filename
-    my $debscriptfile = "$tmpdir/deb-tmp.pkg.".int(rand(99998)+1);
-    sysopen(DEBSCRIPT, $debscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
-	or die "Can't open/create package-creation script file $debscriptfile: $!\n";
-    print DEBSCRIPT $scriptletbase;
-    print DEBSCRIPT $script{deb};
-    close DEBSCRIPT;
-
-    # execute
-    print "Calling package creation script $debscriptfile for $pkgdata{$pkg}{name}...\n";
-    system("$specglobals{_buildshell} -e $debscriptfile") == 0
-	or die "Can't exec: $!\n";
-
-    # and clean up
-    unlink $debscriptfile;
+    execute_script('pkg', 'package-creation', " for $pkgdata{$pkg}{name}");
 
     $finalmessages .= "Wrote binary package ".
 	"$pkgdata{$pkg}{name}_".
