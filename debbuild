@@ -223,9 +223,11 @@ my $buildreq = '';
 
 # Scriptlets
 my $scriptletbase = q(%{___build_template});
-my %script = ( prep => '' );
-my ($buildscript, $installscript) = ('') x 2;
-my $cleanscript = qq([ "\$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf \$RPM_BUILD_ROOT\n);
+my %script = ( prep => '',
+		build => '',
+		install => '',
+		clean => '[ "\$RPM_BUILD_ROOT" != "/" ] && '.
+			"%{__rm} -rf \$RPM_BUILD_ROOT\n" );
 my $finalmessages = ''; # A place to stuff messages that I want printed at the *very* end of any processing.
 
 #### main ####
@@ -752,19 +754,19 @@ ENDIF: if (/^%endif/) {
 
     if (/^\%build/) {
       $stage = 'build';
-      $buildscript .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
+      $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
       next LINE;
     } # %build
 
     if (/^\%install/) {
       $stage = 'install';
-      $installscript .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
+      $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
       next LINE;
     } # %install
 
     if (/^\%clean/) {
       $stage = 'clean';
-      $cleanscript .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
+      $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
       next LINE;
     } # %clean
 
@@ -848,17 +850,17 @@ ENDIF: if (/^%endif/) {
     } # prep
 
     if ($stage eq 'build') {
-      $buildscript .= $_;
+      $script{$stage} .= $_;
       next LINE;
     } # build
 
     if ($stage eq 'install') {
-      $installscript .= $_;
+      $script{$stage} .= $_;
       next LINE;
     } # install
 
     if ($stage eq 'clean') {
-      $cleanscript .= $_;
+      $script{$stage} .= $_;
       next LINE;
     } # clean
 
@@ -1167,7 +1169,7 @@ sub build {
   sysopen(BUILDSCRIPT, $buildscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die "Can't open/create build script file $buildscriptfile: $!\n";
   print BUILDSCRIPT $scriptletbase;
-  print BUILDSCRIPT expandmacros($buildscript);
+  print BUILDSCRIPT expandmacros($script{build});
   close BUILDSCRIPT;
 
   # execute
@@ -1189,11 +1191,11 @@ sub install {
   foreach my $docpkg (keys %doclist) {
     (my $pkgname = $pkgdata{$docpkg}{name}) =~ s/_/-/g;
 
-    $installscript .= "DOCDIR=\$RPM_BUILD_ROOT\%{_docdir}/$pkgname\nexport DOCDIR\n";
-    $installscript .= "%{__mkdir_p} \$DOCDIR\n";
+    $script{install} .= "DOCDIR=\$RPM_BUILD_ROOT\%{_docdir}/$pkgname\nexport DOCDIR\n";
+    $script{install} .= "%{__mkdir_p} \$DOCDIR\n";
     $doclist{$docpkg} =~ s/^\s*//;
     foreach (split ' ',$doclist{$docpkg}) {
-      $installscript .= "%{__cp} -pr $_ \$DOCDIR/\n";
+      $script{install} .= "%{__cp} -pr $_ \$DOCDIR/\n";
     }
   }
 
@@ -1202,7 +1204,7 @@ sub install {
   sysopen(INSTSCRIPT, $installscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die "Can't open/create install script file $installscriptfile: $!\n";
   print INSTSCRIPT $scriptletbase;
-  print INSTSCRIPT expandmacros($installscript);
+  print INSTSCRIPT expandmacros($script{install});
   close INSTSCRIPT;
 
   # execute
@@ -1520,7 +1522,7 @@ sub clean {
   sysopen(CLEANSCRIPT, $cleanscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die $!;
   print CLEANSCRIPT $scriptletbase;
-  print CLEANSCRIPT expandmacros($cleanscript);
+  print CLEANSCRIPT expandmacros($script{clean});
   close CLEANSCRIPT;
 
   # execute
