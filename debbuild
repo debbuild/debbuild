@@ -223,7 +223,8 @@ my $buildreq = '';
 
 # Scriptlets
 my $scriptletbase = q(%{___build_template});
-my ($prepscript, $buildscript, $installscript) = ('') x 3;
+my %script = ( prep => '' );
+my ($buildscript, $installscript) = ('') x 2;
 my $cleanscript = qq([ "\$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf \$RPM_BUILD_ROOT\n);
 my $finalmessages = ''; # A place to stuff messages that I want printed at the *very* end of any processing.
 
@@ -837,11 +838,11 @@ ENDIF: if (/^%endif/) {
       # Actual handling for %prep section.  May have %setup macro, may include
       # %patch tags, may be just a bare shell script.
       if (s/^\%setup//) {
-        $prepscript .= process_setup();
+        $script{$stage} .= process_setup();
       } elsif (s/^\%patch//) {
-        $prepscript .= process_patch();
+        $script{$stage} .= process_patch();
       } else {
-        $prepscript .= $_;
+        $script{$stage} .= $_;
       }
       next LINE;
     } # prep
@@ -1145,7 +1146,7 @@ sub prep {
   sysopen(PREPSCRIPT, $prepscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die "Can't open/create prep script file $prepscriptfile: $!\n";
   print PREPSCRIPT $scriptletbase;
-  print PREPSCRIPT expandmacros($prepscript);
+  print PREPSCRIPT expandmacros($script{prep});
   close PREPSCRIPT;
 
   # execute
