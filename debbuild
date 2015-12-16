@@ -585,7 +585,7 @@ LINE: while (<SPECFILE>) {
     # %-tags which also make rpmbuild barf.  In theory.
 # notes:  some of these are not *entirely* case-sensitive (%ifxxx), but most are.
     # Extracted from the Maximum RPM online doc via:
-    # grep -h %[a-z] *|perl -e 'while (<>) { /\%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
+    # grep -h %[a-z] *|perl -e 'while (<>) { /%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
     if (/^%[a-z]/ &&
 		not /^%(?:attr|bcond_with|bcond_without|build|changelog|check|
 		clean|config|configure|copyrightdata|defattr|define|description|
@@ -606,7 +606,7 @@ LINE: while (<SPECFILE>) {
     }
 
 # preprocess %define's
-    if (my ($macro, $key, $def) = /^\%(define|global|undefine)\s+(\S+)(?:\s+(.+))?$/) {
+    if (my ($macro, $key, $def) = /^%(define|global|undefine)\s+(\S+)(?:\s+(.+))?$/) {
       my $value = $macro eq 'undefine' ? undef : expandmacros($def);
       store_value($key,$value);
       next LINE;
@@ -689,19 +689,19 @@ ENDIF: if (/^%endif/) {
       next LINE;
     } # %if..%else..%endif
 
-    if (/^\%{echo:(.+)}/) {
+    if (/^%{echo:(.+)}/) {
       print expandmacros($1),"\n";
       next LINE;
-    } elsif (/^\%{warn:(.+)}/) {
+    } elsif (/^%{warn:(.+)}/) {
       warn expandmacros($1),"\n";
       next LINE;
-    } elsif (/^\%{error:(.+)}/) {
+    } elsif (/^%{error:(.+)}/) {
       die expandmacros($1),"\n";
     }
 
 # now we pick out the sections and set "state" to parse that section.  Fugly but I can't see a better way.  >:(
 
-    if (/^\%description(?:\s+(?:-n\s+)?(.+))?/) {
+    if (/^%description(?:\s+(?:-n\s+)?(.+))?/) {
       $stage = 'desc';
       $subname = 'main';
       if ($1) {       # Magic to add entries to the right package
@@ -711,7 +711,7 @@ ENDIF: if (/^%endif/) {
       next LINE;
     } # %description
 
-    if (/^\%copyrightdata(?:\s+(?:-n\s+)?(.+))?/) {
+    if (/^%copyrightdata(?:\s+(?:-n\s+)?(.+))?/) {
       $stage = 'copy';
       $subname = 'main';
       if ($1) {       # Magic to add entries to the right package
@@ -721,7 +721,7 @@ ENDIF: if (/^%endif/) {
       next LINE;
     } # %copyrightdata
 
-    if (/^\%package\s+(?:-n\s+)?(.+)/) {
+    if (/^%package\s+(?:-n\s+)?(.+)/) {
       $stage = 'package';
       if ($1) {       # Magic to add entries to the right package
         my $tmp = expandmacros($1);
@@ -737,20 +737,20 @@ ENDIF: if (/^%endif/) {
       next LINE;
     } # %package
 
-    if (/^\%prep/) {
+    if (/^%prep/) {
       $stage = 'prep';
       # Replace some core macros
       $pkgdata{main}{source} = expandmacros($pkgdata{main}{source});
       next LINE;
     } # %prep
 
-    if (/^\%(build|install|check|clean)/) {
+    if (/^%(build|install|check|clean)/) {
       $stage = $1;
       $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
       next LINE;
     } # %build,install,check,clean
 
-    if (/^\%(pre|post|preun|postun)\b(?:\s+(?:-n\s+)?(.+))?/i) {
+    if (/^%(pre|post|preun|postun)\b(?:\s+(?:-n\s+)?(.+))?/i) {
       $stage = 'prepost';
       $scriptlet = lc $1;
       $subname = 'main';
@@ -761,7 +761,7 @@ ENDIF: if (/^%endif/) {
       next LINE;
     } # %pre/%post/%preun/%postun
 
-    if (/^\%files(?:\s+(?:-n\s+)?(.+))?/) {
+    if (/^%files(?:\s+(?:-n\s+)?(.+))?/) {
       $stage = 'files';
       $subname = 'main';
       if ($1) {       # Magic to add entries to the right list of files
@@ -771,7 +771,7 @@ ENDIF: if (/^%endif/) {
       next LINE;
     } # %files
 
-    if (/^\%changelog/) {
+    if (/^%changelog/) {
       $stage = 'changelog';
       if ($pkgdata{main}{changelog}) { # Multi-part changelog
         $pkgdata{main}{changelog} =~ s/\s+$/\n\n/g; # Trim trailing blanks
@@ -819,9 +819,9 @@ ENDIF: if (/^%endif/) {
     if ($stage eq 'prep') {
       # Actual handling for %prep section.  May have %setup macro, may include
       # %patch tags, may be just a bare shell script.
-      if (s/^\%setup//) {
+      if (s/^%setup//) {
         $script{$stage} .= process_setup();
-      } elsif (s/^\%patch//) {
+      } elsif (s/^%patch//) {
         $script{$stage} .= process_patch();
       } else {
         $script{$stage} .= $_;
@@ -841,7 +841,7 @@ ENDIF: if (/^%endif/) {
 
     if ($stage eq 'files') {
       # need to deal with these someday
-      next LINE if /^\%verify/ or /^\%ghost/;
+      next LINE if /^%verify/ or /^%ghost/;
 
       if (/^%defattr\s*\(\s*(-|\d+)\s*,\s*(-|\w+)\s*,\s*(-|\w+)\s*,?\s*(-|\d+)?\s*\)/) {
         ($defattr{filemode}, $defattr{owner}, $defattr{group}) = ($1, $2, $3);
@@ -1082,7 +1082,7 @@ sub process_filesline {
 
     # have to extract the partial pathnames that %doc installs automagically
     foreach my $pp (split /\s+/) {
-      if (not $pp =~ m|^[\%/]|) {
+      if (not $pp =~ m|^[%/]|) {
         $doclist{$subname} .= " $pp";
         my ($element) = $pp =~ m|([^/\s]+/?)$|;
         s|$pp|%{_docdir}/$pkgname/$element|;
@@ -1147,7 +1147,7 @@ sub install {
   foreach my $docpkg (keys %doclist) {
     (my $pkgname = $pkgdata{$docpkg}{name}) =~ s/_/-/g;
 
-    $script{install} .= "DOCDIR=\$RPM_BUILD_ROOT\%{_docdir}/$pkgname\nexport DOCDIR\n";
+    $script{install} .= "DOCDIR=\$RPM_BUILD_ROOT%{_docdir}/$pkgname\nexport DOCDIR\n";
     $script{install} .= "%{__mkdir_p} \$DOCDIR\n";
     $doclist{$docpkg} =~ s/^\s*//;
     foreach (split ' ',$doclist{$docpkg}) {
@@ -1661,7 +1661,7 @@ sub expandmacros {
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
   while (my ($prefix,$arg) = map { /{(\w+) (\w+)}/ } extract_multiple($_,
       [ sub { extract_bracketed($_[0],'{}') } ]) ) {
-    (my $paramac = $specglobals{"$prefix\(\)"}) =~ s/\%\{1\}/$arg/g;
+    (my $paramac = $specglobals{"$prefix\(\)"}) =~ s/%\{1\}/$arg/g;
     $paramac =~ s/%%/%/g;
     s/%{$prefix $arg}/$paramac/g;
   }
