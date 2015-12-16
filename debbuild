@@ -453,8 +453,8 @@ sub parse_cmd {
     } elsif ($opt_name eq 'recompile') {
       $cmdopts{type} = 'r';
       $cmdopts{stage} = 'i';
-    } else {
-      $cmdopts{type} = 's'; # --install
+    } else { # $opt_name eq 'install'
+      $cmdopts{type} = 's';
     }
   }
   ## build_handler()
@@ -480,7 +480,7 @@ sub parse_cmd {
       # create 'configure' options from '--with <flag>' and '--without <flag>':
       # 'with/without <flag>' are 'aliases' for 'define _with_<flag>'.
       $opt_value = "\_$opt_name\_$opt_value --$opt_name-$opt_value";
-      $opt_name = 'define';
+      $opt_name = 'define'; # fall through with generic name
     }
     my ($macro,$value) = $opt_value =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i;
     if ($value) {
