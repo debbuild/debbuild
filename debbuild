@@ -1081,7 +1081,7 @@ sub process_filesline {
     (my $pkgname = $pkgdata{$subname}{name}) =~ tr/_/-/;
 
     # have to extract the partial pathnames that %doc installs automagically
-    foreach my $pp (split /\s+/) {
+    foreach my $pp (split) {
       if (not $pp =~ m|^[%/]|) {
         $doclist{$subname} .= " $pp";
         my ($element) = $pp =~ m|([^/\s]+/?)$|;
@@ -1150,7 +1150,7 @@ sub install {
     $script{install} .= "DOCDIR=\$RPM_BUILD_ROOT%{_docdir}/$pkgname\nexport DOCDIR\n";
     $script{install} .= "%{__mkdir_p} \$DOCDIR\n";
     $doclist{$docpkg} =~ s/^\s*//;
-    foreach (split ' ',$doclist{$docpkg}) {
+    foreach (split ' ', $doclist{$docpkg}) {
       $script{install} .= "%{__cp} -pr $_ \$DOCDIR/\n";
     }
   }
@@ -1505,7 +1505,7 @@ sub checkbuildreq {
 #kdeugau:~$ dpkg-query --showformat '${status}\t${version}\n' -W libdb4.8-dbg 2>&1
 #dpkg-query: no packages found matching libdb4.8-dbg
 
-      my ($reqstat,undef,undef,$reqver) = split /\s+/, $pkglist[0];
+      my ($reqstat,undef,undef,$reqver) = split ' ', $pkglist[0];
       if ($reqstat =~ /^unknown/) {
 	# this seems to be a virtual package.
 	warn " * Warning: $pkg is probably installed but seems to be a virtual package.\n";
