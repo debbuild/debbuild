@@ -121,8 +121,7 @@ my %ubnt_vermap = ('6.5ubuntu6' => '12.04',
 # Enh.  There doesn't seem to be any better way to do this...  :(
 {
 # could theoretically also do something with this...  it's about as stable as "dpkg-query ..." below...  :(
-#  my $releasever = qx ( $specglobals{__cat} /etc/debian_version );
-#  chomp $releasever;
+#  chomp( my $releasever = qx ( $specglobals{__cat} /etc/debian_version ) );
   my $basefiles;
   my $basever;
   my $baseos;
@@ -627,8 +626,7 @@ LINE: while (<SPECFILE>) {
 
     # Generic %if..%else..%endif construct
     if (s/^%if//) {
-      chomp;
-      my $expr = lc expandmacros($_);
+      chomp( my $expr = lc expandmacros($_) );
 
       if ($expr =~ /^[\d\s<=>&|\(\)+-]+$/) {
         # "plain" numeric expressions are evaluated as-is, except
@@ -1652,7 +1650,7 @@ sub expandmacros {
     # Oy vey this gets silly for the perl bits.  Executing a shell to
     # call Perl to get the vendorlib/sitelib/whatever "core" globals.
     # This can do more, but...  eww.
-  s/%\((.+?)\)/my $res = qx($specglobals{_buildshell} -c '$1'); chomp $res; $res;/eg;
+  s/%\((.+?)\)/chomp( my $res = qx($specglobals{_buildshell} -c '$1') ); $res;/eg;
     # Yay!  ' characters apparently get properly exscapededed.
 
   # unescape multi-line macros
