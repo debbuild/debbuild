@@ -1678,7 +1678,7 @@ sub expandmacros {
     } elsif ($prefix =~ /basename|dirname/) {
       s/%{$prefix:$arg}/&$prefix(expandmacros($arg))/eg;
     } elsif ($prefix =~ /suffix/) {
-      my ($suffix) = expandmacros($arg) =~ /.*\.(\w+)$/;
+      my (undef,undef,$suffix) = fileparse(expandmacros($arg),qr/\.[^.]*/);
       s/%{$prefix:$arg}/$suffix/g;
     } elsif ($prefix =~ /getenv/) {
       # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
