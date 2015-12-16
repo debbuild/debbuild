@@ -1626,7 +1626,7 @@ sub expandmacros {
   return $_ unless /%/; # nothing to substitute
 
   # Store %globals
-  s/%global (\w+) (\w+)/store_value($1,$2)/eg;
+  s/%global\s+(\w+)\s+(\w+)/store_value($1,$2)/eg;
 
   # Replace global macros
   s/%(\w+)/%{$1}/g;
@@ -1659,11 +1659,11 @@ sub expandmacros {
   s/(\S)\\+\n/$1\n/g;
 
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
-  while (my ($prefix,$arg) = map { /{(\w+) (\w+)}/ } extract_multiple($_,
+  while (my ($prefix,$arg) = map { /{(\w+)\s+(\w+)}/ } extract_multiple($_,
       [ sub { extract_bracketed($_[0],'{}') } ]) ) {
     (my $paramac = $specglobals{"$prefix\(\)"}) =~ s/%\{1\}/$arg/g;
     $paramac =~ s/%%/%/g;
-    s/%{$prefix $arg}/$paramac/g;
+    s/%{$prefix\s+$arg}/$paramac/g;
   }
   pos = 0; # reset to start of $_
 
