@@ -245,12 +245,6 @@ if ($cmdopts{type} eq 's') {
   exit 0;
 }
 
-# debbuild --nobuild <SPECFILE>
-if ($cmdopts{type} eq 'n') {
-  parse_spec($specglobals{specfile});
-  exit 0;
-}
-
 # output stage of --showpkgs
 if ($cmdopts{type} eq 'd') {
   parse_spec($specglobals{specfile});
@@ -330,6 +324,7 @@ if ($cmdopts{type} eq 'b') {
   parse_spec($specglobals{specfile});
   die "Can't build $pkgdata{main}{name}:  build requirements not met.\n"
     unless checkbuildreq();
+  exit 0 if $specglobals{NOBUILD};
 }
 
 # Hokay.  Need to:
@@ -346,20 +341,14 @@ if ($cmdopts{stage} eq 'c' || ($cmdopts{stage} =~ /[ilab]/ && $cmdopts{short} ne
 if ($cmdopts{stage} =~ /[ilab]/) {
   install();
 }
-# -> binpkg and srcpkg if -.a
-if ($cmdopts{stage} eq 'a') {
-  binpackage();
+# -> binpkg and srcpkg if -.a; srcpkg if -.s
+if ($cmdopts{stage} =~ /[as]/) {
   srcpackage();
-  execute_script('clean');
 }
-# -> binpkg if -.b
-if ($cmdopts{stage} eq 'b') {
+# -> binpkg if -.b or -.a
+if ($cmdopts{stage} =~ /[ab]/) {
   binpackage();
   execute_script('clean');
-}
-# -> srcpkg if -.s
-if ($cmdopts{stage} eq 's') {
-  srcpackage();
 }
 
 # Spit out any closing remarks
@@ -409,7 +398,10 @@ sub parse_cmd {
     'eval=s'        => sub { print expandmacros($_[1]),"\n" },
     'short-circuit' => sub { $cmdopts{short} = 'y' },
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
-    'nobuild=s'     => sub { $cmdopts{type} = 'n', $specglobals{specfile} = $_[1] },
+    'noprep'        => \$specglobals{NOPREP},
+    'nobuild'       => \$specglobals{NOBUILD},
+    'nocheck'       => \$specglobals{NOCHECK},
+    'noclean'       => \$specglobals{NOCLEAN},
     'v+' => \$verbosity, # bump verbosity.  Not sure what I'll actually do here...
     'rebuild=s'   => \&srcpkg_handler,
     'recompile=s' => \&srcpkg_handler,
@@ -1116,7 +1108,7 @@ sub execute_script {
   my ($stage, $what, $for) = @_;
 
   # anything to do?
-  return unless $script{$stage};
+  return if $specglobals{uc "no$stage"} or not $script{$stage};
 
   # create script filename
   my $scriptfile = "$tmpdir/deb-tmp.$stage.".int(rand(99998)+1);
