@@ -49,7 +49,7 @@ my $verbosity = 0;
 my $NoAutoReq = 0;
 my %cmdopts = (type => '',
 		stage => 'a',
-		short => 'n');
+		short => undef);
 my %defattr = (filemode => '-',
 		owner => '-',
 		group => '-',
@@ -327,25 +327,19 @@ if ($cmdopts{type} eq 'b') {
   exit 0 if $specglobals{NOBUILD};
 }
 
-# Hokay.  Need to:
-# -> prep if -.p OR (-.[cilabs] AND !--short-circuit)
-if ($cmdopts{stage} eq 'p' || ($cmdopts{stage} =~ /[cilab]/ && $cmdopts{short} ne 'y')) {
+# work out the [pcilabs] stages
+if ($cmdopts{stage} eq 'p' || ($cmdopts{stage} =~ /[cilab]/ and not $cmdopts{short})) {
   execute_script('prep');
 }
-# -> build if -.c OR (-.[ilabs] AND !--short-circuit)
-if ($cmdopts{stage} eq 'c' || ($cmdopts{stage} =~ /[ilab]/ && $cmdopts{short} ne 'y')) {
+if ($cmdopts{stage} eq 'c' || ($cmdopts{stage} =~ /[ilab]/ and not $cmdopts{short})) {
   execute_script('build');
 }
-# -> install if -.[ilabs]
-#if ($cmdopts{stage} eq 'i' || ($cmdopts{stage} =~ /[lab]/ && $cmdopts{short} ne 'y')) {
 if ($cmdopts{stage} =~ /[ilab]/) {
   install();
 }
-# -> binpkg and srcpkg if -.a; srcpkg if -.s
 if ($cmdopts{stage} =~ /[as]/) {
   srcpackage();
 }
-# -> binpkg if -.b or -.a
 if ($cmdopts{stage} =~ /[ab]/) {
   binpackage();
   execute_script('clean');
@@ -396,7 +390,7 @@ sub parse_cmd {
   Getopt::Long::GetOptions(
     'buildroot=s'   => \$specglobals{CBR},
     'eval=s'        => sub { print expandmacros($_[1]),"\n" },
-    'short-circuit' => sub { $cmdopts{short} = 'y' },
+    'short-circuit' => \$cmdopts{short},
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
     'noprep'        => \$specglobals{NOPREP},
     'nobuild'       => \$specglobals{NOBUILD},
@@ -532,9 +526,9 @@ debbuild-specific options:
   # the "compile" and "install" targets - with good reason IMO.
   # Note that --short-circuit with -.p is not really an error, just redundant.
   # NB - this is NOT fatal, just ignored!
-  if ($cmdopts{short} eq 'y' && $cmdopts{stage} =~ /[labs]/) {
+  if ($cmdopts{short} && $cmdopts{stage} =~ /[labs]/) {
     warn "Can't use --short-circuit for $targets{$cmdopts{stage}} stage.  Ignoring.\n";
-    $cmdopts{short} = 'n';
+    $cmdopts{short} = undef;
   }
 
   # Did we catch an action option?
