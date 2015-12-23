@@ -53,8 +53,9 @@ rebuild .src.rpm source packages as .deb binary packages.
 %install
 # Steps to install to a temporary location for packaging
 %make_install
-%{__mkdir_p} %{buildroot}%{_prefix}/lib/%{name}
+%{__mkdir_p} %{buildroot}%{_prefix}/lib/%{name}/macros.d
 %{__cp} glomacros %{buildroot}%{_prefix}/lib/%{name}/macros
+%{__cp} macros.perl %{buildroot}%{_prefix}/lib/%{name}/macros.d
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/%{name}
 %{__cp} macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
 %{__cp} macros.texlive %{buildroot}%{_sysconfdir}/%{name}
@@ -64,6 +65,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{_bindir}/*
 %{_mandir}/man8/*
 %{_prefix}/lib/%{name}/macros
+%{_prefix}/lib/%{name}/macros.d/macros.perl
 %{_sysconfdir}/%{name}/macros.sysutils
 %{_sysconfdir}/%{name}/macros.texlive
 
