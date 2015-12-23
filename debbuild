@@ -325,6 +325,11 @@ if ($cmdopts{type} eq 'b') {
   die "Can't build $pkgdata{main}{name}:  build requirements not met.\n"
     unless checkbuildreq();
   exit 0 if $specglobals{NOBUILD};
+
+  # Expand macros as necessary.
+  $specglobals{buildroot} = $specglobals{CBR} if defined $specglobals{CBR};
+  $specglobals{buildroot} = expandmacros($specglobals{buildroot});
+  $scriptletbase = expandmacros($scriptletbase);
 }
 
 # work out the [pcilabs] stages
@@ -540,16 +545,16 @@ debbuild-specific options:
 ## parse_spec()
 # Parse the .spec file.
 sub parse_spec {
-  my ($specfile) = @_;
+  my ($specfile, $instage, $insubname, $inscriptlet) = @_;
   die "No .spec file specified!  Exiting.\n" unless $specfile;
-  open SPECFILE,"<$specfile" or die "specfile ($specfile) barfed: $!";
+  open my $fh, "<$specfile" or die "specfile ($specfile) barfed: $!";
 
   my $buildarch = expandmacros('%{_arch}');
-  $pkgdata{main}{arch} = $buildarch;
+  $pkgdata{main}{arch} //= $buildarch;
 
-  my $stage = 'preamble';
-  my $subname = 'main';
-  my $scriptlet;
+  my $stage = ($instage ? $instage : 'preamble');
+  my $subname = ($insubname ? $insubname : 'main');
+  my $scriptlet = ($inscriptlet ? $inscriptlet : undef);
 
 # Basic algorithm:
 # For each line
@@ -562,9 +567,14 @@ sub parse_spec {
 #   Otherwise, parse the line according to which section we're supposedly
 #	parsing right now
 
-LINE: while (<SPECFILE>) {
+LINE: while (<$fh>) {
     next if /^\s*#/ and $stage !~ /changelog|copy/; # Ignore comments...
     next if /^\s*$/ and $stage !~ /changelog|copy|desc/; # ... and blank lines.
+
+    if (my ($includefile) = m|^%include\s+([%{}/.\w]+)|) {
+      parse_spec(expandmacros($includefile),$stage,$subname,$scriptlet);
+      next LINE;
+    }
 
 # no sense in continuing if we find something we don't grok
     # Yes, this is really horribly fugly.  But it's a cheap crosscheck against invalid
@@ -645,7 +655,7 @@ LINE: while (<SPECFILE>) {
 
       next LINE if $ifexpr[0] != 0; # This appears to be the only case we call false.
       my $iflevel = @ifexpr;
-      while (<SPECFILE>) { # Skip %if-block, inluding nested %if..%else..%endif
+      while (<$fh>) { # Skip %if-block, inluding nested %if..%else..%endif
         if (/^%if/) {
           $iflevel++;
         } elsif (/^%else/) {
@@ -659,7 +669,7 @@ LINE: while (<SPECFILE>) {
 ELSE: if (/^%else/) {
       next LINE if $ifexpr[0] == 0;
       my $iflevel = @ifexpr;
-      while (<SPECFILE>) { # Skip %else-block, inluding nested %if..%else..%endif
+      while (<$fh>) { # Skip %else-block, inluding nested %if..%else..%endif
         if (/^%if/) {
           $iflevel++;
         } elsif (/^%else/) {
@@ -888,14 +898,9 @@ ENDIF: if (/^%endif/) {
       next LINE;
     } # preamble
 
-  } # while <SPEC>
+  } # while <$fh>
 
-  close SPECFILE;
-
-  # Expand macros as necessary.
-  $specglobals{buildroot} = $specglobals{CBR} if defined $specglobals{CBR};
-  $specglobals{buildroot} = expandmacros($specglobals{buildroot});
-  $scriptletbase = expandmacros($scriptletbase);
+  close $fh;
 } # end parse_spec()
 
 
