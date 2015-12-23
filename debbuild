@@ -325,6 +325,11 @@ if ($cmdopts{type} eq 'b') {
   die "Can't build $pkgdata{main}{name}:  build requirements not met.\n"
     unless checkbuildreq();
   exit 0 if $specglobals{NOBUILD};
+
+  # Expand macros as necessary.
+  $specglobals{buildroot} = $specglobals{CBR} if defined $specglobals{CBR};
+  $specglobals{buildroot} = expandmacros($specglobals{buildroot});
+  $scriptletbase = expandmacros($scriptletbase);
 }
 
 # work out the [pcilabs] stages
@@ -896,11 +901,6 @@ ENDIF: if (/^%endif/) {
   } # while <$fh>
 
   close $fh;
-
-  # Expand macros as necessary.
-  $specglobals{buildroot} = $specglobals{CBR} if defined $specglobals{CBR};
-  $specglobals{buildroot} = expandmacros($specglobals{buildroot});
-  $scriptletbase = expandmacros($scriptletbase);
 } # end parse_spec()
 
 
