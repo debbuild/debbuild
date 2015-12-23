@@ -540,14 +540,16 @@ debbuild-specific options:
 ## parse_spec()
 # Parse the .spec file.
 sub parse_spec {
-  my ($specfile) = @_;
+  my ($specfile, $instage) = @_;
   die "No .spec file specified!  Exiting.\n" unless $specfile;
   open SPECFILE,"<$specfile" or die "specfile ($specfile) barfed: $!";
+
+  my $save_fh = SPECFILE if $instage;
 
   my $buildarch = expandmacros('%{_arch}');
   $pkgdata{main}{arch} = $buildarch;
 
-  my $stage = 'preamble';
+  my $stage = ($instage ? $instage : 'preamble');
   my $subname = 'main';
   my $scriptlet;
 
@@ -565,6 +567,12 @@ sub parse_spec {
 LINE: while (<SPECFILE>) {
     next if /^\s*#/ and $stage !~ /changelog|copy/; # Ignore comments...
     next if /^\s*$/ and $stage !~ /changelog|copy|desc/; # ... and blank lines.
+
+    if (my ($includefile) = m|^%include\s+([%{}/.\w]+)|) {
+      local $_;
+      parse_spec(expandmacros($includefile),$stage);
+      next LINE;
+    }
 
 # no sense in continuing if we find something we don't grok
     # Yes, this is really horribly fugly.  But it's a cheap crosscheck against invalid
@@ -891,6 +899,8 @@ ENDIF: if (/^%endif/) {
   } # while <SPEC>
 
   close SPECFILE;
+
+  SPECFILE = $save_fh if $instage;
 
   # Expand macros as necessary.
   $specglobals{buildroot} = $specglobals{CBR} if defined $specglobals{CBR};
