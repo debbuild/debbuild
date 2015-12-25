@@ -53,9 +53,9 @@ rebuild .src.rpm source packages as .deb binary packages.
 %install
 # Steps to install to a temporary location for packaging
 %make_install
-%{__mkdir_p} %{buildroot}%{_prefix}/lib/%{name}/macros.d
-%{__cp} glomacros %{buildroot}%{_prefix}/lib/%{name}/macros
-%{__cp} macros.perl %{buildroot}%{_prefix}/lib/%{name}/macros.d
+%{__mkdir_p} %{buildroot}%{_libdir}/%{name}/macros.d
+%{__cp} glomacros %{buildroot}%{_libdir}/%{name}/macros
+%{__cp} macros.perl %{buildroot}%{_libdir}/%{name}/macros.d
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/%{name}
 %{__cp} macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
 %{__cp} macros.texlive %{buildroot}%{_sysconfdir}/%{name}
@@ -64,8 +64,8 @@ rebuild .src.rpm source packages as .deb binary packages.
 %files
 %{_bindir}/*
 %{_mandir}/man8/*
-%{_prefix}/lib/%{name}/macros
-%{_prefix}/lib/%{name}/macros.d/macros.perl
+%{_libdir}/%{name}/macros
+%{_libdir}/%{name}/macros.d/macros.perl
 %{_sysconfdir}/%{name}/macros.sysutils
 %{_sysconfdir}/%{name}/macros.texlive
 
@@ -82,7 +82,7 @@ DEB_BUILD_ARCH=`%{darch} -qDEB_BUILD_ARCH 2>/dev/null`
          -e "s/@HOST_CPU@/${DEB_HOST_CPU}/g" \
          -e "s/@HOST_OS@/${DEB_HOST_OS}/g" \
          -e "s/@HOST_SYSTEM@/${DEB_HOST_SYSTEM}/g" \
-         -i %{_prefix}/lib/%{name}/macros
+         -i %{_libdir}/%{name}/macros
 fi
 
 %changelog
