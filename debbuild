@@ -571,7 +571,7 @@ LINE: while (<$fh>) {
     next if /^\s*#/ and $stage !~ /changelog|copy/; # Ignore comments...
     next if /^\s*$/ and $stage !~ /changelog|copy|desc/; # ... and blank lines.
 
-    if (my ($includefile) = m|^%include\s+([%{}/.\w]+)|) {
+    if (my ($includefile) = /^%include\s+(.+)/) {
       parse_spec(expandmacros($includefile),$stage,$subname,$scriptlet);
       next LINE;
     }
