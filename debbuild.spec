@@ -54,7 +54,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 # Steps to install to a temporary location for packaging
 %make_install
 %{__mkdir_p} %{buildroot}%{_libdir}/%{name}/macros.d
-%{__cp} glomacros %{buildroot}%{_libdir}/%{name}/macros
+%{__cp} macros.in %{buildroot}%{_libdir}/%{name}/macros
 %{__cp} macros.perl %{buildroot}%{_libdir}/%{name}/macros.d
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/%{name}
 %{__cp} macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
