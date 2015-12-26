@@ -59,8 +59,8 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{__cp} macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
 %{__cp} macros.texlive %{buildroot}%{_sysconfdir}/%{name}
 
-# Fill in the pathnames to be packaged here
 %files
+# Fill in the pathnames to be packaged here
 %{_bindir}/*
 %{_mandir}/man8/*
 %{_libdir}/%{name}/macros
