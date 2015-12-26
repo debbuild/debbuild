@@ -11,6 +11,7 @@ Version: 15.12.2
 Release: ascherer.%{dist}
 
 Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
+Source101: https://github.com/ascherer/debbuild/blob/master/scripts/post.sh
 URL: https://github.com/ascherer/debbuild
 %if %{_vendor} == "debbuild"
 # Use Debian sections here
@@ -68,7 +69,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{_sysconfdir}/%{name}/macros.texlive
 
 %post
-%include %{_sourcedir}/post.sh
+%include %{S:101}
 
 %changelog
 * Tue Dec 15 2015  Andreas Scherer <https://ascherer.github.io/>
