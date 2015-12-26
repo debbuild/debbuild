@@ -29,8 +29,6 @@ Suggests: rpm, subversion
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 
-%define darch %{_bindir}/dpkg-architecture
-
 %description
 debbuild attempts to build Debian-friendly semi-native packages from
 RPM spec files, RPM-friendly tarballs, and RPM source packages
@@ -70,20 +68,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{_sysconfdir}/%{name}/macros.texlive
 
 %post
-if [ -x %{darch} ]; then
-DEB_HOST_CPU=`%{darch} -qDEB_HOST_GNU_CPU 2>/dev/null`
-DEB_HOST_OS=`%{darch} -qDEB_HOST_ARCH_OS 2>/dev/null`
-DEB_HOST_SYSTEM=`%{darch} -qDEB_HOST_GNU_SYSTEM 2>/dev/null`
-DEB_HOST_ARCH=`%{darch} -qDEB_HOST_ARCH_CPU 2>/dev/null`
-DEB_BUILD_ARCH=`%{darch} -qDEB_BUILD_ARCH 2>/dev/null`
-
-%{__sed} -e "s/@HOST_ARCH@/${DEB_HOST_ARCH}/g" \
-         -e "s/@BUILD_ARCH@/${DEB_BUILD_ARCH}/g" \
-         -e "s/@HOST_CPU@/${DEB_HOST_CPU}/g" \
-         -e "s/@HOST_OS@/${DEB_HOST_OS}/g" \
-         -e "s/@HOST_SYSTEM@/${DEB_HOST_SYSTEM}/g" \
-         -i %{_libdir}/%{name}/macros
-fi
+%include %{_sourcedir}/post.sh
 
 %changelog
 * Tue Dec 15 2015  Andreas Scherer <https://ascherer.github.io/>
