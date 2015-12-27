@@ -1616,7 +1616,7 @@ sub expandmacros {
   local ($_) = @_;
   return $_ unless /%/; # nothing to substitute
 
-  # Store %globals
+  # Store %globals (from '%bcond_without()' in 'macros[.in]')
   s/%global\s+(\w+)\s+(\w+)/store_value($1,$2)/eg;
 
   # Replace global macros
@@ -1636,8 +1636,8 @@ sub expandmacros {
   # Globals, and not-so-globals
   # special %define's.  Handle the general case where we eval anything.
   # Even more general:  %(...) is a spec-parse-time shell code wrapper.
-  # Prime example:
-  #%define perl_vendorlib %(eval "`perl -V:installvendorlib`"; echo $installvendorlib)
+  # Prime example from 'macros.perl':
+  # %define perl_vendorlib %(eval "`perl -V:installvendorlib`"; echo $installvendorlib)
     # Oy vey this gets silly for the perl bits.  Executing a shell to
     # call Perl to get the vendorlib/sitelib/whatever "core" globals.
     # This can do more, but...  eww.
