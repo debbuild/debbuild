@@ -7,7 +7,7 @@
 #==============================================================================
 # ---- TeX Live utilities
 #
-%__texlive_bin /opt/texlive/current/bin/i386-linux
+%__texlive_bin /opt/texlive/current/bin/%{_arch}-%{_os}
 #
 %__latex %{__texlive_bin}/latex
 %__pdftex %{__texlive_bin}/pdftex
