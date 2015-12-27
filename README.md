@@ -20,8 +20,9 @@ some – but unfortunately not all – of these improvements have made it back i
 tree](https://secure.deepnet.cx/svn/debbuild/trunk/debbuild).
 
 after version
-[svn@210](https://github.com/ascherer/debbuild/releases/tag/SVN%40210) this
-project took a life of its own.
+[svn@210](https://github.com/ascherer/debbuild/releases/tag/SVN%40210)
+this project took
+[a life of its own](https://github.com/ascherer/debbuild/releases).
 
 ## result
 
