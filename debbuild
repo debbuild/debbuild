@@ -805,7 +805,7 @@ ENDIF: if (/^%endif/) {
           $dname = 'arch';
         }
         if ($dname =~ /recommends|suggests|enhances|replaces|requires|conflicts|provides/) {
-          $pkgdata{$subname}{$dname} .= ', '.expandmacros($dvalue);
+          push @{$pkgdata{$subname}{$dname}}, expandmacros($dvalue);
         } else {
           $pkgdata{$subname}{$dname} = expandmacros($dvalue);
         }
@@ -878,20 +878,20 @@ ENDIF: if (/^%endif/) {
       } elsif (/^buildrequires:\s*(.+)/i) {
         push @buildreq, $1;
       } elsif (/^(requires|provides|conflicts):\s*(.+)/i) {
-        $pkgdata{main}{lc $1} .= ", $2";
+        push @{$pkgdata{main}{lc $1}}, $2;
       } elsif (/^recommends:\s*(.+)/i) {
-        $pkgdata{main}{recommends} .= ", $1";
+        push @{$pkgdata{main}{recommends}}, $1;
 	warn "Warning:  Debian-specific 'Recommends:' outside \%if wrapper\n" if 0 == @ifexpr;
 # As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
 # along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
       } elsif (/^(suggests|enhances|replaces):\s*(.+)/i) {
-        $pkgdata{main}{lc $1} .= ", $2";
+        push @{$pkgdata{main}{lc $1}}, $2;
 	warn "Warning:  '$1:' outside \%if wrapper\n" if 0 == @ifexpr;
       } elsif (/^supplements:\s*(.+)/i) {
-        $pkgdata{main}{enhances} .= ", $1";
+        push @{$pkgdata{main}{enhances}}, $1;
         warn "Warning:  'Supplements:' is not natively supported by .deb packages.  Downgrading relationship to Enhances:.\n";
       } elsif (/^obsoletes:\s*(.+)/i) {
-        $pkgdata{main}{replaces} .= ", $1";
+        push @{$pkgdata{main}{replaces}}, $1;
       } elsif (/^autoreq(?:prov)?:\s*(.+)/i) {
 	# we don't handle auto-provides (yet)
 	$NoAutoReq = 1 if $1 =~ /(?:no|0)/i;
@@ -1264,13 +1264,11 @@ sub binpackage {
     # Get the "Depends" (Requires) a la RPM.  Ish.  We strip the leading
     # comma and space here (if needed) in case there were "Requires" specified
     # in the spec file - those would precede these.
-    $pkgdata{$pkg}{requires} .= getreqs("$specglobals{buildroot}/$pkg") unless $NoAutoReq;
+    push @{$pkgdata{$pkg}{requires}}, getreqs("$specglobals{buildroot}/$pkg") unless $NoAutoReq;
 
     # magic needed to properly version dependencies...
     # only provided deps will really be included
-    $pkgdata{$pkg}{requires} =~ s/^, //;	# Still have to do this here.
-    $pkgdata{$pkg}{requires} =~ s/\s//g;
-    my @deps = split /,/, $pkgdata{$pkg}{requires};
+    my @deps = @{$pkgdata{$pkg}{requires}};
     my @reqs;
     foreach my $dep (@deps) {
       # Hack up the perl(Class::SubClass) deps into something dpkg can understand.
@@ -1289,17 +1287,7 @@ sub binpackage {
         push @reqs, "$dep";
       }
     }
-    $pkgdata{$pkg}{requires} = join(', ', uniq(@reqs));
-
-    # Do this here since we're doing {depends}...
-    foreach my $label (('provides','conflicts',
-                        # These are Debian-specific!
-                        'recommends','suggests','enhances','replaces')) {
-      if (defined($pkgdata{$pkg}{$label})) {
-        $pkgdata{$pkg}{$label} =~ s/^, //;
-        $pkgdata{$pkg}{$label} = expandmacros($pkgdata{$pkg}{$label});
-      }
-    }
+    @{$pkgdata{$pkg}{requires}} = uniq(@reqs);
 
     # Gotta do this next, otherwise the control file has nowhere to go.  >:(
     mkdir "$specglobals{buildroot}/$pkg/DEBIAN";
@@ -1317,13 +1305,13 @@ sub binpackage {
 	"Architecture: $pkgdata{$pkg}{arch}\n".
 	"Maintainer: $pkgdata{main}{packager}\n".
 	( defined $pkgdata{main}{url} ? "Homepage: $pkgdata{main}{url}\n" : '' ).
-	( $pkgdata{$pkg}{requires} ne '' ? "Depends: $pkgdata{$pkg}{requires}\n" : '' ).
-	( defined($pkgdata{$pkg}{provides}) ? "Provides: $pkgdata{$pkg}{provides}\n" : '' ).
-	( defined($pkgdata{$pkg}{conflicts}) ? "Conflicts: $pkgdata{$pkg}{conflicts}\n" : '' ).
-	( defined($pkgdata{$pkg}{recommends}) ? "Recommends: $pkgdata{$pkg}{recommends}\n" : '' ).
-	( defined($pkgdata{$pkg}{suggests}) ? "Suggests: $pkgdata{$pkg}{suggests}\n" : '' ).
-	( defined($pkgdata{$pkg}{enhances}) ? "Enhances: $pkgdata{$pkg}{enhances}\n" : '' ).
-	( defined($pkgdata{$pkg}{replaces}) ? "Replaces: $pkgdata{$pkg}{replaces}\n" : '' ).
+	( $pkgdata{$pkg}{requires} ne '' ? "Depends: ".join(',',@{$pkgdata{$pkg}{requires}})."\n" : '' ).
+	( defined($pkgdata{$pkg}{provides}) ? "Provides: ".join(',',@{$pkgdata{$pkg}{provides}})."\n" : '' ).
+	( defined($pkgdata{$pkg}{conflicts}) ? "Conflicts: ".join(',',@{$pkgdata{$pkg}{conflicts}})."\n" : '' ).
+	( defined($pkgdata{$pkg}{recommends}) ? "Recommends: ".join(',',@{$pkgdata{$pkg}{recommends}})."\n" : '' ).
+	( defined($pkgdata{$pkg}{suggests}) ? "Suggests: ".join(',',@{$pkgdata{$pkg}{suggests}})."\n" : '' ).
+	( defined($pkgdata{$pkg}{enhances}) ? "Enhances: ".join(',',@{$pkgdata{$pkg}{enhances}})."\n" : '' ).
+	( defined($pkgdata{$pkg}{replaces}) ? "Replaces: ".join(',',@{$pkgdata{$pkg}{replaces}})."\n" : '' ).
 	"Description: $pkgdata{$pkg}{summary}\n";
     $pkgdata{$pkg}{desc} = expandmacros($pkgdata{$pkg}{desc});
     # Munge things so that Debian tools don't choke on errant blank lines
@@ -1574,7 +1562,7 @@ sub getreqs() {
 # Among other things, it's messier than handling "simple" yes/no "do
 # we have this lib?" deps.  >:(
 
-  return ', ' . join(', ', @reqs);
+  return @reqs;
 
 } # end getreqs()
 
