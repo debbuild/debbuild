@@ -219,7 +219,7 @@ my @pkglist = ('main');	#sigh
 # Files listing.  Embedding this in %pkgdata would be, um, messy.
 my %filelist;
 my %doclist;
-my $buildreq = '';
+my @buildreq;
 
 # Scriptlets
 my $scriptletbase = q(%{___build_template});
@@ -876,7 +876,7 @@ ENDIF: if (/^%endif/) {
         ($pkgdata{main}{arch} = $1) =~ s/^noarch$/all/;
         $buildarch = $pkgdata{main}{arch};
       } elsif (/^buildrequires:\s*(.+)/i) {
-        $buildreq .= ", $1";
+        push @buildreq, $1;
       } elsif (/^(requires|provides|conflicts):\s*(.+)/i) {
         $pkgdata{main}{lc $1} .= ", $2";
       } elsif (/^recommends:\s*(.+)/i) {
@@ -1441,20 +1441,17 @@ sub srcpackage {
 # Spits out a rude warning and returns a true-false error if any
 # requirements are not met.
 sub checkbuildreq {
-  return 1 unless $buildreq; # No use doing extra work.
+  return 1 unless @buildreq; # No use doing extra work.
 
   # expand macros
-  $buildreq = expandmacros($buildreq);
+  my @reqlist = map { expandmacros($_) } @buildreq;
 
   if ( not -e "$specglobals{__dpkg_query}" ) {
     warn "**WARNING**  $specglobals{__dpkg_query} not found.  Can't check build-deps.\n".
-	"  Required for sucessful build:\n".$buildreq."\n".
+	"  Required for sucessful build:\n".join(', ', @reqlist)."\n".
 	"  Continuing anyway.\n";
     return 1;
   }
-
-  $buildreq =~ s/^, //;	# Strip the leading comma and space
-  my @reqlist = split /,\s+/, $buildreq;
 
   my @missinglist;
   foreach my $req (@reqlist) {
