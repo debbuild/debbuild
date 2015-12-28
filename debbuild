@@ -29,6 +29,7 @@ use Cwd qw(abs_path);	# for finding where files really are
 use Fcntl;		# for sysopen flags
 use File::Basename;
 use Getopt::Long qw(:config no_ignore_case bundling);
+use List::MoreUtils qw(uniq);
 use Text::Balanced qw(extract_bracketed extract_multiple);
 
 my $version = '@VERSION@';
@@ -1288,7 +1289,7 @@ sub binpackage {
         push @reqs, "$dep";
       }
     }
-    $pkgdata{$pkg}{requires} = join(', ', @reqs);
+    $pkgdata{$pkg}{requires} = join(', ', uniq(@reqs));
 
     # Do this here since we're doing {depends}...
     foreach my $label (('provides','conflicts',
