@@ -1270,7 +1270,7 @@ sub binpackage {
     $pkgdata{$pkg}{requires} =~ s/^, //;	# Still have to do this here.
     $pkgdata{$pkg}{requires} =~ s/\s//g;
     my @deps = split /,/, $pkgdata{$pkg}{requires};
-    my $tmp = '';
+    my @reqs;
     foreach my $dep (@deps) {
       # Hack up the perl(Class::SubClass) deps into something dpkg can understand.
       # May or may not be versioned.
@@ -1283,12 +1283,12 @@ sub binpackage {
 	$dep = $mod;
       }
       if (my ($name,$rel,$value) = $dep =~ /^([\w.-]+)([><=]+)([\w.-]+)$/) {
-        $tmp .= ", $name ($rel $value)";
+        push @reqs, "$name ($rel $value)";
       } else {
-        $tmp .= ", $dep";
+        push @reqs, "$dep";
       }
     }
-    ($pkgdata{$pkg}{requires} = $tmp) =~ s/^, //;
+    $pkgdata{$pkg}{requires} = join(', ', @reqs);
 
     # Do this here since we're doing {depends}...
     foreach my $label (('provides','conflicts',
