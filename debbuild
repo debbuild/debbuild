@@ -1270,9 +1270,8 @@ sub binpackage {
 
     # magic needed to properly version dependencies...
     # only provided deps will really be included
-    my @deps = @{$pkgdata{$pkg}{requires}};
     my @reqs;
-    foreach my $dep (@deps) {
+    foreach my $dep (@{$pkgdata{$pkg}{requires}}) {
       # Hack up the perl(Class::SubClass) deps into something dpkg can understand.
       # May or may not be versioned.
       # We do this first so the version rewriter can do its magic next.
