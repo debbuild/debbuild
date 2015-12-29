@@ -1306,14 +1306,14 @@ sub binpackage {
 	"Architecture: $pkgdata{$pkg}{arch}\n".
 	"Maintainer: $pkgdata{main}{packager}\n".
 	( defined $pkgdata{main}{url} ? "Homepage: $pkgdata{main}{url}\n" : '' ).
-	( $pkgdata{$pkg}{requires} ne '' ? "Depends: ".join(',',@{$pkgdata{$pkg}{requires}})."\n" : '' ).
-	( defined($pkgdata{$pkg}{provides}) ? "Provides: ".join(',',@{$pkgdata{$pkg}{provides}})."\n" : '' ).
-	( defined($pkgdata{$pkg}{conflicts}) ? "Conflicts: ".join(',',@{$pkgdata{$pkg}{conflicts}})."\n" : '' ).
-	( defined($pkgdata{$pkg}{recommends}) ? "Recommends: ".join(',',@{$pkgdata{$pkg}{recommends}})."\n" : '' ).
-	( defined($pkgdata{$pkg}{suggests}) ? "Suggests: ".join(',',@{$pkgdata{$pkg}{suggests}})."\n" : '' ).
-	( defined($pkgdata{$pkg}{enhances}) ? "Enhances: ".join(',',@{$pkgdata{$pkg}{enhances}})."\n" : '' ).
-	( defined($pkgdata{$pkg}{replaces}) ? "Replaces: ".join(',',@{$pkgdata{$pkg}{replaces}})."\n" : '' ).
-	"Description: $pkgdata{$pkg}{summary}\n";
+	( $pkgdata{$pkg}{requires} ne '' ? "Depends: ".join(',',@{$pkgdata{$pkg}{requires}})."\n" : '' );
+    foreach my $deplist (('Provides', 'Conflicts', 'Recommends',
+                          'Suggests', 'Enhances', 'Replaces')) {
+      if (defined $pkgdata{$pkg}{lc $deplist}) {
+        $control .= "$deplist: ".join(',',@{$pkgdata{$pkg}{lc $deplist}})."\n";
+      }
+    }
+    $control .= "Description: $pkgdata{$pkg}{summary}\n";
     $pkgdata{$pkg}{desc} = expandmacros($pkgdata{$pkg}{desc});
     # Munge things so that Debian tools don't choke on errant blank lines
     $pkgdata{$pkg}{desc} =~ s/\s+$//g;		# Trim trailing blanks
