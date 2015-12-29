@@ -251,16 +251,13 @@ if ($cmdopts{type} eq 'd') {
   foreach my $pkg (@pkglist) {
     $pkgdata{$pkg}{name} =~ tr/_/-/;
 
-    my $pkgfullname = "$pkgdata{$pkg}{name}_".
-	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
-	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb";
+    my $pkgfullname = "$pkgdata{$pkg}{name}_".format_version($pkg).
+	"_$pkgdata{$pkg}{arch}.deb";
 
     print "$pkgfullname\n" if $filelist{$pkg};
   }
   # Source package
-  print "$pkgdata{main}{name}-".
-	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
-	"$pkgdata{main}{version}-$pkgdata{main}{release}.sdeb\n";
+  print "$pkgdata{main}{name}-".format_version('main').".sdeb\n";
   exit 0;
 }
 
@@ -1300,8 +1297,7 @@ sub binpackage {
     $pkgdata{$pkg}{desc} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
 
     my $control = "Package: $pkgdata{$pkg}{name}\n".
-	"Version: ".(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
-	  "$pkgdata{$pkg}{version}-$pkgdata{main}{release}\n".
+	"Version: ".format_version($pkg)."\n".
 	"Section: ".($pkgdata{$pkg}{group} ? $pkgdata{$pkg}{group} :
 	  defined $pkgdata{main}{group} ? $pkgdata{main}{group} : '')."\n".
 	"Priority: optional\n".
@@ -1353,17 +1349,13 @@ sub binpackage {
 
     $script{pkg} = "$specglobals{__fakeroot} -- $specglobals{__dpkg_deb} ".
         "-b $specglobals{buildroot}/$pkg $topdir/DEBS/$pkgdata{$pkg}{arch}/".
-	"$pkgdata{$pkg}{name}_".
-	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
-	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb\n";
+	"$pkgdata{$pkg}{name}_".format_version($pkg)."_$pkgdata{$pkg}{arch}.deb\n";
     # %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
 
     execute_script('pkg', 'package-creation', " for $pkgdata{$pkg}{name}");
 
     $finalmessages .= "Wrote binary package ".
-	"$pkgdata{$pkg}{name}_".
-	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
-	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb".
+	"$pkgdata{$pkg}{name}_".format_version($pkg)."_$pkgdata{$pkg}{arch}.deb".
 	" in $topdir/DEBS/$pkgdata{$pkg}{arch}\n";
   } # subpackage loop
 
@@ -1378,9 +1370,7 @@ sub binpackage {
 sub srcpackage {
   # In case we were called with -bs.
   $pkgdata{main}{name} =~ tr/_/-/;
-  my $pkgsrcname = "$pkgdata{main}{name}-".
-	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
-	"$pkgdata{main}{version}-$pkgdata{main}{release}.sdeb";
+  my $pkgsrcname = "$pkgdata{main}{name}-".format_version('main').".sdeb";
 
   my $paxcmd;
 
@@ -1723,6 +1713,15 @@ sub decompress {
       die("Can't handle unknown file type '$filename'.") ).
       " -dc '$filename'";
 } # end decompress()
+
+
+## format_version()
+# Glue together epoch/version/release in a common format
+sub format_version {
+  my ($pkg) = @_;
+  return (defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
+    "$pkgdata{$pkg}{version}-$pkgdata{main}{release}";
+} # end format_version()
 
 
 __END__
