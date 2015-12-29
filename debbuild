@@ -797,14 +797,17 @@ ENDIF: if (/^%endif/) {
 # an rpmbuild-compatible .spec file
 # NB: NOT going to support Pre-Depends, since it's a "Don't Use" (mis)feature, and
 # RPM's support for a similar tag (PreReq) has been recently dropped.
-      if (my ($dname,$dvalue) = /^(Recommends|Suggests|Enhances|Replaces|Summary|Group|Version|Requires|Conflicts|Provides|BuildArch(?:itecture)?):\s+(.+)$/i) {
+      if (my ($dname,$dvalue) = /^(Recommends|Suggests|Enhances|Replaces|
+          Summary|Group|Version|Requires|Conflicts|Provides|
+          BuildArch(?:itecture)?):\s+(.+)$/ix) {
         $dname =~ tr/[A-Z]/[a-z]/;
         if ($dname =~ /^BuildArch/i) {
           $dvalue =~ s/^noarch/all/ig;
           $buildarch = $dvalue;     # Emulate rpm's behaviour to a degree
           $dname = 'arch';
         }
-        if ($dname =~ /recommends|suggests|enhances|replaces|requires|conflicts|provides/) {
+        if ($dname =~ /recommends|suggests|enhances|replaces|
+            requires|conflicts|provides/x) {
           push @{$pkgdata{$subname}{$dname}}, expandmacros($dvalue);
         } else {
           $pkgdata{$subname}{$dname} = expandmacros($dvalue);
@@ -859,7 +862,7 @@ ENDIF: if (/^%endif/) {
 
     if ($stage eq 'preamble') {
       if (/^(summary|name|epoch|version|release|
-             group|copyright|url|packager):\s*(.+)/i) {
+             group|copyright|url|packager):\s*(.+)/ix) {
         $pkgdata{main}{lc $1} //= expandmacros($2);
       } elsif (/^(vendor|buildroot):\s*(.+)/i) {
         $specglobals{lc $1} = $2;
@@ -1586,7 +1589,8 @@ sub install_sdeb {
 sub store_value {
   my ($key,$value) = @_;
 
-  if ($key =~ /^(?:summary|name|epoch|version|release|group|copyright|url|packager)$/i) {
+  if ($key =~ /^(?:summary|name|epoch|version|release|
+      group|copyright|url|packager)$/ix) {
     $pkgdata{main}{$key} = $value;
   } else {
     $specglobals{$key} = $value;
