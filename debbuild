@@ -29,7 +29,6 @@ use Cwd qw(abs_path);	# for finding where files really are
 use Fcntl;		# for sysopen flags
 use File::Basename;
 use Getopt::Long qw(:config no_ignore_case bundling);
-use List::MoreUtils qw(uniq);
 use Text::Balanced qw(extract_bracketed extract_multiple);
 
 my $version = '@VERSION@';
@@ -1290,7 +1289,7 @@ sub binpackage {
         push @reqs, "$dep";
       }
     }
-    @{$pkgdata{$pkg}{requires}} = uniq(@reqs);
+    @{$pkgdata{$pkg}{requires}} = do { my %seen; grep { !$seen{$_}++ } @reqs };
 
     # Gotta do this next, otherwise the control file has nowhere to go.  >:(
     mkdir "$specglobals{buildroot}/$pkg/DEBIAN";
