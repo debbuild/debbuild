@@ -735,8 +735,6 @@ ENDIF: if (/^%endif/) {
 
     if (/^%prep/) {
       $stage = 'prep';
-      # Replace some core macros
-      $pkgdata{main}{source} = expandmacros($pkgdata{main}{source});
       next LINE;
     } # %prep
 
@@ -869,7 +867,7 @@ ENDIF: if (/^%endif/) {
         $src =~ s/\s*$//;
         $srcnum ||= 0;
         $pkgdata{sources}{$srcnum} = basename($src);
-        $pkgdata{main}{source} = $pkgdata{sources}{0} if 0 == $srcnum;
+        $pkgdata{main}{source} = expandmacros($pkgdata{sources}{0}) if 0 == $srcnum;
       } elsif (my ($patchnum, $patch) = /^patch(\d*):\s*(.+)/i) {
         $patch =~ s/\s*$//;
         $patchnum //= '';
@@ -1297,31 +1295,31 @@ sub binpackage {
     # Have I mentioned I hate Debian Policy?
     $pkgdata{$pkg}{name} =~ tr/_/-/;
 
-    $pkgdata{$pkg}{summary} = expandmacros($pkgdata{$pkg}{summary});
+    # Munge things so that Debian tools don't choke on errant blank lines
+    $pkgdata{$pkg}{desc} =~ s/\s+$//g;		# Trim trailing blanks
+    $pkgdata{$pkg}{desc} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
+
     my $control = "Package: $pkgdata{$pkg}{name}\n".
 	"Version: ".(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
-	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}\n".
-	"Section: ".($pkgdata{$pkg}{group} ? $pkgdata{$pkg}{group} : defined $pkgdata{main}{group} ? $pkgdata{main}{group} : '')."\n".
+	  "$pkgdata{$pkg}{version}-$pkgdata{main}{release}\n".
+	"Section: ".($pkgdata{$pkg}{group} ? $pkgdata{$pkg}{group} :
+	  defined $pkgdata{main}{group} ? $pkgdata{main}{group} : '')."\n".
 	"Priority: optional\n".
 	"Architecture: $pkgdata{$pkg}{arch}\n".
 	"Maintainer: $pkgdata{main}{packager}\n".
 	( defined $pkgdata{main}{url} ? "Homepage: $pkgdata{main}{url}\n" : '' ).
-	( $pkgdata{$pkg}{requires} ne '' ? "Depends: ".join(',',@{$pkgdata{$pkg}{requires}})."\n" : '' );
+	( $pkgdata{$pkg}{requires} ne '' ?
+	  "Depends: ".join(',',@{$pkgdata{$pkg}{requires}})."\n" : '' );
     foreach my $deplist (('Provides', 'Conflicts', 'Recommends',
                           'Suggests', 'Enhances', 'Replaces')) {
       if (defined $pkgdata{$pkg}{lc $deplist}) {
         $control .= "$deplist: ".join(',',@{$pkgdata{$pkg}{lc $deplist}})."\n";
       }
     }
-    $control .= "Description: $pkgdata{$pkg}{summary}\n";
-    $pkgdata{$pkg}{desc} = expandmacros($pkgdata{$pkg}{desc});
-    # Munge things so that Debian tools don't choke on errant blank lines
-    $pkgdata{$pkg}{desc} =~ s/\s+$//g;		# Trim trailing blanks
-    $pkgdata{$pkg}{desc} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
-    $control .= "$pkgdata{$pkg}{desc}\n";
+    $control .= "Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{desc}\n";
 
     open CONTROL, ">$specglobals{buildroot}/$pkg/DEBIAN/control";
-    print CONTROL $control;
+    print CONTROL expandmacros($control);
     close CONTROL;
 
     # Iff there are conffiles (as specified in the %files list(s), add'em
@@ -1589,9 +1587,9 @@ sub store_value {
 
   if ($key =~ /^(?:summary|name|epoch|version|release|
       group|copyright|url|packager)$/ix) {
-    $pkgdata{main}{$key} = $value;
+    $pkgdata{main}{$key} = expandmacros($value);
   } else {
-    $specglobals{$key} = $value;
+    $specglobals{$key} = expandmacros($value);
   }
 } # end store_value()
 
