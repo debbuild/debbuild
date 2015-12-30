@@ -1259,9 +1259,8 @@ sub binpackage {
       }
     }
 
-    # Get the "Depends" (Requires) a la RPM.  Ish.  We strip the leading
-    # comma and space here (if needed) in case there were "Requires" specified
-    # in the spec file - those would precede these.
+    # Get the "Depends" (Requires) a la RPM.  Ish.  In case there were
+    # "Requires" specified in the spec file, those would precede these.
     push @{$pkgdata{$pkg}{requires}}, getreqs("$specglobals{buildroot}/$pkg") unless $NoAutoReq;
 
     # magic needed to properly version dependencies...
@@ -1304,13 +1303,12 @@ sub binpackage {
 	"Architecture: $pkgdata{$pkg}{arch}\n".
 	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{desc}\n".
 	"Maintainer: $pkgdata{main}{packager}\n".
-	( defined $pkgdata{main}{url} ? "Homepage: $pkgdata{main}{url}\n" : '' ).
-	( $pkgdata{$pkg}{requires} ne '' ?
-	  "Depends: ".join(',',@{$pkgdata{$pkg}{requires}})."\n" : '' );
-    foreach my $deplist (('provides', 'conflicts', 'recommends',
+	( defined $pkgdata{main}{url} ? "Homepage: $pkgdata{main}{url}\n" : '' );
+    foreach my $deplist (('requires', 'provides', 'conflicts', 'recommends',
                           'suggests', 'enhances', 'replaces')) {
-      if (defined $pkgdata{$pkg}{$deplist}) {
-        $control .= "\u$deplist: ".join(',',@{$pkgdata{$pkg}{$deplist}})."\n";
+      if (defined $pkgdata{$pkg}{$deplist} and @{$pkgdata{$pkg}{$deplist}}) {
+        my $tag = $deplist eq 'requires' ? 'depends' : $deplist;
+        $control .= "\u$tag: ".join(',',@{$pkgdata{$pkg}{$deplist}})."\n";
       }
     }
 
@@ -1497,7 +1495,7 @@ sub checkbuildreq {
 # Find out which libraries/packages are required for any
 # executables and libs in a given file tree.
 # (Debian doesn't have soname-level deps;  just package-level)
-# Returns an empty string if the tree contains no binaries.
+# Returns an empty list if the tree contains no binaries.
 # Doesn't work well on shell scripts. but those *should* be
 # fine anyway.  (Yeah, right...)
 sub getreqs() {
@@ -1505,7 +1503,7 @@ sub getreqs() {
 
   print "Checking library requirements...\n";
   my @binlist = qx ( $specglobals{__find} $pkgtree -type f -perm 755 );
-  return '' unless @binlist;
+  return () unless @binlist;
 
   my @reqlist = map { qx ( LANG=C $specglobals{__ldd} $_ ) } @binlist;
 
