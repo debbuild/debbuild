@@ -1297,7 +1297,9 @@ sub binpackage {
     $pkgdata{$pkg}{desc} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
 
     # Give an estimate of the installation size
-    my ($installedsize) = qx{$specglobals{__du} -s $specglobals{buildroot}/$pkg} =~ /(\d+)/;
+    my ($installedsize) =
+      qx($specglobals{__du} -s --apparent-size $specglobals{buildroot}/$pkg) =~
+        /(\d+)/;
 
     my $control = "Package: $pkgdata{$pkg}{name}\n".
 	"Version: ".format_version($pkg)."\n".
