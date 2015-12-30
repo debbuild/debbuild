@@ -1306,9 +1306,9 @@ sub binpackage {
 	( defined $pkgdata{$pkg}{group} ? "Section: $pkgdata{$pkg}{group}\n" : '' ).
 	"Priority: optional\n".
 	"Architecture: $pkgdata{$pkg}{arch}\n".
-	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{desc}\n".
 	"Installed-Size: $installedsize\n".
 	"Maintainer: $pkgdata{main}{packager}\n".
+	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{desc}\n".
 	( defined $pkgdata{main}{url} ? "Homepage: $pkgdata{main}{url}\n" : '' );
     foreach my $deplist (('requires', 'provides', 'conflicts', 'recommends',
                           'suggests', 'enhances', 'replaces')) {
