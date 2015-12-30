@@ -1182,6 +1182,7 @@ sub binpackage {
     $pkgdata{$pkg}{arch} //= $pkgdata{main}{arch};
     $pkgdata{$pkg}{copy} //= $pkgdata{main}{copy};
     $pkgdata{$pkg}{changelog} //= $pkgdata{main}{changelog};
+    $pkgdata{$pkg}{group} //= $pkgdata{main}{group};
 
     # Make sure we have somewhere to write the .deb file
     mkdir "$topdir/DEBS/$pkgdata{$pkg}{arch}" unless -e "$topdir/DEBS/$pkgdata{$pkg}{arch}";
@@ -1298,10 +1299,10 @@ sub binpackage {
 
     my $control = "Package: $pkgdata{$pkg}{name}\n".
 	"Version: ".format_version($pkg)."\n".
-	"Section: ".($pkgdata{$pkg}{group} ? $pkgdata{$pkg}{group} :
-	  defined $pkgdata{main}{group} ? $pkgdata{main}{group} : '')."\n".
+	"Section: $pkgdata{$pkg}{group}\n".
 	"Priority: optional\n".
 	"Architecture: $pkgdata{$pkg}{arch}\n".
+	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{desc}\n".
 	"Maintainer: $pkgdata{main}{packager}\n".
 	( defined $pkgdata{main}{url} ? "Homepage: $pkgdata{main}{url}\n" : '' ).
 	( $pkgdata{$pkg}{requires} ne '' ?
@@ -1312,7 +1313,6 @@ sub binpackage {
         $control .= "\u$deplist: ".join(',',@{$pkgdata{$pkg}{$deplist}})."\n";
       }
     }
-    $control .= "Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{desc}\n";
 
     open CONTROL, ">$specglobals{buildroot}/$pkg/DEBIAN/control";
     print CONTROL expandmacros($control);
