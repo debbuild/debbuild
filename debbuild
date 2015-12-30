@@ -1296,12 +1296,16 @@ sub binpackage {
     $pkgdata{$pkg}{desc} =~ s/\s+$//g;		# Trim trailing blanks
     $pkgdata{$pkg}{desc} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
 
+    # Give an estimate of the installation size
+    my ($installedsize) = qx{$specglobals{__du} -s $specglobals{buildroot}/$pkg} =~ /(\d+)/;
+
     my $control = "Package: $pkgdata{$pkg}{name}\n".
 	"Version: ".format_version($pkg)."\n".
 	"Section: $pkgdata{$pkg}{group}\n".
 	"Priority: optional\n".
 	"Architecture: $pkgdata{$pkg}{arch}\n".
 	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{desc}\n".
+	"Installed-Size: $installedsize\n".
 	"Maintainer: $pkgdata{main}{packager}\n".
 	( defined $pkgdata{main}{url} ? "Homepage: $pkgdata{main}{url}\n" : '' );
     foreach my $deplist (('requires', 'provides', 'conflicts', 'recommends',

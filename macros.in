@@ -29,6 +29,7 @@
 %__dpkg			/usr/bin/dpkg
 %__dpkg_deb		/usr/bin/dpkg-deb
 %__dpkg_query		/usr/bin/dpkg-query
+%__du			/usr/bin/du
 %__echo			/bin/echo
 %__fakeroot		/usr/bin/fakeroot
 %__find			/usr/bin/find
