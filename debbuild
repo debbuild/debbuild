@@ -1303,7 +1303,7 @@ sub binpackage {
 
     my $control = "Package: $pkgdata{$pkg}{name}\n".
 	'Version: '.format_version($pkg)."\n".
-	"Section: $pkgdata{$pkg}{group}\n".
+	( defined $pkgdata{$pkg}{group} ? "Section: $pkgdata{$pkg}{group}\n" : '' ).
 	"Priority: optional\n".
 	"Architecture: $pkgdata{$pkg}{arch}\n".
 	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{desc}\n".
