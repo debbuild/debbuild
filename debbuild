@@ -690,30 +690,30 @@ ENDIF: if (/^%endif/) {
 
 # now we pick out the sections and set "state" to parse that section.  Fugly but I can't see a better way.  >:(
 
-    if (/^%description(?:\s+(?:-n\s+)?(.+))?/) {
-      $stage = 'desc';
+    if (/^%(desc)ription(?:\s+(?:-n\s+)?(.+))?/) {
+      $stage = $1;
       $subname = 'main';
-      if ($1) {       # Magic to add entries to the right package
-        my $tmp = expandmacros($1);
+      if ($2) {       # Magic to add entries to the right package
+        my $tmp = expandmacros($2);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
       next LINE;
     } # %description
 
-    if (/^%copyrightdata(?:\s+(?:-n\s+)?(.+))?/) {
-      $stage = 'copy';
+    if (/^%(copy)rightdata(?:\s+(?:-n\s+)?(.+))?/) {
+      $stage = $1;
       $subname = 'main';
-      if ($1) {       # Magic to add entries to the right package
-        my $tmp = expandmacros($1);
+      if ($2) {       # Magic to add entries to the right package
+        my $tmp = expandmacros($2);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
       next LINE;
     } # %copyrightdata
 
-    if (/^%package\s+(?:-n\s+)?(.+)/) {
-      $stage = 'package';
-      if ($1) {       # Magic to add entries to the right package
-        my $tmp = expandmacros($1);
+    if (/^%(package)\s+(?:-n\s+)?(.+)/) {
+      $stage = $1;
+      if ($2) {       # Magic to add entries to the right package
+        my $tmp = expandmacros($2);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
       push @pkglist, $subname;
@@ -726,8 +726,8 @@ ENDIF: if (/^%endif/) {
       next LINE;
     } # %package
 
-    if (/^%prep/) {
-      $stage = 'prep';
+    if (/^%(prep)/) {
+      $stage = $1;
       next LINE;
     } # %prep
 
@@ -748,18 +748,18 @@ ENDIF: if (/^%endif/) {
       next LINE;
     } # %pre/%post/%preun/%postun
 
-    if (/^%files(?:\s+(?:-n\s+)?(.+))?/) {
-      $stage = 'files';
+    if (/^%(files)(?:\s+(?:-n\s+)?(.+))?/) {
+      $stage = $1;
       $subname = 'main';
-      if ($1) {       # Magic to add entries to the right list of files
-        my $tmp = expandmacros($1);
+      if ($2) {       # Magic to add entries to the right list of files
+        my $tmp = expandmacros($2);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
       next LINE;
     } # %files
 
-    if (/^%changelog/) {
-      $stage = 'changelog';
+    if (/^%(changelog)/) {
+      $stage = $1;
       if ($pkgdata{main}{$stage}) { # Multi-part changelog
         $pkgdata{main}{$stage} =~ s/\s+$/\n\n/g; # Trim trailing blanks
       } else {
