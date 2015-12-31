@@ -539,15 +539,15 @@ debbuild-specific options:
 ## parse_spec()
 # Parse the .spec file.
 sub parse_spec {
-  my ($specfile, $instage, $insubname, $scriptlet) = @_;
+  my ($specfile, $stage, $subname, $scriptlet) = @_;
   die "No .spec file specified!  Exiting.\n" unless $specfile;
   open my $fh, "<$specfile" or die "specfile ($specfile) barfed: $!";
 
   my $buildarch = expandmacros('%{_arch}');
   $pkgdata{main}{arch} //= $buildarch;
 
-  my $stage = ($instage or 'preamble');
-  my $subname = ($insubname or 'main');
+  $stage //= 'preamble';
+  $subname //= 'main';
 
 # Basic algorithm:
 # For each line
