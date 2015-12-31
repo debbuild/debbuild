@@ -1434,10 +1434,9 @@ sub checkbuildreq {
     # Dependency tokens must begin with alpha-numeric, '_' or '/'
 ##fixme:  check for suitable whitespace around $rel
     # We have two classes of requirements - versioned and unversioned.
-    # Pick up the details of versioned buildreqs ...
+    $req .= '>=0' unless $req =~ /[><=]/; # unversioned buildreq
+    # Pick up the details of versioned buildreqs
     my ($pkg,$rel,$ver) = $req =~ /([a-z0-9._-]+)\s+([><=]+)\s+([a-z0-9._-]+)/;
-    # ... and amend the unversioned ones.
-    ($pkg,$rel,$ver) = ($req,'>=',0) unless ($pkg);
 
 ## Apparently a package that has been installed, then uninstalled, has a "known" dpkg status of
 ## "unknown ok not-installed" vs a package that has never been installed which returns nothing.  O_o
