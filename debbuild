@@ -760,10 +760,10 @@ ENDIF: if (/^%endif/) {
 
     if (/^%changelog/) {
       $stage = 'changelog';
-      if ($pkgdata{main}{changelog}) { # Multi-part changelog
-        $pkgdata{main}{changelog} =~ s/\s+$/\n\n/g; # Trim trailing blanks
+      if ($pkgdata{main}{$stage}) { # Multi-part changelog
+        $pkgdata{main}{$stage} =~ s/\s+$/\n\n/g; # Trim trailing blanks
       } else {
-        $pkgdata{main}{changelog} = '';
+        $pkgdata{main}{$stage} = '';
       }
       next LINE;
     }
@@ -771,12 +771,12 @@ ENDIF: if (/^%endif/) {
 # now we handle individual lines from the various sections
 
     if ($stage eq 'desc') {
-      $pkgdata{$subname}{desc} .= " $_";
+      $pkgdata{$subname}{$stage} .= " $_";
       next LINE;
     } # description
 
     if ($stage eq 'copy') {
-      $pkgdata{$subname}{copy} .= $_;
+      $pkgdata{$subname}{$stage} .= $_;
       next LINE;
     } # copyrightdata
 
@@ -846,7 +846,7 @@ ENDIF: if (/^%endif/) {
 
     if ($stage eq 'changelog') {
       # this is one of the few places we do NOT generally want to replace macros...
-      $pkgdata{main}{changelog} .= $_;
+      $pkgdata{main}{$stage} .= $_;
       next LINE;
     }
 
