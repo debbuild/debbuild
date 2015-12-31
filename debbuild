@@ -1451,9 +1451,9 @@ sub checkbuildreq {
 ## This causes real packages to be misdetected as installed "possible virtual packages" instead of "missing
 ## packages".  I don't think there's really a solution until/unless Debian's tools properly register virtual
 ## packages as installed.
-    my @pkglist = qx ( $specglobals{__dpkg_query} --showformat '\${status}\t\${version}\n' -W $pkg );
-    if (not $pkglist[0]) {
-      warn " * Missing build-dependency $pkg!\n  $pkglist[0]";
+    my ($pkgdep) = qx ( $specglobals{__dpkg_query} --showformat '\${status}\t\${version}\n' -W $pkg );
+    if (not $pkgdep) {
+      warn " * Missing build-dependency $pkg!\n";
       push @missinglist, $pkg;
     } else {
 # real package, installed
@@ -1466,7 +1466,7 @@ sub checkbuildreq {
 #kdeugau:~$ dpkg-query --showformat '${status}\t${version}\n' -W libdb4.8-dbg 2>&1
 #dpkg-query: no packages found matching libdb4.8-dbg
 
-      my ($reqstat,undef,undef,$reqver) = split ' ', $pkglist[0];
+      my ($reqstat,undef,undef,$reqver) = split ' ', $pkgdep;
       if ($reqstat =~ /^unknown/) {
 	# this seems to be a virtual package.
 	warn " * Warning: $pkg is probably installed but seems to be a virtual package.\n";
@@ -1477,7 +1477,7 @@ sub checkbuildreq {
         }
       } else {
 	# whatever state it's in, it's not completely installed, therefore it's missing.
-	warn " * Missing build-dependency $pkg!\n  $pkglist[0]";
+	warn " * Missing build-dependency $pkg!\n  $pkgdep";
         push @missinglist, $pkg;
       } # end not installed/installed check
     }
