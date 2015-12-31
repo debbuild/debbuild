@@ -1310,8 +1310,8 @@ sub binpackage {
 	"Maintainer: $pkgdata{main}{packager}\n".
 	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{desc}\n".
 	( defined $pkgdata{main}{url} ? "Homepage: $pkgdata{main}{url}\n" : '' );
-    foreach my $deplist (('requires', 'provides', 'conflicts', 'recommends',
-                          'suggests', 'enhances', 'replaces')) {
+    foreach my $deplist (qw(requires provides conflicts recommends
+                            suggests enhances replaces)) {
       if (defined $pkgdata{$pkg}{$deplist} and @{$pkgdata{$pkg}{$deplist}}) {
         my $tag = $deplist eq 'requires' ? 'depends' : $deplist;
         $control .= "\u$tag: ".join(',',@{$pkgdata{$pkg}{$deplist}})."\n";
@@ -1339,7 +1339,7 @@ sub binpackage {
     }
 
     # found the point of scripts on subpackages.
-    foreach my $scr ('pre','post','preun','postun') {
+    foreach my $scr (qw(pre post preun postun)) {
       my $scrfile = $scr;
       $scrfile .= 'inst' unless $scrfile =~ s/un/rm/;
       if ($pkgdata{$pkg}{$scr}) {
