@@ -250,11 +250,8 @@ if ($cmdopts{type} eq 'd') {
   parse_spec($specglobals{specfile});
   foreach my $pkg (@pkglist) {
     $pkgdata{$pkg}{name} =~ tr/_/-/;
-
-    my $pkgfullname = "$pkgdata{$pkg}{name}_".format_version($pkg).
-	"_$pkgdata{$pkg}{arch}.deb";
-
-    print "$pkgfullname\n" if $filelist{$pkg};
+    print "$pkgdata{$pkg}{name}_".format_version($pkg).
+	"_$pkgdata{$pkg}{arch}.deb\n" if $filelist{$pkg};
   }
   # Source package
   print "$pkgdata{main}{name}-".format_version('main').".sdeb\n";
@@ -1201,8 +1198,7 @@ sub binpackage {
     # Eliminate any lingering % macros
     $filelist{$pkg} = expandmacros($filelist{$pkg});
 
-    my @pkgfilelist = split ' ', $filelist{$pkg};
-    foreach my $pkgfile (@pkgfilelist) {
+    foreach my $pkgfile (split ' ', $filelist{$pkg}) {
       # Feh.  Manpages don't **NEED** to be gzipped, but rpmbuild does, and so shall we.
       # ... and your little info page too!
       if ($pkgfile =~ m{/usr/share/(?:man/man|info)}) {
@@ -1328,8 +1324,7 @@ sub binpackage {
       open CONFLIST, ">$specglobals{buildroot}/$pkg/DEBIAN/conffiles";
       foreach my $conffile (@{$pkgdata{$pkg}{conflist}}) {
 	$conffile = expandmacros($conffile);
-	my @tmp = glob "$specglobals{buildroot}/$pkg/$conffile";
-	foreach (@tmp) {
+	foreach (glob "$specglobals{buildroot}/$pkg/$conffile") {
 	  s|$specglobals{buildroot}/$pkg/||g;	# nrgl.  gotta be a better way to do this...
 	  s/\s+/\n/g;	# Not gonna support spaces in filenames.  Ewww.
 	  print CONFLIST "$_\n";
@@ -1376,15 +1371,15 @@ sub srcpackage {
   $pkgdata{main}{name} =~ tr/_/-/;
   my $pkgsrcname = "$pkgdata{main}{name}-".format_version('main').'.sdeb';
 
-  my $paxcmd;
-
   # We'll definitely need this later, and *may* need it sooner.
   my $barespec = basename($specglobals{specfile});
+
+  my $paxcmd;
 
   # Copy the specfile to the build tree, but only if it's not there already.
 ##buglet: need to deal with silly case where silly user has put the spec
 # file in a subdir of %{_topdir}/SPECS.  Ewww.  Silly user!
-  if (abs_path($specglobals{specfile}) !~ /^$topdir\/SPECS/) {
+  if (abs_path($specglobals{specfile}) !~ m|^$topdir/SPECS|) {
     $paxcmd .= "%{__cp} %{specfile} %{_specdir};\n"
   }
 
@@ -1626,7 +1621,7 @@ sub expandmacros {
   while (my ($prefix,$arg) = map { /{(\w+)\s+(\w+)}/ } extract_multiple($_,
       [ sub { extract_bracketed($_[0],'{}') } ]) ) {
     (my $paramac = $specglobals{"$prefix\(\)"}) =~ s/%\{1\}/$arg/g;
-    $paramac =~ s/%%/%/g;
+    $paramac =~ s/%%/%/g; # reduce level of macronization
     s/%{$prefix\s+$arg}/$paramac/g;
   }
   pos = 0; # reset to start of $_
