@@ -1439,18 +1439,11 @@ sub checkbuildreq {
     # from rpmbuild error message
     # Dependency tokens must begin with alpha-numeric, '_' or '/'
 ##fixme:  check for suitable whitespace around $rel
-    my ($pkg,$rel,$ver);
-
     # We have two classes of requirements - versioned and unversioned.
-    if ($req =~ /[><=]/) {
-      # Pick up the details of versioned buildreqs
-      ($pkg,$rel,$ver) = $req =~ /([a-z0-9._-]+)\s+([><=]+)\s+([a-z0-9._-]+)/;
-    } else {
-      # And the unversioned ones.
-      $pkg = $req;
-      $rel = '>=';
-      $ver = 0;
-    }
+    # Pick up the details of versioned buildreqs ...
+    my ($pkg,$rel,$ver) = $req =~ /([a-z0-9._-]+)\s+([><=]+)\s+([a-z0-9._-]+)/;
+    # ... and amend the unversioned ones.
+    ($pkg,$rel,$ver) = ($req,'>=',0) unless ($pkg);
 
 ## Apparently a package that has been installed, then uninstalled, has a "known" dpkg status of
 ## "unknown ok not-installed" vs a package that has never been installed which returns nothing.  O_o
