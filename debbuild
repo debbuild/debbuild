@@ -543,13 +543,13 @@ debbuild-specific options:
 # a little overlap here and there.
 sub parse_spec {
   my ($specfile, $stage, $subname, $scriptlet) = @_;
+  $stage //= 'preamble';
+  $subname //= 'main';
+
   die "No .spec file specified!  Exiting.\n" unless $specfile;
   open my $fh, "<$specfile" or die "specfile ($specfile) barfed: $!";
 
   $pkgdata{main}{arch} //= $buildarch;
-
-  $stage //= 'preamble';
-  $subname //= 'main';
 
 # Basic algorithm:
 # For each line
