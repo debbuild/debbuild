@@ -237,8 +237,9 @@ load_config();
 parse_cmd();
 
 # global shortcuts
-my $topdir = expandmacros($specglobals{_topdir});
-my $tmpdir = expandmacros($specglobals{_tmppath});
+my $topdir = expandmacros('%_topdir');
+my $tmpdir = expandmacros('%_tmppath');
+my $buildarch = expandmacros('%_arch');
 
 if ($cmdopts{type} eq 's') {
   install_sdeb($specglobals{srcpkg});
@@ -537,17 +538,18 @@ debbuild-specific options:
 
 
 ## parse_spec()
-# Parse the .spec file.
+# Parse the .spec file. This is a single loop, where we scan for '%commands'
+# and '%{macros}'. The latter are usually treated in 'expandmacros()', with
+# a little overlap here and there.
 sub parse_spec {
   my ($specfile, $stage, $subname, $scriptlet) = @_;
+  $stage //= 'preamble';
+  $subname //= 'main';
+
   die "No .spec file specified!  Exiting.\n" unless $specfile;
   open my $fh, "<$specfile" or die "specfile ($specfile) barfed: $!";
 
-  my $buildarch = expandmacros('%{_arch}');
   $pkgdata{main}{arch} //= $buildarch;
-
-  $stage //= 'preamble';
-  $subname //= 'main';
 
 # Basic algorithm:
 # For each line
@@ -561,13 +563,11 @@ sub parse_spec {
 #	parsing right now
 
 LINE: while (<$fh>) {
-    next if /^\s*#/ and $stage !~ /changelog|copy/; # Ignore comments...
-    next if /^\s*$/ and $stage !~ /changelog|copy|desc/; # ... and blank lines.
+    next if /^\s*#/ and $stage !~ /changelog|copyrightdata/; # Ignore comments...
+    next if /^\s*$/ and $stage !~ /changelog|copyrightdata|description/; # ... and blank lines.
 
-    if (my ($includefile) = /^%include\s+(.+)/) {
-      parse_spec(expandmacros($includefile),$stage,$subname,$scriptlet);
-      next LINE;
-    }
+    # need to deal with these someday
+    next if /^%verify/ or /^%ghost/;
 
 # no sense in continuing if we find something we don't grok
     # Yes, this is really horribly fugly.  But it's a cheap crosscheck against invalid
@@ -576,45 +576,24 @@ LINE: while (<$fh>) {
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
     if (/^%[a-z]/ &&
-		not /^%(?:attr|bcond_with|bcond_without|build|changelog|check|
-		clean|config|configure|copyrightdata|defattr|define|description|
-		dir|doc|docdir|dump|else|endif|files|ghost|global|if|ifarch|ifnarch|
-		ifnos|ifos|install|make_build|make_install|makeinstall|package|
+		not /^%(?:attr|bcond_with|bcond_without|build|changelog|check|clean|
+		config|configure|copyrightdata|defattr|define|description|dir|doc|
+		docdir|dump|else|endif|files|ghost|global|if|ifarch|ifnarch|ifnos|
+		ifos|include|install|make_build|make_install|makeinstall|package|
 		patch\d*|post|postun|pre|prep|preun|readme|setup\d*|triggerin|
 		triggerpostun|triggerun|undefine|verify|verifyscript)\b/x) {
 	my ($badtag) = /^%([a-z]+)/i;
 	die "Unknown tag \%$badtag at line $. of $specfile\n";
     }
 
-    # print the active macro table
-    if (/%dump/) {
-      for (sort keys %specglobals) {
-        print "%$_ ==> $specglobals{$_}\n" unless $_ =~ /^[A-Z]+$/;
-      }
-      next LINE;
-    }
-
-# preprocess %define's
-    if (my ($macro, $key, $def) = /^%(define|global|undefine)\s+(\S+)(?:\s+(.+))?$/) {
-      my $value = $macro eq 'undefine' ? undef : expandmacros($def);
-      store_value($key,$value);
-      next LINE;
-    }
-
-    # conditional build stuff
-    if (s/%(bcond_with(?:out)?)\s+(\w+)/%{$1 $2}/) {
-      expandmacros($_);
-      next LINE;
-    }
-
-    # RPM conditionals – transform to generic form
-    s/^%ifos/%if %{_os}==/;
-    s/^%ifnos/%if %{_os}!=/;
-    s/^%ifarch/%if %{_arch}==/;
-    s/^%ifnarch/%if %{_arch}!=/;
-
     # Generic %if..%else..%endif construct
     if (s/^%if//) {
+      # RPM conditionals – transform to generic form
+      s/^os/%{_os} ==/;
+      s/^nos/%{_os} !=/;
+      s/^arch/%{_arch} ==/;
+      s/^narch/%{_arch} !=/;
+
       chomp( my $expr = lc expandmacros($_) );
 
       if ($expr =~ /^[\d\s<=>&|\(\)+-]+$/) {
@@ -675,42 +654,50 @@ ELSE: if (/^%else/) {
     }
 ENDIF: if (/^%endif/) {
       shift @ifexpr;
-      next LINE;
     } # %if..%else..%endif
 
-    if (/^%{echo:(.+)}/) {
+### Diagnostics '%{macros}'; these should actually be handled in expandmacros()
+    elsif (/^%{echo:(.+)}/) {
       print expandmacros($1),"\n";
-      next LINE;
     } elsif (/^%{warn:(.+)}/) {
       warn expandmacros($1),"\n";
-      next LINE;
     } elsif (/^%{error:(.+)}/) {
       die expandmacros($1),"\n";
     }
 
-# now we pick out the sections and set "state" to parse that section.  Fugly but I can't see a better way.  >:(
+### Single-line %commands
+    # Print the active macro table
+    elsif (/%dump/) {
+      for (sort keys %specglobals) {
+        print "%$_ ==> $specglobals{$_}\n" unless $_ =~ /^[A-Z]+$/;
+      }
+    }
 
-    if (/^%(desc)ription(?:\s+(?:-n\s+)?(.+))?/) {
+    # Preprocess %define's
+    elsif (my ($macro, $key, $def) = /^%(define|global|undefine)\s+(\S+)(?:\s+(.+))?$/) {
+      my $value = $macro eq 'undefine' ? undef : expandmacros($def);
+      store_value($key,$value);
+    }
+
+    # Conditional Build Stuff
+    elsif (s/%(bcond_with(?:out)?)\s+(\w+)/%{$1 $2}/) {
+      expandmacros($_);
+    }
+
+### Multi-line sectioning %commands
+# Now we pick out the sections and set "state" to parse that section.
+# Fugly but I can't see a better way.  >:(
+
+    elsif (/^%(description|copyrightdata|files)(?:\s+(?:-n\s+)?(.+))?/) {
       $stage = $1;
       $subname = 'main';
       if ($2) {       # Magic to add entries to the right package
         my $tmp = expandmacros($2);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
-      next LINE;
-    } # %description
+    } # %description, %copyrightdata, %files
 
-    if (/^%(copy)rightdata(?:\s+(?:-n\s+)?(.+))?/) {
-      $stage = $1;
-      $subname = 'main';
-      if ($2) {       # Magic to add entries to the right package
-        my $tmp = expandmacros($2);
-        $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
-      }
-      next LINE;
-    } # %copyrightdata
-
-    if (/^%(package)\s+(?:-n\s+)?(.+)/) {
+    elsif (/^%(package)\s+(?:-n\s+)?(.+)/) {
       $stage = $1;
       if ($2) {       # Magic to add entries to the right package
         my $tmp = expandmacros($2);
@@ -722,22 +709,19 @@ ENDIF: if (/^%endif/) {
   # Build "same arch as previous package found" by default.  Where rpm just picks the
   # *very* last one, we want to allow arch<native>+arch-all
   # (eg, Apache is i386, but apache-manual is all)
-      $pkgdata{$subname}{arch} = $buildarch;  # Since it's likely subpackages will NOT have a BuildArch line...
-      next LINE;
+      $pkgdata{$subname}{arch} = $pkgdata{main}{arch};  # Since it's likely subpackages will NOT have a BuildArch line...
     } # %package
 
-    if (/^%(prep)/) {
+    elsif (/^%(prep)/) {
       $stage = $1;
-      next LINE;
     } # %prep
 
-    if (/^%(build|install|check|clean)/) {
+    elsif (/^%(build|install|check|clean)/) {
       $stage = $1;
       $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
-      next LINE;
     } # %build,install,check,clean
 
-    if (/^%(pre|post|preun|postun)\b(?:\s+(?:-n\s+)?(.+))?/i) {
+    elsif (/^%(pre|post|preun|postun)\b(?:\s+(?:-n\s+)?(.+))?/i) {
       $stage = 'prepost';
       $scriptlet = lc $1;
       $subname = 'main';
@@ -745,42 +729,29 @@ ENDIF: if (/^%endif/) {
         my $tmp = expandmacros($2);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
-      next LINE;
     } # %pre/%post/%preun/%postun
 
-    if (/^%(files)(?:\s+(?:-n\s+)?(.+))?/) {
-      $stage = $1;
-      $subname = 'main';
-      if ($2) {       # Magic to add entries to the right list of files
-        my $tmp = expandmacros($2);
-        $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
-      }
-      next LINE;
-    } # %files
-
-    if (/^%(changelog)/) {
+    elsif (/^%(changelog)/) {
       $stage = $1;
       if ($pkgdata{main}{$stage}) { # Multi-part changelog
         $pkgdata{main}{$stage} =~ s/\s+$/\n\n/g; # Trim trailing blanks
       } else {
         $pkgdata{main}{$stage} = '';
       }
-      next LINE;
     }
 
+### Actual section contents
 # now we handle individual lines from the various sections
 
-    if ($stage eq 'desc') {
+    elsif ($stage eq 'description') {
       $pkgdata{$subname}{$stage} .= " $_";
-      next LINE;
     } # description
 
-    if ($stage eq 'copy') {
+    elsif ($stage eq 'copyrightdata') {
       $pkgdata{$subname}{$stage} .= $_;
-      next LINE;
     } # copyrightdata
 
-    if ($stage eq 'package') {
+    elsif ($stage eq 'package') {
       # gotta expand %defines here.  Whee.
 # Note that we look for the Debian-specific Recommends, Suggests, and Replaces,
 # although they will have to be wrapped in '%if %{_vendor} == "debbuild"' for
@@ -793,7 +764,7 @@ ENDIF: if (/^%endif/) {
         $dname =~ tr/[A-Z]/[a-z]/;
         if ($dname =~ /^BuildArch/i) {
           $dvalue =~ s/^noarch/all/ig;
-          $buildarch = $dvalue;     # Emulate rpm's behaviour to a degree
+          $pkgdata{$subname}{arch} = $dvalue;     # Emulate rpm's behaviour to a degree
           $dname = 'arch';
         }
         if ($dname =~ /recommends|suggests|enhances|replaces|
@@ -803,10 +774,9 @@ ENDIF: if (/^%endif/) {
           $pkgdata{$subname}{$dname} = expandmacros($dvalue);
         }
       }
-      next LINE;
     } # package
 
-    if ($stage eq 'prep') {
+    elsif ($stage eq 'prep') {
       # Actual handling for %prep section.  May have %setup macro, may include
       # %patch tags, may be just a bare shell script.
       if (s/^%setup//) {
@@ -816,41 +786,31 @@ ENDIF: if (/^%endif/) {
       } else {
         $script{$stage} .= $_;
       }
-      next LINE;
     } # prep
 
-    if ($stage =~ /build|install|check|clean/) {
+    elsif ($stage =~ /build|install|check|clean/) {
       $script{$stage} .= $_;
-      next LINE;
     } # build,install,check,clean
 
-    if ($stage eq 'prepost') {
+    elsif ($stage eq 'prepost') {
       $pkgdata{$subname}{$scriptlet} .= $_;
-      next LINE;
     } # prepost
 
-    if ($stage eq 'files') {
-      # need to deal with these someday
-      next LINE if /^%verify/ or /^%ghost/;
-
+    elsif ($stage eq 'files') {
       if (/^%defattr\s*\(\s*(-|\d+)\s*,\s*(-|\w+)\s*,\s*(-|\w+)\s*,?\s*(-|\d+)?\s*\)/) {
         ($defattr{filemode}, $defattr{owner}, $defattr{group}) = ($1, $2, $3);
          $defattr{dirmode} = $4 if $4; # default directory setting is optional
-        next LINE;
+      } else {
+        process_filesline($subname);
       }
-
-      process_filesline($subname);
-
-      next LINE;
     } # files
 
-    if ($stage eq 'changelog') {
+    elsif ($stage eq 'changelog') {
       # this is one of the few places we do NOT generally want to replace macros...
       $pkgdata{main}{$stage} .= $_;
-      next LINE;
     }
 
-    if ($stage eq 'preamble') {
+    elsif ($stage eq 'preamble') {
       if (/^(summary|name|epoch|version|release|
              group|copyright|url|packager):\s*(.+)/ix) {
         $pkgdata{main}{lc $1} //= expandmacros($2);
@@ -867,7 +827,6 @@ ENDIF: if (/^%endif/) {
         $pkgdata{main}{$patchnum} = basename($patch);
       } elsif (/^buildarch(?:itecture)?:\s*(.+)/i) {
         ($pkgdata{main}{arch} = $1) =~ s/^noarch$/all/;
-        $buildarch = $pkgdata{main}{arch};
       } elsif (/^buildrequires:\s*(.+)/i) {
         push @buildreq, $1;
       } elsif (/^(requires|provides|conflicts):\s*(.+)/i) {
@@ -889,8 +848,12 @@ ENDIF: if (/^%endif/) {
 	# we don't handle auto-provides (yet)
 	$NoAutoReq = 1 if $1 =~ /(?:no|0)/i;
       }
-      next LINE;
     } # preamble
+
+    # Multi-level submodules (experimental)
+    elsif (my ($includefile) = /^%include\s+(.+)/) {
+      parse_spec(expandmacros($includefile),$stage,$subname,$scriptlet);
+    }
 
   } # while <$fh>
 
@@ -1176,7 +1139,7 @@ sub binpackage {
 
     # Just In Case.
     $pkgdata{$pkg}{arch} //= $pkgdata{main}{arch};
-    $pkgdata{$pkg}{copy} //= $pkgdata{main}{copy};
+    $pkgdata{$pkg}{copyrightdata} //= $pkgdata{main}{copyrightdata};
     $pkgdata{$pkg}{changelog} //= $pkgdata{main}{changelog};
     $pkgdata{$pkg}{group} //= $pkgdata{main}{group};
 
@@ -1244,12 +1207,12 @@ sub binpackage {
         close CHANGELOG;
       }
     }
-    if ($pkgdata{$pkg}{copy}) {
-      $pkgdata{$pkg}{copy} =~ s/\s+$//g; # Trim trailing blanks
+    if ($pkgdata{$pkg}{copyrightdata}) {
+      $pkgdata{$pkg}{copyrightdata} =~ s/\s+$//g; # Trim trailing blanks
       my $crpath = expandmacros("$specglobals{buildroot}/$pkg$specglobals{_docdir}/$pkgdata{$pkg}{name}");
       qx ( $specglobals{__mkdir_p} $crpath );
       if (open COPYRIGHT, "| $specglobals{__gzip} -cf9n >$crpath/copyright.gz") {
-        print COPYRIGHT $pkgdata{$pkg}{copy};
+        print COPYRIGHT $pkgdata{$pkg}{copyrightdata};
         close COPYRIGHT;
       }
     }
@@ -1288,8 +1251,8 @@ sub binpackage {
     $pkgdata{$pkg}{name} =~ tr/_/-/;
 
     # Munge things so that Debian tools don't choke on errant blank lines
-    $pkgdata{$pkg}{desc} =~ s/\s+$//g;		# Trim trailing blanks
-    $pkgdata{$pkg}{desc} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
+    $pkgdata{$pkg}{description} =~ s/\s+$//g;		# Trim trailing blanks
+    $pkgdata{$pkg}{description} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
 
     # Give an estimate of the installation size
     my ($installedsize) =
@@ -1303,7 +1266,7 @@ sub binpackage {
 	"Architecture: $pkgdata{$pkg}{arch}\n".
 	"Installed-Size: $installedsize\n".
 	"Maintainer: $pkgdata{main}{packager}\n".
-	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{desc}\n".
+	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{description}\n".
 	( defined $pkgdata{main}{url} ? "Homepage: $pkgdata{main}{url}\n" : '' );
     foreach my $deplist (qw(requires provides conflicts recommends
                             suggests enhances replaces)) {
