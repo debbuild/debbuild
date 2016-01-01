@@ -699,10 +699,9 @@ ENDIF: if (/^%endif/) {
 
     elsif (/^%(package)\s+(?:-n\s+)?(.+)/) {
       $stage = $1;
-      if ($2) {       # Magic to add entries to the right package
-        my $tmp = expandmacros($2);
-        $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
-      }
+      # Magic to add entries to the right package
+      my $tmp = expandmacros($2);
+      $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       push @pkglist, $subname;
       $pkgdata{$subname}{name} = $subname;
       $pkgdata{$subname}{version} = $pkgdata{main}{version};
