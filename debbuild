@@ -566,6 +566,9 @@ LINE: while (<$fh>) {
     next if /^\s*#/ and $stage !~ /changelog|copy/; # Ignore comments...
     next if /^\s*$/ and $stage !~ /changelog|copy|desc/; # ... and blank lines.
 
+    # need to deal with these someday
+    next if /^%verify/ or /^%ghost/;
+
 # no sense in continuing if we find something we don't grok
     # Yes, this is really horribly fugly.  But it's a cheap crosscheck against invalid
     # %-tags which also make rpmbuild barf.  In theory.
@@ -782,15 +785,13 @@ ENDIF: if (/^%endif/) {
 
     if ($stage eq 'desc') {
       $pkgdata{$subname}{$stage} .= " $_";
-      next LINE;
     } # description
 
-    if ($stage eq 'copy') {
+    elsif ($stage eq 'copy') {
       $pkgdata{$subname}{$stage} .= $_;
-      next LINE;
     } # copyrightdata
 
-    if ($stage eq 'package') {
+    elsif ($stage eq 'package') {
       # gotta expand %defines here.  Whee.
 # Note that we look for the Debian-specific Recommends, Suggests, and Replaces,
 # although they will have to be wrapped in '%if %{_vendor} == "debbuild"' for
@@ -813,10 +814,9 @@ ENDIF: if (/^%endif/) {
           $pkgdata{$subname}{$dname} = expandmacros($dvalue);
         }
       }
-      next LINE;
     } # package
 
-    if ($stage eq 'prep') {
+    elsif ($stage eq 'prep') {
       # Actual handling for %prep section.  May have %setup macro, may include
       # %patch tags, may be just a bare shell script.
       if (s/^%setup//) {
@@ -826,41 +826,31 @@ ENDIF: if (/^%endif/) {
       } else {
         $script{$stage} .= $_;
       }
-      next LINE;
     } # prep
 
-    if ($stage =~ /build|install|check|clean/) {
+    elsif ($stage =~ /build|install|check|clean/) {
       $script{$stage} .= $_;
-      next LINE;
     } # build,install,check,clean
 
-    if ($stage eq 'prepost') {
+    elsif ($stage eq 'prepost') {
       $pkgdata{$subname}{$scriptlet} .= $_;
-      next LINE;
     } # prepost
 
-    if ($stage eq 'files') {
-      # need to deal with these someday
-      next LINE if /^%verify/ or /^%ghost/;
-
+    elsif ($stage eq 'files') {
       if (/^%defattr\s*\(\s*(-|\d+)\s*,\s*(-|\w+)\s*,\s*(-|\w+)\s*,?\s*(-|\d+)?\s*\)/) {
         ($defattr{filemode}, $defattr{owner}, $defattr{group}) = ($1, $2, $3);
          $defattr{dirmode} = $4 if $4; # default directory setting is optional
-        next LINE;
+      } else {
+        process_filesline($subname);
       }
-
-      process_filesline($subname);
-
-      next LINE;
     } # files
 
-    if ($stage eq 'changelog') {
+    elsif ($stage eq 'changelog') {
       # this is one of the few places we do NOT generally want to replace macros...
       $pkgdata{main}{$stage} .= $_;
-      next LINE;
     }
 
-    if ($stage eq 'preamble') {
+    elsif ($stage eq 'preamble') {
       if (/^(summary|name|epoch|version|release|
              group|copyright|url|packager):\s*(.+)/ix) {
         $pkgdata{main}{lc $1} //= expandmacros($2);
@@ -899,7 +889,6 @@ ENDIF: if (/^%endif/) {
 	# we don't handle auto-provides (yet)
 	$NoAutoReq = 1 if $1 =~ /(?:no|0)/i;
       }
-      next LINE;
     } # preamble
 
   } # while <$fh>
