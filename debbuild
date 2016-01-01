@@ -709,20 +709,18 @@ ENDIF: if (/^%endif/) {
         my $tmp = expandmacros($2);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
-      next LINE;
     } # %description
 
-    if (/^%(copy)rightdata(?:\s+(?:-n\s+)?(.+))?/) {
+    elsif (/^%(copy)rightdata(?:\s+(?:-n\s+)?(.+))?/) {
       $stage = $1;
       $subname = 'main';
       if ($2) {       # Magic to add entries to the right package
         my $tmp = expandmacros($2);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
-      next LINE;
     } # %copyrightdata
 
-    if (/^%(package)\s+(?:-n\s+)?(.+)/) {
+    elsif (/^%(package)\s+(?:-n\s+)?(.+)/) {
       $stage = $1;
       if ($2) {       # Magic to add entries to the right package
         my $tmp = expandmacros($2);
@@ -735,21 +733,18 @@ ENDIF: if (/^%endif/) {
   # *very* last one, we want to allow arch<native>+arch-all
   # (eg, Apache is i386, but apache-manual is all)
       $pkgdata{$subname}{arch} = $pkgdata{main}{arch};  # Since it's likely subpackages will NOT have a BuildArch line...
-      next LINE;
     } # %package
 
-    if (/^%(prep)/) {
+    elsif (/^%(prep)/) {
       $stage = $1;
-      next LINE;
     } # %prep
 
-    if (/^%(build|install|check|clean)/) {
+    elsif (/^%(build|install|check|clean)/) {
       $stage = $1;
       $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
-      next LINE;
     } # %build,install,check,clean
 
-    if (/^%(pre|post|preun|postun)\b(?:\s+(?:-n\s+)?(.+))?/i) {
+    elsif (/^%(pre|post|preun|postun)\b(?:\s+(?:-n\s+)?(.+))?/i) {
       $stage = 'prepost';
       $scriptlet = lc $1;
       $subname = 'main';
@@ -757,33 +752,30 @@ ENDIF: if (/^%endif/) {
         my $tmp = expandmacros($2);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
-      next LINE;
     } # %pre/%post/%preun/%postun
 
-    if (/^%(files)(?:\s+(?:-n\s+)?(.+))?/) {
+    elsif (/^%(files)(?:\s+(?:-n\s+)?(.+))?/) {
       $stage = $1;
       $subname = 'main';
       if ($2) {       # Magic to add entries to the right list of files
         my $tmp = expandmacros($2);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
-      next LINE;
     } # %files
 
-    if (/^%(changelog)/) {
+    elsif (/^%(changelog)/) {
       $stage = $1;
       if ($pkgdata{main}{$stage}) { # Multi-part changelog
         $pkgdata{main}{$stage} =~ s/\s+$/\n\n/g; # Trim trailing blanks
       } else {
         $pkgdata{main}{$stage} = '';
       }
-      next LINE;
     }
 
 ### Actual section contents
 # now we handle individual lines from the various sections
 
-    if ($stage eq 'desc') {
+    elsif ($stage eq 'desc') {
       $pkgdata{$subname}{$stage} .= " $_";
     } # description
 
