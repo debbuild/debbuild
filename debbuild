@@ -237,8 +237,9 @@ load_config();
 parse_cmd();
 
 # global shortcuts
-my $topdir = expandmacros($specglobals{_topdir});
-my $tmpdir = expandmacros($specglobals{_tmppath});
+my $topdir = expandmacros('%_topdir');
+my $tmpdir = expandmacros('%_tmppath');
+my $buildarch = expandmacros('%_arch');
 
 if ($cmdopts{type} eq 's') {
   install_sdeb($specglobals{srcpkg});
@@ -537,13 +538,14 @@ debbuild-specific options:
 
 
 ## parse_spec()
-# Parse the .spec file.
+# Parse the .spec file. This is a single loop, where we scan for '%commands'
+# and '%{macros}'. The latter are usually treated in 'expandmacros()', with
+# a little overlap here and there.
 sub parse_spec {
   my ($specfile, $stage, $subname, $scriptlet) = @_;
   die "No .spec file specified!  Exiting.\n" unless $specfile;
   open my $fh, "<$specfile" or die "specfile ($specfile) barfed: $!";
 
-  my $buildarch = expandmacros('%{_arch}');
   $pkgdata{main}{arch} //= $buildarch;
 
   $stage //= 'preamble';
