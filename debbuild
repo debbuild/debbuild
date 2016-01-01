@@ -1567,9 +1567,9 @@ sub store_value {
 
   if ($key =~ /^(?:summary|name|epoch|version|release|
       group|copyright|url|packager)$/ix) {
-    $pkgdata{main}{$key} = expandmacros($value);
+    $pkgdata{main}{$key} = $value;
   } else {
-    $specglobals{$key} = expandmacros($value);
+    $specglobals{$key} = $value;
   }
 } # end store_value()
 
