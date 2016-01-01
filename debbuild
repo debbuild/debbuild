@@ -625,7 +625,7 @@ LINE: while (<$fh>) {
 
       unshift @ifexpr, (eval $expr or 0);
 
-      next LINE if $ifexpr[0] != 0; # This appears to be the only case we call false.
+      next LINE if $ifexpr[0]; # This appears to be the only case we call false.
       my $iflevel = @ifexpr;
       while (<$fh>) { # Skip %if-block, inluding nested %if..%else..%endif
         if (/^%if/) {
@@ -637,9 +637,11 @@ LINE: while (<$fh>) {
           $iflevel--;
         }
       }
+      die "Unmatched %if at end of file. Missing %else/%endif.\n";
     }
 ELSE: if (/^%else/) {
-      next LINE if $ifexpr[0] == 0;
+      die "Unmatched %else in line $.. Missing %if.\n" unless @ifexpr;
+      next LINE unless $ifexpr[0];
       my $iflevel = @ifexpr;
       while (<$fh>) { # Skip %else-block, inluding nested %if..%else..%endif
         if (/^%if/) {
@@ -651,8 +653,10 @@ ELSE: if (/^%else/) {
           $iflevel--;
         }
       }
+      die "Unmatched %else at end of file. Missing %endif.\n";
     }
 ENDIF: if (/^%endif/) {
+      die "Unmatched %endif in line $.. Missing %if/%else.\n" unless @ifexpr;
       shift @ifexpr;
     } # %if..%else..%endif
 
@@ -857,6 +861,8 @@ ENDIF: if (/^%endif/) {
   } # while <$fh>
 
   close $fh;
+
+  die "Unmatched %if at end of file. Missing %endif.\n" if @ifexpr;
 } # end parse_spec()
 
 
