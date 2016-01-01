@@ -622,14 +622,14 @@ LINE: while (<$fh>) {
       next LINE;
     }
 
-    # RPM conditionals – transform to generic form
-    s/^%ifos/%if %{_os}==/;
-    s/^%ifnos/%if %{_os}!=/;
-    s/^%ifarch/%if %{_arch}==/;
-    s/^%ifnarch/%if %{_arch}!=/;
-
     # Generic %if..%else..%endif construct
     if (s/^%if//) {
+      # RPM conditionals – transform to generic form
+      s/^os/%{_os} ==/;
+      s/^nos/%{_os} !=/;
+      s/^arch/%{_arch} ==/;
+      s/^narch/%{_arch} !=/;
+
       chomp( my $expr = lc expandmacros($_) );
 
       if ($expr =~ /^[\d\s<=>&|\(\)+-]+$/) {
@@ -673,6 +673,7 @@ LINE: while (<$fh>) {
           $iflevel--;
         }
       }
+      next LINE;
     }
 ELSE: if (/^%else/) {
       next LINE if $ifexpr[0] == 0;
@@ -687,6 +688,7 @@ ELSE: if (/^%else/) {
           $iflevel--;
         }
       }
+      next LINE;
     }
 ENDIF: if (/^%endif/) {
       shift @ifexpr;
