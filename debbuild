@@ -586,36 +586,8 @@ LINE: while (<$fh>) {
 	die "Unknown tag \%$badtag at line $. of $specfile\n";
     }
 
-### Diagnostics '%{macros}'; these should actually be handled in expandmacros()
-    if (/^%{echo:(.+)}/) {
-      print expandmacros($1),"\n";
-    } elsif (/^%{warn:(.+)}/) {
-      warn expandmacros($1),"\n";
-    } elsif (/^%{error:(.+)}/) {
-      die expandmacros($1),"\n";
-    }
-
-### Single-line %commands
-    # Print the active macro table
-    elsif (/%dump/) {
-      for (sort keys %specglobals) {
-        print "%$_ ==> $specglobals{$_}\n" unless $_ =~ /^[A-Z]+$/;
-      }
-    }
-
-    # Preprocess %define's
-    elsif (my ($macro, $key, $def) = /^%(define|global|undefine)\s+(\S+)(?:\s+(.+))?$/) {
-      my $value = $macro eq 'undefine' ? undef : expandmacros($def);
-      store_value($key,$value);
-    }
-
-    # Conditional Build Stuff
-    elsif (s/%(bcond_with(?:out)?)\s+(\w+)/%{$1 $2}/) {
-      expandmacros($_);
-    }
-
     # Generic %if..%else..%endif construct
-    elsif (s/^%if//) {
+    if (s/^%if//) {
       # RPM conditionals – transform to generic form
       s/^os/%{_os} ==/;
       s/^nos/%{_os} !=/;
@@ -683,6 +655,34 @@ ELSE: if (/^%else/) {
 ENDIF: if (/^%endif/) {
       shift @ifexpr;
     } # %if..%else..%endif
+
+### Diagnostics '%{macros}'; these should actually be handled in expandmacros()
+    elsif (/^%{echo:(.+)}/) {
+      print expandmacros($1),"\n";
+    } elsif (/^%{warn:(.+)}/) {
+      warn expandmacros($1),"\n";
+    } elsif (/^%{error:(.+)}/) {
+      die expandmacros($1),"\n";
+    }
+
+### Single-line %commands
+    # Print the active macro table
+    elsif (/%dump/) {
+      for (sort keys %specglobals) {
+        print "%$_ ==> $specglobals{$_}\n" unless $_ =~ /^[A-Z]+$/;
+      }
+    }
+
+    # Preprocess %define's
+    elsif (my ($macro, $key, $def) = /^%(define|global|undefine)\s+(\S+)(?:\s+(.+))?$/) {
+      my $value = $macro eq 'undefine' ? undef : expandmacros($def);
+      store_value($key,$value);
+    }
+
+    # Conditional Build Stuff
+    elsif (s/%(bcond_with(?:out)?)\s+(\w+)/%{$1 $2}/) {
+      expandmacros($_);
+    }
 
 ### Multi-line sectioning %commands
 # Now we pick out the sections and set "state" to parse that section.
