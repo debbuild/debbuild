@@ -734,7 +734,7 @@ ENDIF: if (/^%endif/) {
   # Build "same arch as previous package found" by default.  Where rpm just picks the
   # *very* last one, we want to allow arch<native>+arch-all
   # (eg, Apache is i386, but apache-manual is all)
-      $pkgdata{$subname}{arch} = $buildarch;  # Since it's likely subpackages will NOT have a BuildArch line...
+      $pkgdata{$subname}{arch} = $pkgdata{main}{arch};  # Since it's likely subpackages will NOT have a BuildArch line...
       next LINE;
     } # %package
 
@@ -804,7 +804,7 @@ ENDIF: if (/^%endif/) {
         $dname =~ tr/[A-Z]/[a-z]/;
         if ($dname =~ /^BuildArch/i) {
           $dvalue =~ s/^noarch/all/ig;
-          $buildarch = $dvalue;     # Emulate rpm's behaviour to a degree
+          $pkgdata{$subname}{arch} = $dvalue;     # Emulate rpm's behaviour to a degree
           $dname = 'arch';
         }
         if ($dname =~ /recommends|suggests|enhances|replaces|
@@ -867,7 +867,6 @@ ENDIF: if (/^%endif/) {
         $pkgdata{main}{$patchnum} = basename($patch);
       } elsif (/^buildarch(?:itecture)?:\s*(.+)/i) {
         ($pkgdata{main}{arch} = $1) =~ s/^noarch$/all/;
-        $buildarch = $pkgdata{main}{arch};
       } elsif (/^buildrequires:\s*(.+)/i) {
         push @buildreq, $1;
       } elsif (/^(requires|provides|conflicts):\s*(.+)/i) {
