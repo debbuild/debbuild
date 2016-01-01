@@ -563,8 +563,8 @@ sub parse_spec {
 #	parsing right now
 
 LINE: while (<$fh>) {
-    next if /^\s*#/ and $stage !~ /changelog|copy/; # Ignore comments...
-    next if /^\s*$/ and $stage !~ /changelog|copy|desc/; # ... and blank lines.
+    next if /^\s*#/ and $stage !~ /changelog|copyrightdata/; # Ignore comments...
+    next if /^\s*$/ and $stage !~ /changelog|copyrightdata|description/; # ... and blank lines.
 
     # need to deal with these someday
     next if /^%verify/ or /^%ghost/;
@@ -688,23 +688,14 @@ ENDIF: if (/^%endif/) {
 # Now we pick out the sections and set "state" to parse that section.
 # Fugly but I can't see a better way.  >:(
 
-    elsif (/^%(desc)ription(?:\s+(?:-n\s+)?(.+))?/) {
+    elsif (/^%(description|copyrightdata|files)(?:\s+(?:-n\s+)?(.+))?/) {
       $stage = $1;
       $subname = 'main';
       if ($2) {       # Magic to add entries to the right package
         my $tmp = expandmacros($2);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
-    } # %description
-
-    elsif (/^%(copy)rightdata(?:\s+(?:-n\s+)?(.+))?/) {
-      $stage = $1;
-      $subname = 'main';
-      if ($2) {       # Magic to add entries to the right package
-        my $tmp = expandmacros($2);
-        $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
-      }
-    } # %copyrightdata
+    } # %description, %copyrightdata, %files
 
     elsif (/^%(package)\s+(?:-n\s+)?(.+)/) {
       $stage = $1;
@@ -740,15 +731,6 @@ ENDIF: if (/^%endif/) {
       }
     } # %pre/%post/%preun/%postun
 
-    elsif (/^%(files)(?:\s+(?:-n\s+)?(.+))?/) {
-      $stage = $1;
-      $subname = 'main';
-      if ($2) {       # Magic to add entries to the right list of files
-        my $tmp = expandmacros($2);
-        $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
-      }
-    } # %files
-
     elsif (/^%(changelog)/) {
       $stage = $1;
       if ($pkgdata{main}{$stage}) { # Multi-part changelog
@@ -761,11 +743,11 @@ ENDIF: if (/^%endif/) {
 ### Actual section contents
 # now we handle individual lines from the various sections
 
-    elsif ($stage eq 'desc') {
+    elsif ($stage eq 'description') {
       $pkgdata{$subname}{$stage} .= " $_";
     } # description
 
-    elsif ($stage eq 'copy') {
+    elsif ($stage eq 'copyrightdata') {
       $pkgdata{$subname}{$stage} .= $_;
     } # copyrightdata
 
@@ -1157,7 +1139,7 @@ sub binpackage {
 
     # Just In Case.
     $pkgdata{$pkg}{arch} //= $pkgdata{main}{arch};
-    $pkgdata{$pkg}{copy} //= $pkgdata{main}{copy};
+    $pkgdata{$pkg}{copyrightdata} //= $pkgdata{main}{copyrightdata};
     $pkgdata{$pkg}{changelog} //= $pkgdata{main}{changelog};
     $pkgdata{$pkg}{group} //= $pkgdata{main}{group};
 
@@ -1225,12 +1207,12 @@ sub binpackage {
         close CHANGELOG;
       }
     }
-    if ($pkgdata{$pkg}{copy}) {
-      $pkgdata{$pkg}{copy} =~ s/\s+$//g; # Trim trailing blanks
+    if ($pkgdata{$pkg}{copyrightdata}) {
+      $pkgdata{$pkg}{copyrightdata} =~ s/\s+$//g; # Trim trailing blanks
       my $crpath = expandmacros("$specglobals{buildroot}/$pkg$specglobals{_docdir}/$pkgdata{$pkg}{name}");
       qx ( $specglobals{__mkdir_p} $crpath );
       if (open COPYRIGHT, "| $specglobals{__gzip} -cf9n >$crpath/copyright.gz") {
-        print COPYRIGHT $pkgdata{$pkg}{copy};
+        print COPYRIGHT $pkgdata{$pkg}{copyrightdata};
         close COPYRIGHT;
       }
     }
@@ -1269,8 +1251,8 @@ sub binpackage {
     $pkgdata{$pkg}{name} =~ tr/_/-/;
 
     # Munge things so that Debian tools don't choke on errant blank lines
-    $pkgdata{$pkg}{desc} =~ s/\s+$//g;		# Trim trailing blanks
-    $pkgdata{$pkg}{desc} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
+    $pkgdata{$pkg}{description} =~ s/\s+$//g;		# Trim trailing blanks
+    $pkgdata{$pkg}{description} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
 
     # Give an estimate of the installation size
     my ($installedsize) =
@@ -1284,7 +1266,7 @@ sub binpackage {
 	"Architecture: $pkgdata{$pkg}{arch}\n".
 	"Installed-Size: $installedsize\n".
 	"Maintainer: $pkgdata{main}{packager}\n".
-	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{desc}\n".
+	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{description}\n".
 	( defined $pkgdata{main}{url} ? "Homepage: $pkgdata{main}{url}\n" : '' );
     foreach my $deplist (qw(requires provides conflicts recommends
                             suggests enhances replaces)) {
