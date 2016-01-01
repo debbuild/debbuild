@@ -566,11 +566,6 @@ LINE: while (<$fh>) {
     next if /^\s*#/ and $stage !~ /changelog|copy/; # Ignore comments...
     next if /^\s*$/ and $stage !~ /changelog|copy|desc/; # ... and blank lines.
 
-    if (my ($includefile) = /^%include\s+(.+)/) {
-      parse_spec(expandmacros($includefile),$stage,$subname,$scriptlet);
-      next LINE;
-    }
-
 # no sense in continuing if we find something we don't grok
     # Yes, this is really horribly fugly.  But it's a cheap crosscheck against invalid
     # %-tags which also make rpmbuild barf.  In theory.
@@ -578,14 +573,19 @@ LINE: while (<$fh>) {
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
     if (/^%[a-z]/ &&
-		not /^%(?:attr|bcond_with|bcond_without|build|changelog|check|
-		clean|config|configure|copyrightdata|defattr|define|description|
-		dir|doc|docdir|dump|else|endif|files|ghost|global|if|ifarch|ifnarch|
-		ifnos|ifos|install|make_build|make_install|makeinstall|package|
+		not /^%(?:attr|bcond_with|bcond_without|build|changelog|check|clean|
+		config|configure|copyrightdata|defattr|define|description|dir|doc|
+		docdir|dump|else|endif|files|ghost|global|if|ifarch|ifnarch|ifnos|
+		ifos|include|install|make_build|make_install|makeinstall|package|
 		patch\d*|post|postun|pre|prep|preun|readme|setup\d*|triggerin|
 		triggerpostun|triggerun|undefine|verify|verifyscript)\b/x) {
 	my ($badtag) = /^%([a-z]+)/i;
 	die "Unknown tag \%$badtag at line $. of $specfile\n";
+    }
+
+    if (my ($includefile) = /^%include\s+(.+)/) {
+      parse_spec(expandmacros($includefile),$stage,$subname,$scriptlet);
+      next LINE;
     }
 
     # print the active macro table
