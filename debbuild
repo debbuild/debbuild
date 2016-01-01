@@ -589,44 +589,33 @@ LINE: while (<$fh>) {
 ### Diagnostics '%{macros}'; these should actually be handled in expandmacros()
     if (/^%{echo:(.+)}/) {
       print expandmacros($1),"\n";
-      next LINE;
     } elsif (/^%{warn:(.+)}/) {
       warn expandmacros($1),"\n";
-      next LINE;
     } elsif (/^%{error:(.+)}/) {
       die expandmacros($1),"\n";
     }
 
 ### Single-line %commands
-    # Multi-level submodules (experimental)
-    if (my ($includefile) = /^%include\s+(.+)/) {
-      parse_spec(expandmacros($includefile),$stage,$subname,$scriptlet);
-      next LINE;
-    }
-
     # Print the active macro table
-    if (/%dump/) {
+    elsif (/%dump/) {
       for (sort keys %specglobals) {
         print "%$_ ==> $specglobals{$_}\n" unless $_ =~ /^[A-Z]+$/;
       }
-      next LINE;
     }
 
     # Preprocess %define's
-    if (my ($macro, $key, $def) = /^%(define|global|undefine)\s+(\S+)(?:\s+(.+))?$/) {
+    elsif (my ($macro, $key, $def) = /^%(define|global|undefine)\s+(\S+)(?:\s+(.+))?$/) {
       my $value = $macro eq 'undefine' ? undef : expandmacros($def);
       store_value($key,$value);
-      next LINE;
     }
 
     # Conditional Build Stuff
-    if (s/%(bcond_with(?:out)?)\s+(\w+)/%{$1 $2}/) {
+    elsif (s/%(bcond_with(?:out)?)\s+(\w+)/%{$1 $2}/) {
       expandmacros($_);
-      next LINE;
     }
 
     # Generic %if..%else..%endif construct
-    if (s/^%if//) {
+    elsif (s/^%if//) {
       # RPM conditionals – transform to generic form
       s/^os/%{_os} ==/;
       s/^nos/%{_os} !=/;
@@ -676,7 +665,6 @@ LINE: while (<$fh>) {
           $iflevel--;
         }
       }
-      next LINE;
     }
 ELSE: if (/^%else/) {
       next LINE if $ifexpr[0] == 0;
@@ -691,18 +679,16 @@ ELSE: if (/^%else/) {
           $iflevel--;
         }
       }
-      next LINE;
     }
 ENDIF: if (/^%endif/) {
       shift @ifexpr;
-      next LINE;
     } # %if..%else..%endif
 
 ### Multi-line sectioning %commands
 # Now we pick out the sections and set "state" to parse that section.
 # Fugly but I can't see a better way.  >:(
 
-    if (/^%(desc)ription(?:\s+(?:-n\s+)?(.+))?/) {
+    elsif (/^%(desc)ription(?:\s+(?:-n\s+)?(.+))?/) {
       $stage = $1;
       $subname = 'main';
       if ($2) {       # Magic to add entries to the right package
@@ -881,6 +867,11 @@ ENDIF: if (/^%endif/) {
 	$NoAutoReq = 1 if $1 =~ /(?:no|0)/i;
       }
     } # preamble
+
+    # Multi-level submodules (experimental)
+    elsif (my ($includefile) = /^%include\s+(.+)/) {
+      parse_spec(expandmacros($includefile),$stage,$subname,$scriptlet);
+    }
 
   } # while <$fh>
 
