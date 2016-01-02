@@ -1443,7 +1443,7 @@ sub checkbuildreq {
   print "To install all missing dependencies, run 'apt-get install ".
     join(' ', @missinglist)."'.\n" if @missinglist;
 
-  return (0 == @missinglist) or 0;
+  return 0 == @missinglist;
 } # end checkbuildreq()
 
 
