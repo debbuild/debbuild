@@ -583,10 +583,8 @@ LINE: while (<$fh>) {
     # Generic %if..%else..%endif construct
     if (s/^%if//) {
       # RPM conditionals – transform to generic form
-      s/^os/%{_os} ==/;
-      s/^nos/%{_os} !=/;
-      s/^arch/%{_arch} ==/;
-      s/^narch/%{_arch} !=/;
+      s/^(arch|os)/%{_$1} ==/;
+      s/^n(arch|os)/%{_$1} !=/;
 
       chomp( my $expr = lc expandmacros($_) );
 
