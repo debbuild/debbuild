@@ -114,10 +114,6 @@ my %distmap = (
 	'9'	=> 'stretch',
 	'99'	=> 'sid');
 
-# Map Ubuntu base-files versions to the nominal public versions
-my %ubnt_vermap = ('6.5ubuntu6' => '12.04',
-		   '7.2ubuntu5' => '14.04');
-
 # Enh.  There doesn't seem to be any better way to do this...  :(
 {
 # could theoretically also do something with this...  it's about as stable as "dpkg-query ..." below...  :(
