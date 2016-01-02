@@ -668,6 +668,11 @@ ENDIF: if (/^%endif/) {
     }
 
 ### Single-line %commands
+    # Multi-level submodules
+    elsif (/^%include\s+(.+)/) {
+      parse_spec(expandmacros($1),$stage,$subname,$scriptlet);
+    }
+
     # Print the active macro table
     elsif (/%dump/) {
       for (sort keys %specglobals) {
@@ -850,11 +855,6 @@ ENDIF: if (/^%endif/) {
 	$NoAutoReq = 1 if $1 =~ /(?:no|0)/i;
       }
     } # preamble
-
-    # Multi-level submodules (experimental)
-    elsif (my ($includefile) = /^%include\s+(.+)/) {
-      parse_spec(expandmacros($includefile),$stage,$subname,$scriptlet);
-    }
 
   } # while <$fh>
 
