@@ -239,7 +239,6 @@ parse_cmd();
 # global shortcuts
 my $topdir = expandmacros('%_topdir');
 my $tmpdir = expandmacros('%_tmppath');
-my $buildarch = expandmacros('%_arch');
 
 if ($cmdopts{type} eq 's') {
   install_sdeb($specglobals{srcpkg});
@@ -549,7 +548,7 @@ sub parse_spec {
   die "No .spec file specified!  Exiting.\n" unless $specfile;
   open my $fh, "<$specfile" or die "specfile ($specfile) barfed: $!";
 
-  $pkgdata{main}{arch} //= $buildarch;
+  $pkgdata{main}{arch} //= expandmacros('%_arch');
 
 # Basic algorithm:
 # For each line
