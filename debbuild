@@ -234,7 +234,6 @@ parse_cmd();
 
 # global shortcuts
 my $topdir = expandmacros('%_topdir');
-my $tmpdir = expandmacros('%_tmppath');
 
 if ($cmdopts{type} eq 's') {
   install_sdeb($specglobals{srcpkg});
@@ -1067,7 +1066,7 @@ sub execute_script {
   return if $specglobals{uc "no$stage"} or not $script{$stage};
 
   # create script filename
-  my $scriptfile = "$tmpdir/deb-tmp.$stage.".int(rand(99998)+1);
+  my $scriptfile = expandmacros('%_tmppath')."/deb-tmp.$stage.".int(rand(99998)+1);
   sysopen(SCRIPT, $scriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
 	or die "Can't open/create ".($what or $stage).
 		"script file $scriptfile: $!\n";
