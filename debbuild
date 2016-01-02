@@ -599,16 +599,9 @@ LINE: while (<$fh>) {
         $expr =~ s/(\D)0(\d+)/$1$2/g; # shortcut 0%{?ubuntu} == 1204
       } else {
         # got a logic statement we want to turn into a 1 or a 0.
-
-# For Great w00tness!  New and Improved multilayered logic handling.
-
-	my @bits = split /\b/, $expr;
-	$expr = '';
-	foreach my $bit (@bits) {
-	  next if $bit eq '"';
-	  $bit =~ s/"//g;
-	  $expr .= $bit =~ /^\w+$/ ? qq("$bit") : $bit;
-	}
+        # correctly "quote" the Boolean variables for Perl's eval below
+        $expr =~ s/"//g;
+        $expr =~ s/(\w+)/"$1"/g;
 
         # Done in this order so we don't cascade incorrectly.
         # Yes, those spaces ARE correct in the replacements!
@@ -621,6 +614,7 @@ LINE: while (<$fh>) {
         $expr =~ s/>/ gt /g;
       }
 
+      # http://www.donath.org/Quotes/AllTruthIsOne/
       unshift @ifexpr, (eval $expr or 0);
 
       next LINE if $ifexpr[0]; # This appears to be the only case we call false.
