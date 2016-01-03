@@ -762,7 +762,6 @@ ENDIF: if (/^%endif/) {
         $dname =~ tr/[A-Z]/[a-z]/;
         if ($dname =~ /^BuildArch/i) {
           $dvalue =~ s/^noarch/all/ig;
-          $pkgdata{$subname}{arch} = $dvalue;     # Emulate rpm's behaviour to a degree
           $dname = 'arch';
         }
         if ($dname =~ /recommends|suggests|enhances|replaces|
