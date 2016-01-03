@@ -1226,8 +1226,7 @@ sub binpackage {
       # We do this first so the version rewriter can do its magic next.
       if (my ($mod,$ver) = $dep =~ /^perl\(([A-Za-z0-9:-]+)\)([><=]+.+)?/) {
 	$mod =~ s/::/-/g;
-	$mod =~ tr/A-Z/a-z/;
-	$mod = "lib$mod-perl";
+	$mod = lc "lib$mod-perl";
 	$mod .= $ver if $ver;
 	$dep = $mod;
       }
