@@ -217,7 +217,6 @@ my %doclist;
 my @buildreq;
 
 # Scriptlets
-my $scriptletbase = q(%{___build_template});
 my %script = ( prep => '',
 		build => '',
 		install => '',
@@ -318,7 +317,6 @@ if ($cmdopts{type} eq 'b') {
   # Expand macros as necessary.
   $specglobals{buildroot} = $specglobals{CBR} if defined $specglobals{CBR};
   $specglobals{buildroot} = expandmacros($specglobals{buildroot});
-  $scriptletbase = expandmacros($scriptletbase);
 }
 
 # work out the [pcilabs] stages
@@ -1068,7 +1066,7 @@ sub execute_script {
   my $scriptfile = expandmacros('%_tmppath')."/deb-tmp.$stage.".int(rand(99998)+1);
   sysopen(SCRIPT, $scriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
     or die "Can't open/create ".($what or $stage)."script file $scriptfile: $!\n";
-  print SCRIPT $scriptletbase;
+  print SCRIPT expandmacros('%{___build_template}');
   print SCRIPT expandmacros($script{$stage});
   close SCRIPT;
 
