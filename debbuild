@@ -1301,9 +1301,9 @@ sub binpackage {
       }
     }
 
-    $script{pkg} = "$specglobals{__fakeroot} -- $specglobals{__dpkg_deb} ".
-        "-b $specglobals{buildroot}/$pkg $topdir/DEBS/$pkgdata{$pkg}{arch}/".
-	"$pkgdata{$pkg}{name}_".format_version($pkg)."_$pkgdata{$pkg}{arch}.deb\n";
+    $script{pkg} = "%{__fakeroot} -- %{__dpkg_deb} -b %{buildroot}/$pkg ".
+        "%{_debdir}/$pkgdata{$pkg}{arch}/$pkgdata{$pkg}{name}_".
+            format_version($pkg)."_$pkgdata{$pkg}{arch}.deb\n";
     # %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
 
     execute_script('pkg', 'package-creation', " for $pkgdata{$pkg}{name}");
