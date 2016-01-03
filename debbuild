@@ -232,7 +232,7 @@ load_config();
 parse_cmd();
 
 # global shortcuts
-my $topdir = expandmacros('%_topdir');
+my $topdir = expandmacros('%{_topdir}');
 
 if ($cmdopts{type} eq 's') {
   install_sdeb($specglobals{srcpkg});
@@ -541,7 +541,7 @@ sub parse_spec {
   die "No .spec file specified!  Exiting.\n" unless $specfile;
   open my $fh, "<$specfile" or die "specfile ($specfile) barfed: $!";
 
-  $pkgdata{main}{arch} //= expandmacros('%_arch');
+  $pkgdata{main}{arch} //= expandmacros('%{_arch}');
 
 # Basic algorithm:
 # For each line
@@ -580,11 +580,11 @@ LINE: while (<$fh>) {
 
     # RPM conditionals – transform to generic form
     if (s/^%if(arch|os)\s+//) {
-      my @args = map { "%_$1==$_" } split /[\s,]+/;
+      my @args = map { "%{_$1}==$_" } split /[\s,]+/;
       $_ = '%if ' . join '||', @args;
     }
     if (s/^%ifn(arch|os)\s+//) {
-      my @args = map { "%_$1!=$_" } split /[\s,]+/;
+      my @args = map { "%{_$1}!=$_" } split /[\s,]+/;
       $_ = '%if ' . join '&&', @args;
     }
 
@@ -1063,7 +1063,7 @@ sub execute_script {
   return if $specglobals{uc "no$stage"} or not $script{$stage};
 
   # create script filename
-  my $scriptfile = expandmacros('%_tmppath')."/deb-tmp.$stage.".int(rand(99998)+1);
+  my $scriptfile = expandmacros('%{_tmppath}')."/deb-tmp.$stage.".int(rand(99998)+1);
   sysopen(SCRIPT, $scriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
     or die "Can't open/create ".($what or $stage)."script file $scriptfile: $!\n";
   print SCRIPT expandmacros('%{___build_template}');
