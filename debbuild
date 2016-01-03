@@ -1464,7 +1464,7 @@ sub getreqs() {
   foreach (@reqlist) {
     next if /not a dynamic executable/;
     next if m|/lib(?:64)?/ld-linux|;	# Hack! Hack!  PTHBTT!  (libc suxx0rz)
-    next if /linux-(gate|vdso).so/;		# Kernel hackery for teh W1n!!1!1eleventy-one!1  (Don't ask.  Feh.)
+    next if /linux-(gate|vdso).so/;	# Kernel hackery for teh W1n!!1!1eleventy-one!1  (Don't ask.  Feh.)
 
     # Whee!  more hackery to detect provided-here libs.  Some apparently return from ldd as "not found".
     my ($a,$b) = split / => /;
@@ -1490,7 +1490,7 @@ sub getreqs() {
 # Among other things, it's messier than handling "simple" yes/no "do
 # we have this lib?" deps.  >:(
 
-  return map { qx($specglobals{__dpkg} -S $_) =~ /(\w+?):/ } @reqliblist;
+  return map { qx($specglobals{__dpkg} -S $_) =~ /([\w-]+?):/ } @reqliblist;
 
 } # end getreqs()
 
