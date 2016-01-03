@@ -1267,8 +1267,8 @@ sub binpackage {
                             suggests enhances replaces)) {
       if (defined $pkgdata{$pkg}{$deplist} and @{$pkgdata{$pkg}{$deplist}}) {
         my $tag = $deplist eq 'requires' ? 'depends' : $deplist;
-        $control .= "\u$tag: ".join(',', do { my %seen; grep { !$seen{$_}++ }
-          @{$pkgdata{$pkg}{$deplist}} })."\n";
+        $control .= "\u$tag: ".join(',', do { my %seen;
+          grep { !$seen{$_}++ } @{$pkgdata{$pkg}{$deplist}} })."\n";
       }
     }
 
