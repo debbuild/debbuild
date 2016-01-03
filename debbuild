@@ -769,7 +769,8 @@ ENDIF: if (/^%endif/) {
         }
         if ($dname =~ /recommends|suggests|enhances|replaces|
             requires|conflicts|provides/x) {
-          push @{$pkgdata{$subname}{$dname}}, expandmacros($dvalue);
+          push @{$pkgdata{$subname}{$dname}},
+            split /[\s,]+/, expandmacros($dvalue);
         } else {
           $pkgdata{$subname}{$dname} = expandmacros($dvalue);
         }
@@ -828,22 +829,22 @@ ENDIF: if (/^%endif/) {
       } elsif (/^buildarch(?:itecture)?:\s*(.+)/i) {
         ($pkgdata{main}{arch} = $1) =~ s/^noarch$/all/;
       } elsif (/^buildrequires:\s*(.+)/i) {
-        push @buildreq, $1;
+        push @buildreq, split /[\s,]+/, $1;
       } elsif (/^(requires|provides|conflicts):\s*(.+)/i) {
-        push @{$pkgdata{main}{lc $1}}, $2;
+        push @{$pkgdata{main}{lc $1}}, split /[\s,]+/, $2;
       } elsif (/^recommends:\s*(.+)/i) {
-        push @{$pkgdata{main}{recommends}}, $1;
+        push @{$pkgdata{main}{recommends}}, split /[\s,]+/, $1;
 	warn "Warning:  Debian-specific 'Recommends:' outside \%if wrapper\n" if 0 == @ifexpr;
 # As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
 # along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
       } elsif (/^(suggests|enhances|replaces):\s*(.+)/i) {
-        push @{$pkgdata{main}{lc $1}}, $2;
+        push @{$pkgdata{main}{lc $1}}, split /[\s,]+/, $2;
 	warn "Warning:  '$1:' outside \%if wrapper\n" if 0 == @ifexpr;
       } elsif (/^supplements:\s*(.+)/i) {
-        push @{$pkgdata{main}{enhances}}, $1;
+        push @{$pkgdata{main}{enhances}}, split /[\s,]+/, $1;
         warn "Warning:  'Supplements:' is not natively supported by .deb packages.  Downgrading relationship to Enhances:.\n";
       } elsif (/^obsoletes:\s*(.+)/i) {
-        push @{$pkgdata{main}{replaces}}, $1;
+        push @{$pkgdata{main}{replaces}}, split /[\s,]+/, $1;
       } elsif (/^autoreq(?:prov)?:\s*(.+)/i) {
 	# we don't handle auto-provides (yet)
 	$NoAutoReq = 1 if $1 =~ /(?:no|0)/i;
