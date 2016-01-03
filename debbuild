@@ -1219,7 +1219,7 @@ sub binpackage {
 
     # magic needed to properly version dependencies...
     # only provided deps will really be included
-    my %reqs;
+    my @reqs;
     foreach my $dep (@{$pkgdata{$pkg}{requires}}) {
       # Hack up the perl(Class::SubClass) deps into something dpkg can understand.
       # May or may not be versioned.
@@ -1231,12 +1231,12 @@ sub binpackage {
 	$dep = $mod;
       }
       if (my ($name,$rel,$value) = $dep =~ /^([\w.-]+)([><=]+)([\w.-]+)$/) {
-        $reqs{"$name ($rel $value)"}++;
+        push @reqs, "$name ($rel $value)";
       } else {
-        $reqs{$dep}++;
+        push @reqs, $dep;
       }
     }
-    @{$pkgdata{$pkg}{requires}} = keys %reqs;
+    @{$pkgdata{$pkg}{requires}} = @reqs;
 
     # Gotta do this next, otherwise the control file has nowhere to go.  >:(
     mkdir "$specglobals{buildroot}/$pkg/DEBIAN";
@@ -1267,7 +1267,8 @@ sub binpackage {
                             suggests enhances replaces)) {
       if (defined $pkgdata{$pkg}{$deplist} and @{$pkgdata{$pkg}{$deplist}}) {
         my $tag = $deplist eq 'requires' ? 'depends' : $deplist;
-        $control .= "\u$tag: ".join(',',@{$pkgdata{$pkg}{$deplist}})."\n";
+        $control .= "\u$tag: ".join(',', do { my %seen; grep { !$seen{$_}++ }
+          @{$pkgdata{$pkg}{$deplist}} })."\n";
       }
     }
 
