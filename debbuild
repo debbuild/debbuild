@@ -757,7 +757,7 @@ ENDIF: if (/^%endif/) {
 # NB: NOT going to support Pre-Depends, since it's a "Don't Use" (mis)feature, and
 # RPM's support for a similar tag (PreReq) has been recently dropped.
       if (my ($dname,$dvalue) = /^(Recommends|Suggests|Enhances|Replaces|
-          Summary|Group|Version|Requires|Conflicts|Provides|
+          Summary|Group|Version|Requires|Conflicts|Provides|Pre-Depends|
           BuildArch(?:itecture)?):\s+(.+)$/ix) {
         $dname =~ tr/[A-Z]/[a-z]/;
         if ($dname =~ /^BuildArch/i) {
@@ -765,7 +765,7 @@ ENDIF: if (/^%endif/) {
           $dname = 'arch';
         }
         if ($dname =~ /recommends|suggests|enhances|replaces|
-            requires|conflicts|provides/x) {
+            requires|conflicts|provides|pre-depends/x) {
           push @{$pkgdata{$subname}{$dname}},
             split /[\s,]+/, expandmacros($dvalue);
         } else {
@@ -834,7 +834,7 @@ ENDIF: if (/^%endif/) {
 	warn "Warning:  Debian-specific 'Recommends:' outside \%if wrapper\n" if 0 == @ifexpr;
 # As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
 # along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
-      } elsif (/^(suggests|enhances|replaces):\s*(.+)/i) {
+      } elsif (/^(suggests|enhances|replaces|pre-depends):\s*(.+)/i) {
         push @{$pkgdata{main}{lc $1}}, split /[\s,]+/, $2;
 	warn "Warning:  '$1:' outside \%if wrapper\n" if 0 == @ifexpr;
       } elsif (/^supplements:\s*(.+)/i) {
@@ -1261,9 +1261,10 @@ sub binpackage {
 	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{description}\n".
 	( defined $pkgdata{main}{url} ? "Homepage: %{url}\n" : '' );
     foreach my $deplist (qw(requires provides conflicts recommends
-                            suggests enhances replaces)) {
+                            suggests enhances replaces pre-depends)) {
       if (defined $pkgdata{$pkg}{$deplist} and @{$pkgdata{$pkg}{$deplist}}) {
         my $tag = $deplist eq 'requires' ? 'depends' : $deplist;
+        $tag =~ s/-depends/-Depends/;
         $control .= "\u$tag: ".join(',', do { my %seen;
           grep { !$seen{$_}++ } @{$pkgdata{$pkg}{$deplist}} })."\n";
       }
