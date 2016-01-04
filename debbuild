@@ -278,12 +278,12 @@ if ($cmdopts{type} eq 't') {
   my $tarball = $specglobals{tarball};
   if ($tarball =~ /\.zip$/) {
     # .zip files are not really tarballs
-    $cmdline = "%{__unzip} -Z1 %{tarball} '*.spec'";
+    $cmdline = q(%{__unzip} -Z1 %{tarball} '*.spec');
   } elsif ($tarball =~ /\.tar$/) {
     # plain .tar files don't need to be uncompressed
-    $cmdline = "%{__tar} -tf %{tarball} --wildcards '*.spec'";
+    $cmdline = q(%{__tar} -tf %{tarball} --wildcards '*.spec');
   } else {
-    $cmdline = decompress($tarball)." | %{__tar} -tf - --wildcards '*.spec'";
+    $cmdline = decompress($tarball).q( | %{__tar} -tf - --wildcards '*.spec');
   }
   $cmdline = expandmacros($cmdline);
   chomp( $specglobals{specfile} = "$topdir/SPECS/".basename( qx { $cmdline } ) );
@@ -292,14 +292,14 @@ if ($cmdopts{type} eq 't') {
 
   if ($tarball =~ /\.zip$/) {
     # .zip files are not really tarballs
-    $cmdline = "%{__unzip} -p %{tarball} '*.spec'";
+    $cmdline = q(%{__unzip} -p %{tarball} '*.spec');
   } elsif ($tarball =~ /\.tar$/) {
     # plain .tar files don't need to be uncompressed
-    $cmdline = "%{__tar} -xOf %{tarball} --wildcards '*.spec'";
+    $cmdline = q(%{__tar} -xOf %{tarball} --wildcards '*.spec');
   } else {
-    $cmdline = decompress($tarball)." | %{__tar} -xOf - --wildcards '*.spec'";
+    $cmdline = decompress($tarball).q( | %{__tar} -xOf - --wildcards '*.spec');
   }
-  $cmdline .= " > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir}";
+  $cmdline .= q( > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir});
   system expandmacros($cmdline);
 
   $cmdopts{type} = 'b'; # fall through
@@ -967,7 +967,7 @@ sub process_patch {
 
   my $patchscript;
   foreach my $pnum (@patchlist) {
-    $patchscript .= qq(echo "Patch ).
+    $patchscript .= q(echo "Patch ).
       ($pnum eq '' ? '' : "#$pnum ").qq|($pkgdata{main}{$pnum}):"\n|;
     if ( $pkgdata{main}{$pnum} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
       # Compressed patch.  You weirdo.
@@ -1432,7 +1432,7 @@ sub checkbuildreq {
     }
   } # end req loop
 
-  print "To install all missing dependencies, run 'apt-get install ".
+  print q(To install all missing dependencies, run 'apt-get install ).
     join(' ', @missinglist)."'.\n" if @missinglist;
 
   return 0 == @missinglist;
