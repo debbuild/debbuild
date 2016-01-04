@@ -1193,7 +1193,7 @@ sub binpackage {
     # EXPERIMENTAL: Add 'changelog' and 'copyrightdata' sections as 'doc' files.
     if ($pkgdata{$pkg}{changelog}) {
       $pkgdata{$pkg}{changelog} =~ s/\s+$//g; # Trim trailing blanks
-      my $clpath = expandmacros("$specglobals{buildroot}/$pkg$specglobals{_docdir}/$pkgdata{$pkg}{name}");
+      my $clpath = expandmacros("%{buildroot}/$pkg%{_docdir}/$pkgdata{$pkg}{name}");
       qx ( $specglobals{__mkdir_p} $clpath );
       if (open CHANGELOG, "| $specglobals{__gzip} -cf9n >$clpath/changelog.gz") {
         print CHANGELOG $pkgdata{$pkg}{changelog};
@@ -1202,7 +1202,7 @@ sub binpackage {
     }
     if ($pkgdata{$pkg}{copyrightdata}) {
       $pkgdata{$pkg}{copyrightdata} =~ s/\s+$//g; # Trim trailing blanks
-      my $crpath = expandmacros("$specglobals{buildroot}/$pkg$specglobals{_docdir}/$pkgdata{$pkg}{name}");
+      my $crpath = expandmacros("%{buildroot}/$pkg%{_docdir}/$pkgdata{$pkg}{name}");
       qx ( $specglobals{__mkdir_p} $crpath );
       if (open COPYRIGHT, "| $specglobals{__gzip} -cf9n >$crpath/copyright.gz") {
         print COPYRIGHT $pkgdata{$pkg}{copyrightdata};
@@ -1257,9 +1257,9 @@ sub binpackage {
 	"Priority: optional\n".
 	"Architecture: $pkgdata{$pkg}{arch}\n".
 	"Installed-Size: $installedsize\n".
-	"Maintainer: $pkgdata{main}{packager}\n".
+	"Maintainer: %{packager}\n".
 	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{description}\n".
-	( defined $pkgdata{main}{url} ? "Homepage: $pkgdata{main}{url}\n" : '' );
+	( defined $pkgdata{main}{url} ? "Homepage: %{url}\n" : '' );
     foreach my $deplist (qw(requires provides conflicts recommends
                             suggests enhances replaces)) {
       if (defined $pkgdata{$pkg}{$deplist} and @{$pkgdata{$pkg}{$deplist}}) {
