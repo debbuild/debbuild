@@ -144,7 +144,7 @@ my %distmap = (
     }
     close LSBREL;
 
-  } elsif (not -e "$specglobals{__dpkg_query}" ) {
+  } elsif (not -e $specglobals{__dpkg_query} ) {
     # call it woody, since sarge and newer have dpkg-query, and we don't much care about obsolete^n releases
     $basever = '3.0';
     $baseos = 'debian';
@@ -160,7 +160,7 @@ my %distmap = (
     my $majver;
     # for the lazy copy-paster:  dpkg-query --showformat '${version}\n' -W base-files
     # avoid shellisms
-    if (open BASEGETTER, '-|', "$specglobals{__dpkg_query}", '--showformat', '${version}', '-W', 'base-files') {
+    if (open BASEGETTER, '-|', $specglobals{__dpkg_query}, '--showformat', '${version}', '-W', 'base-files') {
       $basever = <BASEGETTER>;
       close BASEGETTER;
 
@@ -221,8 +221,8 @@ my %script = ( prep => '',
 		build => '',
 		install => '',
 		check => '',
-		clean => '[ "\$RPM_BUILD_ROOT" != "/" ] && '.
-			"%{__rm} -rf \$RPM_BUILD_ROOT\n" );
+		clean => qq([ "\$RPM_BUILD_ROOT" != "/" ] && ).
+			qq(%{__rm} -rf \$RPM_BUILD_ROOT\n) );
 my $finalmessages = ''; # A place to stuff messages that I want printed at the *very* end of any processing.
 
 
@@ -381,7 +381,7 @@ sub parse_cmd {
   # Don't feel like coding my own option parser...
   Getopt::Long::GetOptions(
     'buildroot=s'   => \$specglobals{CBR},
-    'eval=s'        => sub { print expandmacros($_[1]),"\n" },
+    'eval=s'        => sub { print expandmacros($_[1])."\n" },
     'short-circuit' => \$cmdopts{short},
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
     'noprep'        => \$specglobals{NOPREP},
@@ -652,11 +652,11 @@ ENDIF: if (/^%endif/) {
 
 ### Diagnostics '%{macros}'; these should actually be handled in expandmacros()
     elsif (/^%{echo:(.+)}/) {
-      print expandmacros($1),"\n";
+      print expandmacros($1)."\n";
     } elsif (/^%{warn:(.+)}/) {
-      warn expandmacros($1),"\n";
+      warn expandmacros($1)."\n";
     } elsif (/^%{error:(.+)}/) {
-      die expandmacros($1),"\n";
+      die expandmacros($1)."\n";
     }
 
 ### Single-line %commands
@@ -969,7 +969,7 @@ sub process_patch {
   my $patchscript;
   foreach my $pnum (@patchlist) {
     $patchscript .= qq(echo "Patch ).
-      ($pnum eq '' ? '' : "#$pnum ").qq(\($pkgdata{main}{$pnum}\):"\n);
+      ($pnum eq '' ? '' : "#$pnum ").qq|($pkgdata{main}{$pnum}):"\n|;
     if ( $pkgdata{main}{$pnum} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
       # Compressed patch.  You weirdo.
       $patchscript .= decompress("%{_sourcedir}/$pkgdata{main}{$pnum}");
@@ -1377,7 +1377,7 @@ sub checkbuildreq {
   # expand macros
   my @reqlist = map { expandmacros($_) } @buildreq;
 
-  if ( not -e "$specglobals{__dpkg_query}" ) {
+  if ( not -e $specglobals{__dpkg_query} ) {
     warn "**WARNING**  $specglobals{__dpkg_query} not found.  Can't check build-deps.\n".
 	"  Required for sucessful build:\n".join(', ', @reqlist)."\n".
 	"  Continuing anyway.\n";
