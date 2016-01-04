@@ -221,8 +221,7 @@ my %script = ( prep => '',
 		build => '',
 		install => '',
 		check => '',
-		clean => qq([ "\$RPM_BUILD_ROOT" != "/" ] && ).
-			qq(%{__rm} -rf \$RPM_BUILD_ROOT\n) );
+		clean => qq([ "\$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf \$RPM_BUILD_ROOT\n) );
 my $finalmessages = ''; # A place to stuff messages that I want printed at the *very* end of any processing.
 
 
