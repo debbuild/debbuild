@@ -299,7 +299,7 @@ if ($cmdopts{type} eq 't') {
   } else {
     $cmdline = decompress($tarball).q( | %{__tar} -xOf - --wildcards '*.spec');
   }
-  $cmdline .= q( > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir});
+  $cmdline .= qq( > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir});
   system expandmacros($cmdline);
 
   $cmdopts{type} = 'b'; # fall through
