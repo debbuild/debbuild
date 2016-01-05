@@ -1222,15 +1222,13 @@ sub binpackage {
       # We do this first so the version rewriter can do its magic next.
       if (my ($mod,$ver) = $dep =~ /^perl\(([A-Za-z0-9:-]+)\)([><=]+.+)?/) {
 	$mod =~ s/::/-/g;
-	$mod = lc "lib$mod-perl";
-	$mod .= $ver if $ver;
-	$dep = $mod;
+	$dep = lc "lib$mod-perl";
+	$dep .= $ver if $ver;
       }
       if (my ($name,$rel,$value) = $dep =~ /^([\w.-]+)([><=]+)([\w.-]+)$/) {
-        push @reqs, "$name ($rel $value)";
-      } else {
-        push @reqs, $dep;
+        $dep = "$name ($rel $value)";
       }
+      push @reqs, $dep;
     }
     @{$pkgdata{$pkg}{requires}} = @reqs;
 
