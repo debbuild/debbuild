@@ -1240,7 +1240,7 @@ sub binpackage {
     $pkgdata{$pkg}{name} =~ tr/_/-/;
 
     # Munge things so that Debian tools don't choke on errant blank lines
-    $pkgdata{$pkg}{description} =~ s/\s+$//g;		# Trim trailing blanks
+    $pkgdata{$pkg}{description} =~ s/\s+$//g;	# Trim trailing blanks
     $pkgdata{$pkg}{description} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
 
     # Give an estimate of the installation size
