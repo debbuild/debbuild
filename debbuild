@@ -820,7 +820,6 @@ ENDIF: if (/^%endif/) {
         $pkgdata{main}{source} = $pkgdata{sources}{0} if 0 == $srcnum;
       } elsif (my ($patchnum, $patch) = /^(patch\d*):\s*(.+)/i) {
         $patch =~ s/\s*$//;
-        $patchnum //= '';
         $pkgdata{main}{lc $patchnum} = basename($patch);
       } elsif (/^buildarch(?:itecture)?:\s*(.+)/i) {
         ($pkgdata{main}{arch} = $1) =~ s/^noarch$/all/;
@@ -967,16 +966,17 @@ sub process_patch {
 
   my $patchscript;
   foreach my $pnum (@patchlist) {
-    $patchscript .= q(echo "Patch ).
-      ($pnum eq '' ? '' : "#$pnum ").qq|($pkgdata{main}{"patch$pnum"}):"\n|;
-    if ( $pkgdata{main}{"patch$pnum"} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
+    $patchscript .= q(echo "Patch ).($pnum eq '' ? '' : "#$pnum ");
+    $pnum = "patch$pnum";
+    $patchscript .= qq|($pkgdata{main}{$pnum}):"\n|;
+    if ( $pkgdata{main}{$pnum} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
       # Compressed patch.  You weirdo.
-      $patchscript .= decompress(qq(%{_sourcedir}/$pkgdata{main}{"patch$pnum"}));
-    } elsif ( $pkgdata{main}{"patch$pnum"} =~ /\.zip$/ ) {
+      $patchscript .= decompress("%{_sourcedir}/$pkgdata{main}{$pnum}");
+    } elsif ( $pkgdata{main}{$pnum} =~ /\.zip$/ ) {
       # .zip'ed patch.  *backs away slowly*
-      $patchscript .= qq(%{__unzip} -p %{_sourcedir}/$pkgdata{main}{"patch$pnum"});
+      $patchscript .= "%{__unzip} -p %{_sourcedir}/$pkgdata{main}{$pnum}";
     } else {
-      $patchscript .= qq(%{__cat} %{_sourcedir}/$pkgdata{main}{"patch$pnum"});
+      $patchscript .= "%{__cat} %{_sourcedir}/$pkgdata{main}{$pnum}";
     }
     $patchscript .= " | %{__patch} $patchopts\n\n";
   }
@@ -1346,12 +1346,11 @@ sub srcpackage {
   foreach my $source (sort keys %{$pkgdata{sources}}) {
     # Skip Source0, since it's also $pkgdata{main}{source}.  Could arguably
     # just remove that instead, but I think that might backfire.
-    next if $source eq '0';
-    $paxcmd .= "SOURCES/$pkgdata{sources}{$source} ";
+    $paxcmd .= "SOURCES/$pkgdata{sources}{$source} " if $source != 0;
   }
 
-  foreach my $specbit (sort grep {/^patch/} keys %{$pkgdata{main}}) {
-    $paxcmd .= "SOURCES/$pkgdata{main}{$specbit} ";
+  foreach my $patch (sort grep {/^patch/} keys %{$pkgdata{main}}) {
+    $paxcmd .= "SOURCES/$pkgdata{main}{$patch} ";
 ##buglet: need to deal with case where patches are listed as URLs?
 #  or other extended pathnames?  Silly !@$%^&!%%!%!! user!
   }
