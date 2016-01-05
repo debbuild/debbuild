@@ -829,12 +829,12 @@ ENDIF: if (/^%endif/) {
         push @{$pkgdata{main}{lc $1}}, split /[\s,]+/, $2;
       } elsif (/^recommends:\s*(.+)/i) {
         push @{$pkgdata{main}{recommends}}, split /[\s,]+/, $1;
-	warn "Warning:  Debian-specific 'Recommends:' outside %if wrapper\n" if 0 == @ifexpr;
+        warn "Warning:  Debian-specific 'Recommends:' outside %if wrapper\n" if 0 == @ifexpr;
 # As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
 # along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
       } elsif (/^(suggests|enhances|replaces|pre-depends):\s*(.+)/i) {
         push @{$pkgdata{main}{lc $1}}, split /[\s,]+/, $2;
-	warn "Warning:  '$1:' outside %if wrapper\n" if 0 == @ifexpr;
+        warn "Warning:  '$1:' outside %if wrapper\n" if 0 == @ifexpr;
       } elsif (/^supplements:\s*(.+)/i) {
         push @{$pkgdata{main}{enhances}}, split /[\s,]+/, $1;
         warn "Warning:  'Supplements:' is not natively supported by .deb packages.  Downgrading relationship to Enhances:.\n";
