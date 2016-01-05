@@ -538,7 +538,7 @@ sub parse_spec {
   $subname //= 'main';
 
   die "No .spec file specified!  Exiting.\n" unless $specfile;
-  open my $fh, "<$specfile" or die "specfile ($specfile) barfed: $!";
+  open my $fh, "<$specfile" or die "specfile ($specfile) barfed: $!\n";
 
   $pkgdata{main}{arch} //= expandmacros('%{_arch}');
 
@@ -1648,7 +1648,7 @@ sub decompress {
       $filename =~ /\.(?:tgz|(?:gz|Z))$/ ? '%{__gzip}'  :
       $filename =~ /\.bz2$/              ? '%{__bzip2}' :
       $filename =~ /\.xz$/               ? '%{__xz}'    :
-      die("Can't handle unknown file type '$filename'.") ).
+      die("Can't handle unknown file type '$filename'.\n") ).
       " -dc '$filename'";
 } # end decompress()
 
