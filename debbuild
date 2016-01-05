@@ -1343,18 +1343,18 @@ sub srcpackage {
   $paxcmd .= "SOURCES/$pkgdata{main}{source} " if $pkgdata{main}{source};
 
   # create file list:  Source[nn], Patch[nn]
-  foreach my $specbit (keys %{$pkgdata{main}} ) {
-    next if $specbit eq 'source';
-    $paxcmd .= "SOURCES/$pkgdata{main}{$specbit} " if $specbit =~ /^patch/;
-##buglet: need to deal with case where patches are listed as URLs?
-#  or other extended pathnames?  Silly !@$%^&!%%!%!! user!
-  }
-
-  foreach my $source (keys %{$pkgdata{sources}}) {
+  foreach my $source (sort keys %{$pkgdata{sources}}) {
     # Skip Source0, since it's also $pkgdata{main}{source}.  Could arguably
     # just remove that instead, but I think that might backfire.
     next if $source eq '0';
     $paxcmd .= "SOURCES/$pkgdata{sources}{$source} ";
+  }
+
+  foreach my $specbit (sort keys %{$pkgdata{main}} ) {
+    next if $specbit eq 'source';
+    $paxcmd .= "SOURCES/$pkgdata{main}{$specbit} " if $specbit =~ /^patch/;
+##buglet: need to deal with case where patches are listed as URLs?
+#  or other extended pathnames?  Silly !@$%^&!%%!%!! user!
   }
 
   # add the spec file and write to source package destination.
