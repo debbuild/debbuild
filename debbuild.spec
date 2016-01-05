@@ -53,11 +53,11 @@ rebuild .src.rpm source packages as .deb binary packages.
 # Steps to install to a temporary location for packaging
 %make_install
 %{__mkdir_p} %{buildroot}%{_libdir}/%{name}/macros.d
-%{__cp} macros.in %{buildroot}%{_libdir}/%{name}/macros
-%{__cp} macros.perl %{buildroot}%{_libdir}/%{name}/macros.d
+%{__cp} macros/macros.in %{buildroot}%{_libdir}/%{name}/macros
+%{__cp} macros/macros.perl %{buildroot}%{_libdir}/%{name}/macros.d
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/%{name}
-%{__cp} macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
-%{__cp} macros.texlive %{buildroot}%{_sysconfdir}/%{name}
+%{__cp} macros/macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
+%{__cp} macros/macros.texlive %{buildroot}%{_sysconfdir}/%{name}
 
 %files
 # Fill in the pathnames to be packaged here
@@ -72,18 +72,6 @@ rebuild .src.rpm source packages as .deb binary packages.
 %include %{S:101}
 
 %changelog
-* Sat Jan 02 2016  Andreas Scherer <https://ascherer.github.io/>
-- New release 16.1.0
-
-* Sat Dec 26 2015  Andreas Scherer <https://ascherer.github.io/>
-- New release 15.12.3
-
-* Tue Dec 15 2015  Andreas Scherer <https://ascherer.github.io/>
-- New release 15.12.2
-
-* Sun Dec 13 2015  Andreas Scherer <https://ascherer.github.io/>
-- New release 15.12.1
-
 * Sat Dec 12 2015  Andreas Scherer <https://ascherer.github.io/>
 - Centrally control and distribute the 'version' number
 
