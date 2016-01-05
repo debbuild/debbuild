@@ -818,10 +818,10 @@ ENDIF: if (/^%endif/) {
         $srcnum ||= 0;
         $pkgdata{sources}{$srcnum} = basename($src);
         $pkgdata{main}{source} = $pkgdata{sources}{0} if 0 == $srcnum;
-      } elsif (my ($patchnum, $patch) = /^patch(\d*):\s*(.+)/i) {
+      } elsif (my ($patchnum, $patch) = /^(patch\d*):\s*(.+)/i) {
         $patch =~ s/\s*$//;
         $patchnum //= '';
-        $pkgdata{main}{$patchnum} = basename($patch);
+        $pkgdata{main}{lc $patchnum} = basename($patch);
       } elsif (/^buildarch(?:itecture)?:\s*(.+)/i) {
         ($pkgdata{main}{arch} = $1) =~ s/^noarch$/all/;
       } elsif (/^buildrequires:\s*(.+)/i) {
@@ -968,15 +968,15 @@ sub process_patch {
   my $patchscript;
   foreach my $pnum (@patchlist) {
     $patchscript .= q(echo "Patch ).
-      ($pnum eq '' ? '' : "#$pnum ").qq|($pkgdata{main}{$pnum}):"\n|;
-    if ( $pkgdata{main}{$pnum} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
+      ($pnum eq '' ? '' : "#$pnum ").qq|($pkgdata{main}{"patch$pnum"}):"\n|;
+    if ( $pkgdata{main}{"patch$pnum"} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
       # Compressed patch.  You weirdo.
-      $patchscript .= decompress("%{_sourcedir}/$pkgdata{main}{$pnum}");
-    } elsif ( $pkgdata{main}{$pnum} =~ /\.zip$/ ) {
+      $patchscript .= decompress(qq(%{_sourcedir}/$pkgdata{main}{"patch$pnum"}));
+    } elsif ( $pkgdata{main}{"patch$pnum"} =~ /\.zip$/ ) {
       # .zip'ed patch.  *backs away slowly*
-      $patchscript .= "%{__unzip} -p %{_sourcedir}/$pkgdata{main}{$pnum}";
+      $patchscript .= qq(%{__unzip} -p %{_sourcedir}/$pkgdata{main}{"patch$pnum"});
     } else {
-      $patchscript .= "%{__cat} %{_sourcedir}/$pkgdata{main}{$pnum}";
+      $patchscript .= qq(%{__cat} %{_sourcedir}/$pkgdata{main}{"patch$pnum"});
     }
     $patchscript .= " | %{__patch} $patchopts\n\n";
   }
@@ -1541,7 +1541,7 @@ sub expandmacros {
     s|%{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
   }
   s/%{P:(\d+)}/%{patch$1}/g;
-  s|%{patch(\d+)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
+  s|%{(patch\d+)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
 
   # Globals, and not-so-globals
   # special %define's.  Handle the general case where we eval anything.
