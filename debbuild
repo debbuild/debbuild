@@ -573,8 +573,8 @@ LINE: while (<$fh>) {
 		ifos|include|install|make_build|make_install|makeinstall|package|
 		patch\d*|post|postun|pre|prep|preun|readme|setup\d*|triggerin|
 		triggerpostun|triggerun|undefine|verify|verifyscript)\b/x) {
-	my ($badtag) = /^%([a-z]+)/i;
-	die "Unknown tag \%$badtag at line $. of $specfile\n";
+	my ($badtag) = /^(%[a-z]+)/i;
+	die "Unknown tag $badtag at line $. of $specfile\n";
     }
 
     # RPM conditionals – transform to generic form
@@ -830,12 +830,12 @@ ENDIF: if (/^%endif/) {
         push @{$pkgdata{main}{lc $1}}, split /[\s,]+/, $2;
       } elsif (/^recommends:\s*(.+)/i) {
         push @{$pkgdata{main}{recommends}}, split /[\s,]+/, $1;
-	warn "Warning:  Debian-specific 'Recommends:' outside \%if wrapper\n" if 0 == @ifexpr;
+	warn "Warning:  Debian-specific 'Recommends:' outside %if wrapper\n" if 0 == @ifexpr;
 # As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
 # along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
       } elsif (/^(suggests|enhances|replaces|pre-depends):\s*(.+)/i) {
         push @{$pkgdata{main}{lc $1}}, split /[\s,]+/, $2;
-	warn "Warning:  '$1:' outside \%if wrapper\n" if 0 == @ifexpr;
+	warn "Warning:  '$1:' outside %if wrapper\n" if 0 == @ifexpr;
       } elsif (/^supplements:\s*(.+)/i) {
         push @{$pkgdata{main}{enhances}}, split /[\s,]+/, $1;
         warn "Warning:  'Supplements:' is not natively supported by .deb packages.  Downgrading relationship to Enhances:.\n";
@@ -862,7 +862,7 @@ sub process_setup {
   # gibberish immediately following %setup, but we will
   if (not /^(?:\s|$)/) {
     chomp;
-    warn "Suspect \%setup tag '\%setup$_', continuing\n";
+    warn "Suspect %setup tag '%setup$_', continuing\n";
     s/^\S+//;
   }
 
@@ -1069,7 +1069,7 @@ sub execute_script {
   close SCRIPT;
 
   # execute
-  print 'Calling '.($what or "\%$stage")." script $scriptfile".
+  print 'Calling '.($what or "%$stage")." script $scriptfile".
     (defined $for ? $for : '')."...\n";
   system("$specglobals{_buildshell} -e $scriptfile") and die "Can't exec: $!\n";
 
