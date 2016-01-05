@@ -817,7 +817,7 @@ ENDIF: if (/^%endif/) {
         $src =~ s/\s*$//;
         $srcnum ||= 0;
         $pkgdata{sources}{$srcnum} = basename($src);
-        $pkgdata{main}{source} = expandmacros($pkgdata{sources}{0}) if 0 == $srcnum;
+        $pkgdata{main}{source} = $pkgdata{sources}{0} if 0 == $srcnum;
       } elsif (my ($patchnum, $patch) = /^patch(\d*):\s*(.+)/i) {
         $patch =~ s/\s*$//;
         $patchnum //= '';
