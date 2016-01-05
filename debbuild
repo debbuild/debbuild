@@ -1350,9 +1350,8 @@ sub srcpackage {
     $paxcmd .= "SOURCES/$pkgdata{sources}{$source} ";
   }
 
-  foreach my $specbit (sort keys %{$pkgdata{main}} ) {
-    next if $specbit eq 'source';
-    $paxcmd .= "SOURCES/$pkgdata{main}{$specbit} " if $specbit =~ /^patch/;
+  foreach my $specbit (sort grep {/^patch/} keys %{$pkgdata{main}}) {
+    $paxcmd .= "SOURCES/$pkgdata{main}{$specbit} ";
 ##buglet: need to deal with case where patches are listed as URLs?
 #  or other extended pathnames?  Silly !@$%^&!%%!%!! user!
   }
