@@ -27,6 +27,7 @@
 %__chown		/bin/chown
 %__cp			/bin/cp
 %__dpkg			/usr/bin/dpkg
+%__dpkg_architecture	/usr/bin/dpkg-architecture
 %__dpkg_deb		/usr/bin/dpkg-deb
 %__dpkg_query		/usr/bin/dpkg-query
 %__du			/usr/bin/du

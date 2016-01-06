@@ -1,4 +1,4 @@
-%define darch %{_bindir}/dpkg-architecture
+%define darch %{__dpkg_architecture}
 
 if [ -x %{darch} ]; then
 DEB_HOST_CPU=`%{darch} -qDEB_HOST_GNU_CPU 2>/dev/null`
