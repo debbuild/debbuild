@@ -1683,14 +1683,9 @@ debbuild - Build Debian-compatible .deb packages from RPM .spec files
 
 =head1 DESCRIPTION
 
-debbuild attempts to build Debian-friendly semi-native packages from RPM spec files,
-RPM-friendly tarballs, and RPM source packages (.src.rpm files).  It accepts I<most> of the
-options rpmbuild does, and should be able to interpret most spec files usefully.  Perl
-modules should be handled via CPAN+dh-make-perl instead as it's simpler than even tweaking
-a .spec template.
+debbuild attempts to build Debian-friendly semi-native packages from RPM spec files, RPM-friendly tarballs, and RPM source packages (.src.rpm files).  It accepts I<most> of the options rpmbuild does, and should be able to interpret most spec files usefully.  Perl modules should be handled via CPAN+dh-make-perl instead as it's simpler than even tweaking a .spec template.
 
-As far as possible, the command-line options are identical to those from rpmbuild, although
-several rpmbuild options are not supported:
+As far as possible, the command-line options are identical to those from rpmbuild, although several rpmbuild options are not supported:
 
  --showrc
  --clean
@@ -1701,16 +1696,11 @@ several rpmbuild options are not supported:
 
 Some of these could probably be trivially added.  Feel free to send me a patch.  ;)
 
-Complex spec files will most likely not work well, if at all.  Rewrite them from scratch -
-you'll have to make heavy modifications anyway.
+Complex spec files will most likely not work well, if at all.  Rewrite them from scratch - you'll have to make heavy modifications anyway.
 
-If you see something you don't like, mail me.  Send a patch if you feel inspired.  I don't
-promise I'll do anything other than say "Yup, that's broken" or "Got your message".
+If you see something you don't like, mail me.  Send a patch if you feel inspired.  I don't promise I'll do anything other than say "Yup, that's broken" or "Got your message".
 
-The source package container I invented for debbuild, the .sdeb file, can be "installed"
-with debbuild -i exactly the same way as a .src.rpm can be installed with "rpm -i".  Both
-will unpack the file and place the source(s) and .spec file in the appropriate places in
-%_topdir/SOURCES and %_topdir/SPECS respectively.
+The source package container I invented for debbuild, the .sdeb file, can be "installed" with debbuild -i exactly the same way as a .src.rpm can be installed with "rpm -i".  Both will unpack the file and place the source(s) and .spec file in the appropriate places in %_topdir/SOURCES and %_topdir/SPECS respectively.
 
 =head1 ASSUMPTIONS
 
@@ -1720,31 +1710,19 @@ As with rpmbuild, debbuild makes some assumptions about your system.
 
 =item *
 
-Either you have rights to do as you please under /usr/src/debian, or you have created a file
-~/.debmacros containing a suitable %_topdir definition.
+Either you have rights to do as you please under /usr/src/debian, or you have created a file ~/.debmacros containing a suitable %_topdir definition.
 
-Both rpmbuild and debbuild require the directories %_topdir/{BUILD,SOURCES,SPECS}.  However,
-where rpmbuild requires the %_topdir/{RPMS,SRPMS} directories, debbuild
-requires %_topdir/{DEBS,SDEBS} instead.  Create them in advance;
-some subdirectories are created automatically as needed, but most are not.
+Both rpmbuild and debbuild require the directories %_topdir/{BUILD,SOURCES,SPECS}.  However, where rpmbuild requires the %_topdir/{RPMS,SRPMS} directories, debbuild requires %_topdir/{DEBS,SDEBS} instead.  Create them in advance; some subdirectories are created automatically as needed, but most are not.
 
 =item *
 
-/var/tmp must allow script execution - rpmbuild and debbuild both rely on creating and
-executing shell scripts for much of their functionality.  By default, debbuild also creates
-install trees under /var/tmp - however this is (almost) entirely under the control of the
-package's .spec file.
+/var/tmp must allow script execution - rpmbuild and debbuild both rely on creating and executing shell scripts for much of their functionality.  By default, debbuild also creates install trees under /var/tmp - however this is (almost) entirely under the control of the package's .spec file.
 
 =item *
 
-If you wish to --rebuild a .src.rpm, your %_topdir for both debbuild and rpmbuild must either
-match, or be suitably symlinked one direction or another so that both programs are effectively
-working in the same tree.  (Or you could just manually wrestle files around your system.)
+If you wish to --rebuild a .src.rpm, your %_topdir for both debbuild and rpmbuild must either match, or be suitably symlinked one direction or another so that both programs are effectively working in the same tree.  (Or you could just manually wrestle files around your system.)
 
-You could symlink ~/.rpmmacros to ~/.debmacros (or vice versa) and save yourself some hassle
-if you need to rebuild .src.rpm packages on a regular basis.  Currently debbuild only uses the
-%_topdir macro definition, although there are many more things that rpmbuild can use from
-~/.rpmmacros.
+You could symlink ~/.rpmmacros to ~/.debmacros (or vice versa) and save yourself some hassle if you need to rebuild .src.rpm packages on a regular basis.  Currently debbuild only uses the %_topdir macro definition, although there are many more things that rpmbuild can use from ~/.rpmmacros.
 
 =back
 
@@ -1754,10 +1732,7 @@ debbuild deliberately does a few things differently from rpm.
 
 =head2 BuildArch or BuildArchitecture
 
-rpm takes the last BuildArch entry it finds in the .spec file, whatever it is, and runs with
-that for all packages.  Debian's repository system is fairly heavily designed around the
-assumption that a single source package may generate small binary (executable) packages
-for each arch, and large binary arch-all packages containing shared data.
+rpm takes the last BuildArch entry it finds in the .spec file, whatever it is, and runs with that for all packages.  Debian's repository system is fairly heavily designed around the assumption that a single source package may generate small binary (executable) packages for each arch, and large binary arch-all packages containing shared data.
 
 debbuild allows this by using the architecture specified by (in order of preference):
 
@@ -1775,32 +1750,25 @@ debbuild allows this by using the architecture specified by (in order of prefere
 
 =head2 Finding out what packages should be built (--showpkgs)
 
-rpmbuild does not include any convenient method I know of to list the packages a spec file
-will produce.  Since I needed this ability for another tool, I added it.
+rpmbuild does not include any convenient method I know of to list the packages a spec file will produce.  Since I needed this ability for another tool, I added it.
 
-It requires the .spec file for the package, and produces a list of full package filenames
-(without path data) that would be generated by one of --rebuild, -ta, -tb, -ba, or -bb.
-This includes the .sdeb source package.
+It requires the .spec file for the package, and produces a list of full package filenames (without path data) that would be generated by one of --rebuild, -ta, -tb, -ba, or -bb.  This includes the .sdeb source package.
 
 =head1 AUTHOR
 
-debbuild was written by Kris Deugau <kdeugau@deepnet.cx>.
-The present version was developed by Andreas Scherer <L<https://ascherer.github.io/>> and is available at <L<https://github.com/ascherer/debbuild/>>.
+debbuild was written by Kris Deugau <kdeugau@deepnet.cx>.  The present version was developed by Andreas Scherer <L<https://ascherer.github.io/>> and is available at <L<https://github.com/ascherer/debbuild/>>.
 
 =head1 BUGS
 
-Funky Things Happen if you forget a command-line option or two.  I've been too lazy to bother
-fixing this.
+Funky Things Happen if you forget a command-line option or two.  I've been too lazy to bother fixing this.
 
 Many macro expansions are unsupported or incompletely supported.
 
-The generated scriptlets don't quite match those from rpmbuild exactly.  There are extra
-environment variables and preprocessing that I haven't needed (yet).
+The generated scriptlets don't quite match those from rpmbuild exactly.  There are extra environment variables and preprocessing that I haven't needed (yet).
 
 Dcumentation, such as it is, will likely remain perpetually out of date.
 
-%_topdir and the five "working" directories under %_topdir could arguably be created by
-debbuild.  However, rpmbuild doesn't create these directories either.
+%_topdir and the five "working" directories under %_topdir could arguably be created by debbuild.  However, rpmbuild doesn't create these directories either.
 
 =head1 SEE ALSO
 
