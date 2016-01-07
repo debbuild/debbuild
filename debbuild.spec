@@ -64,9 +64,8 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{_bindir}/*
 %{_mandir}/man8/*
 %{_libdir}/%{name}/macros
-%{_libdir}/%{name}/macros.d/macros.perl
-%{_sysconfdir}/%{name}/macros.sysutils
-%{_sysconfdir}/%{name}/macros.texlive
+%{_libdir}/%{name}/macros.d/*
+%{_sysconfdir}/%{name}/macros.*
 
 %post
 %include %{S:101}
