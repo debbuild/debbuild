@@ -1266,14 +1266,14 @@ sub binpackage {
       }
     }
 
-    open CONTROL, ">$specglobals{buildroot}/$pkg/DEBIAN/control";
+    open CONTROL, ">$specglobals{buildroot}/$pkg/DEBIAN/control" or die;
     print CONTROL expandmacros($control);
     close CONTROL;
 
     # Iff there are conffiles (as specified in the %files list(s), add'em
     # in so dpkg-deb can tag them.
     if ($pkgdata{$pkg}{conffiles}) {
-      open CONFLIST, ">$specglobals{buildroot}/$pkg/DEBIAN/conffiles";
+      open CONFLIST, ">$specglobals{buildroot}/$pkg/DEBIAN/conffiles" or die;
       foreach my $conffile (@{$pkgdata{$pkg}{conflist}}) {
 	$conffile = expandmacros($conffile);
 	foreach (glob "$specglobals{buildroot}/$pkg/$conffile") {
@@ -1290,7 +1290,7 @@ sub binpackage {
       my $scrfile = $scr;
       $scrfile .= 'inst' unless $scrfile =~ s/un/rm/;
       if ($pkgdata{$pkg}{$scr}) {
-        open SCRIPT, ">$specglobals{buildroot}/$pkg/DEBIAN/$scrfile";
+        open SCRIPT, ">$specglobals{buildroot}/$pkg/DEBIAN/$scrfile" or die;
         print SCRIPT "#!/bin/sh\nset -e\n\n";
         print SCRIPT expandmacros($pkgdata{$pkg}{$scr});
         close SCRIPT;
