@@ -793,18 +793,18 @@ ENDIF: if (/^%endif/) {
     } # prepost
 
     elsif ($stage eq 'files') {
-      if (/^%defattr          # lot of formatting whitespace permitted
-          \s*\(\s*            # opening and closing parentheses; required
-            (-|\d+)           # file mode, numeric (octal) or '-'
-          [\s,]+              # field separator, comma or space
-            (-|['"]?\w+['"]?) # default owner, quotes permitted, or '-'
-          [\s,]+              # field separator, comma or space
-            (-|['"]?\w+['"]?) # default group, quotes permitted, or '-'
-            ([\s,]+           # field separator, comma or space
-               (-|\d+))?      # directory mode; optional, then equal file mode
+      if (/^%defattr         # lot of formatting whitespace permitted
+          \s*\(\s*           # opening and closing parentheses; required
+            (-|\d+)          # (1) file mode, numeric (octal) or '-'
+          [\s,]+             # field separator, comma or space
+            (-|(['"]?)\w+\3) # (2) default owner, (3) quotes permitted, or '-'
+          [\s,]+             # field separator, comma or space
+            (-|(['"]?)\w+\5) # (4) default group, (5) quotes permitted, or '-'
+            (?:[\s,]+        # field separator, comma or space
+               (-|\d+))?     # (6) directory mode; optional, then eq file mode
           \s*\)/x) {
-        ($defattr{filemode}, $defattr{owner}, $defattr{group}) = ($1, $2, $3);
-         $defattr{dirmode} = $4 ? $4 : $defattr{filemode}; # default directory setting is optional
+        ($defattr{filemode}, $defattr{owner}, $defattr{group}) = ($1, $2, $4);
+         $defattr{dirmode} = $6 ? $6 : $defattr{filemode}; # default directory setting is optional
       } else {
         process_filesline($subname);
       }
@@ -1004,15 +1004,15 @@ sub process_filesline {
   s/^%(?:dir|docdir)\s*//;
 
   # strip and flag %attr constructs ... and wipe it when we're done.
-  if (s/^%attr            # lot of formatting whitespace permitted
-      \s*\(\s*            # opening and closing parentheses; required
-        (-|\d+)           # file mode, numeric (octal) or '-'
-      [\s,]+              # field separator, comma or space
-        (-|['"]?\w+['"]?) # default owner, quotes permitted, or '-'
-      [\s,]+              # field separator, comma or space
-        (-|['"]?\w+['"]?) # default group, quotes permitted, or '-'
+  if (s/^%attr           # lot of formatting whitespace permitted
+      \s*\(\s*           # opening and closing parentheses; required
+        (-|\d+)          # (1) file mode, numeric (octal) or '-'
+      [\s,]+             # field separator, comma or space
+        (-|(['"]?)\w+\3) # (2) default owner, (3) quotes permitted, or '-'
+      [\s,]+             # field separator, comma or space
+        (-|(['"]?)\w+\5) # (4) default group, (5) quotes permitted, or '-'
       \s*\)\s*//x ) {
-    ($perms,$owner,$group) = ($1,$2,$3);
+    ($perms,$owner,$group) = ($1,$2,$4);
   }
 
   # Conffiles.  Note that Debian and RH have similar, but not
