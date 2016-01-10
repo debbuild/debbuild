@@ -795,7 +795,7 @@ ENDIF: if (/^%endif/) {
     elsif ($stage eq 'files') {
       if (/^%defattr\s*\(\s*(-|\d+)\s*,\s*(-|\w+)\s*,\s*(-|\w+)\s*,?\s*(-|\d+)?\s*\)/) {
         ($defattr{filemode}, $defattr{owner}, $defattr{group}) = ($1, $2, $3);
-         $defattr{dirmode} = $4 if $4; # default directory setting is optional
+         $defattr{dirmode} = $4 ? $4 : $defattr{filemode}; # default directory setting is optional
       } else {
         process_filesline($subname);
       }
