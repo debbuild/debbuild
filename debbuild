@@ -765,8 +765,7 @@ ENDIF: if (/^%endif/) {
         }
         if ($dname =~ /recommends|suggests|enhances|replaces|
             requires|conflicts|provides|pre-depends/x) {
-          push @{$pkgdata{$subname}{$dname}},
-            map { /^\s*(.+)\s*$/ } split /,/, expandmacros($dvalue);
+          push @{$pkgdata{$subname}{$dname}}, splitreqs(expandmacros($dvalue));
         } else {
           $pkgdata{$subname}{$dname} = expandmacros($dvalue);
         }
@@ -824,22 +823,22 @@ ENDIF: if (/^%endif/) {
       } elsif (/^buildarch(?:itecture)?:\s*(.+)/i) {
         ($pkgdata{main}{arch} = $1) =~ s/^noarch$/all/;
       } elsif (/^buildrequires:\s*(.+)/i) {
-        push @buildreq, map { /^\s*(.+)\s*$/ } split /,/, $1;
+        push @buildreq, splitreqs($1);
       } elsif (/^(requires|provides|conflicts):\s*(.+)/i) {
-        push @{$pkgdata{main}{lc $1}}, map { /^\s*(.+)\s*$/ } split /,/, $2;
+        push @{$pkgdata{main}{lc $1}}, splitreqs($2);
       } elsif (/^recommends:\s*(.+)/i) {
-        push @{$pkgdata{main}{recommends}}, map { /^\s*(.+)\s*$/ } split /,/, $1;
+        push @{$pkgdata{main}{recommends}}, splitreqs($1);
         warn "Warning:  Debian-specific 'Recommends:' outside %if wrapper\n" unless @ifexpr;
 # As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
 # along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
       } elsif (/^(suggests|enhances|replaces|pre-depends):\s*(.+)/i) {
-        push @{$pkgdata{main}{lc $1}}, map { /^\s*(.+)\s*$/ } split /,/, $2;
+        push @{$pkgdata{main}{lc $1}}, splitreqs($2);
         warn "Warning:  '$1:' outside %if wrapper\n" unless @ifexpr;
       } elsif (/^supplements:\s*(.+)/i) {
-        push @{$pkgdata{main}{enhances}}, map { /^\s*(.+)\s*$/ } split /,/, $1;
+        push @{$pkgdata{main}{enhances}}, splitreqs($1);
         warn "Warning:  'Supplements:' is not natively supported by .deb packages.  Downgrading relationship to Enhances:.\n";
       } elsif (/^obsoletes:\s*(.+)/i) {
-        push @{$pkgdata{main}{replaces}}, map { /^\s*(.+)\s*$/ } split /,/, $1;
+        push @{$pkgdata{main}{replaces}}, splitreqs($1);
       } elsif (/^autoreq(?:prov)?:\s*(.+)/i) {
 	# we don't handle auto-provides (yet)
 	$NoAutoReq = 1 if $1 =~ /(?:no|0)/i;
@@ -1387,7 +1386,7 @@ sub checkbuildreq {
     # We have two classes of requirements - versioned and unversioned.
     $req .= ' >= 0' unless $req =~ /[><=]/; # unversioned buildreq
     # Pick up the details of versioned buildreqs
-    my ($pkg,$rel,$ver) = $req =~ /([a-z0-9._-]+)\s+([><=]+)\s+([a-z0-9._-]+)/;
+    my ($pkg,$rel,$ver) = $req =~ /([\w.-]+)\s+([><=]+)\s+([a-z0-9._-]+)/;
 
 ## Apparently a package that has been installed, then uninstalled, has a "known" dpkg status of
 ## "unknown ok not-installed" vs a package that has never been installed which returns nothing.  O_o
@@ -1655,6 +1654,14 @@ sub format_version {
   return (defined $pkgdata{main}{epoch} ? "$pkgdata{main}{epoch}:" : '').
     "$pkgdata{$pkg}{version}-$pkgdata{main}{release}";
 } # end format_version()
+
+
+## splitreqs()
+# Split string at 'comma' and return list of trimmed entries
+sub splitreqs {
+  my ($reqs) = @_;
+  return map { /^\s*(.+)\s*$/ } split /,/, $reqs;
+}
 
 
 __END__
