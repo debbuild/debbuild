@@ -793,7 +793,16 @@ ENDIF: if (/^%endif/) {
     } # prepost
 
     elsif ($stage eq 'files') {
-      if (/^%defattr\s*\(\s*(-|\d+)\s*,\s*(-|\w+)\s*,\s*(-|\w+)\s*,?\s*(-|\d+)?\s*\)/) {
+      if (/^%defattr          # lot of formatting whitespace permitted
+          \s*\(\s*            # opening and closing parentheses; required
+            (-|\d+)           # file mode, numeric (octal) or '-'
+          [\s,]+              # field separator, comma or space
+            (-|['"]?\w+['"]?) # default owner, quotes permitted, or '-'
+          [\s,]+              # field separator, comma or space
+            (-|['"]?\w+['"]?) # default group, quotes permitted, or '-'
+            ([\s,]+           # field separator, comma or space
+               (-|\d+))?      # directory mode; optional, then equal file mode
+          \s*\)/x) {
         ($defattr{filemode}, $defattr{owner}, $defattr{group}) = ($1, $2, $3);
          $defattr{dirmode} = $4 ? $4 : $defattr{filemode}; # default directory setting is optional
       } else {
