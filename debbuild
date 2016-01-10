@@ -1214,13 +1214,8 @@ sub binpackage {
 
     # magic needed to properly version dependencies...
     # only provided deps will really be included
-    my @reqs;
-    foreach my $dep (@{$pkgdata{$pkg}{requires}}) {
-      if (my ($name,$rel,$value) = splitver($dep)) {
-        $dep = "$name ($rel $value)";
-      }
-      push @reqs, $dep;
-    }
+    my @reqs = map { my ($name,$rel,$ver) = splitver($_);
+      "$name ($rel $ver)" } @{$pkgdata{$pkg}{requires}};
     @{$pkgdata{$pkg}{requires}} = @reqs;
 
     # Gotta do this next, otherwise the control file has nowhere to go.  >:(
