@@ -1004,7 +1004,14 @@ sub process_filesline {
   s/^%(?:dir|docdir)\s*//;
 
   # strip and flag %attr constructs ... and wipe it when we're done.
-  if (s/%attr\s*\(\s*(-|\d+)\s*,\s*"?(-|\w+)"?\s*,\s*"?(-|\w+)"?\s*\)\s*//) {
+  if (s/^%attr            # lot of formatting whitespace permitted
+      \s*\(\s*            # opening and closing parentheses; required
+        (-|\d+)           # file mode, numeric (octal) or '-'
+      [\s,]+              # field separator, comma or space
+        (-|['"]?\w+['"]?) # default owner, quotes permitted, or '-'
+      [\s,]+              # field separator, comma or space
+        (-|['"]?\w+['"]?) # default group, quotes permitted, or '-'
+      \s*\)\s*//x ) {
     ($perms,$owner,$group) = ($1,$2,$3);
   }
 
