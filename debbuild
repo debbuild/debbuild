@@ -1216,14 +1216,7 @@ sub binpackage {
     # only provided deps will really be included
     my @reqs;
     foreach my $dep (@{$pkgdata{$pkg}{requires}}) {
-      # Hack up the perl(Class::SubClass) deps into something dpkg can understand.
-      # May or may not be versioned.
-      # We do this first so the version rewriter can do its magic next.
-      if (my ($mod,$ver) = $dep =~ /^perl\(([A-Za-z0-9:-]+)\)([><=]+.+)?/) {
-	($dep = lc "lib$mod-perl") =~ s/::/-/g;
-	 $dep .= $ver if $ver;
-      }
-      if (my ($name,$rel,$value) = $dep =~ /^([\w.-]+)([><=]+)([\w.-]+)$/) {
+      if (my ($name,$rel,$value) = splitver($dep)) {
         $dep = "$name ($rel $value)";
       }
       push @reqs, $dep;
@@ -1380,13 +1373,7 @@ sub checkbuildreq {
 
   my @missinglist;
   foreach my $req (@reqlist) {
-    # from rpmbuild error message
-    # Dependency tokens must begin with alpha-numeric, '_' or '/'
-##fixme:  check for suitable whitespace around $rel
-    # We have two classes of requirements - versioned and unversioned.
-    $req .= ' >= 0' unless $req =~ /[><=]/; # unversioned buildreq
-    # Pick up the details of versioned buildreqs
-    my ($pkg,$rel,$ver) = $req =~ /([\w.-]+)\s+([><=]+)\s+([a-z0-9._-]+)/;
+    my ($pkg,$rel,$ver) = splitver($req);
 
 ## Apparently a package that has been installed, then uninstalled, has a "known" dpkg status of
 ## "unknown ok not-installed" vs a package that has never been installed which returns nothing.  O_o
@@ -1661,6 +1648,27 @@ sub format_version {
 sub splitreqs {
   my ($reqs) = @_;
   return map { /^\s*(.+)\s*$/ } split /,/, $reqs;
+}
+
+
+## splitver()
+# Split un/versioned requirement
+sub splitver {
+  my ($req) = @_;
+  # from rpmbuild error message
+  # Dependency tokens must begin with alpha-numeric, '_' or '/'
+##fixme:  check for suitable whitespace around $rel
+  # We have two classes of requirements - versioned and unversioned.
+  $req .= ' >= 0' unless $req =~ /[><=]/; # unversioned buildreq
+  # Hack up the perl(Class::SubClass) deps into something dpkg can understand.
+  # May or may not be versioned.
+  # We do this first so the version rewriter can do its magic next.
+  if (my ($mod,$ver) = $req =~ /^perl\(([\w:-]+)\)\s*([><=]+.+)?/) {
+    ($req = lc "lib$mod-perl") =~ s/::/-/g;
+     $req .= $ver if $ver;
+  }
+  # Pick up the details of versioned buildreqs
+  return $req =~ /([\w.-]+)\s*([><=]+)\s*([\w:.-]+)/;
 }
 
 
