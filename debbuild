@@ -765,7 +765,7 @@ ENDIF: if (/^%endif/) {
         }
         if ($dname =~ /recommends|suggests|enhances|replaces|
             requires|conflicts|provides|pre-depends/x) {
-          push @{$pkgdata{$subname}{$dname}}, splitreqs(expandmacros($dvalue));
+          push @{$pkgdata{$subname}{$dname}}, splitreqs($dvalue);
         } else {
           $pkgdata{$subname}{$dname} = expandmacros($dvalue);
         }
@@ -1212,12 +1212,6 @@ sub binpackage {
     # "Requires" specified in the spec file, those would precede these.
     push @{$pkgdata{$pkg}{requires}}, getreqs("$specglobals{buildroot}/$pkg") unless $NoAutoReq;
 
-    # magic needed to properly version dependencies...
-    # only provided deps will really be included
-    my @reqs = map { my ($name,$rel,$ver) = splitver($_);
-      "$name ($rel $ver)" } @{$pkgdata{$pkg}{requires}};
-    @{$pkgdata{$pkg}{requires}} = @reqs;
-
     # Gotta do this next, otherwise the control file has nowhere to go.  >:(
     mkdir "$specglobals{buildroot}/$pkg/DEBIAN";
 
@@ -1248,8 +1242,12 @@ sub binpackage {
       if (defined $pkgdata{$pkg}{$deplist} and @{$pkgdata{$pkg}{$deplist}}) {
         my $tag = $deplist eq 'requires' ? 'depends' : $deplist;
         $tag =~ s/-depends/-Depends/;
-        $control .= "\u$tag: ".join(',', do { my %seen;
-          grep { !$seen{$_}++ } @{$pkgdata{$pkg}{$deplist}} })."\n";
+        $control .= "\u$tag: ".join(',', do {
+          my %seen; grep { !$seen{$_}++ } # uniq
+          map { my ($name,$rel,$ver) = splitver($_);
+            # magic needed to properly version dependencies...
+            $ver eq '0' ? $name : "$name ($rel $ver)" }
+              @{$pkgdata{$pkg}{$deplist}} })."\n";
       }
     }
 
@@ -1642,7 +1640,7 @@ sub format_version {
 # Split string at 'comma' and return list of trimmed entries
 sub splitreqs {
   my ($reqs) = @_;
-  return map { /^\s*(.+)\s*$/ } split /,/, $reqs;
+  return map { /^\s*(.+)\s*$/ } split /,/, expandmacros($reqs);
 }
 
 
