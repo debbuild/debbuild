@@ -1001,7 +1001,7 @@ sub process_filesline {
     ($defattr{filemode}, $defattr{owner}, $defattr{group}, '-');
 
   # Debian dpkg doesn't speak "%docdir".  Meh.
-  s/^%(?:dir|docdir)\s*//;
+  my $dir_only = s/^%(?:dir|docdir)\s*//;
 
   # strip and flag %attr constructs ... and wipe it when we're done.
   if (s/^%attr           # lot of formatting whitespace permitted
@@ -1063,7 +1063,7 @@ sub process_filesline {
 
   # now that we've got the specials out of the way, we can add things to the appropriate list of files.
   # ... and finally everything else
-  $filelist{$subname} .= " $_";
+  $filelist{$subname} .= " $_" unless $dir_only;
 } # end process_filesline()
 
 
