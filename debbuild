@@ -804,7 +804,7 @@ ENDIF: if (/^%endif/) {
                (-|\d+))?     # (6) directory mode; optional, then eq file mode
           \s*\)/x) {
         ($defattr{filemode}, $defattr{owner}, $defattr{group}) = ($1, $2, $4);
-         $defattr{dirmode} = $6 ? $6 : $defattr{filemode}; # default directory setting is optional
+         $defattr{dirmode} = ($6 or $defattr{filemode}); # default directory setting is optional
       } else {
         process_filesline($subname);
       }
@@ -1011,7 +1011,7 @@ sub process_filesline {
         (-|(['"]?)\w+\3) # (2) default owner, (3) quotes permitted, or '-'
       [\s,]+             # field separator, comma or space
         (-|(['"]?)\w+\5) # (4) default group, (5) quotes permitted, or '-'
-      \s*\)\s*//x ) {
+      \s*\)\s*//x) {
     ($perms,$owner,$group) = ($1,$2,$4);
   }
 
