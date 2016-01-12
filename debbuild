@@ -21,8 +21,7 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-use strict;
-no strict qw(refs);
+use strict; no strict qw(refs);
 use warnings;
 
 use Cwd qw(abs_path);	# for finding where files really are
@@ -32,9 +31,6 @@ use Getopt::Long qw(:config no_ignore_case bundling);
 use Text::Balanced qw(extract_bracketed extract_multiple);
 
 my $version = '@VERSION@';
-
-# regex debugger
-#use re 'debug';
 
 # Behavioural compatibility FTW!  Yes, rpmbuild does this too.
 die "No .spec file to work with!  Exiting.\n" unless @ARGV;
@@ -157,7 +153,6 @@ my %distmap = (
 # note that we care only about major release numbers; tracking minor or point
 # releases would be...  exponentially more painful.
 
-    my $majver;
     # for the lazy copy-paster:  dpkg-query --showformat '${version}\n' -W base-files
     # avoid shellisms
     if (open BASEGETTER, '-|', $specglobals{__dpkg_query}, '--showformat', '${version}', '-W', 'base-files') {
@@ -172,8 +167,8 @@ my %distmap = (
       } else {
         # Debian, or more "pure" derivative
         $baseos = 'debian';
-        ($basever,$majver) = $basever =~ /^((\d+)(?:\.\d)?)/;
-        $basever = $majver if $majver > 3;
+        my ($basver,$majver) = $basever =~ /^((\d+)(?:\.\d)?)/;
+        $basever = $majver > 3 ? $majver : $basver;
       }
     }
 
@@ -566,15 +561,14 @@ LINE: while (<$fh>) {
 # notes:  some of these are not *entirely* case-sensitive (%ifxxx), but most are.
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
-    if (/^%[a-z]/ &&
+    if (/^(%[a-z]+)/ &&
 		not /^%(?:attr|bcond_with|bcond_without|build|changelog|check|clean|
 		config|configure|copyrightdata|defattr|define|description|dir|doc|
 		docdir|dump|else|endif|files|ghost|global|if|ifarch|ifnarch|ifnos|
 		ifos|include|install|make_build|make_install|makeinstall|package|
 		patch\d*|post|postun|pre|prep|preun|readme|setup\d*|triggerin|
 		triggerpostun|triggerun|undefine|verify|verifyscript)\b/x) {
-	my ($badtag) = /^(%[a-z]+)/i;
-	die "Unknown tag $badtag at line $. of $specfile\n";
+	die "Unknown tag $1 at line $. of $specfile\n";
     }
 
     # RPM conditionals - transform to generic form
@@ -1332,7 +1326,7 @@ sub srcpackage {
   # Copy the specfile to the build tree, but only if it's not there already.
 ##buglet: need to deal with silly case where silly user has put the spec
 # file in a subdir of %{_topdir}/SPECS.  Ewww.  Silly user!
-  if (abs_path($specglobals{specfile}) !~ m|^$topdir/SPECS|) {
+  if (abs_path($specglobals{specfile}) ne abs_path("$topdir/SPECS/$barespec")) {
     $paxcmd .= "%{__cp} %{specfile} %{_specdir};\n"
   }
 
@@ -1490,10 +1484,7 @@ sub install_sdeb {
   my ($srcpkg) = @_;
   die "Can't install $srcpkg\n" unless $srcpkg =~ /\.sdeb$/;
   $srcpkg = abs_path($srcpkg);
-
-  my $paxcmd = "(cd %{_topdir}; %{__pax} -r -f $srcpkg)";
-
-  system(expandmacros($paxcmd)) == 0 and
+  system(expandmacros("(cd %{_topdir}; %{__pax} -r -f $srcpkg)")) == 0 and
   print "Extracted source package $srcpkg to $topdir.\n";
 } # end install_sdeb()
 
@@ -1502,7 +1493,6 @@ sub install_sdeb {
 # Helper function for writing to the %macro storage(s)
 sub store_value {
   my ($key,$value) = @_;
-
   if ($key =~ /^(?:summary|name|epoch|version|release|
       group|copyright|url|packager)$/ix) {
     $pkgdata{main}{$key} = $value;
@@ -1687,7 +1677,7 @@ __END__
 
 =head1 NAME
 
-B<debbuild> — Build Debian-compatible .deb packages from RPM .spec files
+debbuild — Build Debian-compatible .deb packages from RPM .spec files
 
 =head1 SYNOPSIS
 
@@ -1772,7 +1762,7 @@ B<debbuild> allows this by using the architecture specified by (in order of pref
 
 =back
 
-=head2 Finding out what packages should be built (B<--showpkgs>)
+=head2 Finding out what packages should be built (--showpkgs)
 
 B<rpmbuild> does not include any convenient method I know of to list the packages a spec file will produce.  Since I needed this ability for another tool, I added it.
 
