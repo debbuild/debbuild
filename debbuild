@@ -419,11 +419,10 @@ sub parse_cmd {
   sub srcpkg_handler {
     my ($opt_name,$opt_value) = @_;
     $specglobals{srcpkg} = $opt_value;
+    $cmdopts{type} = 'r';
     if ($opt_name eq 'rebuild') {
-      $cmdopts{type} = 'r';
       $cmdopts{stage} = 'b';
     } elsif ($opt_name eq 'recompile') {
-      $cmdopts{type} = 'r';
       $cmdopts{stage} = 'i';
     } else { # $opt_name eq 'install'
       $cmdopts{type} = 's';
@@ -562,13 +561,12 @@ LINE: while (<$fh>) {
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
     if (/^%([a-z]+)/ and not grep { /$1/ } qw(attr bcond_with bcond_without
-	    build changelog check clean config configure copyrightdata defattr
-	    define description dir doc docdir dump else endif files ghost
-	    global if ifarch ifnarch ifnos ifos include install make_build
-	    make_install makeinstall package patch post postun pre prep preun
-	    readme setup triggerin triggerpostun triggerun undefine verify
-	    verifyscript)) {
-        die "Unknown tag '%$1' at line $. of $specfile\n";
+	build changelog check clean config configure copyrightdata defattr
+	define description dir doc docdir dump else endif files ghost global
+	if ifarch ifnarch ifnos ifos include install make_build make_install
+	makeinstall package patch post postun pre prep preun readme setup
+	triggerin triggerpostun triggerun undefine verify verifyscript)) {
+      die "Unknown tag '%$1' at line $. of $specfile\n";
     }
 
     # RPM conditionals - transform to generic form
@@ -749,16 +747,16 @@ ENDIF: if (/^%endif/) {
 # an rpmbuild-compatible .spec file
 # NB: NOT going to support Pre-Depends, since it's a "Don't Use" (mis)feature, and
 # RPM's support for a similar tag (PreReq) has been recently dropped.
-      if (my ($dname,$dvalue) = /^(Recommends|Suggests|Enhances|Replaces|
-          Summary|Group|Version|Requires|Conflicts|Provides|Pre-Depends|
-          BuildArch(?:itecture)?):\s+(.+)$/ix) {
+      if (my ($dname,$dvalue) = /^(Summary|Group|Version|BuildArch(?:itecture)?|
+          Recommends|Suggests|Enhances|Replaces|
+          Requires|Conflicts|Provides|Pre-Depends):\s+(.+)$/ix) {
         $dname =~ tr/[A-Z]/[a-z]/;
         if ($dname =~ /^BuildArch/i) {
           $dvalue =~ s/^noarch/all/ig;
           $dname = 'arch';
         }
-        if ($dname =~ /recommends|suggests|enhances|replaces|
-            requires|conflicts|provides|pre-depends/x) {
+	if (grep { /$dname/ } qw(recommends suggests enhances replaces
+            requires conflicts provides pre-depends)) {
           push @{$pkgdata{$subname}{$dname}}, splitreqs($dvalue);
         } else {
           $pkgdata{$subname}{$dname} = expandmacros($dvalue);
@@ -1247,8 +1245,8 @@ sub binpackage {
 	"Maintainer: %{packager}\n".
 	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{description}\n".
 	( defined $pkgdata{main}{url} ? "Homepage: %{url}\n" : '' );
-    foreach my $deplist (qw(requires provides conflicts recommends
-                            suggests enhances replaces pre-depends)) {
+    foreach my $deplist (qw(recommends suggests enhances replaces
+                            requires conflicts provides pre-depends)) {
       if (defined $pkgdata{$pkg}{$deplist} and @{$pkgdata{$pkg}{$deplist}}) {
         my $tag = $deplist eq 'requires' ? 'depends' : $deplist;
         $tag =~ s/-depends/-Depends/;
