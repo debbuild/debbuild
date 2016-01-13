@@ -668,8 +668,8 @@ ENDIF: if (/^%endif/) {
     }
 
     # Conditional Build Stuff
-    elsif (/%(bcond_with(?:out)?)\s+(\w+)/) {
-      expandmacros("%{$1 $2}");
+    elsif (/%(?:bcond_with(?:out)?)\s/) {
+      expandmacros($_);
     }
 
 ### Multi-line sectioning %commands
@@ -1496,6 +1496,7 @@ sub expandmacros {
   return $_ unless /%/; # nothing to substitute
 
   # Store %globals (from '%bcond_without()' in 'macros[.in]')
+  s/%(bcond_with(?:out)?)\s+(\S+)/%{$1 $2}/g;
   s/%(?:define|global)\s+(\S+)\s+(.+)/store_value($1,$2)/eg;
   { no warnings; s/%undefine\s+(\S+)/store_value($1)/eg; }
 
