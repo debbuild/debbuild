@@ -664,8 +664,8 @@ ENDIF: if (/^%endif/) {
     }
 
     # Preprocess %define's
-    elsif (my ($macro, $key, $def) = /^%(define|global|undefine)\s+(\S+)(?:\s+(.+))?$/) {
-      $macro eq 'undefine' ? store_value($key) : store_value($key,$def);
+    elsif (my ($macro, $key, $def) = /^%(define|global|undefine)\s+(\S+)(\s+.+)?$/) {
+      expandmacros("%$macro $key".($def or ''));
     }
 
     # Conditional Build Stuff
@@ -1506,7 +1506,8 @@ sub expandmacros {
   return $_ unless /%/; # nothing to substitute
 
   # Store %globals (from '%bcond_without()' in 'macros[.in]')
-  s/%global\s+(\w+)\s+(\w+)/store_value($1,$2)/eg;
+  s/%(?:define|global)\s+(\S+)\s+(.+)/store_value($1,$2)/eg;
+  { no warnings; s/%undefine\s+(\S+)/store_value($1)/eg; }
 
   # Replace global macros
   s/%(\w+)/%{$1}/g;
