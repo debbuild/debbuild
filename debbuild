@@ -662,13 +662,8 @@ ENDIF: if (/^%endif/) {
       }
     }
 
-    # Preprocess %define's
-    elsif (/^%(?:define|global|undefine)\s/) {
-      expandmacros($_);
-    }
-
-    # Conditional Build Stuff
-    elsif (/%(?:bcond_with(?:out)?)\s/) {
+    # Preprocess %define's and Conditional Build Stuff
+    elsif (/^%(?:define|global|undefine|bcond_with(?:out)?)\s/) {
       expandmacros($_);
     }
 
@@ -1495,9 +1490,11 @@ sub expandmacros {
   local ($_) = @_;
   return $_ unless /%/; # nothing to substitute
 
-  # Store %globals (from '%bcond_without()' in 'macros[.in]')
+  # Process %define's and Conditional Build Stuff
   s/%(bcond_with(?:out)?)\s+(\S+)/%{$1 $2}/g;
+  # Store %globals (from '%bcond_with[out]()' in 'macros[.in]')
   s/%(?:define|global)\s+(\S+)\s+(.+)/store_value($1,$2)/eg;
+  # Permit unsetting/deleting of stored values
   { no warnings; s/%undefine\s+(\S+)/store_value($1)/eg; }
 
   # Replace global macros
