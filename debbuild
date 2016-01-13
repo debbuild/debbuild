@@ -665,8 +665,7 @@ ENDIF: if (/^%endif/) {
 
     # Preprocess %define's
     elsif (my ($macro, $key, $def) = /^%(define|global|undefine)\s+(\S+)(?:\s+(.+))?$/) {
-      my $value = $macro eq 'undefine' ? undef : expandmacros($def);
-      store_value($key,$value);
+      $macro eq 'undefine' ? store_value($key) : store_value($key,$def);
     }
 
     # Conditional Build Stuff
@@ -1493,9 +1492,9 @@ sub store_value {
   my ($key,$value) = @_;
   if ($key =~ /^(?:summary|name|epoch|version|release|
       group|copyright|url|packager)$/ix) {
-    $pkgdata{main}{$key} = $value;
+    $pkgdata{main}{$key} = ($value ? expandmacros($value) : undef);
   } else {
-    $specglobals{$key} = $value;
+    $specglobals{$key} = ($value ? expandmacros($value) : undef);
   }
 } # end store_value()
 
