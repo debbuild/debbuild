@@ -664,8 +664,8 @@ ENDIF: if (/^%endif/) {
     }
 
     # Preprocess %define's
-    elsif (my ($macro, $key, $def) = /^%(define|global|undefine)\s+(\S+)(\s+.+)?$/) {
-      expandmacros("%$macro $key".($def or ''));
+    elsif (/^%(define|global|undefine)\s+(\S+)(\s+.+)?$/) {
+      expandmacros("%$1 $2".($3 or ''));
     }
 
     # Conditional Build Stuff
