@@ -237,7 +237,6 @@ if ($cmdopts{type} eq 's') {
 if ($cmdopts{type} eq 'd') {
   parse_spec($specglobals{specfile});
   foreach my $pkg (@pkglist) {
-    $pkgdata{$pkg}{name} =~ tr/_/-/;
     print "$pkgdata{$pkg}{name}_".format_version($pkg).
 	"_$pkgdata{$pkg}{arch}.deb\n" if $filelist{$pkg};
   }
@@ -692,7 +691,9 @@ ENDIF: if (/^%endif/) {
       my $tmp = expandmacros($2);
       $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       push @pkglist, $subname;
-      $pkgdata{$subname}{name} = $subname;
+      # Hack the filename for the package into a Debian-tool-compatible format.  GRRRRRR!!!!!
+      # Have I mentioned I hate Debian Policy?
+      ($pkgdata{$subname}{name} = $subname) =~ tr/_/-/;
       $pkgdata{$subname}{version} = $pkgdata{main}{version};
   # Build "same arch as previous package found" by default.  Where rpm just picks the
   # *very* last one, we want to allow arch<native>+arch-all
@@ -810,6 +811,7 @@ ENDIF: if (/^%endif/) {
       if (/^(summary|name|epoch|version|release|
              group|copyright|url|packager):\s*(.+)/ix) {
         $pkgdata{main}{lc $1} //= expandmacros($2);
+        $pkgdata{main}{lc $1} =~ tr/_/-/ if 'name' eq $1;
       } elsif (/^(vendor|buildroot):\s*(.+)/i) {
         $specglobals{lc $1} = $2;
       } elsif (my ($srcnum, $src) = /^source(\d*):\s*(.+)/i) {
@@ -1024,16 +1026,12 @@ sub process_filesline {
   # of "documentation file" that rpm does.  (Debian "documentation files" are files
   # in /usr/share/doc/<packagename>.)
   if (s/%doc\s+//) {
-
-# this could probably go elsewhere.
-    (my $pkgname = $pkgdata{$subname}{name}) =~ tr/_/-/;
-
     # have to extract the partial pathnames that %doc installs automagically
     foreach my $pp (split) {
       if (not $pp =~ m|^[%/]|) {
         $doclist{$subname} .= " $pp";
         my ($element) = $pp =~ m|([^/\s]+/?)$|;
-        s|$pp|%{_docdir}/$pkgname/$element|;
+        s|$pp|%{_docdir}/$pkgdata{$subname}{name}/$element|;
       }
     }
   } # $filesline =~ /%doc\b/
@@ -1091,9 +1089,7 @@ sub install {
   # munge %doc entries into place
   # rpm handles this with a separate executed %doc script, we're not going to bother.
   foreach my $docpkg (keys %doclist) {
-    (my $pkgname = $pkgdata{$docpkg}{name}) =~ s/_/-/g;
-
-    $script{install} .= "DOCDIR=\$RPM_BUILD_ROOT%{_docdir}/$pkgname\nexport DOCDIR\n";
+    $script{install} .= "DOCDIR=\$RPM_BUILD_ROOT%{_docdir}/$pkgdata{$docpkg}{name}\nexport DOCDIR\n";
     $script{install} .= "%{__mkdir_p} \$DOCDIR\n";
     $doclist{$docpkg} =~ s/^\s*//;
     foreach (split ' ', $doclist{$docpkg}) {
@@ -1222,10 +1218,6 @@ sub binpackage {
     # Gotta do this next, otherwise the control file has nowhere to go.  >:(
     mkdir "$specglobals{buildroot}/$pkg/DEBIAN";
 
-    # Hack the filename for the package into a Debian-tool-compatible format.  GRRRRRR!!!!!
-    # Have I mentioned I hate Debian Policy?
-    $pkgdata{$pkg}{name} =~ tr/_/-/;
-
     # Munge things so that Debian tools don't choke on errant blank lines
     $pkgdata{$pkg}{description} =~ s/\s+$//g;	# Trim trailing blanks
     $pkgdata{$pkg}{description} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
@@ -1311,8 +1303,6 @@ sub binpackage {
 # easily copy it as-is.
 # Not quite identical to RPM, but Good Enough (TM).
 sub srcpackage {
-  # In case we were called with -bs.
-  $pkgdata{main}{name} =~ tr/_/-/;
   my $pkgsrcname = "$pkgdata{main}{name}-".format_version('main').'.sdeb';
 
   # We'll definitely need this later, and *may* need it sooner.
