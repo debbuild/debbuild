@@ -21,7 +21,7 @@
 #    along with this program; if not, write to the Free Software
 #    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-use strict; no strict qw(refs);
+use strict;
 use warnings;
 
 use Cwd qw(abs_path);	# for finding where files really are
@@ -1554,6 +1554,7 @@ sub expandmacros {
   s/%{url2path:/%{u2p:/g;
   while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ } extract_multiple($_,
       [ sub { extract_bracketed($_[0],'{}') } ]) ) {
+    no strict qw(refs); # we use strings as function refs
     if ($prefix =~ /u2p/) {
       # curious form of 'basename'? - strip domain host (and port)
       (my $path = expandmacros($arg)) =~ s|\w+://[\w.:-]+||;
