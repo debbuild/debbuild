@@ -669,8 +669,8 @@ ENDIF: if (/^%endif/) {
     }
 
     # Conditional Build Stuff
-    elsif (s/%(bcond_with(?:out)?)\s+(\w+)/%{$1 $2}/) {
-      expandmacros($_);
+    elsif (/%(bcond_with(?:out)?)\s+(\w+)/) {
+      expandmacros("%{$1 $2}");
     }
 
 ### Multi-line sectioning %commands
