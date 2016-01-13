@@ -167,8 +167,8 @@ my %distmap = (
       } else {
         # Debian, or more "pure" derivative
         $baseos = 'debian';
-        my ($basver,$majver) = $basever =~ /^((\d+)(?:\.\d)?)/;
-        $basever = $majver > 3 ? $majver : $basver;
+        ($basever,my $majver) = $basever =~ /^((\d+)(?:\.\d)?)/;
+        $basever = $majver if $majver > 3;
       }
     }
 
@@ -755,7 +755,7 @@ ENDIF: if (/^%endif/) {
           $dvalue =~ s/^noarch/all/ig;
           $dname = 'arch';
         }
-	if (grep { /$dname/ } qw(recommends suggests enhances replaces
+        if (grep { /$dname/ } qw(recommends suggests enhances replaces
             requires conflicts provides pre-depends)) {
           push @{$pkgdata{$subname}{$dname}}, splitreqs($dvalue);
         } else {
