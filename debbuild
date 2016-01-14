@@ -1068,8 +1068,7 @@ sub execute_script {
   close SCRIPT;
 
   # execute
-  print 'Calling '.($what or "%$stage")." script $scriptfile".
-    (defined $for ? $for : '')."...\n";
+  print 'Calling '.($what or "%$stage")." script $scriptfile".($for or '')."...\n";
   system("$specglobals{_buildshell} -e $scriptfile") and die "Can't exec: $!\n";
 
   # and clean up
