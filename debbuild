@@ -35,11 +35,6 @@ my $version = '@VERSION@';
 # Behavioural compatibility FTW!  Yes, rpmbuild does this too.
 die "No .spec file to work with!  Exiting.\n" unless @ARGV;
 
-# Program flow:
-# -> Parse/execute "system" config/macros (if any - should be rare)
-# -> Parse/execute "user" config/macros (if any - *my* requirement is %_topdir)
-# -> Parse command line for options, spec file/tarball/.src.deb (NB - also accept .src.rpm)
-
 # Initialized globals
 my $verbosity = 0;
 my $NoAutoReq = 0;
@@ -220,6 +215,11 @@ my %distmap = (
 
 
 #### main ####
+
+# Program flow:
+# -> Parse/execute "system" config/macros (if any - should be rare)
+# -> Parse/execute "user" config/macros (if any - *my* requirement is %_topdir)
+# -> Parse command line for options, spec file/tarball/.src.deb (NB - also accept .src.rpm)
 
 load_config();
 parse_cmd();
