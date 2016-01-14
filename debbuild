@@ -354,7 +354,8 @@ sub load_config {
     open MACROS,"<$macros" or next; # should we warn about missing macro files?
     while (<MACROS>) {
       next unless my ($macro,$value) = /^%([a-z0-9_]+(?:\(\))?)\s+(.+)$/;
-      if ($value =~ s/.*\\$//) { # multi-line macro
+      if ($value =~ s/\\$//) { # multi-line macro
+        $value .= "\\\n" if $value ne '';
         while (<MACROS>) {
           $value .= $_;
           last unless /\\$/;
