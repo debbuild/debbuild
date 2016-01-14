@@ -161,12 +161,7 @@ my %distmap = (
     }
     close LSBREL;
 
-  } elsif (not -e $specglobals{__dpkg_query} ) {
-    # call it woody, since sarge and newer have dpkg-query, and we don't much care about obsolete^n releases
-    $basever = '3.0';
-    $baseos = 'debian';
-
-  } else {
+  } elsif (-e $specglobals{__dpkg_query}) {
 # *eyeroll*  there *really* has to be a better way to go about this.  You
 # can't sanely build packages for multiple distro targets if you can't
 # programmatically figure out which one you're building on.
@@ -198,7 +193,11 @@ my %distmap = (
       $basever = '99';
       warn "Warning:  couldn't autodetect OS version, assuming sid/unstable\n";
     }
-  } # got dpkg-query?
+  } else { # got dpkg-query?
+    # call it woody, since sarge and newer have dpkg-query, and we don't much care about obsolete^n releases
+    $basever = '3.0';
+    $baseos = 'debian';
+  }
 
   # rpmbuild expects either integers or strings, and some distros (*cough*Ubuntu*cough*)
   # have versions that get interpreted as strings, which creates comparison problems.
