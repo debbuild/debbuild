@@ -1062,7 +1062,7 @@ sub execute_script {
 
   # create script filename
   my $scriptfile = expandmacros('%{_tmppath}')."/deb-tmp.$stage.".int(rand(99998)+1);
-  sysopen(SCRIPT, $scriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
+  sysopen(SCRIPT, $scriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW, 0755)
     or die "Can't open/create ".($what or $stage)."script file $scriptfile: $!\n";
   print SCRIPT expandmacros('%{___build_template}');
   print SCRIPT expandmacros($script{$stage});
@@ -1070,7 +1070,7 @@ sub execute_script {
 
   # execute
   print 'Calling '.($what or "%$stage")." script $scriptfile".($for or '')."...\n";
-  system("$specglobals{_buildshell} -e $scriptfile") and die "Can't exec: $!\n";
+  system($scriptfile) and die "Can't exec: $!\n";
 
   # and clean up
   unlink $scriptfile;
