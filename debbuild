@@ -656,14 +656,14 @@ ENDIF: if (/^%endif/) {
     }
 
     # Print the active macro table
-    elsif (/%dump/) {
+    elsif (/^%dump/) {
       for (sort keys %specglobals) {
         print "%$_ ==> $specglobals{$_}\n" unless $_ =~ /^[A-Z]+$/;
       }
     }
 
     # Preprocess %define's and Conditional Build Stuff
-    elsif (/^%(?:define|global|undefine|bcond_with(?:out)?)\s/) {
+    elsif (/^%(?:(?:un)?define|global|bcond_with(?:out)?)\s/) {
       expandmacros($_);
     }
 
