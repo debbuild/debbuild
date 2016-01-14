@@ -52,6 +52,14 @@ my %defattr = (filemode => '-',
 		dirmode => '-');
 my @ifexpr = (); # Nested %if..%else..%endif conditionals
 
+# Scriptlets
+my %script = ( prep => '',
+		build => '',
+		install => '',
+		check => '',
+		clean => qq([ "\$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf \$RPM_BUILD_ROOT\n) );
+my $finalmessages = ''; # A place to stuff messages that I want printed at the *very* end of any processing.
+
 # User's prefs for dirs, environment, etc,etc,etc.
 # config file ~/.debmacros
 # Default ordered search paths for config/macros:
@@ -61,6 +69,19 @@ my @ifexpr = (); # Nested %if..%else..%endif conditionals
 my %specglobals = ( # For %define's in specfile, among other things.
 	# this can be changed by the Vendor: header in the spec file
 	vendor => 'debbuild');
+
+# Package data
+# This is the form of $pkgdata{pkgname}{meta}
+# meta includes Summary, Name, Version, Release, Group, Copyright,
+#	Source, URL, Packager, BuildRoot, Description, BuildRequires,
+#	Requires, Provides
+# 10/31/2005 Maybe this should be flatter?  -kgd
+my %pkgdata = (main => {source => ''});
+my @pkglist = ('main');	#sigh
+# Files listing.  Embedding this in %pkgdata would be, um, messy.
+my %filelist;
+my %doclist;
+my @buildreq;
 
 # "Constants"
 my %targets = ('p' => 'Prep',
@@ -197,27 +218,6 @@ my %distmap = (
   $specglobals{dist} = $baseos.$basever;
 
 } # done trying to set debian dist/version
-
-# Package data
-# This is the form of $pkgdata{pkgname}{meta}
-# meta includes Summary, Name, Version, Release, Group, Copyright,
-#	Source, URL, Packager, BuildRoot, Description, BuildRequires,
-#	Requires, Provides
-# 10/31/2005 Maybe this should be flatter?  -kgd
-my %pkgdata = (main => {source => ''});
-my @pkglist = ('main');	#sigh
-# Files listing.  Embedding this in %pkgdata would be, um, messy.
-my %filelist;
-my %doclist;
-my @buildreq;
-
-# Scriptlets
-my %script = ( prep => '',
-		build => '',
-		install => '',
-		check => '',
-		clean => qq([ "\$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf \$RPM_BUILD_ROOT\n) );
-my $finalmessages = ''; # A place to stuff messages that I want printed at the *very* end of any processing.
 
 
 #### main ####
