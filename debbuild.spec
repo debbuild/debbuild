@@ -7,7 +7,7 @@
 
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 Name: debbuild
-Version: 16.1.3
+Version: 16.1.4
 Release: ascherer.%{dist}
 
 Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
