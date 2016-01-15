@@ -1518,9 +1518,7 @@ sub expandmacros {
     # Oy vey this gets silly for the perl bits.  Executing a shell to
     # call Perl to get the vendorlib/sitelib/whatever "core" globals.
     # This can do more, but...  eww.
-  s/%\((.+)\)/my $in = expandmacros($1);
-    chomp( my $res = qx($specglobals{_buildshell} -c '$in') );
-    $res;/eg;
+  s/%\((.+)\)/my $in = expandmacros($1); chomp(my $res = qx($in)); $res/eg;
     # Yay!  ' characters apparently get properly exscapededed.
 
   # unescape multi-line macros
