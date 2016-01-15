@@ -1574,11 +1574,11 @@ sub expandmacros {
   # %define's and %{all_the_rest}
 # note to self: find out valid chars for %define name/label so we can parse them
   while (/%{([a-z0-9_-]+)}/ig) {
-    my $key = lc $1;
+    my $key = $1;
     if (defined $specglobals{$key}) {
-      s/%{$key}/expandmacros($specglobals{$key})/egi;
+      s/%{$key}/expandmacros($specglobals{$key})/eg;
     } elsif (defined $pkgdata{main}{$key}) {
-      s/%{$key}/expandmacros($pkgdata{main}{$key})/egi;
+      s/%{$key}/expandmacros($pkgdata{main}{$key})/eg;
     }
   }
 
