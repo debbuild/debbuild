@@ -344,7 +344,7 @@ exit 0;
 # and user configuration (if any) ~/.rpmmacros a.k.a. ~/.debmacros
 sub load_config {
   # Load user configuration, permitting local override
-  my $homedir = (getpwuid($<))[7];
+  my $homedir = $ENV{HOME} // $ENV{LOGDIR} // (getpwuid($<))[7];
   foreach my $macros ( ('/usr/lib/debbuild/macros',
                         </usr/lib/debbuild/macros.d/macros.*>,
                         '/etc/debbuild/macros',
