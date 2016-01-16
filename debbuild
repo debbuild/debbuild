@@ -138,7 +138,7 @@ my %distmap = (
   # Check for /etc/os-release.  If that doesn't exist, try /etc/lsb-release.  If that doesn't exist,
   # check for existence of dpkg-query, and either call it Debian Woody (if missing), or fall through
   # to guessing based on the version of the base-files package.
-  if (open OSREL, '</etc/os-release') {
+  if (open OSREL, '/etc/os-release') {
     # Look for ID and VERSION_ID lines.
     while (<OSREL>) {
       $baseos = $1 if /^ID=(\w+)/;
@@ -146,7 +146,7 @@ my %distmap = (
     }
     close OSREL;
 
-  } elsif (open LSBREL, '</etc/lsb-release') {
+  } elsif (open LSBREL, '/etc/lsb-release') {
     # Look for DISTRIB_ID and DISTRIB_RELEASE lines.
     # We could also theoretically extract the dist codename, but since we have to hand-map
     # it in so many other cases there's little point.
@@ -350,7 +350,7 @@ sub load_config {
                         '/etc/debbuild/macros',
                         </etc/debbuild/macros.*>,
                         "$homedir/.debmacros") ) {
-    open MACROS,"<$macros" or next; # should we warn about missing macro files?
+    open MACROS,$macros or next; # should we warn about missing macro files?
     while (<MACROS>) {
       next unless my ($macro,$value) = /^%([a-z0-9_]+(?:\(\))?)\s+(.+)$/;
       if ($value =~ s/\\$//) { # multi-line macro
@@ -531,7 +531,7 @@ sub parse_spec {
   $subname //= 'main';
 
   die "No .spec file specified!  Exiting.\n" unless $specfile;
-  open my $fh, "<$specfile" or die "specfile ($specfile) barfed: $!\n";
+  open my $fh, $specfile or die "specfile ($specfile) barfed: $!\n";
 
   $pkgdata{main}{arch} //= expandmacros('%{_arch}');
 
