@@ -1301,8 +1301,6 @@ sub srcpackage {
   my $paxcmd;
 
   # Copy the specfile to the build tree, but only if it's not there already.
-##buglet: need to deal with silly case where silly user has put the spec
-# file in a subdir of %{_topdir}/SPECS.  Ewww.  Silly user!
   if (abs_path($specglobals{specfile}) ne abs_path("$topdir/SPECS/$barespec")) {
     $paxcmd .= "%{__cp} %{specfile} %{_specdir};\n"
   }
