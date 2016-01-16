@@ -469,25 +469,16 @@ Build .deb packages from RPM-style .spec files
 debbuild supports most package-building options rpmbuild does.
 
 Build options with [ <specfile> | <tarball> | <source package> ]:
-      -bp                        build through %prep (unpack sources and apply patches) from <specfile>
-      -bc                        build through %build (%prep, then compile) from <specfile>
-      -bi                        build through %install (%prep, %build, then install) from <specfile>
-      -bl                        verify %files section from <specfile>
-      -ba                        build source and binary packages from <specfile>
-      -bb                        build binary package only from <specfile>
-      -bs                        build source package only from <specfile>
-      -tp                        build through %prep (unpack sources and apply patches) from <tarball>
-      -tc                        build through %build (%prep, then compile) from <tarball>
-      -ti                        build through %install (%prep, %build, then install) from <tarball>
-      -ta                        build source and binary packages from <tarball>
-      -tb                        build binary package only from <tarball>
-      -ts                        build source package only from <tarball>
-      -rp                        build through %prep (unpack sources and apply patches) from <source package>
-      -rc                        build through %build (%prep, then compile) from <source package>
-      -ri                        build through %install (%prep, %build, then install) from <source package>
-      -ra                        build source and binary packages from <source package>
-      -rb                        build binary package only from <source package>
-      -rs                        build source package only from <source package>
+      -b.                        build from <specfile> ...
+      -t.                        build from <tarball> ...
+      -r.                        build from <source package> ...
+            -.p      ... through %prep (unpack sources and apply patches)
+            -.c      ... through %build (%prep, then compile)
+            -.i      ... through %install (%prep, %build, then install)
+            -.l      verify %files section
+            -.a      ... source and binary packages
+            -.b      ... binary package only
+            -.s      ... source package only
       --rebuild (-rb)            build binary package from <source package>
       --recompile (-ri)          build through %install from <source package>
       --buildroot=DIRECTORY      override build root
@@ -499,8 +490,8 @@ Common options:
 
 debbuild-specific options:
       -i, --install              Unpack a .sdeb in the %_topdir tree
-      --showpkgs                 Show package names that would be built.  Only works with .spec files.
-      --nobuild <specfile>       Parse <specfile>, but do no processing
+      --showpkgs                 Show package names that would be built.
+      --nobuild                  Parse <specfile>, but do no processing
 };
     exit 0;
   }
