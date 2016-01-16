@@ -390,7 +390,7 @@ sub parse_cmd {
     'with=s'      => \&define_handler, # dito for 'with|without=s'
     'without=s'   => \&define_handler,
     'define|D=s'  => \&define_handler,
-    'help'        => \&help_handler,
+    'help|?'      => \&help_handler,
     'version'     => sub { print "debbuild v$version\n" },
     '<>'          => \&catchall # process non-option arguments
   ); # Getopt::Long::Getoptions()
