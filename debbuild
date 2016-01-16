@@ -908,7 +908,7 @@ sub process_setup {
 # rpm doesn't seem to do the chowns any more
 #		qq([ `%{__id_u}` = '0' ] && %{__chown} -Rhf root .\n).
 #		qq([ `%{__id_u}` = '0' ] && %{__chgrp} -Rhf root .\n).
-  return $setupscript .= qq(%{__chmod} -Rf a+rX,u+w,g-w,o-w .\n);
+  return $setupscript .= qq(%{__chmod} -Rf a+rX,u+w,go-w .\n);
 } # end process_setup()
 
 
@@ -1103,7 +1103,7 @@ sub install {
        qx($specglobals{__bzip2} -d $manpage) if $manpage =~ /\.bz2$/;
        $manpage = $newpage;
       }
-      qx($specglobals{__gzip} -f -9 -n $manpage);
+      qx($specglobals{__gzip} -f9n $manpage);
     } elsif ( -l $manpage) {
       (my $linkdest = readlink $manpage) =~ s/\.(?:Z|gz|bz2)//;
       unlink $manpage;
