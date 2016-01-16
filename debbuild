@@ -236,11 +236,10 @@ if ($cmdopts{type} eq 's') {
 if ($cmdopts{type} eq 'd') {
   parse_spec($specglobals{specfile});
   foreach my $pkg (@pkglist) {
-    print "$pkgdata{$pkg}{name}_".format_version($pkg).
-	"_$pkgdata{$pkg}{arch}.deb\n" if $filelist{$pkg};
+    print format_debfile($pkg)."\n" if $filelist{$pkg};
   }
   # Source package
-  print "$pkgdata{main}{name}-".format_version('main').".sdeb\n";
+  print format_sdebfile()."\n";
   exit 0;
 }
 
@@ -1277,14 +1276,11 @@ sub binpackage {
     }
 
     $script{pkg} = "%{__fakeroot} -- %{__dpkg_deb} -b %{buildroot}/$pkg ".
-        "%{_debdir}/$pkgdata{$pkg}{arch}/$pkgdata{$pkg}{name}_".
-            format_version($pkg)."_$pkgdata{$pkg}{arch}.deb\n";
-    # %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
+        "%{_debdir}/$pkgdata{$pkg}{arch}/".format_debfile($pkg)."\n";
 
     execute_script('pkg', 'package-creation', " for $pkgdata{$pkg}{name}");
 
-    $finalmessages .= 'Wrote binary package '.
-	"$pkgdata{$pkg}{name}_".format_version($pkg)."_$pkgdata{$pkg}{arch}.deb".
+    $finalmessages .= 'Wrote binary package '.format_debfile($pkg).
 	" in $topdir/DEBS/$pkgdata{$pkg}{arch}\n";
   } # subpackage loop
 
@@ -1297,7 +1293,7 @@ sub binpackage {
 # easily copy it as-is.
 # Not quite identical to RPM, but Good Enough (TM).
 sub srcpackage {
-  my $pkgsrcname = "$pkgdata{main}{name}-".format_version('main').'.sdeb';
+  my $pkgsrcname = format_sdebfile();
 
   # We'll definitely need this later, and *may* need it sooner.
   my $barespec = basename($specglobals{specfile});
@@ -1624,6 +1620,20 @@ sub format_version {
   return (defined $pkgdata{main}{epoch} ? "$pkgdata{main}{epoch}:" : '').
     "$pkgdata{$pkg}{version}-$pkgdata{main}{release}";
 } # end format_version()
+
+
+## format_debfile()
+# %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
+sub format_debfile {
+  my ($pkg) = @_;
+  return "$pkgdata{$pkg}{name}_".format_version($pkg)."_$pkgdata{$pkg}{arch}.deb";
+} # format_debfile()
+
+
+## format_sdebfile()
+sub format_sdebfile {
+  return "$pkgdata{main}{name}-".format_version('main').'.sdeb';
+} # format_sdebfile()
 
 
 ## splitreqs()
