@@ -1317,11 +1317,8 @@ sub srcpackage {
     # just remove that instead, but I think that might backfire.
     $paxcmd .= "SOURCES/$pkgdata{sources}{$source} " if $source != 0;
   }
-
   foreach my $patch (sort grep {/^patch/} keys %{$pkgdata{main}}) {
     $paxcmd .= "SOURCES/$pkgdata{main}{$patch} ";
-##buglet: need to deal with case where patches are listed as URLs?
-#  or other extended pathnames?  Silly !@$%^&!%%!%!! user!
   }
 
   # add the spec file and write to source package destination.
