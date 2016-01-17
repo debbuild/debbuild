@@ -1028,8 +1028,12 @@ sub process_filesline {
 # to add chown/chmod commands to the postinst instead.  Feh.
   $pkgdata{$subname}{post} .= "%{__chown} -Rh $owner $_\n" if $owner ne '-';
   $pkgdata{$subname}{post} .= "%{__chgrp} -Rh $group $_\n" if $group ne '-';
-  $pkgdata{$subname}{post} .= "if [ -d $_ ]; then %{__chmod} $defattr{dirmode} $_; fi\n" if $defattr{dirmode} ne '-';
-  $pkgdata{$subname}{post} .= "if [ -f $_ ]; then %{__chmod} $perms $_; fi\n" if $perms ne '-';
+  if (/\*/) { # should actually 'glob'; will assume type 'file'
+    $pkgdata{$subname}{post} .= "%{__chmod} $perms $_\n" if $perms ne '-';
+  } else { # single entry; either 'directory' or 'file'
+    $pkgdata{$subname}{post} .= "if [ -d $_ ]; then %{__chmod} $defattr{dirmode} $_; fi\n" if $defattr{dirmode} ne '-';
+    $pkgdata{$subname}{post} .= "if [ -f $_ ]; then %{__chmod} $perms $_; fi\n" if $perms ne '-';
+  }
 
 ##fixme
 # need hackery to assure only one filespec per %config.  NB:  "*" is one filespec.  <g>
