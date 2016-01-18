@@ -755,13 +755,12 @@ ENDIF: if (/^%endif/) {
       # %patch tags, may be just a bare shell script.
       if (s/^%autopatch//) {
         store_value('_default_patch_flags', /-v/ ? '--verbose' : '--silent');
-        my ($plevel) = /(-p\d+)/;
-        my $autopatch = "%patch $plevel -P";
+        my ($plevel) = /(-p\d+)/; $plevel //= '';
+        $_ = "%patch $plevel -P";
         foreach my $patch (sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b }
             grep {/^patch/} keys %{$pkgdata{main}}) {
-          $autopatch .= " $patch";
+          $_ .= " $patch";
         }
-        $_ = $autopatch;
       } # fall through with '%patch' line
       if (s/^%setup//) {
         $script{$stage} .= process_setup();
