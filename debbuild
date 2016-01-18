@@ -549,12 +549,13 @@ LINE: while (<$fh>) {
 # notes:  some of these are not *entirely* case-sensitive (%ifxxx), but most are.
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
-    if (/^%([a-z]+)/ and not grep { /$1/ } qw(attr bcond_with bcond_without
-	build changelog check clean config configure copyrightdata defattr
-	define description dir doc docdir dump else endif files ghost global
-	if ifarch ifnarch ifnos ifos include install make_build make_install
-	makeinstall package patch post postun pre prep preun readme setup
-	triggerin triggerpostun triggerun undefine verify verifyscript)) {
+    if (/^%([a-z]+)/ and not grep { /$1/ } qw(attr autopatch bcond_with
+	bcond_without build changelog check clean config configure
+	copyrightdata defattr define description dir doc docdir dump else
+	endif files ghost global if ifarch ifnarch ifnos ifos include
+	install make_build make_install makeinstall package patch post
+	postun pre prep preun readme setup triggerin triggerpostun
+	triggerun undefine verify verifyscript)) {
       die "Unknown tag '%$1' at line $. of $specfile\n";
     }
 
@@ -752,6 +753,9 @@ ENDIF: if (/^%endif/) {
     elsif ($stage eq 'prep') {
       # Actual handling for %prep section.  May have %setup macro, may include
       # %patch tags, may be just a bare shell script.
+      if (s/^%autopatch//) {
+        process_autopatch();
+      } # fall through with '%patch' line
       if (s/^%setup//) {
         $script{$stage} .= process_setup();
       } elsif (s/^%patch//) {
@@ -838,6 +842,18 @@ ENDIF: if (/^%endif/) {
 
   die "Unmatched %if at end of file. Missing %endif.\n" if @ifexpr;
 } # end parse_spec()
+
+
+## process_autopatch()
+# Convert the current '$_' line from '%autopatch' to '%patch' and fall
+# through to process_patch(). The '%autopatch' command only knows the
+# options '-v' ('verbose) and '-p[N]' ('path strip level').
+sub process_autopatch {
+  store_value('_default_patch_flags', /-v/ ? '--verbose' : '--silent');
+  my ($plevel) = /(-p\d+)/; $plevel //= '';
+  $_ = "%patch $plevel -P".join(' ', sort { $a =~ s/patch//; $b =~ s/patch//;
+    $a <=> $b } grep {/^patch/} keys %{$pkgdata{main}});
+} # process_autopatch()
 
 
 ## process_setup()
@@ -1312,8 +1328,9 @@ sub srcpackage {
     # just remove that instead, but I think that might backfire.
     $paxcmd .= "SOURCES/$pkgdata{sources}{$source} " if $source != 0;
   }
-  foreach my $patch (sort grep {/^patch/} keys %{$pkgdata{main}}) {
-    $paxcmd .= "SOURCES/$pkgdata{main}{$patch} ";
+  foreach my $patch (sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b }
+      grep {/^patch/} keys %{$pkgdata{main}}) {
+    $paxcmd .= qq(SOURCES/$pkgdata{main}{"patch$patch"} );
   }
 
   # add the spec file and write to source package destination.
