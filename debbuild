@@ -646,6 +646,19 @@ ENDIF: if (/^%endif/) {
       parse_spec(expandmacros($1),$stage,$subname,$scriptlet);
     }
 
+    # EXPERIMENTAL: %{perl:interpreter}
+    elsif (/^%{perl:(.+)}/) {
+      my $perl = expandmacros('%{_tmppath}')."/deb-tmp.perl.".int(rand(99998)+1);
+      do {
+        local *STDOUT;
+        if (open(STDOUT, '>', $perl)) {
+          eval($1);
+        }
+      };
+      parse_spec($perl,$stage,$subname,$scriptlet);
+      unlink $perl;
+    }
+
     # Print the active macro table
     elsif (/^%dump/) {
       for (sort keys %specglobals) {
