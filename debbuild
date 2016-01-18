@@ -757,8 +757,8 @@ ENDIF: if (/^%endif/) {
         store_value('_default_patch_flags', /-v/ ? '--verbose' : '--silent');
         my ($plevel) = /(-p\d+)/;
         my $autopatch = "%patch $plevel -P";
-        foreach my $patch (sort grep {/^patch/} keys %{$pkgdata{main}}) {
-          $patch =~ s/patch(\d+)/$1/;
+        foreach my $patch (sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b }
+            grep {/^patch/} keys %{$pkgdata{main}}) {
           $autopatch .= " $patch";
         }
         $_ = $autopatch;
@@ -1323,8 +1323,9 @@ sub srcpackage {
     # just remove that instead, but I think that might backfire.
     $paxcmd .= "SOURCES/$pkgdata{sources}{$source} " if $source != 0;
   }
-  foreach my $patch (sort grep {/^patch/} keys %{$pkgdata{main}}) {
-    $paxcmd .= "SOURCES/$pkgdata{main}{$patch} ";
+  foreach my $patch (sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b }
+      grep {/^patch/} keys %{$pkgdata{main}}) {
+    $paxcmd .= qq(SOURCES/$pkgdata{main}{"patch$patch"} );
   }
 
   # add the spec file and write to source package destination.
