@@ -855,11 +855,16 @@ ENDIF: if (/^%endif/) {
 sub process_autosetup {
   my ($stage) = @_;
   chomp; $_ = expandmacros($_); # permit '%{!?with_patches:-N}'
-  s/\s+(-p\d+)//; my $plevel = ($1 or '-p1'); # common default
-  my $verbose = s/\s-v//; $_ .= ($verbose ? '': ' -q');
-  my $noautopatch = s/\s-N//;
+  my ($other,$plevel,$verbose,$noautopatch) = ('',1); # common default
+  Getopt::Long::GetOptionsFromString($_,
+    'p=i' => \$plevel,
+    'v'   => \$verbose,
+    'N'   => \$noautopatch,
+    'c'   => sub { $other .= ' -c' },
+  );
+  $_ .= $other.($verbose ? '': ' -q');
   $script{$stage} .= process_setup(); # hmm, how to fall to '%setup'?
-  $_ = $noautopatch ? '' : "%autopatch $plevel".($verbose ? ' -v' : '');
+  $_ = $noautopatch ? '' : "%autopatch -p$plevel".($verbose ? ' -v' : '');
 } # process_autosetup()
 
 
@@ -870,7 +875,7 @@ sub process_autosetup {
 sub process_autopatch {
   store_value('_default_patch_flags', /-v/ ? '--verbose' : '--silent');
   my ($plevel) = /(-p\d+)/; $plevel //= '';
-  $_ = "%patch $plevel -P".join(' ', sort { $a =~ s/patch//; $b =~ s/patch//;
+  $_ = "%patch $plevel -P ".join(' ', sort { $a =~ s/patch//; $b =~ s/patch//;
     $a <=> $b } grep {/^patch/} keys %{$pkgdata{main}});
 } # process_autopatch()
 
