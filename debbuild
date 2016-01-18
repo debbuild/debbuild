@@ -845,17 +845,14 @@ ENDIF: if (/^%endif/) {
 
 
 ## process_autopatch()
-# Convert '$_' line from '%autopatch' to '%patch' and fall through to
-# process_patch(). This command only knows the options '-v' ('verbose) and
-# '-p[N]' ('path strip level').
+# Convert the current '$_' line from '%autopatch' to '%patch' and fall
+# through to process_patch(). The '%autopatch' command only knows the
+# options '-v' ('verbose) and '-p[N]' ('path strip level').
 sub process_autopatch {
   store_value('_default_patch_flags', /-v/ ? '--verbose' : '--silent');
   my ($plevel) = /(-p\d+)/; $plevel //= '';
-  $_ = "%patch $plevel -P";
-  foreach my $patch (sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b }
-      grep {/^patch/} keys %{$pkgdata{main}}) {
-    $_ .= " $patch";
-  }
+  $_ = "%patch $plevel -P".join(' ', sort { $a =~ s/patch//; $b =~ s/patch//;
+    $a <=> $b } grep {/^patch/} keys %{$pkgdata{main}});
 } # process_autopatch()
 
 
