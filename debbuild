@@ -753,6 +753,16 @@ ENDIF: if (/^%endif/) {
     elsif ($stage eq 'prep') {
       # Actual handling for %prep section.  May have %setup macro, may include
       # %patch tags, may be just a bare shell script.
+      if (s/^%autopatch//) {
+        store_value('_default_patch_flags', /-v/ ? '--verbose' : '--silent');
+        my ($plevel) = /(-p\d+)/;
+        my $autopatch = "%patch $plevel -P";
+        foreach my $patch (sort grep {/^patch/} keys %{$pkgdata{main}}) {
+          $patch =~ s/patch(\d+)/$1/;
+          $autopatch .= " $patch";
+        }
+        $_ = $autopatch;
+      } # fall through with '%patch' line
       if (s/^%setup//) {
         $script{$stage} .= process_setup();
       } elsif (s/^%patch//) {
