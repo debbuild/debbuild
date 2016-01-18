@@ -754,13 +754,7 @@ ENDIF: if (/^%endif/) {
       # Actual handling for %prep section.  May have %setup macro, may include
       # %patch tags, may be just a bare shell script.
       if (s/^%autopatch//) {
-        store_value('_default_patch_flags', /-v/ ? '--verbose' : '--silent');
-        my ($plevel) = /(-p\d+)/; $plevel //= '';
-        $_ = "%patch $plevel -P";
-        foreach my $patch (sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b }
-            grep {/^patch/} keys %{$pkgdata{main}}) {
-          $_ .= " $patch";
-        }
+        process_autopatch();
       } # fall through with '%patch' line
       if (s/^%setup//) {
         $script{$stage} .= process_setup();
@@ -848,6 +842,21 @@ ENDIF: if (/^%endif/) {
 
   die "Unmatched %if at end of file. Missing %endif.\n" if @ifexpr;
 } # end parse_spec()
+
+
+## process_autopatch()
+# Convert '$_' line from '%autopatch' to '%patch' and fall through to
+# process_patch(). This command only knows the options '-v' ('verbose) and
+# '-p[N]' ('path strip level').
+sub process_autopatch {
+  store_value('_default_patch_flags', /-v/ ? '--verbose' : '--silent');
+  my ($plevel) = /(-p\d+)/; $plevel //= '';
+  $_ = "%patch $plevel -P";
+  foreach my $patch (sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b }
+      grep {/^patch/} keys %{$pkgdata{main}}) {
+    $_ .= " $patch";
+  }
+} # process_autopatch()
 
 
 ## process_setup()
