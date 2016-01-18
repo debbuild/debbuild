@@ -549,12 +549,12 @@ LINE: while (<$fh>) {
 # notes:  some of these are not *entirely* case-sensitive (%ifxxx), but most are.
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
-    if (/^%([a-z]+)/ and not grep { /$1/ } qw(attr autopatch bcond_with
-	bcond_without build changelog check clean config configure
-	copyrightdata defattr define description dir doc docdir dump else
-	endif files ghost global if ifarch ifnarch ifnos ifos include
-	install make_build make_install makeinstall package patch post
-	postun pre prep preun readme setup triggerin triggerpostun
+    if (/^%([a-z]+)/ and not grep { /$1/ } qw(attr autopatch autosetup
+	bcond_with bcond_without build changelog check clean config
+	configure copyrightdata defattr define description dir doc docdir
+	dump else endif files ghost global if ifarch ifnarch ifnos ifos
+	include install make_build make_install makeinstall package patch
+	post postun pre prep preun readme setup triggerin triggerpostun
 	triggerun undefine verify verifyscript)) {
       die "Unknown tag '%$1' at line $. of $specfile\n";
     }
@@ -753,6 +753,10 @@ ENDIF: if (/^%endif/) {
     elsif ($stage eq 'prep') {
       # Actual handling for %prep section.  May have %setup macro, may include
       # %patch tags, may be just a bare shell script.
+      # %autosetup and %autopatch are supported, too.
+      if (s/^%autosetup//) {
+        process_autosetup($stage);
+      } # fall through, most likely to '%autopatch'
       if (s/^%autopatch//) {
         process_autopatch();
       } # fall through with '%patch' line
@@ -842,6 +846,21 @@ ENDIF: if (/^%endif/) {
 
   die "Unmatched %if at end of file. Missing %endif.\n" if @ifexpr;
 } # end parse_spec()
+
+
+## process_autosetup()
+# Convert the current '$_' line from '%autosetup' to '%setup' and call
+# 'process_setup()', then create an '%autopatch' line and fall through to
+# 'process_autopatch()' (which prepares for 'process_patch()').
+sub process_autosetup {
+  my ($stage) = @_;
+  chomp; $_ = expandmacros($_); # permit '%{!?with_patches:-N}'
+  s/\s+(-p\d+)//; my $plevel = ($1 or '-p1'); # common default
+  my $verbose = s/\s+-v//; $_ .= ($verbose ? '': ' -q');
+  my $noautopatch = s/\s+-N//;
+  $script{$stage} .= process_setup(); # hmm, how to fall to '%setup'?
+  $_ = $noautopatch ? '' : "%autopatch $plevel".($verbose ? ' -v' : '');
+} # process_autosetup()
 
 
 ## process_autopatch()
