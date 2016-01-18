@@ -1349,6 +1349,7 @@ sub srcpackage {
   }
   foreach my $patch (sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b }
       grep {/^patch/} keys %{$pkgdata{main}}) {
+    $patch =~ s/patch//;
     $paxcmd .= qq(SOURCES/$pkgdata{main}{"patch$patch"} );
   }
 
