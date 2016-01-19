@@ -24,7 +24,7 @@ Packager: Andreas Scherer <https://ascherer.github.io/>
 
 Requires: perl, build-essential, fakeroot, bash
 %if %{_vendor} == "debbuild"
-Recommends: patch, bzip2, xz-utils, pax
+Recommends: patch, bzip2, xz-utils, pax, unzip, zip
 Suggests: rpm, subversion
 %endif
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
@@ -46,8 +46,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 
 %build
 # Transfer $VERSION into the live system
-%{__sed} -e "s/@VERSION@/%{version}/" -i debbuild
-%{__sed} -e "s/@VERSION@/%{version}/" -i Makefile
+%{perl:for (qw(debbuild Makefile)) {print qq(%{__sed} -e "s/\@VERSION\@/%{version}/" -i $_\n)}}
 
 %install
 # Steps to install to a temporary location for packaging
