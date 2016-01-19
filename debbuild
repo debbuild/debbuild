@@ -45,7 +45,6 @@ my %defattr = (filemode => '-',
 		owner => '-',
 		group => '-',
 		dirmode => '-');
-my @ifexpr = (); # Nested %if..%else..%endif conditionals
 
 # Scriptlets
 my %script = ( prep => '',
@@ -524,6 +523,8 @@ sub parse_spec {
   open my $fh, $specfile or die "specfile ($specfile) barfed: $!\n";
 
   $pkgdata{main}{arch} //= expandmacros('%{_arch}');
+
+  my @ifexpr = (); # Nested %if..%else..%endif conditionals
 
 # Basic algorithm:
 # For each line
