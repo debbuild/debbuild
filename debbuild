@@ -1032,6 +1032,12 @@ sub process_patch {
       $patchscript .= "%{__cat} %{_sourcedir}/$pkgdata{main}{$pnum}";
     }
     $patchscript .= " | %{__patch} $patchopts\n\n";
+my $scm = expandmacros('%{__scm}');
+if ('%{__scm}' ne $scm) {
+warn "%apply_patch: %{uncompress:$pkgdata{main}{$pnum}} | %__scm_apply_$scm -m ... -p$plev\n";
+warn "%__scm_apply_git: %{__git} apply --index -p$plev -\\\n";
+warn "%__scm_apply_git: %{__git} commit -q -m ... --author '%{__scm_author}'\n";
+}
   }
   return $patchscript;
 } # end process_patch()
