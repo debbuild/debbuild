@@ -873,8 +873,14 @@ sub process_autosetup {
   my $verbose = s/\s+-v//; $_ .= ($verbose ? '': ' -q');
   my $noautopatch = s/\s+-N//;
   my $scm = $1 if s/\s+\-S\s+(\w+)//;
-warn "%autosetup: option '-S $scm' currently not suppoerted.\n" if $scm;
   $script{$stage} .= process_setup(); # hmm, how to fall to '%setup'?
+  if ($scm) {
+warn "%autosetup: option '-S $scm' currently not supported.\n" if $scm;
+    expandmacros("%global __scm $scm");
+warn q(%autosetup: %__scm is ').expandmacros('%__scm')."'\n";
+warn "%autosetup: %__scm_setup_$scm".($verbose ? '' : ' -q')."\n";
+    expandmacros("%{expand:%__scm_setup_$scm".($verbose ? '' : ' -q'));
+  }
   $_ = $noautopatch ? '' : "%autopatch $plevel".($verbose ? ' -v' : '');
 } # process_autosetup()
 
