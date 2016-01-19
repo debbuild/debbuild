@@ -869,9 +869,11 @@ ENDIF: if (/^%endif/) {
 sub process_autosetup {
   my ($stage) = @_;
   chomp; $_ = expandmacros($_); # permit '%{!?with_patches:-N}'
-  s/\s+(-p\d+)//; my $plevel = ($1 or '-p1'); # common default
+  my $plevel = $1 if s/\s+(-p\d+)//; $plevel //= '-p1'; # common default
   my $verbose = s/\s+-v//; $_ .= ($verbose ? '': ' -q');
   my $noautopatch = s/\s+-N//;
+  my $scm = $1 if s/\s+\-S\s+(\w+)//;
+warn "%autosetup: option '-S $scm' currently not suppoerted.\n" if $scm;
   $script{$stage} .= process_setup(); # hmm, how to fall to '%setup'?
   $_ = $noautopatch ? '' : "%autopatch $plevel".($verbose ? ' -v' : '');
 } # process_autosetup()
