@@ -895,6 +895,7 @@ sub process_autopatch {
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
   return $_ = '' unless @patches; # nice try!
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
+warn '%autopatch: %apply_patch -m '.expandmacros("%{basename:$pkgdata{main}{$patches[0]}}")." $plevel\n";
     $_ = "%$patches[0] $plevel";
   } else { # now you're talkin', brother!
     $_ = "%patch $plevel -P ".join(' ',
