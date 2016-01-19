@@ -883,8 +883,14 @@ sub process_autosetup {
 sub process_autopatch {
   store_value('_default_patch_flags', /-v/ ? '--verbose' : '--silent');
   my ($plevel) = /(-p\d+)/; $plevel //= '';
-  $_ = "%patch $plevel -P".join(' ', sort { $a =~ s/patch//; $b =~ s/patch//;
-    $a <=> $b } grep {/^patch/} keys %{$pkgdata{main}});
+  my @patches = grep {/^patch/} keys %{$pkgdata{main}};
+  return $_ = '' unless @patches; # nice try!
+  if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
+    $_ = "%$patches[0] $plevel";
+  } else { # now you're talkin', brother!
+    $_ = "%patch $plevel -P ".join(' ',
+      sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b } @patches);
+  }
 } # process_autopatch()
 
 
@@ -1360,14 +1366,16 @@ sub srcpackage {
     # just remove that instead, but I think that might backfire.
     $paxcmd .= "SOURCES/$pkgdata{sources}{$source} " if $source != 0;
   }
-  foreach my $patch (sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b }
-      grep {/^patch/} keys %{$pkgdata{main}}) {
-    $patch =~ s/patch//;
-    $paxcmd .= qq(SOURCES/$pkgdata{main}{"patch$patch"} );
+  my @patches = grep {/^patch/} keys %{$pkgdata{main}};
+  if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
+    $paxcmd .= qq(SOURCES/$pkgdata{main}{$patches[0]});
+  } else { # now you're talkin', brother!
+    $paxcmd .= join(' ', map { qq(SOURCES/$pkgdata{main}{"patch$_"}) }
+      sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b } @patches);
   }
 
   # add the spec file and write to source package destination.
-  $paxcmd .= "SPECS/$barespec -f %{_srcdebdir}/$pkgsrcname)";
+  $paxcmd .= " SPECS/$barespec -f %{_srcdebdir}/$pkgsrcname)";
 
   system(expandmacros($paxcmd)) == 0 and
   $finalmessages .= "Wrote source package $pkgsrcname in $topdir/SDEBS.\n";
