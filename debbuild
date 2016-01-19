@@ -895,9 +895,12 @@ sub process_autopatch {
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
   return $_ = '' unless @patches; # nice try!
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
-warn '%autopatch: %apply_patch -m '.expandmacros("%{basename:$pkgdata{main}{$patches[0]}}")." $plevel\n";
+warn '%autopatch: %apply_patch -m '.expandmacros("%{basename:$pkgdata{main}{$patches[0]}}")." $plevel\n" if $specglobals{'__scm'};
     $_ = "%$patches[0] $plevel";
   } else { # now you're talkin', brother!
+for my $patch (sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b } @patches) {
+warn '%autopatch: %apply_patch -m '.expandmacros(qq(%{basename:$pkgdata{main}{"patch$patch"}}))." $plevel\n" if $specglobals{'__scm'};
+}
     $_ = "%patch $plevel -P ".join(' ',
       sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b } @patches);
   }
