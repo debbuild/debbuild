@@ -350,7 +350,7 @@ sub load_config {
                         "$homedir/.debmacros") ) {
     open MACROS,$macros or next; # should we warn about missing macro files?
     while (<MACROS>) {
-      next unless my ($macro,$value) = /^%([a-z0-9_]+(?:\(\))?)\s+(.+)$/;
+      next unless my ($macro,$value) = /^%([a-z0-9_]+(?:\([\w:]*\))?)\s+(.+)$/;
       if ($value =~ s/\\$//) { # multi-line macro
         $value .= "\\\n" if $value ne '';
         while (<MACROS>) {
@@ -358,6 +358,7 @@ sub load_config {
           last unless /\\$/;
         }
       }
+      $macro =~ s/\(.*\)/()/;
       chomp( $specglobals{$macro} = $value );
     }
     close MACROS;
@@ -872,12 +873,12 @@ sub process_autosetup {
   my $plevel = $1 if s/\s+(-p\d+)//; $plevel //= '-p1'; # common default
   my $verbose = s/\s+-v//; $_ .= ($verbose ? '': ' -q');
   my $noautopatch = s/\s+-N//;
-  my $scm = $1 if s/\s+\-S\s+(\w+)//;
+  expandmacros("%global __scm $1") if s/\s+\-S\s+(\w+)//;
   $script{$stage} .= process_setup(); # hmm, how to fall to '%setup'?
-  if ($scm) {
-warn "%autosetup: option '-S $scm' currently not supported.\n" if $scm;
-    expandmacros("%global __scm $scm");
-warn q(%autosetup: %__scm is ').expandmacros('%__scm')."'\n";
+  if ('patch' ne $specglobals{__scm}) {
+my $scm = expandmacros('%__scm');
+warn "%autosetup: option '-S $scm' currently not supported.\n";
+warn "%autosetup: %__scm is '$scm'\n";
 warn "%autosetup: %__scm_setup_$scm".($verbose ? '' : ' -q')."\n";
     expandmacros("%{expand:%__scm_setup_$scm".($verbose ? '' : ' -q'));
   }
