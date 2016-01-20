@@ -895,11 +895,23 @@ sub process_autopatch {
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
   return $_ = '' unless @patches; # nice try!
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
-warn '%autopatch: %apply_patch -m '.expandmacros("%{basename:$pkgdata{main}{$patches[0]}}")." $plevel\n" if $specglobals{'__scm'};
+if ($specglobals{__scm}) {
+my $scm = expandmacros('%{__scm}');
+warn '%autopatch: %apply_patch -m '.expandmacros("%{basename:$pkgdata{main}{$patches[0]}}")." $plevel\n";
+warn "%apply_patch: %{uncompress:$pkgdata{main}{$patches[0]}} | %__scm_apply_$scm -m ... $plevel\n";
+warn "%__scm_apply_git: %{__git} apply --index $plevel -\\\n";
+warn "%__scm_apply_git: %{__git} commit -q -m ... --author '%{__scm_author}'\n";
+}
     $_ = "%$patches[0] $plevel";
   } else { # now you're talkin', brother!
+if ($specglobals{__scm}) {
+my $scm = expandmacros('%{__scm}');
 for my $patch (sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b } @patches) {
 warn '%autopatch: %apply_patch -m '.expandmacros(qq(%{basename:$pkgdata{main}{"patch$patch"}}))." $plevel\n" if $specglobals{'__scm'};
+warn qq(%apply_patch: %{uncompress:$pkgdata{main}{"patch$patch"} | %__scm_apply_$scm -m ... $plevel\n);
+warn "%__scm_apply_git: %{__git} apply --index $plevel -\\\n";
+warn "%__scm_apply_git: %{__git} commit -q -m ... --author '%{__scm_author}'\n";
+}
 }
     $_ = "%patch $plevel -P ".join(' ',
       sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b } @patches);
@@ -1023,12 +1035,6 @@ sub process_patch {
     $pnum = $pkgdata{main}{"patch$pnum"};
     $patchscript .= qq|($pnum):"\n|;
     $patchscript .= qq(%{uncompress:$pnum} | %{__patch} $patchopts\n\n);
-my $scm = expandmacros('%{__scm}');
-if ('%{__scm}' ne $scm) {
-warn "%apply_patch: %{uncompress:$pnum} | %__scm_apply_$scm -m ... -p$plev\n";
-warn "%__scm_apply_git: %{__git} apply --index -p$plev -\\\n";
-warn "%__scm_apply_git: %{__git} commit -q -m ... --author '%{__scm_author}'\n";
-}
   }
   return $patchscript;
 } # end process_patch()
