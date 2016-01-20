@@ -1022,15 +1022,7 @@ sub process_patch {
     $patchscript .= q(echo "Patch ).($pnum eq '' ? '' : "#$pnum ");
     $pnum = "patch$pnum";
     $patchscript .= qq|($pkgdata{main}{$pnum}):"\n|;
-    if ( $pkgdata{main}{$pnum} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
-      # Compressed patch.  You weirdo.
-      $patchscript .= decompress("%{_sourcedir}/$pkgdata{main}{$pnum}");
-    } elsif ( $pkgdata{main}{$pnum} =~ /\.zip$/ ) {
-      # .zip'ed patch.  *backs away slowly*
-      $patchscript .= "%{__unzip} -p %{_sourcedir}/$pkgdata{main}{$pnum}";
-    } else {
-      $patchscript .= "%{__cat} %{_sourcedir}/$pkgdata{main}{$pnum}";
-    }
+    $patchscript .= uncompress($pkgdata{main}{$pnum});
     $patchscript .= " | %{__patch} $patchopts\n\n";
 my $scm = expandmacros('%{__scm}');
 if ('%{__scm}' ne $scm) {
@@ -1665,6 +1657,21 @@ sub unpackcmd {
           ' | %{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f -' ).
       qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
 } # end unpackcmd()
+
+
+## uncompress()
+# Prepare the necessary commands for uncompressing the content of a patch file
+# for piping to 'patch' in the next step according to the file extension.
+sub uncompress {
+  my ($patchfile) = @_;
+  return (
+    # Compressed patch.  You weirdo.
+    $patchfile =~ /\.(?:Z|gz|bz2|xz)$/ ? decompress("%{_sourcedir}/$patchfile") :
+    # .zip'ed patch.  *backs away slowly*
+    $patchfile =~ /\.zip$/ ? "%{__unzip} -p %{_sourcedir}/$patchfile" :
+    # else uncompressed patch
+    "%{__cat} %{_sourcedir}/$patchfile" );
+} # uncompress()
 
 
 ## decompress()
