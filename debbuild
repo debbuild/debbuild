@@ -1020,13 +1020,12 @@ sub process_patch {
   my $patchscript;
   foreach my $pnum (@patchlist) {
     $patchscript .= q(echo "Patch ).($pnum eq '' ? '' : "#$pnum ");
-    $pnum = "patch$pnum";
-    $patchscript .= qq|($pkgdata{main}{$pnum}):"\n|;
-    $patchscript .= qq(%{uncompress:$pkgdata{main}{$pnum}});
-    $patchscript .= " | %{__patch} $patchopts\n\n";
+    $pnum = $pkgdata{main}{"patch$pnum"};
+    $patchscript .= qq|($pnum):"\n|;
+    $patchscript .= qq(%{uncompress:$pnum} | %{__patch} $patchopts\n\n);
 my $scm = expandmacros('%{__scm}');
 if ('%{__scm}' ne $scm) {
-warn "%apply_patch: %{uncompress:$pkgdata{main}{$pnum}} | %__scm_apply_$scm -m ... -p$plev\n";
+warn "%apply_patch: %{uncompress:$pnum} | %__scm_apply_$scm -m ... -p$plev\n";
 warn "%__scm_apply_git: %{__git} apply --index -p$plev -\\\n";
 warn "%__scm_apply_git: %{__git} commit -q -m ... --author '%{__scm_author}'\n";
 }
