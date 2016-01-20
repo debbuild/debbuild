@@ -875,12 +875,13 @@ sub process_autosetup {
   my $noautopatch = s/\s+-N//;
   expandmacros("%global __scm $1") if s/\s+\-S\s+(\w+)//;
   $script{$stage} .= process_setup(); # hmm, how to fall to '%setup'?
-  if ('patch' ne $specglobals{__scm}) {
-my $scm = expandmacros('%__scm');
+  my $scm = expandmacros('%__scm');
+  if ('patch' eq $scm) {
+    $script{$stage} .= expandmacros("%{expand:%__scm_setup_$scm}");
+    # TODO: process '-q' option with 'getopts()': ($verbose ? '' : ' -q')
+  } else {
 warn "%autosetup: option '-S $scm' currently not supported.\n";
 warn "%autosetup: %__scm is '$scm'\n";
-warn "%autosetup: %__scm_setup_$scm".($verbose ? '' : ' -q')."\n";
-    expandmacros("%{expand:%__scm_setup_$scm".($verbose ? '' : ' -q'));
   }
   $_ = $noautopatch ? '' : "%autopatch $plevel".($verbose ? ' -v' : '');
 } # process_autosetup()
