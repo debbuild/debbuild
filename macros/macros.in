@@ -326,5 +326,21 @@ package or when debugging this package.\
 	infodir=%{?buildroot:%{buildroot}}%{_infodir} \\\
   install
 
+#------------------------------------------------------------------------------
+# Macros for further automated spec %setup and patch application
+
+# default to plain patch
+%__scm patch
+# meh, figure something saner
+%__scm_username debbuild
+%__scm_usermail <debbuild>
+%__scm_author %{__scm_username} %{__scm_usermail}
+
+# Plain patch (-m is unused)
+%__scm_setup_patch(q) %{nil}
+%__scm_apply_patch(qp:m:)\
+%{__patch}
+# %{-p:-p%{-p*}} %{-q:-s}
+
 # \endverbatim
 #*/
