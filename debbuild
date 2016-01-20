@@ -1022,7 +1022,7 @@ sub process_patch {
     $patchscript .= q(echo "Patch ).($pnum eq '' ? '' : "#$pnum ");
     $pnum = "patch$pnum";
     $patchscript .= qq|($pkgdata{main}{$pnum}):"\n|;
-    $patchscript .= uncompress($pkgdata{main}{$pnum});
+    $patchscript .= qq(%{uncompress:$pkgdata{main}{$pnum}});
     $patchscript .= " | %{__patch} $patchopts\n\n";
 my $scm = expandmacros('%{__scm}');
 if ('%{__scm}' ne $scm) {
@@ -1604,6 +1604,8 @@ sub expandmacros {
     } elsif ($prefix =~ /suffix/) {
       my (undef,undef,$suffix) = fileparse(expandmacros($arg),qr/\.[^.]*/);
       s/%{$prefix:$arg}/$suffix/g;
+    } elsif ($prefix =~ /uncompress/) {
+      s/%{$prefix:$arg}/uncompress($arg)/eg;
     } elsif ($prefix =~ /getenv/) {
       # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
       s/%{$prefix:$arg}/$ENV{$arg}/g;
