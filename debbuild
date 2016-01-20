@@ -28,6 +28,7 @@ use Cwd qw(abs_path);	# for finding where files really are
 use Fcntl;		# for sysopen flags
 use File::Basename;
 use Getopt::Long qw(:config no_ignore_case bundling);
+use Getopt::Std;
 use Text::Balanced qw(extract_bracketed extract_multiple);
 
 my $version = '@VERSION@';
@@ -906,7 +907,7 @@ warn "%autosetup: %__scm is '$scm'\n";
 # options '-v' ('verbose) and '-p[N]' ('path strip level').
 sub process_autopatch {
   my ($stage) = @_;
-  my $verbose = /-v/ ? '--verbose' : '--silent';
+  my $verbose = /-v/;
   my ($plevel) = /(-p\d+)/; $plevel //= '';
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
   return $_ = '' unless @patches; # nice try!
@@ -914,7 +915,7 @@ sub process_autopatch {
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
     if ('patch' eq $scm) {
       $script{$stage} .= "%{uncompress:$pkgdata{main}{$patches[0]}} | ".
-        "%__scm_apply_$scm $verbose $plevel\n";
+        "%__scm_apply_$scm $plevel".($verbose ? '' : ' -q')."\n";
         # TODO: option handling for '%__scm_apply_patch(qp:m:)': '-m' missing
       $_ = ''; # done with '%autopatch' processing
     } else { # TODO: generic '%__scm_apply_%__scm' support
@@ -1669,6 +1670,11 @@ sub expandmacros {
   # Permit unsetting/deleting of stored values
   { no warnings; s/%undefine\s+(\S+)/store_value($1)/eg; }
 
+  # Option handling for '%macro(ino:pts)'
+  if (/%(\w+)/ and $macroopts{$1}) {
+    macrooptions($1);
+  }
+
   # Replace global macros
   s/%(\w+)/%{$1}/g;
   s/%{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
@@ -1759,6 +1765,25 @@ sub expandmacros {
 
   return $_;
 } # end expandmacros()
+
+
+## macrooptions()
+# Option handling for '%macro(ino:pts)'.
+# Note that 'getops()' normally works on '@ARGV', so we have to pull some
+# tricks. At this time, the '-m <Message>' must be a single '\w+'ord.
+sub macrooptions {
+  my ($macro) = @_;
+  my %options;
+  my ($args,$argv) = /$macro(\s+([\s\w-]+))/;
+  local @ARGV = split ' ',$argv;
+use Data::Dumper;
+print "<<<".Dumper($_,'***',$macro,'***',@ARGV,'***',%options);
+  getopts($macroopts{$macro},\%options);
+  my $expansion = $specglobals{$macro};
+print "===$expansion\n";
+  s/%$macro$args/$specglobals{$macro}/g;
+print ">>>".Dumper($_,'***',$macro,'***',@ARGV,'***',%options);
+}
 
 
 __END__
