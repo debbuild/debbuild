@@ -63,6 +63,7 @@ my $finalmessages = ''; # A place to stuff messages that I want printed at the *
 my %specglobals = ( # For %define's in specfile, among other things.
 	# this can be changed by the Vendor: header in the spec file
 	vendor => 'debbuild');
+my %macroopts; # For macro options
 
 # Package data
 # This is the form of $pkgdata{pkgname}{meta}
@@ -358,7 +359,7 @@ sub load_config {
           last unless /\\$/;
         }
       }
-      $macro =~ s/\(.+\)//; # TODO: save macro options for later usage
+      $macroopts{$macro} = $1 if $macro =~ s/\((.+)\)//;
       chomp( $specglobals{$macro} = $value );
     }
     close MACROS;
