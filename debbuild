@@ -879,7 +879,7 @@ sub splitreqs {
 sub process_autosetup {
   my ($stage) = @_;
   chomp; $_ = expandmacros($_); # permit '%{!?with_patches:-N}'
-  my $plevel = $1 if s/\s+(-p\d+)//; $plevel //= '-p1'; # common default
+  my $plevel = $1 if s/\s+(-p\d+)//; $plevel //= '';
   my $verbose = s/\s+-v//; $_ .= ($verbose ? '': ' -q');
   my $noautopatch = s/\s+-N//;
   expandmacros("%global __scm $1") if s/\s+\-S\s+(\w+)//;
