@@ -350,7 +350,7 @@ sub load_config {
                         "$homedir/.debmacros") ) {
     open MACROS,$macros or next; # should we warn about missing macro files?
     while (<MACROS>) {
-      next unless my ($macro,$value) = /^%([a-z0-9_]+(?:\([\w:]*\))?)\s+(.+)$/;
+      next unless my ($macro,$value) = /^%([a-z0-9_]+(?:\([\w:]*\))?)\s*(.+)$/;
       if ($value =~ s/\\$//) { # multi-line macro
         $value .= "\\\n" if $value ne '';
         while (<MACROS>) {
@@ -358,7 +358,7 @@ sub load_config {
           last unless /\\$/;
         }
       }
-      $macro =~ s/\(.*\)/()/;
+      $macro =~ s/\(.+\)//; # TODO: save macro options for later usage
       chomp( $specglobals{$macro} = $value );
     }
     close MACROS;
@@ -773,7 +773,7 @@ ENDIF: if (/^%endif/) {
         process_autosetup($stage);
       } # fall through, most likely to '%autopatch'
       if (s/^%autopatch//) {
-        process_autopatch();
+        process_autopatch($stage);
       } # fall through with '%patch' line
       if (s/^%setup//) {
         $script{$stage} .= process_setup();
@@ -892,31 +892,37 @@ warn "%autosetup: %__scm is '$scm'\n";
 # through to process_patch(). The '%autopatch' command only knows the
 # options '-v' ('verbose) and '-p[N]' ('path strip level').
 sub process_autopatch {
+  my ($stage) = @_;
   store_value('_default_patch_flags', /-v/ ? '--verbose' : '--silent');
   my ($plevel) = /(-p\d+)/; $plevel //= '';
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
   return $_ = '' unless @patches; # nice try!
+  my $scm = expandmacros('%{__scm}');
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
-if ($specglobals{__scm}) {
-my $scm = expandmacros('%{__scm}');
+    if ('patch' eq $scm) {
+      $script{$stage} .=
+        "%{uncompress:$pkgdata{main}{$patches[0]}} | %__scm_apply_$scm $plevel\n";
+        # TODO: option handling for '%__scm_apply_patch(qp:m:)': '-m' missing
+      $_ = ''; # done with patch processing
+    } else {
 warn '%autopatch: %apply_patch -m '.expandmacros("%{basename:$pkgdata{main}{$patches[0]}}")." $plevel\n";
 warn "%apply_patch: %{uncompress:$pkgdata{main}{$patches[0]}} | %__scm_apply_$scm -m ... $plevel\n";
 warn "%__scm_apply_git: %{__git} apply --index $plevel -\\\n";
 warn "%__scm_apply_git: %{__git} commit -q -m ... --author '%{__scm_author}'\n";
-}
-    $_ = "%$patches[0] $plevel";
+      $_ = "%$patches[0] $plevel";
+    }
   } else { # now you're talkin', brother!
-if ($specglobals{__scm}) {
-my $scm = expandmacros('%{__scm}');
-for my $patch (sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b } @patches) {
-warn '%autopatch: %apply_patch -m '.expandmacros(qq(%{basename:$pkgdata{main}{"patch$patch"}}))." $plevel\n" if $specglobals{'__scm'};
-warn qq(%apply_patch: %{uncompress:$pkgdata{main}{"patch$patch"} | %__scm_apply_$scm -m ... $plevel\n);
-warn "%__scm_apply_git: %{__git} apply --index $plevel -\\\n";
-warn "%__scm_apply_git: %{__git} commit -q -m ... --author '%{__scm_author}'\n";
-}
-}
-    $_ = "%patch $plevel -P ".join(' ',
-      sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b } @patches);
+    if ('patch' eq $scm) {
+      for my $patch (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
+        $script{$stage} .= qq(%{uncompress:$pkgdata{main}{"patch$patch"}} ).
+          qq(| %__scm_apply_$scm $plevel\n);
+        # TODO: option handling for '%__scm_apply_patch(qp:m:)': '-m' missing
+      }
+      $_ = ''; # done with patch processing
+    } else { # TODO: generic '%__scm_apply_patch' support
+      $_ = "%patch $plevel -P ".join(' ',
+        sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b } @patches);
+    }
   }
 } # process_autopatch()
 
