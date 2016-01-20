@@ -864,6 +864,14 @@ ENDIF: if (/^%endif/) {
 } # end parse_spec()
 
 
+## splitreqs()
+# Split string at 'comma' and return list of trimmed entries
+sub splitreqs {
+  my ($reqs) = @_;
+  return map { /^\s*(.+)\s*$/ } split /,/, expandmacros($reqs);
+}
+
+
 ## process_autosetup()
 # Convert the current '$_' line from '%autosetup' to '%setup' and call
 # 'process_setup()', then create an '%autopatch' line and fall through to
@@ -907,7 +915,7 @@ sub process_autopatch {
         "%__scm_apply_$scm $verbose $plevel\n";
         # TODO: option handling for '%__scm_apply_patch(qp:m:)': '-m' missing
       $_ = ''; # done with '%autopatch' processing
-    } else { # TODO: generic '%__scm_apply_patch' support
+    } else { # TODO: generic '%__scm_apply_%__scm' support
 warn '%autopatch: %apply_patch -m '.expandmacros("%{basename:$pkgdata{main}{$patches[0]}}")." $plevel\n";
 warn "%apply_patch: %{uncompress:$pkgdata{main}{$patches[0]}} | %__scm_apply_$scm -m ... $plevel\n";
 warn "%__scm_apply_git: %{__git} apply --index $plevel -\\\n";
@@ -923,7 +931,7 @@ warn "%__scm_apply_git: %{__git} commit -q -m ... --author '%{__scm_author}'\n";
         # TODO: option handling for '%__scm_apply_patch(qp:m:)': '-m' missing
       }
       $_ = ''; # done with '%autopatch' processing
-    } else { # TODO: generic '%__scm_apply_patch' support
+    } else { # TODO: generic '%__scm_apply_%__scm' support
       store_value('_default_patch_flags', $verbose ? '--verbose' : '--silent');
       $_ = "%patch $plevel -P ".join(' ',
         sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b } @patches);
@@ -994,6 +1002,37 @@ sub process_setup {
 } # end process_setup()
 
 
+## unpackcmd()
+# Prepare the necessary commands for uncompressing and extracting the content
+# of the source drop according to the file extension.
+sub unpackcmd {
+   my ($sourcedrop,$quietunpack) = @_;
+   return (
+      $sourcedrop =~ /\.zip$/ ? # .zip files are not really tarballs
+         '%{__unzip}'.( $quietunpack ? ' -qq ' : ' ' ).
+         "'%{_sourcedir}/$sourcedrop'" :
+      $sourcedrop =~ /\.tar$/ ? # plain .tar files don't need to be uncompressed
+         '%{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f '.
+         "'%{_sourcedir}/$sourcedrop'" :
+      decompress("%{_sourcedir}/$sourcedrop").
+          ' | %{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f -' ).
+      qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+} # end unpackcmd()
+
+
+## decompress()
+# Determine the suitable decompressor according to the file extension.
+sub decompress {
+   my ($filename) = @_;
+   return (
+      $filename =~ /\.(?:tgz|(?:gz|Z))$/ ? '%{__gzip}'  :
+      $filename =~ /\.bz2$/              ? '%{__bzip2}' :
+      $filename =~ /\.xz$/               ? '%{__xz}'    :
+      die("Can't handle unknown file type '$filename'.\n") ).
+      " -dc '$filename'";
+} # end decompress()
+
+
 ## process_patch()
 sub process_patch {
   # Things rpmbuild Does
@@ -1051,6 +1090,21 @@ sub process_patch {
   }
   return $patchscript;
 } # end process_patch()
+
+
+## uncompress()
+# Prepare the necessary commands for uncompressing the content of a patch file
+# for piping to 'patch' in the next step according to the file extension.
+sub uncompress {
+  my ($patchfile) = @_;
+  return (
+    # Compressed patch.  You weirdo.
+    $patchfile =~ /\.(?:Z|gz|bz2|xz)$/ ? decompress("%{_sourcedir}/$patchfile") :
+    # .zip'ed patch.  *backs away slowly*
+    $patchfile =~ /\.zip$/ ? "%{__unzip} -p %{_sourcedir}/$patchfile" :
+    # else uncompressed patch
+    "%{__cat} %{_sourcedir}/$patchfile" );
+} # uncompress()
 
 
 ## process_filesline()
@@ -1365,6 +1419,50 @@ sub binpackage {
 } # end binpackage()
 
 
+## format_version()
+# Glue together epoch/version/release in a common format
+sub format_version {
+  my ($pkg) = @_;
+  return (defined $pkgdata{main}{epoch} ? "$pkgdata{main}{epoch}:" : '').
+    "$pkgdata{$pkg}{version}-$pkgdata{main}{release}";
+} # end format_version()
+
+
+## format_debfile()
+# %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
+sub format_debfile {
+  my ($pkg) = @_;
+  return "$pkgdata{$pkg}{name}_".format_version($pkg)."_$pkgdata{$pkg}{arch}.deb";
+} # format_debfile()
+
+
+## format_sdebfile()
+sub format_sdebfile {
+  return "$pkgdata{main}{name}-".format_version('main').'.sdeb';
+} # format_sdebfile()
+
+
+## splitver()
+# Split un/versioned requirement
+sub splitver {
+  my ($req) = @_;
+  # from rpmbuild error message
+  # Dependency tokens must begin with alpha-numeric, '_' or '/'
+##fixme:  check for suitable whitespace around $rel
+  # We have two classes of requirements - versioned and unversioned.
+  $req .= ' >= 0' unless $req =~ /[><=]/; # unversioned buildreq
+  # Hack up the perl(Class::SubClass) deps into something dpkg can understand.
+  # May or may not be versioned.
+  # We do this first so the version rewriter can do its magic next.
+  if (my ($mod,$ver) = $req =~ /^perl\(([\w:-]+)\)\s*([><=]+.+)?/) {
+    ($req = lc "lib$mod-perl") =~ s/::/-/g;
+     $req .= $ver if $ver;
+  }
+  # Pick up the details of versioned buildreqs
+  return $req =~ /([\w.-]+)\s*([><=]+)\s*([\w:.-]+)/;
+}
+
+
 ## srcpackage()
 # Builds a .src.deb source package.  Note that Debian's idea of
 # a "source package" is seriously flawed IMO, because you can't
@@ -1659,104 +1757,6 @@ sub expandmacros {
 
   return $_;
 } # end expandmacros()
-
-
-## unpackcmd()
-# Prepare the necessary commands for uncompressing and extracting the content
-# of the source drop according to the file extension.
-sub unpackcmd {
-   my ($sourcedrop,$quietunpack) = @_;
-   return (
-      $sourcedrop =~ /\.zip$/ ? # .zip files are not really tarballs
-         '%{__unzip}'.( $quietunpack ? ' -qq ' : ' ' ).
-         "'%{_sourcedir}/$sourcedrop'" :
-      $sourcedrop =~ /\.tar$/ ? # plain .tar files don't need to be uncompressed
-         '%{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f '.
-         "'%{_sourcedir}/$sourcedrop'" :
-      decompress("%{_sourcedir}/$sourcedrop").
-          ' | %{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f -' ).
-      qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
-} # end unpackcmd()
-
-
-## uncompress()
-# Prepare the necessary commands for uncompressing the content of a patch file
-# for piping to 'patch' in the next step according to the file extension.
-sub uncompress {
-  my ($patchfile) = @_;
-  return (
-    # Compressed patch.  You weirdo.
-    $patchfile =~ /\.(?:Z|gz|bz2|xz)$/ ? decompress("%{_sourcedir}/$patchfile") :
-    # .zip'ed patch.  *backs away slowly*
-    $patchfile =~ /\.zip$/ ? "%{__unzip} -p %{_sourcedir}/$patchfile" :
-    # else uncompressed patch
-    "%{__cat} %{_sourcedir}/$patchfile" );
-} # uncompress()
-
-
-## decompress()
-# Determine the suitable decompressor according to the file extension.
-sub decompress {
-   my ($filename) = @_;
-   return (
-      $filename =~ /\.(?:tgz|(?:gz|Z))$/ ? '%{__gzip}'  :
-      $filename =~ /\.bz2$/              ? '%{__bzip2}' :
-      $filename =~ /\.xz$/               ? '%{__xz}'    :
-      die("Can't handle unknown file type '$filename'.\n") ).
-      " -dc '$filename'";
-} # end decompress()
-
-
-## format_version()
-# Glue together epoch/version/release in a common format
-sub format_version {
-  my ($pkg) = @_;
-  return (defined $pkgdata{main}{epoch} ? "$pkgdata{main}{epoch}:" : '').
-    "$pkgdata{$pkg}{version}-$pkgdata{main}{release}";
-} # end format_version()
-
-
-## format_debfile()
-# %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
-sub format_debfile {
-  my ($pkg) = @_;
-  return "$pkgdata{$pkg}{name}_".format_version($pkg)."_$pkgdata{$pkg}{arch}.deb";
-} # format_debfile()
-
-
-## format_sdebfile()
-sub format_sdebfile {
-  return "$pkgdata{main}{name}-".format_version('main').'.sdeb';
-} # format_sdebfile()
-
-
-## splitreqs()
-# Split string at 'comma' and return list of trimmed entries
-sub splitreqs {
-  my ($reqs) = @_;
-  return map { /^\s*(.+)\s*$/ } split /,/, expandmacros($reqs);
-}
-
-
-## splitver()
-# Split un/versioned requirement
-sub splitver {
-  my ($req) = @_;
-  # from rpmbuild error message
-  # Dependency tokens must begin with alpha-numeric, '_' or '/'
-##fixme:  check for suitable whitespace around $rel
-  # We have two classes of requirements - versioned and unversioned.
-  $req .= ' >= 0' unless $req =~ /[><=]/; # unversioned buildreq
-  # Hack up the perl(Class::SubClass) deps into something dpkg can understand.
-  # May or may not be versioned.
-  # We do this first so the version rewriter can do its magic next.
-  if (my ($mod,$ver) = $req =~ /^perl\(([\w:-]+)\)\s*([><=]+.+)?/) {
-    ($req = lc "lib$mod-perl") =~ s/::/-/g;
-     $req .= $ver if $ver;
-  }
-  # Pick up the details of versioned buildreqs
-  return $req =~ /([\w.-]+)\s*([><=]+)\s*([\w:.-]+)/;
-}
 
 
 __END__
