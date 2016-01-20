@@ -893,33 +893,35 @@ warn "%autosetup: %__scm is '$scm'\n";
 # options '-v' ('verbose) and '-p[N]' ('path strip level').
 sub process_autopatch {
   my ($stage) = @_;
-  store_value('_default_patch_flags', /-v/ ? '--verbose' : '--silent');
+  my $verbose = /-v/ ? '--verbose' : '--silent';
   my ($plevel) = /(-p\d+)/; $plevel //= '';
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
   return $_ = '' unless @patches; # nice try!
   my $scm = expandmacros('%{__scm}');
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
     if ('patch' eq $scm) {
-      $script{$stage} .=
-        "%{uncompress:$pkgdata{main}{$patches[0]}} | %__scm_apply_$scm $plevel\n";
+      $script{$stage} .= "%{uncompress:$pkgdata{main}{$patches[0]}} | ".
+        "%__scm_apply_$scm $verbose $plevel\n";
         # TODO: option handling for '%__scm_apply_patch(qp:m:)': '-m' missing
       $_ = ''; # done with patch processing
-    } else {
+    } else { # TODO: generic '%__scm_apply_patch' support
 warn '%autopatch: %apply_patch -m '.expandmacros("%{basename:$pkgdata{main}{$patches[0]}}")." $plevel\n";
 warn "%apply_patch: %{uncompress:$pkgdata{main}{$patches[0]}} | %__scm_apply_$scm -m ... $plevel\n";
 warn "%__scm_apply_git: %{__git} apply --index $plevel -\\\n";
 warn "%__scm_apply_git: %{__git} commit -q -m ... --author '%{__scm_author}'\n";
+      store_value('_default_patch_flags', $verbose ? '--verbose' : '--silent');
       $_ = "%$patches[0] $plevel";
     }
   } else { # now you're talkin', brother!
     if ('patch' eq $scm) {
       for my $patch (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
-        $script{$stage} .= qq(%{uncompress:$pkgdata{main}{"patch$patch"}} ).
-          qq(| %__scm_apply_$scm $plevel\n);
+        $script{$stage} .= qq(%{uncompress:$pkgdata{main}{"patch$patch"}} | ).
+          "%__scm_apply_$scm $verbose $plevel\n";
         # TODO: option handling for '%__scm_apply_patch(qp:m:)': '-m' missing
       }
       $_ = ''; # done with patch processing
     } else { # TODO: generic '%__scm_apply_patch' support
+      store_value('_default_patch_flags', $verbose ? '--verbose' : '--silent');
       $_ = "%patch $plevel -P ".join(' ',
         sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b } @patches);
     }
