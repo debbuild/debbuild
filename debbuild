@@ -915,13 +915,13 @@ sub process_autopatch {
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
     if ('patch' eq $scm) {
       my $patchfile = $pkgdata{main}{$patches[0]};
-      $script{$stage} .= "%{uncompress:$patchfile} | ".
-        handle_macro_options("%__scm_apply_$scm $plevel -m ".
-          expandmacros("%{basename:$patchfile}").($verbose ? '' : ' -q'))."\n";
+      $script{$stage} .= "%{uncompress:$patchfile} | ".handle_macro_options(
+        "%__scm_apply_$scm".($verbose ? ' ' : ' -q ').$plevel.
+          ' -m '.expandmacros("%{basename:$patchfile}"))."\n";
       $_ = ''; # done with '%autopatch' processing
     } else { # TODO: generic '%__scm_apply_%__scm' support
-warn '%autopatch: %apply_patch -m '.expandmacros("%{basename:$pkgdata{main}{$patches[0]}}")." $plevel\n";
-warn "%apply_patch: %{uncompress:$pkgdata{main}{$patches[0]}} | %__scm_apply_$scm -m ... $plevel\n";
+warn '%autopatch: %apply_patch -m '.expandmacros("%{basename:$pkgdata{main}{$patches[0]}}")." -q $plevel\n";
+warn "%apply_patch: %{uncompress:$pkgdata{main}{$patches[0]}} | %__scm_apply_$scm -q $plevel -m ...\n";
 warn "%__scm_apply_git: %{__git} apply --index $plevel -\\\n";
 warn "%__scm_apply_git: %{__git} commit -q -m ... --author '%{__scm_author}'\n";
       store_value('_default_patch_flags', $verbose ? '--verbose' : '--silent');
@@ -931,9 +931,9 @@ warn "%__scm_apply_git: %{__git} commit -q -m ... --author '%{__scm_author}'\n";
     if ('patch' eq $scm) {
       for my $patch (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
         my $patchfile = $pkgdata{main}{"patch$patch"};
-        $script{$stage} .= "%{uncompress:$patchfile} | ".
-          handle_macro_options("%__scm_apply_$scm $plevel -m ".
-            expandmacros("%{basename:$patchfile}").($verbose ? '' : ' -q'))."\n";
+        $script{$stage} .= "%{uncompress:$patchfile} | ".handle_macro_options(
+          "%__scm_apply_$scm".($verbose ? ' ' : ' -q ').$plevel.
+            ' -m '.expandmacros("%{basename:$patchfile}"))."\n";
       }
       $_ = ''; # done with '%autopatch' processing
     } else { # TODO: generic '%__scm_apply_%__scm' support
@@ -1774,11 +1774,11 @@ sub handle_macro_options {
   my ($macro,$argv) = $inline =~ /%(\w+)\s+([\s\w.-]+)/;
   local @ARGV = split ' ',$argv;
 use Data::Dumper;
-print "<<<".Dumper($inline,'***',$macro,'***',@ARGV,'***',%options);
+print "<<<".Dumper($inline,'***',@ARGV,'***',%options);
   getopts($macroopts{$macro},\%options);
   my $expansion = $specglobals{$macro};
 print "===$expansion\n";
-print ">>>".Dumper($expansion,'***',$macro,'***',@ARGV,'***',%options);
+print ">>>".Dumper($expansion,'***',@ARGV,'***',%options);
   return $expansion;
 }
 
