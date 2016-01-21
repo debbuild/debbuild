@@ -881,12 +881,14 @@ sub process_autosetup {
   chomp; $_ = expandmacros($_); # permit '%{!?with_patches:-N}'
   my $plevel = $1 if s/\s+(-p\d+)//; $plevel //= '';
   my $verbose = s/\s+-v//; $_ .= ($verbose ? '': ' -q');
-  my $noautopatch = s/\s+-N//;
-  expandmacros("%global __scm $1") if s/\s+\-S\s+(\w+)//;
+  my $noautopatch = s/\s+-N//; # Eat '-N', which is unknown to %setup
+  expandmacros("%global __scm $1") if s/\s+\-S\s+(\w+)//; # dito '-S'
+  # Generic %setup invocation
   $script{$stage} .= process_setup(); # hmm, how to fall to '%setup'?
+  # Do SCM stuff
   my $scm = expandmacros('%__scm');
   if ('patch' eq $scm) {
-    $script{$stage} .= expandmacros("%{expand:%__scm_setup_$scm}");
+    $script{$stage} .= expandmacros("%__scm_setup_$scm");
     # TODO: process '-q' option with 'getopts()': ($verbose ? '' : ' -q')
   } else {
 warn "%autosetup: option '-S $scm' currently not supported.\n";
