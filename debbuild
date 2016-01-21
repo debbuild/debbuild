@@ -1779,7 +1779,12 @@ print "<<<".Dumper($inline,'***',@ARGV,'***',%options);
   my $expansion = $specglobals{$macro};
 print "===$expansion\n";
   my ($output) = split ' ',$expansion;
-print ">>>".Dumper($output,'***',@ARGV,'***',%options);
+print ">>>".Dumper($output,'***',@ARGV,'***',%options,$expansion);
+  while (my ($prefix,$arg) = map { /{([\w-]+):(.+)}/ }
+    extract_multiple($expansion, [ sub { extract_bracketed($_[0],'{}') } ]) ) {
+    print "XXX$prefix:$arg\n";
+    $expansion =~ s/%{$prefix:$arg}//g;
+  }
   return $output;
 }
 
