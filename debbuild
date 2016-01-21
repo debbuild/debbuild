@@ -1778,8 +1778,9 @@ print "<<<".Dumper($inline,'***',@ARGV,'***',%options);
   getopts($macroopts{$macro},\%options);
   my $expansion = $specglobals{$macro};
 print "===$expansion\n";
-print ">>>".Dumper($expansion,'***',@ARGV,'***',%options);
-  return $expansion;
+  my ($output) = split ' ',$expansion;
+print ">>>".Dumper($output,'***',@ARGV,'***',%options);
+  return $output;
 }
 
 
