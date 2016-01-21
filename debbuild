@@ -888,12 +888,12 @@ sub process_autosetup {
   $script{$stage} .= process_setup(); # hmm, how to fall to '%setup'?
   # Do SCM stuff
   my $scm = expandmacros('%__scm');
-  if ('patch' eq $scm) {
-    $script{$stage} .= handle_macro_options(
-      "%__scm_setup_$scm".($verbose ? '' : ' -q'));
-  } else {
+  $script{$stage} .= handle_macro_options(
+    "%__scm_setup_$scm".($verbose ? '' : ' -q'));
+  if ('patch' ne $scm) {
 warn "%autosetup: option '-S $scm' currently not supported.\n";
 warn "%autosetup: %__scm is '$scm'\n";
+warn "%autosetup: Expect weird things to happen ... NOW!\n";
   }
   $_ = $noautopatch ? '' : "%autopatch $plevel".($verbose ? ' -v' : '');
 } # process_autosetup()
