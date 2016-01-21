@@ -889,8 +889,8 @@ sub process_autosetup {
   # Do SCM stuff
   my $scm = expandmacros('%__scm');
   if ('patch' eq $scm) {
-    $script{$stage} .= expandmacros("%__scm_setup_$scm");
-    # TODO: process '-q' option with 'getopts()': ($verbose ? '' : ' -q')
+    $script{$stage} .= handle_macro_options(
+      "%__scm_setup_$scm".($verbose ? '' : ' -q'));
   } else {
 warn "%autosetup: option '-S $scm' currently not supported.\n";
 warn "%autosetup: %__scm is '$scm'\n";
@@ -914,9 +914,10 @@ sub process_autopatch {
   my $scm = expandmacros('%{__scm}');
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
     if ('patch' eq $scm) {
-      $script{$stage} .= "%{uncompress:$pkgdata{main}{$patches[0]}} | ".
-        "%__scm_apply_$scm $plevel".($verbose ? '' : ' -q')."\n";
-        # TODO: option handling for '%__scm_apply_patch(qp:m:)': '-m' missing
+      my $patchfile = $pkgdata{main}{$patches[0]};
+      $script{$stage} .= "%{uncompress:$patchfile} | ".
+        handle_macro_options("%__scm_apply_$scm $plevel -m ".
+          expandmacros("%{basename:$patchfile}").($verbose ? '' : ' -q'))."\n";
       $_ = ''; # done with '%autopatch' processing
     } else { # TODO: generic '%__scm_apply_%__scm' support
 warn '%autopatch: %apply_patch -m '.expandmacros("%{basename:$pkgdata{main}{$patches[0]}}")." $plevel\n";
@@ -929,9 +930,10 @@ warn "%__scm_apply_git: %{__git} commit -q -m ... --author '%{__scm_author}'\n";
   } else { # now you're talkin', brother!
     if ('patch' eq $scm) {
       for my $patch (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
-        $script{$stage} .= qq(%{uncompress:$pkgdata{main}{"patch$patch"}} | ).
-          "%__scm_apply_$scm $verbose $plevel\n";
-        # TODO: option handling for '%__scm_apply_patch(qp:m:)': '-m' missing
+        my $patchfile = $pkgdata{main}{"patch$patch"};
+        $script{$stage} .= "%{uncompress:$patchfile} | ".
+          handle_macro_options("%__scm_apply_$scm $plevel -m ".
+            expandmacros("%{basename:$patchfile}").($verbose ? '' : ' -q'))."\n";
       }
       $_ = ''; # done with '%autopatch' processing
     } else { # TODO: generic '%__scm_apply_%__scm' support
@@ -1670,11 +1672,6 @@ sub expandmacros {
   # Permit unsetting/deleting of stored values
   { no warnings; s/%undefine\s+(\S+)/store_value($1)/eg; }
 
-  # Option handling for '%macro(ino:pts)'
-  if (/%(\w+)/ and $macroopts{$1}) {
-    macrooptions($1);
-  }
-
   # Replace global macros
   s/%(\w+)/%{$1}/g;
   s/%{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
@@ -1767,22 +1764,22 @@ sub expandmacros {
 } # end expandmacros()
 
 
-## macrooptions()
+## handle_macro_options()
 # Option handling for '%macro(ino:pts)'.
 # Note that 'getops()' normally works on '@ARGV', so we have to pull some
 # tricks. At this time, the '-m <Message>' must be a single '\w+'ord.
-sub macrooptions {
-  my ($macro) = @_;
+sub handle_macro_options {
+  my ($inline) = @_;
   my %options;
-  my ($args,$argv) = /$macro(\s+([\s\w-]+))/;
+  my ($macro,$argv) = $inline =~ /%(\w+)\s+([\s\w.-]+)/;
   local @ARGV = split ' ',$argv;
 use Data::Dumper;
-print "<<<".Dumper($_,'***',$macro,'***',@ARGV,'***',%options);
+print "<<<".Dumper($inline,'***',$macro,'***',@ARGV,'***',%options);
   getopts($macroopts{$macro},\%options);
   my $expansion = $specglobals{$macro};
 print "===$expansion\n";
-  s/%$macro$args/$specglobals{$macro}/g;
-print ">>>".Dumper($_,'***',$macro,'***',@ARGV,'***',%options);
+print ">>>".Dumper($expansion,'***',$macro,'***',@ARGV,'***',%options);
+  return $expansion;
 }
 
 
