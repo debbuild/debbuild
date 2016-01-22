@@ -1682,7 +1682,7 @@ sub expandmacros {
   # unescape multi-line macros
   s/\\"/"/g;
   s/\\\\/\\/g;
-  s/(\S)\\+\n/$1\n/g;
+  s/(\S)\s*\\+\n/$1\n/g;
 
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
   while (my ($prefix,$arg) = map { /{(\w+)\s+(\w+)}/ }
@@ -1752,8 +1752,8 @@ sub expandmacros {
 # tricks. At this time, the '-m <Message>' must be a single '\w+'ord.
 sub handle_macro_options {
   my ($inline) = @_;
-  my ($macro,$argv) = $inline =~ /%(\w+)\s+([\s\w.-]+)/;
-  local @ARGV = split ' ',$argv;
+  my ($macro,$argv) = $inline =~ /%(\w+)(?:\s+(.+))?/;
+  local @ARGV = split ' ',$argv if $argv;
   my %options; # store result of 'getopts()'
   getopts($macroopts{$macro},\%options);
   (local $_ = $specglobals{$macro}) =~ s/\"/\\"/g;
