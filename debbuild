@@ -891,7 +891,7 @@ sub process_autosetup {
   die "%autosetup: option '-S $scm' currently not supported at line $..\n"
     unless $specglobals{"__scm_setup_$scm"};
   $script{$stage} .= handle_macro_options(
-    "%__scm_setup_$scm".($verbose ? '' : ' -q'));
+    "%__scm_setup_$scm".($verbose ? '' : ' -q'))."\n";
   $_ = $noautopatch ? '' : "%autopatch $plevel".($verbose ? ' -v' : '');
 } # process_autosetup()
 

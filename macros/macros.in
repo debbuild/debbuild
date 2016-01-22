@@ -346,8 +346,7 @@ package or when debugging this package.\
 %__scm_setup_hg(q)\
 %{__hg} init %{-q} .\
 %{__hg} add %{-q} .\
-%{__hg} commit %{-q} --user "%{__scm_author}" -m "%{name}-%{version} base"\
-%{nil}
+%{__hg} commit %{-q} --user "%{__scm_author}" -m "%{name}-%{version} base"
 
 %__scm_apply_hg(qp:m:)\
 %{__hg} import - %{-p:-p%{-p*}} %{-q} -m %{-m*} --user "%{__scm_author}"
@@ -359,8 +358,7 @@ package or when debugging this package.\
 %{__git} config user.name "%{__scm_username}"\
 %{__git} config user.email "%{__scm_usermail}"\
 %{__git} add .\
-%{__git} commit %{-q} -a --author "%{__scm_author}" -m "%{name}-%{version} base"\
-%{nil}
+%{__git} commit %{-q} -a --author "%{__scm_author}" -m "%{name}-%{version} base"
 
 %__scm_apply_git(qp:m:)\
 %{__git} apply --index %{-p:-p%{-p*}} -\
@@ -372,8 +370,7 @@ package or when debugging this package.\
 %{__git} config user.name "%{__scm_username}"\
 %{__git} config user.email "%{__scm_usermail}"\
 %{__git} add .\
-%{__git} commit %{-q} -a --author "%{__scm_author}" -m "%{name}-%{version} base"\
-%{nil}
+%{__git} commit %{-q} -a --author "%{__scm_author}" -m "%{name}-%{version} base"
 
 %__scm_apply_git_am(qp:m:)\
 %{__git} am %{-q} %{-p:-p%{-p*}}
@@ -390,8 +387,7 @@ package or when debugging this package.\
 %{__bzr} init %{-q}\
 %{__bzr} whoami --branch "%{__scm_author}"\
 %{__bzr} add .\
-%{__bzr} commit %{-q} -m "%{name}-%{version} base"\
-%{nil}
+%{__bzr} commit %{-q} -m "%{name}-%{version} base"
 
 # bzr doesn't seem to have its own command to apply patches?
 %__scm_apply_bzr(qp:m:)\
