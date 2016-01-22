@@ -899,10 +899,8 @@ sub process_autosetup {
 
 ## process_autopatch()
 # Apply all available patches in ascending numerical order as specified in the
-# specfile. This already works for default '%__scm patch'. For any other SCM,
-# we convert the current '$_' line from '%autopatch' to '%patch' and fall
-# through to process_patch(). The '%autopatch' command only knows the
-# options '-v' ('verbose) and '-p[N]' ('path strip level').
+# specfile. The '%autopatch' command only knows the options '-v' ('verbose) and
+# '-p[N]' ('path strip level').
 sub process_autopatch {
   my ($stage) = @_;
   my $verbose = /-v/;
@@ -913,14 +911,13 @@ sub process_autopatch {
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
     my $patchfile = $pkgdata{main}{$patches[0]};
     $script{$stage} .= apply_patch($scm,$verbose,$plevel,$patchfile);
-    $_ = ''; # done with '%autopatch' processing
   } else { # now you're talkin', brother!
     for my $patch (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
       my $patchfile = $pkgdata{main}{"patch$patch"};
       $script{$stage} .= apply_patch($scm,$verbose,$plevel,$patchfile);
     }
-    $_ = ''; # done with '%autopatch' processing
   }
+  $_ = ''; # done with '%autopatch' processing
 } # process_autopatch()
 
 
