@@ -888,13 +888,10 @@ sub process_autosetup {
   $script{$stage} .= process_setup(); # hmm, how to fall to '%setup'?
   # Do SCM stuff
   my $scm = expandmacros('%__scm');
+  die "%autosetup: option '-S $scm' currently not supported at line $..\n"
+    unless $specglobals{"__scm_setup_$scm"};
   $script{$stage} .= handle_macro_options(
     "%__scm_setup_$scm".($verbose ? '' : ' -q'));
-  if ('patch' ne $scm) {
-warn "%autosetup: option '-S $scm' currently not supported.\n";
-warn "%autosetup: %__scm is '$scm'\n";
-warn "%autosetup: Expect weird things to happen ... NOW!\n";
-  }
   $_ = $noautopatch ? '' : "%autopatch $plevel".($verbose ? ' -v' : '');
 } # process_autosetup()
 
@@ -913,34 +910,19 @@ sub process_autopatch {
   return $_ = '' unless @patches; # nice try!
   my $scm = expandmacros('%{__scm}');
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
-    if ('patch' eq $scm) {
-      my $patchfile = $pkgdata{main}{$patches[0]};
+    my $patchfile = $pkgdata{main}{$patches[0]};
+    $script{$stage} .= "%{uncompress:$patchfile} | ".handle_macro_options(
+      "%__scm_apply_$scm".($verbose ? ' ' : ' -q ').$plevel.
+        ' -m '.expandmacros("%{basename:$patchfile}"))."\n";
+    $_ = ''; # done with '%autopatch' processing
+  } else { # now you're talkin', brother!
+    for my $patch (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
+      my $patchfile = $pkgdata{main}{"patch$patch"};
       $script{$stage} .= "%{uncompress:$patchfile} | ".handle_macro_options(
         "%__scm_apply_$scm".($verbose ? ' ' : ' -q ').$plevel.
           ' -m '.expandmacros("%{basename:$patchfile}"))."\n";
-      $_ = ''; # done with '%autopatch' processing
-    } else { # TODO: generic '%__scm_apply_%__scm' support
-warn '%autopatch: %apply_patch -m '.expandmacros("%{basename:$pkgdata{main}{$patches[0]}}")." -q $plevel\n";
-warn "%apply_patch: %{uncompress:$pkgdata{main}{$patches[0]}} | %__scm_apply_$scm -q $plevel -m ...\n";
-warn "%__scm_apply_git: %{__git} apply --index $plevel -\\\n";
-warn "%__scm_apply_git: %{__git} commit -q -m ... --author '%{__scm_author}'\n";
-      store_value('_default_patch_flags', $verbose ? '--verbose' : '--silent');
-      $_ = "%$patches[0] $plevel";
     }
-  } else { # now you're talkin', brother!
-    if ('patch' eq $scm) {
-      for my $patch (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
-        my $patchfile = $pkgdata{main}{"patch$patch"};
-        $script{$stage} .= "%{uncompress:$patchfile} | ".handle_macro_options(
-          "%__scm_apply_$scm".($verbose ? ' ' : ' -q ').$plevel.
-            ' -m '.expandmacros("%{basename:$patchfile}"))."\n";
-      }
-      $_ = ''; # done with '%autopatch' processing
-    } else { # TODO: generic '%__scm_apply_%__scm' support
-      store_value('_default_patch_flags', $verbose ? '--verbose' : '--silent');
-      $_ = "%patch $plevel -P ".join(' ',
-        sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b } @patches);
-    }
+    $_ = ''; # done with '%autopatch' processing
   }
 } # process_autopatch()
 
@@ -1774,12 +1756,19 @@ sub handle_macro_options {
   local @ARGV = split ' ',$argv;
   my %options; # store result of 'getopts()'
   getopts($macroopts{$macro},\%options);
-  local $_ = $specglobals{$macro};
+  (local $_ = $specglobals{$macro}) =~ s/\"/\\"/g;
   while (my ($option,$repl) = map { /{-(\w):(.+)}/ }
       extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]) ) {
     (my $result = $options{$option} ? $repl : '') =~ s/%{-(\w)\*}/$options{$1}/eg;
     $repl =~ s/([\{\*\}])/\\$1/g; # mask Perlish special characters
     s/%{-$option:$repl}/$result/g;
+  }
+  pos = 0; # reset to start of $_
+  while (my ($option) = map { /{-(\w)(?:\*)?}/ }
+      extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]) ) {
+    my $result = $options{$option} ? "-$option" : '';
+    s/%{-$option}/$result/g;
+    s/%{-($option)\*}/$options{$1}/g;
   }
   return $_;
 }

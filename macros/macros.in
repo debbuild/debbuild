@@ -341,5 +341,17 @@ package or when debugging this package.\
 %__scm_apply_patch(qp:m:)\
 %{__patch} %{-p:-p%{-p*}} %{-q:-s}
 
+# Git
+%__scm_setup_git(q)\
+%{__git} init %{-q}\
+%{__git} config user.name "%{__scm_username}"\
+%{__git} config user.email "%{__scm_usermail}"\
+%{__git} add .\
+%{__git} commit %{-q} -a --author "%{__scm_author}" -m "%{name}-%{version} base"
+
+%__scm_apply_git(qp:m:)\
+%{__git} apply --index %{-p:-p%{-p*}} -\
+%{__git} commit %{-q} -m %{-m*} --author "%{__scm_author}"
+
 # \endverbatim
 #*/
