@@ -339,8 +339,64 @@ package or when debugging this package.\
 # Plain patch (-m is unused)
 %__scm_setup_patch(q) %{nil}
 %__scm_apply_patch(qp:m:)\
-%{__patch}
-# %{-p:-p%{-p*}} %{-q:-s}
+%{__patch} %{-p:-p%{-p*}} %{-q:-s}
+
+# Mercurial (aka hg)
+%__hg /usr/bin/hg
+%__scm_setup_hg(q)\
+%{__hg} init %{-q} .\
+%{__hg} add %{-q} .\
+%{__hg} commit %{-q} --user "%{__scm_author}" -m "%{name}-%{version} base"\
+%{nil}
+
+%__scm_apply_hg(qp:m:)\
+%{__hg} import - %{-p:-p%{-p*}} %{-q} -m %{-m*} --user "%{__scm_author}"
+
+# Git
+%__git /usr/bin/git
+%__scm_setup_git(q)\
+%{__git} init %{-q}\
+%{__git} config user.name "%{__scm_username}"\
+%{__git} config user.email "%{__scm_usermail}"\
+%{__git} add .\
+%{__git} commit %{-q} -a --author "%{__scm_author}" -m "%{name}-%{version} base"\
+%{nil}
+
+%__scm_apply_git(qp:m:)\
+%{__git} apply --index %{-p:-p%{-p*}} -\
+%{__git} commit %{-q} -m %{-m*} --author "%{__scm_author}"
+
+# Git, using "git am" (-m is unused)
+%__scm_setup_git_am(q)\
+%{__git} init %{-q}\
+%{__git} config user.name "%{__scm_username}"\
+%{__git} config user.email "%{__scm_usermail}"\
+%{__git} add .\
+%{__git} commit %{-q} -a --author "%{__scm_author}" -m "%{name}-%{version} base"\
+%{nil}
+
+%__scm_apply_git_am(qp:m:)\
+%{__git} am %{-q} %{-p:-p%{-p*}}
+
+# Quilt
+%__quilt /usr/bin/quilt
+%__scm_setup_quilt(q) %{nil}
+%__scm_apply_quilt(qp:m:)\
+%{__quilt} import %{-p:-p%{-p*}} %{1} && %{__quilt} push
+
+# Bzr
+%__bzr /usr/bin/bzr
+%__scm_setup_bzr(q)\
+%{__bzr} init %{-q}\
+%{__bzr} whoami --branch "%{__scm_author}"\
+%{__bzr} add .\
+%{__bzr} commit %{-q} -m "%{name}-%{version} base"\
+%{nil}
+
+# bzr doesn't seem to have its own command to apply patches?
+%__scm_apply_bzr(qp:m:)\
+%{__patch} %{-p:-p%{-p*}} %{-q:-s}\
+%{__bzr} commit %{-q} -m %{-m*}
 
 # \endverbatim
 #*/
