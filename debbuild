@@ -1683,7 +1683,7 @@ sub expandmacros {
   # unescape multi-line macros
   s/\\"/"/g;
   s/\\\\/\\/g;
-  s/(\S)\s*\\+\n/$1\n/g;
+  s/(\S)\\+\n/$1\n/g;
 
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
   while (my ($prefix,$arg) = map { /{(\w+)\s+(\w+)}/ }
@@ -1771,6 +1771,7 @@ sub handle_macro_options {
     s/%{-$option}/$result/g;
     s/%{-($option)\*}/$options{$1}/g;
   }
+  s/\s*\\\n/\\\n/g;
   return $_;
 }
 
