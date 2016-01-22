@@ -1770,22 +1770,18 @@ sub expandmacros {
 # tricks. At this time, the '-m <Message>' must be a single '\w+'ord.
 sub handle_macro_options {
   my ($inline) = @_;
-  my %options;
   my ($macro,$argv) = $inline =~ /%(\w+)\s+([\s\w.-]+)/;
   local @ARGV = split ' ',$argv;
-use Data::Dumper;
-print "<<<".Dumper($inline,'***',@ARGV,'***',%options);
+  my %options; # store result of 'getopts()'
   getopts($macroopts{$macro},\%options);
-  my $expansion = $specglobals{$macro};
-print "===$expansion\n";
-  my ($output) = split ' ',$expansion;
-print ">>>".Dumper($output,'***',@ARGV,'***',%options,$expansion);
-  while (my ($prefix,$arg) = map { /{([\w-]+):(.+)}/ }
-    extract_multiple($expansion, [ sub { extract_bracketed($_[0],'{}') } ]) ) {
-    print "XXX$prefix:$arg\n";
-    $expansion =~ s/%{$prefix:$arg}//g;
+  local $_ = $specglobals{$macro};
+  while (my ($option,$repl) = map { /{-(\w):(.+)}/ }
+      extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]) ) {
+    (my $result = $options{$option} ? $repl : '') =~ s/%{-(\w)\*}/$options{$1}/eg;
+    $repl =~ s/([\{\*\}])/\\$1/g; # mask Perlish special characters
+    s/%{-$option:$repl}/$result/g;
   }
-  return $output;
+  return $_;
 }
 
 
