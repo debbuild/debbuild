@@ -880,7 +880,7 @@ sub splitreqs {
 sub process_autosetup {
   my ($stage) = @_;
   chomp; $_ = expandmacros($_); # permit '%{!?with_patches:-N}'
-  my $plevel = $1 if s/\s+(-p\d+)//; $plevel //= '';
+  my $plevel = $1 if s/\s+-p\s*(\d+)//;
   my $verbose = s/\s+-v//; $_ .= ($verbose ? '': ' -q');
   my $noautopatch = s/\s+-N//; # Eat '-N', which is unknown to %setup
   expandmacros("%global __scm $1") if s/\s+\-S\s+(\w+)//; # dito '-S'
@@ -892,7 +892,8 @@ sub process_autosetup {
     unless $specglobals{"__scm_setup_$scm"};
   $script{$stage} .= handle_macro_options(
     "%__scm_setup_$scm".($verbose ? '' : ' -q'))."\n";
-  $_ = $noautopatch ? '' : "%autopatch $plevel".($verbose ? ' -v' : '');
+  $_ = $noautopatch ? '' :
+    "%autopatch".($plevel ? " -p $plevel" : '').($verbose ? ' -v' : '');
 } # process_autosetup()
 
 
@@ -905,21 +906,21 @@ sub process_autosetup {
 sub process_autopatch {
   my ($stage) = @_;
   my $verbose = /-v/;
-  my ($plevel) = /(-p\d+)/; $plevel //= '';
+  my ($plevel) = /-p\s*(\d+)/;
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
   return $_ = '' unless @patches; # nice try!
   my $scm = expandmacros('%{__scm}');
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
     my $patchfile = $pkgdata{main}{$patches[0]};
     $script{$stage} .= "%{uncompress:$patchfile} | ".handle_macro_options(
-      "%__scm_apply_$scm".($verbose ? ' ' : ' -q ').$plevel.
+      "%__scm_apply_$scm".($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
         ' -m '.expandmacros("%{basename:$patchfile}"))."\n";
     $_ = ''; # done with '%autopatch' processing
   } else { # now you're talkin', brother!
     for my $patch (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
       my $patchfile = $pkgdata{main}{"patch$patch"};
       $script{$stage} .= "%{uncompress:$patchfile} | ".handle_macro_options(
-        "%__scm_apply_$scm".($verbose ? ' ' : ' -q ').$plevel.
+        "%__scm_apply_$scm".($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
           ' -m '.expandmacros("%{basename:$patchfile}"))."\n";
     }
     $_ = ''; # done with '%autopatch' processing
