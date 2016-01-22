@@ -893,7 +893,7 @@ sub process_autosetup {
   $script{$stage} .= handle_macro_options(
     "%__scm_setup_$scm".($verbose ? '' : ' -q'))."\n";
   $_ = $noautopatch ? '' :
-    "%autopatch".($plevel ? " -p $plevel" : '').($verbose ? ' -v' : '');
+    '%autopatch'.($plevel ? " -p $plevel" : '').($verbose ? ' -v' : '');
 } # process_autosetup()
 
 
@@ -912,20 +912,26 @@ sub process_autopatch {
   my $scm = expandmacros('%{__scm}');
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
     my $patchfile = $pkgdata{main}{$patches[0]};
-    $script{$stage} .= "%{uncompress:$patchfile} | ".handle_macro_options(
-      "%__scm_apply_$scm".($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
-        ' -m '.expandmacros("%{basename:$patchfile}"))."\n";
+    $script{$stage} .= apply_patch($scm,$verbose,$plevel,$patchfile);
     $_ = ''; # done with '%autopatch' processing
   } else { # now you're talkin', brother!
     for my $patch (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
       my $patchfile = $pkgdata{main}{"patch$patch"};
-      $script{$stage} .= "%{uncompress:$patchfile} | ".handle_macro_options(
-        "%__scm_apply_$scm".($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
-          ' -m '.expandmacros("%{basename:$patchfile}"))."\n";
+      $script{$stage} .= apply_patch($scm,$verbose,$plevel,$patchfile);
     }
     $_ = ''; # done with '%autopatch' processing
   }
 } # process_autopatch()
+
+
+## apply_patch()
+# Hard-coded variant of RPM's macro of the same name.
+sub apply_patch {
+  my ($scm,$verbose,$plevel,$patchfile) = @_;
+  return "%{uncompress:$patchfile} | ".handle_macro_options(
+    "%__scm_apply_$scm".($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
+      ' -m '.expandmacros("%{basename:$patchfile}"))."\n";
+} # apply_patch()
 
 
 ## process_setup()
@@ -1749,7 +1755,7 @@ sub expandmacros {
 
 ## handle_macro_options()
 # Option handling for '%macro(ino:pts)'.
-# Note that 'getops()' normally works on '@ARGV', so we have to pull some
+# Note that 'getopts()' normally works on '@ARGV', so we have to pull some
 # tricks. At this time, the '-m <Message>' must be a single '\w+'ord.
 sub handle_macro_options {
   my ($inline) = @_;
@@ -1760,7 +1766,7 @@ sub handle_macro_options {
   (local $_ = $specglobals{$macro}) =~ s/\"/\\"/g;
   while (my ($option,$repl) = map { /{-(\w):(.+)}/ }
       extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]) ) {
-    (my $result = $options{$option} ? $repl : '') =~ s/%{-(\w)\*}/$options{$1}/eg;
+    (my $result = $options{$option} ? $repl : '') =~ s/%{-(\w)\*}/$options{$1}/g;
     $repl =~ s/([\{\*\}])/\\$1/g; # mask Perlish special characters
     s/%{-$option:$repl}/$result/g;
   }
