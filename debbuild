@@ -905,7 +905,6 @@ sub process_autopatch {
   my $verbose = /-v/;
   my ($plevel) = /-p\s*(\d+)/;
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
-  return $_ = '' unless @patches; # nice try!
   my $scm = expandmacros('%{__scm}');
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
     my $patchfile = $pkgdata{main}{$patches[0]};
@@ -1751,7 +1750,7 @@ sub expandmacros {
 ## handle_macro_options()
 # Option handling for '%macro(ino:pts)'.
 # Note that 'getopts()' normally works on '@ARGV', so we have to pull some
-# tricks. At this time, the '-m <Message>' must be a single '\w+'ord.
+# tricks to make it work with 'string input'.
 sub handle_macro_options {
   my ($inline) = @_;
   my ($macro,$argv) = $inline =~ /%(\w+)(?:\s+(.+))?/;
