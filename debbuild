@@ -776,8 +776,7 @@ ENDIF: if (/^%endif/) {
       } # fall through, most likely to '%autopatch'
       if (s/^%autopatch//) {
         process_autopatch($stage);
-      } # fall through with '%patch' line
-      if (s/^%setup//) {
+      } elsif (s/^%setup//) {
         $script{$stage} .= process_setup();
       } elsif (s/^%patch//) {
         $script{$stage} .= process_patch();
@@ -876,7 +875,7 @@ sub splitreqs {
 ## process_autosetup()
 # Convert the current '$_' line from '%autosetup' to '%setup' and call
 # 'process_setup()', then create an '%autopatch' line and fall through to
-# 'process_autopatch()' (which prepares for 'process_patch()').
+# 'process_autopatch()'.
 sub process_autosetup {
   my ($stage) = @_;
   chomp; $_ = expandmacros($_); # permit '%{!?with_patches:-N}'
@@ -891,7 +890,7 @@ sub process_autosetup {
   die "%autosetup: option '-S $scm' currently not supported at line $..\n"
     unless $specglobals{"__scm_setup_$scm"};
   $script{$stage} .= handle_macro_options(
-    "%__scm_setup_$scm".($verbose ? '' : ' -q'))."\n";
+    "%__scm_setup_$scm".($verbose ? '' : ' -q'));
   $_ = $noautopatch ? '' :
     '%autopatch'.($plevel ? " -p $plevel" : '').($verbose ? ' -v' : '');
 } # process_autosetup()
@@ -917,7 +916,6 @@ sub process_autopatch {
       $script{$stage} .= apply_patch($scm,$verbose,$plevel,$patchfile);
     }
   }
-  $_ = ''; # done with '%autopatch' processing
 } # process_autopatch()
 
 
@@ -927,7 +925,7 @@ sub apply_patch {
   my ($scm,$verbose,$plevel,$patchfile) = @_;
   return "%{uncompress:$patchfile} | ".handle_macro_options(
     "%__scm_apply_$scm".($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
-      ' -m '.expandmacros("%{basename:$patchfile}"))."\n";
+      ' -m '.expandmacros("%{basename:$patchfile}"));
 } # apply_patch()
 
 
@@ -1775,7 +1773,7 @@ sub handle_macro_options {
     s/%{-($option)\*}/$options{$1}/g;
   }
   s/\s*\\\n/\\\n/g;
-  return $_;
+  return "$_\n";
 }
 
 
