@@ -365,13 +365,7 @@ package or when debugging this package.\
 %{__git} commit %{-q} -m %{-m*} --author "%{__scm_author}"
 
 # Git, using "git am" (-m is unused)
-%__scm_setup_git_am(q)\
-%{__git} init %{-q}\
-%{__git} config user.name "%{__scm_username}"\
-%{__git} config user.email "%{__scm_usermail}"\
-%{__git} add .\
-%{__git} commit %{-q} -a --author "%{__scm_author}" -m "%{name}-%{version} base"
-
+%__scm_setup_git_am(q)=__scm_setup_git
 %__scm_apply_git_am(qp:m:)\
 %{__git} am %{-q} %{-p:-p%{-p*}}
 
