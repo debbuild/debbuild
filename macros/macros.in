@@ -373,9 +373,7 @@ package or when debugging this package.\
 %__quilt /usr/bin/quilt
 %__scm_setup_quilt(q) %{nil}
 %__scm_apply_quilt(qp:m:)\
-%{__cat} > %{-m*}.quilt\
-%{__quilt} import %{-p:-p%{-p*}} %{-m*}.quilt && %{__quilt} push %{-q}\
-%{__rm} -f %{-m*}.quilt
+%{__quilt} import %{-p:-p%{-p*}} %{_sourcedir}/%{-m*} && %{__quilt} push %{-q}
 
 # Bzr
 %__bzr /usr/bin/bzr
