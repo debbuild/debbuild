@@ -22,9 +22,10 @@ Group: Development/Tools
 License: GPLv2+
 Packager: Andreas Scherer <https://ascherer.github.io/>
 
-Requires: perl, build-essential, fakeroot, bash
+Requires: perl, fakeroot
 %if %{_vendor} == "debbuild"
-Recommends: patch, bzip2, xz-utils, pax, unzip, zip
+Recommends: bzip2, gzip, xz-utils, unzip, zip
+Recommends: git, patch, pax, quilt
 Suggests: rpm, subversion
 %endif
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
