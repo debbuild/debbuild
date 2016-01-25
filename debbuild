@@ -1658,6 +1658,7 @@ sub expandmacros {
   # Replace global macros
   s/%(\w+)/%{$1}/g;
   s/%{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
+  s|%{getconfdir}|$specglobals{_libdir}/debbuild|g;
 
   # Package data
   s/%{S:0}/%{source0}/g;
