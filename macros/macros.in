@@ -373,7 +373,7 @@ package or when debugging this package.\
 %__quilt /usr/bin/quilt
 %__scm_setup_quilt(q) %{nil}
 %__scm_apply_quilt(qp:m:)\
-%{__quilt} import %{-p:-p%{-p*}} %{_sourcedir}/%{-m*} && %{__quilt} push %{-q}
+%{__quilt} import %{-p:-p%{-p*}} %{1} && %{__quilt} push %{-q}
 
 # Bzr
 %__bzr /usr/bin/bzr
@@ -406,7 +406,7 @@ package or when debugging this package.\
 %{__svn} up %{-q}
 # Subversion 1.7 learned to apply patches, though without (un)compression
 #%__scm_apply_svn(qp:m:)\
-#%{__svn} patch %{-p:--strip %{-p*}} %{-q} %{_sourcedir}/%{-m*}\
+#%{__svn} patch %{-p:--strip %{-p*}} %{-q} %{1}\
 #%{__svn} commit %{-q} -m %{-m*}\
 #%{__svn} up %{-q}
 
