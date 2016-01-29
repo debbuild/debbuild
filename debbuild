@@ -837,6 +837,8 @@ ENDIF: if (/^%endif/) {
         push @buildreq, splitreqs($1);
       } elsif (/^(requires|provides|conflicts):\s*(.+)/i) {
         push @{$pkgdata{main}{lc $1}}, splitreqs($2);
+      } elsif (/^(?:prereq|requires\((?:pre|preun)\)):\s*(.+)/i) {
+        push @{$pkgdata{main}{'pre-depends'}}, splitreqs($1);
       } elsif (/^recommends:\s*(.+)/i) {
         push @{$pkgdata{main}{recommends}}, splitreqs($1);
         warn "Warning:  Debian-specific 'Recommends:' outside %if wrapper\n" unless @ifexpr;
