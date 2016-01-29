@@ -751,14 +751,16 @@ ENDIF: if (/^%endif/) {
 # NB: NOT going to support Pre-Depends, since it's a "Don't Use" (mis)feature, and
 # RPM's support for a similar tag (PreReq) has been recently dropped.
       if (my ($dname,$dvalue) = /^(Summary|Group|Version|BuildArch(?:itecture)?|
-          Recommends|Suggests|Enhances|Replaces|
-          Requires|Conflicts|Provides|Pre-Depends):\s+(.+)$/ix) {
+          Recommends|Suggests|Enhances|Replaces|PreReq|
+          Requires(?:\(pre(?:un)?\))?|Conflicts|Provides|Pre-Depends):\s+(.+)$/ix) {
         $dname =~ tr/[A-Z]/[a-z]/;
         if ($dname =~ /^BuildArch/i) {
           $dvalue =~ s/^noarch/all/ig;
           $dname = 'arch';
         }
-        if (grep { /$dname/ } qw(recommends suggests enhances replaces
+        if (grep { /$dname/ } qw{prereq requires(pre) requires(preun)}) {
+          push @{$pkgdata{$subname}{'pre-depends'}}, splitreqs($dvalue);
+        } elsif (grep { /$dname/ } qw(recommends suggests enhances replaces
             requires conflicts provides pre-depends)) {
           push @{$pkgdata{$subname}{$dname}}, splitreqs($dvalue);
         } else {
