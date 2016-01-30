@@ -748,8 +748,6 @@ ENDIF: if (/^%endif/) {
 # Note that we look for the Debian-specific Recommends, Suggests, and Replaces,
 # although they will have to be wrapped in '%if %{_vendor} == "debbuild"' for
 # an rpmbuild-compatible .spec file
-# NB: NOT going to support Pre-Depends, since it's a "Don't Use" (mis)feature, and
-# RPM's support for a similar tag (PreReq) has been recently dropped.
       if (my ($dname,$dvalue) = /^(Summary|Group|Version|BuildArch(?:itecture)?|
           Recommends|Suggests|Enhances|Replaces|PreReq|
           Requires(?:\(pre(?:un)?\))?|Conflicts|Provides|Pre-Depends):\s+(.+)$/ix) {
