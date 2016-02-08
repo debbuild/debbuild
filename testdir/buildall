@@ -19,19 +19,19 @@ do
 			scm=$OPTARG
 			;;
 		?)
-			echo "Invalid option: -$OPTARG" >&2
+			exit 1
 			;;
 	esac
 done
 
 for project in tetex-anschrift cwebbin lucida mmix sgb advent xstar debbuild
 do
-	echo "\n\nbuilding $project\n\n"
+	printf "\n\nbuilding %s\n\n" "$project"
 	git checkout $project-master
 	if [ "$project" = "tetex-anschrift" ]
 	then
 		project=anschrift
 	fi
-       	debbuild --define="__scm $scm" --define="_default_patch_flags $flags" \
+	debbuild --define="__scm $scm" --define="_default_patch_flags $flags" \
 		-b$stage SPECS/$project.spec
 done

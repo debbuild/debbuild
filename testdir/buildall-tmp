@@ -19,35 +19,34 @@ do
 			scm=$OPTARG
 			;;
 		?)
-			echo "Invalid option: -$opt" >&2
-			exit
+			exit 1
 			;;
 	esac
 done
 
-echo "\n\nbuilding cwebbin with makemake patch\n\n"
+printf "\n\nbuilding cwebbin with makemake patch\n\n"
 debbuild -b$stage SPECS/cwebbin.spec
 
 for extension in tgz tar tar.bz2 tar.gz tar.xz zip
 do
-	echo "\n\nbuilding from advent-1.0.$extension\n\n"
+	printf "\n\nbuilding from advent-1.0.%s\n\n" "$extension"
 	debbuild -D "_default_patch_flags $flags" \
 		-t$stage advent-1.0.$extension
 done
 
-echo "\n\nbuilding advent with patches\n\n"
+printf "\n\nbuilding advent with patches\n\n"
 git checkout SPECS/advent.spec
 debbuild --define="__scm $scm" --define="_default_patch_flags $flags" \
 	-b$stage SPECS/advent.spec
 
-echo "\n\nCheck '%_CamelCase_Macros'\n\n"
+printf "\n\nCheck '%%_CamelCase_Macros'\n\n"
 debbuild -bp SPECS/Camel.spec
 rpmbuild -bp SPECS/Camel.spec
 
-echo "\n\nbuilding hello project\n\n"
+printf "\n\nbuilding hello project\n\n"
 debbuild --define="_default_patch_flags $flags" \
 	-b$stage SPECS/hello.spec
 
-echo "\n\nbuilding Pod::Simple project\n\n"
+printf "\n\nbuilding Pod::Simple project\n\n"
 debbuild --define="_default_patch_flags $flags" \
 	-b$stage SPECS/perl-Pod-Simple.spec
