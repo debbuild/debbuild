@@ -553,14 +553,20 @@ LINE: while (<$fh>) {
 # notes:  some of these are not *entirely* case-sensitive (%ifxxx), but most are.
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
-    if (/^%([a-z]+)/ and not grep { /$1/ } qw(attr autopatch autosetup
+    if (/^%([a-z_]+)/ and not grep { /$1/ } qw(attr autopatch autosetup
 	bcond_with bcond_without build changelog check clean config
 	configure copyrightdata defattr define description dir doc docdir
 	dump else endif files ghost global if ifarch ifnarch ifnos ifos
 	include install make_build make_install makeinstall package patch
 	post postun pre prep preun readme setup triggerin triggerpostun
 	triggerun undefine verify verifyscript)) {
-      die "Unknown tag '%$1' at line $. of $specfile\n";
+      if (defined $specglobals{$1} or defined $specglobals{"$1()"}) {
+        # This looks like a user-defined macro, possibly with arguments.
+        # Wrap the whole thing in curly braces for easier processing.
+        $_ =~ s/^%/%{/; $_ =~ s/$/}/;
+      } else {
+        die "Unknown tag '%$1' at line $. of $specfile\n";
+      }
     }
 
     # RPM conditionals - transform to generic form
