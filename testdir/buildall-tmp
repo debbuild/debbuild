@@ -25,29 +25,29 @@ do
 	esac
 done
 
-echo -e "\n\nbuilding cwebbin with makemake patch\n\n"
+echo "\n\nbuilding cwebbin with makemake patch\n\n"
 debbuild -b$stage SPECS/cwebbin.spec
 
 for extension in tgz tar tar.bz2 tar.gz tar.xz zip
 do
-	echo -e "\n\nbuilding from advent-1.0.$extension\n\n"
+	echo "\n\nbuilding from advent-1.0.$extension\n\n"
 	debbuild -D "_default_patch_flags $flags" \
 		-t$stage advent-1.0.$extension
 done
 
-echo -e "\n\nbuilding advent with patches\n\n"
+echo "\n\nbuilding advent with patches\n\n"
 git checkout SPECS/advent.spec
 debbuild --define="__scm $scm" --define="_default_patch_flags $flags" \
 	-b$stage SPECS/advent.spec
 
-echo -e "\n\nCheck '%_CamelCase_Macros'\n\n"
+echo "\n\nCheck '%_CamelCase_Macros'\n\n"
 debbuild -bp SPECS/Camel.spec
 rpmbuild -bp SPECS/Camel.spec
 
-echo -e "\n\nbuilding hello project\n\n"
+echo "\n\nbuilding hello project\n\n"
 debbuild --define="_default_patch_flags $flags" \
 	-b$stage SPECS/hello.spec
 
-echo -e "\n\nbuilding Pod::Simple project\n\n"
+echo "\n\nbuilding Pod::Simple project\n\n"
 debbuild --define="_default_patch_flags $flags" \
 	-b$stage SPECS/perl-Pod-Simple.spec

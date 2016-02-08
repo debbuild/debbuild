@@ -26,7 +26,7 @@ done
 
 for project in tetex-anschrift cwebbin lucida mmix sgb advent xstar debbuild
 do
-	echo -e "\n\nbuilding $project\n\n"
+	echo "\n\nbuilding $project\n\n"
 	git checkout $project-master
 	if [ "$project" = "tetex-anschrift" ]
 	then
