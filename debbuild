@@ -1689,10 +1689,15 @@ sub expandmacros {
   s/(\S)\\+\n/$1\n/g;
 
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
-  while (my ($prefix,$arg) = map { /{(\w+)\s+(\w+)}/ }
+  while (my ($prefix,$arg) = map { /{(\w+)\s+(.+)}/ }
       extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]) ) {
-    (my $paramac = $specglobals{"$prefix\(\)"}) =~ s/%\{1\}/$arg/g;
+    (my $paramac = $specglobals{"$prefix\(\)"}) =~ s/%\{\?\*\}/$arg/g;
+    my @args = split ' ', $arg;
+    for my $i (1..scalar @args) {
+      $paramac =~ s/%\{$i\}/$args[$i-1]/g;
+    }
     $paramac =~ s/%%/%/g; # reduce level of macronization
+    $paramac =~ s/\s+\\+\n/\n/g; # prepare for multi-line shipment
     s/%{$prefix\s+$arg}/$paramac/g;
   }
   pos = 0; # reset to start of $_
