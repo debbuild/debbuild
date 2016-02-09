@@ -1695,8 +1695,7 @@ sub expandmacros {
   s/(\S)\\+\n/$1\n/g;
 
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
-  while (my ($prefix,$arg) = map { /{(\w+)\s+(.+)}/ }
-      extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]) ) {
+  while (my ($prefix,$arg) = map { /{(\w+)\s+(.+)}/ } bracelet() ) {
     (my $paramac = $specglobals{"$prefix\(\)"}) =~ s/%\{\?\*\}/$arg/g;
     my @args = split ' ', $arg;
     for my $i (1..scalar @args) {
@@ -1710,8 +1709,7 @@ sub expandmacros {
 
   # handle '%{prefixed:macros}' with nested curly braces, all in one go!
   s/%{url2path:/%{u2p:/g;
-  while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ }
-      extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]) ) {
+  while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ } bracelet() ) {
     no strict qw(refs); # we use strings as function refs
     if ($prefix =~ /u2p/) {
       # curious form of 'basename'? - strip domain host (and port)
@@ -1737,7 +1735,7 @@ sub expandmacros {
   # support for **some** %if constructs: handle '%{?conditional:macros}'
   # with nested curly braces, all in one go!
   while (my ($qex,$macro,$value) = map { /{([?!]+)(\w+)(?::(.+))?}/ }
-      extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]) ) {
+      bracelet() ) {
     (my $initvalue = "%{$qex$macro".(defined $value ? ":$value" : '').'}')
       =~ s/([?!])/\\$1/g; # neutralize quantifiers
     $value //= ($specglobals{$macro} or '');
@@ -1761,6 +1759,13 @@ sub expandmacros {
 } # end expandmacros()
 
 
+## bracelet()
+# Shortcut for extracting paired curly braces
+sub bracelet {
+  return extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]);
+} # end bracelet()
+
+
 ## handle_macro_options()
 # Option handling for '%macro(ino:pts)'.
 # Note that 'getopts()' normally works on '@ARGV', so we have to pull some
@@ -1772,15 +1777,13 @@ sub handle_macro_options {
   my %options; # store result of 'getopts()'
   getopts($macroopts{$macro},\%options);
   (local $_ = $specglobals{$macro}) =~ s/\"/\\"/g;
-  while (my ($option,$repl) = map { /{-(\w):(.+)}/ }
-      extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]) ) {
+  while (my ($option,$repl) = map { /{-(\w):(.+)}/ } bracelet() ) {
     (my $result = $options{$option} ? $repl : '') =~ s/%{-(\w)\*}/$options{$1}/g;
     $repl =~ s/([\{\*\}])/\\$1/g; # mask Perlish special characters
     s/%{-$option:$repl}/$result/g;
   }
   pos = 0; # reset to start of $_
-  while (my ($option) = map { /{-(\w)(?:\*)?}/ }
-      extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]) ) {
+  while (my ($option) = map { /{-(\w)(?:\*)?}/ } bracelet() ) {
     my $result = $options{$option} ? "-$option" : '';
     s/%{-$option}/$result/g;
     s/%{-($option)\*}/$options{$1}/g;
