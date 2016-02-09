@@ -1650,6 +1650,7 @@ sub store_value {
   }
 } # end store_value()
 
+use Data::Dumper;
 
 ## expandmacros()
 # Expands all %{blah} macros in the passed string
@@ -1697,7 +1698,14 @@ sub expandmacros {
 
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
   while (my ($prefix,$arg) = map { /{(\w+)\s+(.+)}/ } bracelet() ) {
-    (my $paramac = $specglobals{"$prefix\(\)"}) =~ s/%\{\?\*\}/$arg/g;
+if (defined $macroopts{$prefix}) {
+	print Dumper($prefix,$arg);
+	print Dumper($specglobals{$prefix});
+	$_ = handle_macro_options("%$prefix $arg"); # this should be $paramac
+	print Dumper($_);
+}
+    (my $paramac = ($specglobals{$prefix} or $specglobals{"$prefix\(\)"}))
+      =~ s/%\{\?\*\}/$arg/g;
     my @args = split ' ', $arg;
     for my $i (1..scalar @args) {
       $paramac =~ s/%\{$i\}/$args[$i-1]/g;
@@ -1773,7 +1781,9 @@ sub bracelet {
 # tricks to make it work with 'string input'.
 sub handle_macro_options {
   my ($inline) = @_;
+print Dumper($inline);
   my ($macro,$argv) = $inline =~ /%(\w+)(?:\s+(.+))?/;
+print Dumper($macro,$argv);
   local @ARGV = split ' ',$argv if $argv;
   my %options; # store result of 'getopts()'
   my @nonoptions; # store all 'other' arguments
@@ -1781,6 +1791,8 @@ sub handle_macro_options {
     push @nonoptions, shift @ARGV while @ARGV and $ARGV[0] !~ m/^-/;
     getopts($macroopts{$macro},\%options);
   }
+print Dumper(%options);
+print Dumper(@nonoptions);
   (local $_ = $specglobals{$macro}) =~ s/\"/\\"/g;
   while (my ($option,$repl) = map { /{-(\w):(.+)}/ } bracelet() ) {
     (my $result = $options{$option} ? $repl : '') =~ s/%{-(\w)\*}/$options{$1}/g;
