@@ -1650,7 +1650,6 @@ sub store_value {
   }
 } # end store_value()
 
-use Data::Dumper;
 
 ## expandmacros()
 # Expands all %{blah} macros in the passed string
@@ -1698,14 +1697,8 @@ sub expandmacros {
 
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
   while (my ($prefix,$arg) = map { /{(\w+)\s+(.+)}/ } bracelet() ) {
-if (defined $macroopts{$prefix}) {
-	print Dumper($prefix,$arg);
-	print Dumper($specglobals{$prefix});
-	$_ = handle_macro_options("%$prefix $arg"); # this should be $paramac
-	print Dumper($_);
-}
-    (my $paramac = ($specglobals{$prefix} or $specglobals{"$prefix\(\)"}))
-      =~ s/%\{\?\*\}/$arg/g;
+    my $paramac = handle_macro_options("%$prefix $arg") if $macroopts{$prefix};
+    ($paramac //= $specglobals{"$prefix\(\)"}) =~ s/%\{\?\*\}/$arg/g;
     my @args = split ' ', $arg;
     for my $i (1..scalar @args) {
       $paramac =~ s/%\{$i\}/$args[$i-1]/g;
@@ -1781,22 +1774,25 @@ sub bracelet {
 # tricks to make it work with 'string input'.
 sub handle_macro_options {
   my ($inline) = @_;
-print Dumper($inline);
   my ($macro,$argv) = $inline =~ /%(\w+)(?:\s+(.+))?/;
-print Dumper($macro,$argv);
   local @ARGV = split ' ',$argv if $argv;
   my %options; # store result of 'getopts()'
   my @nonoptions; # store all 'other' arguments
-  while (@ARGV) {
+  while (@ARGV) { # separate options and non-options
     push @nonoptions, shift @ARGV while @ARGV and $ARGV[0] !~ m/^-/;
     getopts($macroopts{$macro},\%options);
   }
-print Dumper(%options);
-print Dumper(@nonoptions);
   (local $_ = $specglobals{$macro}) =~ s/\"/\\"/g;
+  while (my ($qex,$arg,$value) = map { /{([?!]+)(\d+)(?::(.+))?}/ }
+      bracelet() ) { # handle '%{?2:%{2}}' et al.
+    (my $initvalue = "%{$qex$arg:$value}") =~ s/([?!{}])/\\$1/g; # neutralisation
+    $value = '' unless defined $nonoptions[$arg-1] xor $qex =~ /!/; # equivalence
+    s/$initvalue/$value/g;
+  }
+  pos = 0; # reset to start of $_
   while (my ($option,$repl) = map { /{-(\w):(.+)}/ } bracelet() ) {
     (my $result = $options{$option} ? $repl : '') =~ s/%{-(\w)\*}/$options{$1}/g;
-    $repl =~ s/([\{\*\}])/\\$1/g; # mask Perlish special characters
+    $repl =~ s/([*{}])/\\$1/g; # mask Perlish special characters
     s/%{-$option:$repl}/$result/g;
   }
   pos = 0; # reset to start of $_
@@ -1806,7 +1802,7 @@ print Dumper(@nonoptions);
     s/%{-($option)\*}/$options{$1}/g;
   }
   s/\s*\\\n/\\\n/g;
-  for my $i (1..@nonoptions) {
+  for my $i (1..@nonoptions) { # fill '%{i}' parameters
     s/%\{$i\}/$nonoptions[$i-1]/g;
   }
   return "$_\n";
