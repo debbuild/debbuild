@@ -1697,8 +1697,9 @@ sub expandmacros {
 
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
   while (my ($prefix,$arg) = map { /{(\w+)\s+(.+)}/ } bracelet() ) {
-    my $paramac = handle_macro_options("%$prefix $arg") if $macroopts{$prefix};
-    ($paramac //= $specglobals{"$prefix\(\)"}) =~ s/%\{\?\*\}/$arg/g;
+    (my $paramac = defined $macroopts{$prefix} ?
+      handle_macro_options("%$prefix $arg") :
+      $specglobals{"$prefix\(\)"}) =~ s/%\{\?\*\}/$arg/g;
     my @args = split ' ', $arg;
     for my $i (1..scalar @args) {
       $paramac =~ s/%\{$i\}/$args[$i-1]/g;
