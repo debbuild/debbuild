@@ -266,34 +266,13 @@ if ($cmdopts{type} eq 't') {
   # Need to inspect the tarball to find the spec file.
   # Note that rpmbuild doesn't seem to support this operation from a
   # .zip file properly, but we try our best.
-  my $cmdline;
   die "No tarfile specified!  Exiting.\n" unless defined $specglobals{tarball};
   my $tarball = $specglobals{tarball};
-  if ($tarball =~ /\.zip$/) {
-    # .zip files are not really tarballs
-    $cmdline = q(%{__unzip} -Z1 %{tarball} '*.spec');
-  } elsif ($tarball =~ /\.tar$/) {
-    # plain .tar files don't need to be uncompressed
-    $cmdline = q(%{__tar} -tf %{tarball} --wildcards '*.spec');
-  } else {
-    $cmdline = decompress($tarball).q( | %{__tar} -tf - --wildcards '*.spec');
-  }
-  $cmdline = expandmacros($cmdline);
+  my $cmdline = expandmacros(lookup_specfile($tarball));
   chomp( $specglobals{specfile} = "$topdir/SPECS/".basename( qx { $cmdline } ) );
 
   $tarball = abs_path($tarball);
-
-  if ($tarball =~ /\.zip$/) {
-    # .zip files are not really tarballs
-    $cmdline = q(%{__unzip} -p %{tarball} '*.spec');
-  } elsif ($tarball =~ /\.tar$/) {
-    # plain .tar files don't need to be uncompressed
-    $cmdline = q(%{__tar} -xOf %{tarball} --wildcards '*.spec');
-  } else {
-    $cmdline = decompress($tarball).q( | %{__tar} -xOf - --wildcards '*.spec');
-  }
-  $cmdline .= qq( > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir});
-  system expandmacros($cmdline);
+  system expandmacros(extract_specfile($tarball));
 
   $cmdopts{type} = 'b'; # fall through
 }
@@ -1035,6 +1014,35 @@ sub decompress {
       die("Can't handle unknown file type '$filename'.\n") ).
       " -dc '$filename'";
 } # end decompress()
+
+
+## lookup_specfile()
+# Used for '-t[pcilabs]'.
+sub lookup_specfile {
+  my ($tarball) = @_;
+  return (
+     $tarball =~ /\.zip$/ ? # .zip files are not really tarballs
+        q(%{__unzip} -Z1 %{tarball} '*.spec') :
+     $tarball =~ /\.tar$/ ? # plain .tar files don't need to be uncompressed
+        q(%{__tar} -tf %{tarball} --wildcards '*.spec') :
+     decompress($tarball).q( | %{__tar} -tf - --wildcards '*.spec') );
+}
+# end lookup_specfile()
+
+
+## extract_specfile()
+# Used for '-t[pcilabs]'.
+sub extract_specfile {
+  my ($tarball) = @_;
+  return (
+     $tarball =~ /\.zip$/ ? # .zip files are not really tarballs
+        q(%{__unzip} -p %{tarball} '*.spec') :
+     $tarball =~ /\.tar$/ ? # plain .tar files don't need to be uncompressed
+        q(%{__tar} -xOf %{tarball} --wildcards '*.spec') :
+     decompress($tarball).q( | %{__tar} -xOf - --wildcards '*.spec') ).
+     qq( > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir});
+}
+# end extract_specfile()
 
 
 ## process_patch()
