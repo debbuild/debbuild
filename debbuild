@@ -883,8 +883,7 @@ sub process_autosetup {
   my $scm = expandmacros('%__scm');
   die "%autosetup: option '-S $scm' currently not supported at line $..\n"
     unless $specglobals{"__scm_setup_$scm"};
-  $script{$stage} .= handle_macro_options(
-    "%__scm_setup_$scm".($verbose ? '' : ' -q'))."\n";
+  $script{$stage} .= "%{__scm_setup_$scm".($verbose ? '' : ' -q')."}\n";
   $_ = $noautopatch ? '' :
     '%autopatch'.($plevel ? " -p $plevel" : '').($verbose ? ' -v' : '');
 } # process_autosetup()
@@ -916,10 +915,9 @@ sub process_autopatch {
 # Hard-coded variant of RPM's macro of the same name.
 sub apply_patch {
   my ($scm,$verbose,$plevel,$patchfile) = @_;
-  return "%{uncompress:$patchfile} | ".handle_macro_options(
-    "%__scm_apply_$scm".($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
-      ' -m '.expandmacros("%{basename:$patchfile}").
-      " %{_sourcedir}/$patchfile")."\n";
+  return "%{uncompress:$patchfile} | %{__scm_apply_$scm".
+    ($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
+    " -m %{basename:$patchfile} %{_sourcedir}/$patchfile}\n";
 } # apply_patch()
 
 
@@ -1705,11 +1703,6 @@ sub expandmacros {
   s/%\((.+)\)/my $in = expandmacros($1); chomp(my $res = qx($in)); $res/eg;
     # Yay!  ' characters apparently get properly exscapededed.
 
-  # unescape multi-line macros
-  s/\\"/"/g;
-  s/\\\\/\\/g;
-  s/(\S)\\+\n/$1\n/g;
-
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
   while (my ($prefix,$arg) = map { /{(\w+)\s+(.+)}/ } bracelet() ) {
     s/%{$prefix\s+$arg}/handle_macro_options("%$prefix $arg")/eg;
@@ -1763,6 +1756,11 @@ sub expandmacros {
       s/%{$key}/expandmacros($pkgdata{main}{$key})/eg;
     }
   }
+
+  # unescape multi-line macros
+  s/\\"/"/g;
+  s/\\\\/\\/g;
+  s/(\S)\\+\n/$1\n/g;
 
   return $_;
 } # end expandmacros()
