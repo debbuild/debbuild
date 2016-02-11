@@ -1774,7 +1774,7 @@ sub handle_macro_options {
     push @nonoptions, shift @ARGV while @ARGV and $ARGV[0] !~ m/^-/;
     getopts($macroopts{$macro},\%options) if $macroopts{$macro};
   }
-  (local $_ = $specglobals{$macro}) =~ s/\"/\\"/g;
+  local $_ = $specglobals{$macro};
   while (my ($qex,$arg,$value) = map { /{([?!]+)(\d+)(?::(.+))?}/ }
       bracelet() ) { # handle '%{?2:%{2}}' et al.
     (my $initvalue = "%{$qex$arg".(defined $value ? ":$value" : '').'}')
