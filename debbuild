@@ -560,7 +560,7 @@ LINE: while (<$fh>) {
 	include install make_build make_install makeinstall package patch
 	post postun pre prep preun readme setup triggerin triggerpostun
 	triggerun undefine verify verifyscript)) {
-      if (defined $specglobals{$1} or defined $specglobals{"$1()"}) {
+      if (defined $specglobals{$1}) {
         # This looks like a user-defined macro, possibly with arguments.
         # Wrap the whole thing in curly braces for easier processing.
         $_ =~ s/^%/%{/; $_ =~ s/$/}/;
