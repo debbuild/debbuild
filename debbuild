@@ -1709,7 +1709,7 @@ sub expandmacros {
   pos = 0; # reset to start of $_
 
   # handle '%{prefixed:macros}' with nested curly braces, all in one go!
-  s/%{url2path:/%{u2p:/g;
+  s/url2path/u2p/g;
   while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ } bracelet() ) {
     no strict qw(refs); # we use strings as function refs
     if ($prefix =~ /u2p/) {
