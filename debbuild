@@ -905,7 +905,7 @@ sub process_autosetup {
   die "%autosetup: option '-S $scm' currently not supported at line $..\n"
     unless $specglobals{"__scm_setup_$scm"};
   $script{$stage} .= handle_macro_options(
-    "%__scm_setup_$scm".($verbose ? '' : ' -q'));
+    "%__scm_setup_$scm".($verbose ? '' : ' -q'))."\n";
   $_ = $noautopatch ? '' :
     '%autopatch'.($plevel ? " -p $plevel" : '').($verbose ? ' -v' : '');
 } # process_autosetup()
@@ -940,7 +940,7 @@ sub apply_patch {
   return "%{uncompress:$patchfile} | ".handle_macro_options(
     "%__scm_apply_$scm".($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
       ' -m '.expandmacros("%{basename:$patchfile}").
-      " %{_sourcedir}/$patchfile");
+      " %{_sourcedir}/$patchfile")."\n";
 } # apply_patch()
 
 
@@ -1808,7 +1808,7 @@ sub handle_macro_options {
   for my $i (1..@nonoptions) { # fill '%{i}' parameters
     s/%\{?$i\}?/$nonoptions[$i-1]/g;
   }
-  return "$_\n";
+  return $_;
 } # end handle_macro_options()
 
 
