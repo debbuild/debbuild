@@ -884,7 +884,7 @@ ENDIF: if (/^%endif/) {
 sub splitreqs {
   my ($reqs) = @_;
   return map { /^\s*(.+)\s*$/ } split /,/, expandmacros($reqs);
-}
+} # end splitreqs()
 
 
 ## process_autosetup()
@@ -1464,7 +1464,7 @@ sub splitver {
   }
   # Pick up the details of versioned buildreqs
   return $req =~ /([\w.-]+)\s*([><=]+)\s*([\w:.-]+)/;
-}
+} # end splitver()
 
 
 ## srcpackage()
@@ -1586,7 +1586,7 @@ sub checkbuildreq {
 # Returns an empty list if the tree contains no binaries.
 # Doesn't work well on shell scripts. but those *should* be
 # fine anyway.  (Yeah, right...)
-sub getreqs() {
+sub getreqs {
   my ($pkgtree) = @_;
 
   print "Checking library requirements...\n";
@@ -1809,7 +1809,7 @@ sub handle_macro_options {
     s/%\{?$i\}?/$nonoptions[$i-1]/g;
   }
   return "$_\n";
-}
+} # end handle_macro_options()
 
 
 __END__
