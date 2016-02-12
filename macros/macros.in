@@ -402,5 +402,8 @@ package or when debugging this package.\
 %{__svn} patch %{-p:--strip %{-p*}} %{-q} %{1}\
 %{__svn} commit %{-q} -m %{-m*} && %{__svn} update %{-q}
 
+# Single patch application
+%apply_patch(qp:m:)\
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*}} %{-m:-m%{-m*}}}}
 # \endverbatim
 #*/
