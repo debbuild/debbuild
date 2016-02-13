@@ -898,7 +898,6 @@ sub process_autopatch {
   my $verbose = /-v/;
   my ($plevel) = /-p\s*(\d+)/;
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
-  my $scm = expandmacros('%{__scm}');
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
     my $patchfile = $pkgdata{main}{$patches[0]};
     $script{$stage} .= apply_patch($verbose,$plevel,$patchfile);
