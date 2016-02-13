@@ -914,8 +914,9 @@ sub process_autopatch {
 # Hard-coded variant of RPM's macro of the same name.
 sub apply_patch {
   my ($verbose,$plevel,$patchfile) = @_;
-  return '%{apply_patch'.($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
-    " -m %{basename:$patchfile} $patchfile}\n";
+  return '%{apply_patch'.
+    ($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
+    " -m %{basename:$patchfile} %{_sourcedir}/$patchfile}\n";
 } # apply_patch()
 
 
@@ -1092,8 +1093,8 @@ sub process_patch {
   my $patchscript;
   foreach my $pnum (@patchlist) {
     $patchscript .= q(echo "Patch ).($pnum eq '' ? '' : "#$pnum ");
-    $pnum = $pkgdata{main}{"patch$pnum"};
-    $patchscript .= qq|($pnum):"\n|;
+    $pnum = expandmacros("%{patch$pnum}");
+    $patchscript .= q|(|.basename($pnum).qq|):"\n|;
     $patchscript .= qq(%{uncompress:$pnum} | %{__patch} $patchopts\n\n);
   }
   return $patchscript;
@@ -1107,11 +1108,11 @@ sub uncompress {
   my ($patchfile) = @_;
   return (
     # Compressed patch.  You weirdo.
-    $patchfile =~ /\.(?:Z|gz|bz2|xz)$/ ? decompress("%{_sourcedir}/$patchfile") :
+    $patchfile =~ /\.(?:Z|gz|bz2|xz)$/ ? decompress($patchfile) :
     # .zip'ed patch.  *backs away slowly*
-    $patchfile =~ /\.zip$/ ? "%{__unzip} -p %{_sourcedir}/$patchfile" :
+    $patchfile =~ /\.zip$/ ? "%{__unzip} -p $patchfile" :
     # else uncompressed patch
-    "%{__cat} %{_sourcedir}/$patchfile" );
+    "%{__cat} $patchfile" );
 } # uncompress()
 
 
@@ -1688,7 +1689,7 @@ sub expandmacros {
     s|%{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
   }
   s/%{P:(\d+)}/%{patch$1}/g;
-  s|%{(patch\d+)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
+  s|%{(patch\d*)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
 
   # Globals, and not-so-globals
   # special %define's.  Handle the general case where we eval anything.

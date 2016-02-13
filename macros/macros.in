@@ -404,6 +404,7 @@ package or when debugging this package.\
 
 # Single patch application
 %apply_patch(qp:m:)\
+test -f %{1} || exit 1;\
 %{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*}} %{-m:-m%{-m*}}}}
 # \endverbatim
 #*/
