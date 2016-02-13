@@ -1756,8 +1756,8 @@ sub expandmacros {
     }
   }
 
-  ### TODO: crude recursion for recall of 'handle_macro_options()'
-  $_ = expandmacros($_) if m/%{.+?\s+/;
+  # Special case "%__scm_apply_SCM":
+  $_ = expandmacros($_) if m/%{(\w+)\s+.+?}/;
 
   # unescape multi-line macros
   s/\\"/"/g;
