@@ -45,6 +45,7 @@ rpmbuild -bp SPECS/Camel.spec
 
 printf "\n\nCheck other specials\n\n"
 debbuild -bp SPECS/dummy.spec
+debbuild -bp SPECS/mageia.spec
 
 printf "\n\nbuilding hello project\n\n"
 debbuild --define="_default_patch_flags $flags" \

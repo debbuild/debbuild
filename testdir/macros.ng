@@ -1,0 +1,27 @@
+%__dpkg_gensymbols /usr/bin/dpkg-gensymbols
+
+# Macro: %{mklibsymbols <name> <major>}
+# Generates the symbols file for a Debian package
+%mklibsymbols() \
+mkdir -p %{buildroot}/%{1}/DEBIAN \
+%{__dpkg_gensymbols} -P%{buildroot} -p%{1} -v%{version}-%{release} -e%{buildroot}%{_libdir}/%{1}.so.%{2} -e%{buildroot}%{_libdir}/%{1}.so.%{2}.* -O%{buildroot}/%{1}%{2}/DEBIAN/symbols \
+%{nil}
+
+# Macro: %{mklibname <name> [<major> [<minor>]] [-s] [-d]}
+# - %{mklibname test}           => libtest
+# - %{mklibname test 1 -d}      => libtest1-dev
+# - %{mklibname test 1 -d 0 -s} => libtest1_0-static-dev
+%mklibname(ds)  lib%{1}%{?2}%{?3:_%3}%{!?3:_42}%{-s:-static}%{-d:-dev}
+
+%systemd_preun() \
+if [ $1 == "remove" || $1 == "purge" ]; then \
+        # Package removal, not upgrade \
+        systemctl --no-reload disable %{?*} > /dev/null 2>&1 || : \
+        systemctl stop %{?*} > /dev/null 2>&1 || : \
+fi \
+%{nil}
+
+# Macro: %mkrel [-c <snapver>] <number>
+# - %mkrel 1                    => 1%{?subrel:.%subrel}%{?dist}
+# - %mkrel -c rc1 1             => 0.rc1.1%{?subrel:.%subrel}%{?dist}
+%mkrel(c:) %{-c:0.%{-c*}.}%{1}%{?subrel:.%subrel}%{?dist:%dist}
