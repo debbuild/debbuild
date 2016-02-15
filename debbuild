@@ -1634,7 +1634,7 @@ sub getreqs {
 # Among other things, it's messier than handling "simple" yes/no "do
 # we have this lib?" deps.  >:(
 
-  return map { qx($specglobals{__dpkg_query} -S $_) =~ /([\w-]+?):/ } @reqliblist;
+  return map { qx($specglobals{__dpkg_query} -S $_) =~ /([\w.-]+?):/ } @reqliblist;
 
 } # end getreqs()
 
