@@ -9,6 +9,12 @@
 %define libname %{mklibname %{name} %{api} %{major}}
 %define develname %mklibname %{name} -d
  
+%define _initddir /hello/world
+
+%{?!_unitdir:%global _unitdir /lib/systemd/system}
+%{?!_initddir:%global _initddir /etc/init.d}
+%{?!_jobsdir:%global _jobsdir /etc/init}
+
 Name:            hello
 Version:         2.10
 Release:         4%{?dist}
@@ -54,6 +60,10 @@ echo %perl_vendorarch
 echo %perl_vendorlib
 echo %perl_archlib
 echo %perl_privlib
+
+%{echo:%_unitdir}
+%{echo:%_initddir}
+%{echo:%_jobsdir}
 
 #%include %{_rpmconfigdir}/macros.python
 #echo %python_version
