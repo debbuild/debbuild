@@ -156,7 +156,7 @@ my @reqlist2 = ('linux-vdso.so.1 =>  (0x00007ffe42bf1000)',
 #  my @out = $res =~ m/(\S+?):/g;
 #print Dumper('>>>',@out);
 #  return @out;
-return qx(dpkg-query -S $in) =~ m/(\S+?):/g;
+return qx(dpkg-query -S $in) =~ m/^(\S+?):/g;
 
 } # end getreqs()
 
