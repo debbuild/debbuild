@@ -1604,7 +1604,7 @@ sub getreqs {
   # handle the case where the lib gets stuffed into a subpackage.  :/
   my @intprovlist = qx ( $specglobals{__find} $pkgtree -type f -name "*.so*" -printf "%P\n" );
 
-  my $reqliblist;
+  my @reqliblist;
   foreach (@reqlist) {
     next if /not a dynamic executable/;
     next if m|/lib(?:64)?/ld-linux|;	# Hack! Hack!  PTHBTT!  (libc suxx0rz)
@@ -1627,15 +1627,14 @@ sub getreqs {
     # "just" point to one of the symlinks that get created somewhere.)
     next if grep { /\b$req/ } @intprovlist;
 
-    $reqliblist .= " $req";
+    push @reqliblist, $req;
   }
 
 # For now, we're done.  We're not going to meddle with versions yet.
 # Among other things, it's messier than handling "simple" yes/no "do
 # we have this lib?" deps.  >:(
 
-  return unless $reqliblist; # possibly empty
-  return qx($specglobals{__dpkg_query} -S$reqliblist) =~ m/(\S+?):/g;
+  return map { qx($specglobals{__dpkg_query} -S $_) =~ /([\w.-]+?):/ } @reqliblist;
 
 } # end getreqs()
 
