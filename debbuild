@@ -1638,7 +1638,7 @@ sub getreqs {
 
   return unless $reqliblist; # possibly empty
   return qx($specglobals{__dpkg_query} -S$reqliblist)
-    =~ m/^(\S+?):(?:\S+?:):/g;
+    =~ m/(\S+?):(?:\S+?:)?/g;
 
 } # end getreqs()
 
