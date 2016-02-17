@@ -54,3 +54,7 @@ debbuild --define="_default_patch_flags $flags" \
 printf "\n\nbuilding Pod::Simple project\n\n"
 debbuild --define="_default_patch_flags $flags" \
 	-b$stage SPECS/perl-Pod-Simple.spec
+
+printf "\n\nbuilding HW project\n\n"
+debbuild --define="__scm $scm" --define="_default_patch_flags $flags" \
+	-b$stage SPECS/hw.spec
