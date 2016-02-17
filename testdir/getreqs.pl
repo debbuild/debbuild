@@ -149,15 +149,15 @@ my @reqlist2 = ('linux-vdso.so.1 =>  (0x00007ffe42bf1000)',
   return @res;
 =cut
 #print Dumper('<<<',@reqliblist);
-  my $in = join(' ',@reqliblist);
-#print Dumper('===',$in);
-#  my $res = qx(dpkg-query -S $in);
+  my $reqliblist = join(' ',@reqliblist);
+print Dumper('===',$reqliblist);
+#  my $res = qx(dpkg-query -S $reqliblist);
 #print Dumper('+++',$res);
 #  my @out = $res =~ m/(\S+?):/g;
 #print Dumper('>>>',@out);
 #  return @out;
 use re 'debug';
-return qx(dpkg-query -S $in) =~ m/(\S+?):(?:\S+?:)?/g;
+  return map { m/^(\S+?):/ } qx(dpkg-query -S $reqliblist);
 
 } # end getreqs()
 

@@ -1637,8 +1637,7 @@ sub getreqs {
 # we have this lib?" deps.  >:(
 
   return unless $reqliblist; # possibly empty
-  return qx($specglobals{__dpkg_query} -S$reqliblist)
-    =~ m/(\S+?):(?:\S+?:)?/g;
+  return map { m/^(\S+?):/ } qx($specglobals{__dpkg_query} -S$reqliblist);
 
 } # end getreqs()
 
