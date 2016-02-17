@@ -157,7 +157,7 @@ print Dumper('===',$reqliblist);
 #print Dumper('>>>',@out);
 #  return @out;
 use re 'debug';
-  return map { m/^(\S+?):/ } qx(dpkg-query -S $reqliblist);
+  return map { m/^([\w+-]+?):/ } qx(dpkg-query -S $reqliblist);
 
 } # end getreqs()
 
