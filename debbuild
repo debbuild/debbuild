@@ -1465,12 +1465,12 @@ sub splitver {
   # Hack up the perl(Class::SubClass) deps into something dpkg can understand.
   # May or may not be versioned.
   # We do this first so the version rewriter can do its magic next.
-  if (my ($mod,$ver) = $req =~ /^perl\((\S+)\)\s*([><=]+.+)?/) {
+  if (my ($mod,$ver) = $req =~ /^perl\(([\w:+-]+)\)\s*([><=]+.+)?/) {
     ($req = lc "lib$mod-perl") =~ s/::/-/g;
      $req .= $ver if $ver;
   }
   # Pick up the details of versioned buildreqs
-  return $req =~ /(\S+)\s*([><=]+)\s*([\w:.-]+)/;
+  return $req =~ /([\w.+-]+)\s*([><=]+)\s*([\w:.-]+)/;
 } # end splitver()
 
 
@@ -1637,7 +1637,7 @@ sub getreqs {
 # we have this lib?" deps.  >:(
 
   return unless $reqliblist; # possibly empty
-  return map { m/^(\S+?):/ } qx($specglobals{__dpkg_query} -S$reqliblist);
+  return map { m/^([\w:+-]+?):/ } qx($specglobals{__dpkg_query} -S$reqliblist);
 
 } # end getreqs()
 
