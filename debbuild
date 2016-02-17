@@ -1689,6 +1689,7 @@ sub expandmacros {
   }
   s/%{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
   s|%{getconfdir}|$specglobals{_libdir}/debbuild|g;
+  s/%{(__scm_setup\w+?)}/handle_macro_options("%$1")/eg;
 
   # Package data
   s/%{S:0}/%{source0}/g;
