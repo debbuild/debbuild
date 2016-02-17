@@ -1465,12 +1465,12 @@ sub splitver {
   # Hack up the perl(Class::SubClass) deps into something dpkg can understand.
   # May or may not be versioned.
   # We do this first so the version rewriter can do its magic next.
-  if (my ($mod,$ver) = $req =~ /^perl\(([\w:-]+)\)\s*([><=]+.+)?/) {
+  if (my ($mod,$ver) = $req =~ /^perl\((\S+)\)\s*([><=]+.+)?/) {
     ($req = lc "lib$mod-perl") =~ s/::/-/g;
      $req .= $ver if $ver;
   }
   # Pick up the details of versioned buildreqs
-  return $req =~ /([\w.-]+)\s*([><=]+)\s*([\w:.-]+)/;
+  return $req =~ /(\S+)\s*([><=]+)\s*([\w:.-]+)/;
 } # end splitver()
 
 
