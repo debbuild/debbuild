@@ -1590,10 +1590,11 @@ sub getreqs {
   my ($pkgtree) = @_;
 
   print "Checking library requirements...\n";
-  my @binlist = qx ( $specglobals{__find} $pkgtree -type f -perm 755 );
+  chomp( my @binlist = qx ( $specglobals{__find} $pkgtree -type f -perm 755 ) );
   return () unless @binlist;
 
-  my @reqlist = map { qx ( LANG=C $specglobals{__ldd} $_ ) } @binlist;
+  my $binlist = join(' ', @binlist);
+  my @reqlist = grep { ! m|^/| } qx ( LANG=C $specglobals{__ldd} $binlist );
 
   # Get the list of libs provided by this package.  Still doesn't
   # handle the case where the lib gets stuffed into a subpackage.  :/
