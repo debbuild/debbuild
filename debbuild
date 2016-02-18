@@ -354,6 +354,7 @@ sub parse_cmd {
   # Don't feel like coding my own option parser...
   Getopt::Long::GetOptions(
     'buildroot=s'   => \$specglobals{CBR},
+    'eval=s'        => sub { print expandmacros($_[1])."\n" },
     'short-circuit' => \$cmdopts{short},
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
     'noprep'        => \$specglobals{NOPREP},
@@ -370,7 +371,6 @@ sub parse_cmd {
     'with=s'      => \&define_handler, # dito for 'with|without=s'
     'without=s'   => \&define_handler,
     'define|D=s'  => \&define_handler,
-    'eval=s'      => \&eval_handler,
     'help|?'      => \&help_handler,
     'version'     => sub { print "debbuild v$version\n" },
     '<>'          => \&catchall # process non-option arguments
@@ -438,13 +438,6 @@ sub parse_cmd {
     } else {
       warn "WARNING: missing value for macro $macro in --$opt_name! Ignoring.\n";
     }
-  }
-  ## eval_handler()
-  # Wrap '--eval' argument in curly braces and print the expansion
-  sub eval_handler {
-    my ($opt,$arg) = @_;
-    $arg =~ s/^%(.+)$/%{$1}/ if $arg !~ m/%{.+}/;
-    print expandmacros($arg),"\n";
   }
   ## help_handler()
   # Factor-out the 'help' text. Could as well be SYNOPSIS in pod.
