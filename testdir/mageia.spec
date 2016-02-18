@@ -43,6 +43,8 @@ Group:          Development/GNOME and GTK+
 Requires:       %{libname} = %{version}
 #(!) MANDATORY
 Provides:       %{name}-devel = %{version}-%{release}
+BuildRequires:  %{mklibname pcap -d} > 1.4.0
+Requires:       %{mklibname pcap 1} > 1.4.0
 
 %description -n %{develname}
 This package contains the headers that programmers will need to develop
