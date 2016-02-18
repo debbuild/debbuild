@@ -5,20 +5,20 @@
 %define api 1.2
 # major is the part of the library name after the .so
 %define major 1
-%define libname %{mklibname %{name} %{api} %{major}}
-%define develname %{mklibname %{name} -d}
+%define libname %mklibname %{name} %{api} %{major}
+%define develname %mklibname %{name} -d
 
 # Original library name is libfoo
 %global shortname foo
-%global libname2 %{mklibname %{shortname} 1 2}
-%global devname %{mklibname -d %{shortname}}
+%global libname2 %mklibname %{shortname} 1 2
+%global devname %mklibname -d %{shortname}
 
 Name:           %{name}
 
 #(!) summary for SRPM only
 Summary:        C++ interface for popular GUI library gtk+
 Version:        %{version}
-Release:        %{mkrel %{rel} -c rc1}
+Release:        %mkrel %{rel} -c rc1
 License:        GPL2
 
 %description
