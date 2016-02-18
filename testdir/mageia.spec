@@ -19,6 +19,7 @@ Name:           %{name}
 Summary:        C++ interface for popular GUI library gtk+
 Version:        %{version}
 Release:        %{mkrel %{rel} -c rc1}
+License:        GPL2
 
 %description
 #Full and generic description of the whole package. (this will be the SRPM

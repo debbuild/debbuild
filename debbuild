@@ -1809,10 +1809,10 @@ sub handle_macro_options {
     s/$initvalue/$value/g;
   }
   pos = 0; # reset to start of $_
-  while (my ($option,$repl) = map { /{-(\w):(\S+)}/ } bracelet() ) {
+  while (my ($option,$repl) = map { /{-(\w):\s*(\S+)}/ } bracelet() ) {
     (my $result = $options{$option} ? $repl : '') =~ s/%{-(\w)\*}/$options{$1}/g;
     $repl =~ s/([*{}])/\\$1/g; # mask Perlish special characters
-    s/%{-$option:$repl}/$result/g;
+    s/%{-$option:\s*$repl}/$result/g;
   }
   pos = 0; # reset to start of $_
   while (my ($option) = map { /{-(\w)(?:\*)?}/ } bracelet() ) {

@@ -24,4 +24,4 @@ fi \
 # Macro: %mkrel [-c <snapver>] <number>
 # - %mkrel 1                    => 1%{?subrel:.%subrel}%{?dist}
 # - %mkrel -c rc1 1             => 0.rc1.1%{?subrel:.%subrel}%{?dist}
-%mkrel(c:) %{-c:0.%{-c*}.}%{1}%{?subrel:.%subrel}%{?dist:%dist}
+%mkrel(c:) %{-c: 0.%{-c*}.}%{1}%{?subrel:.%subrel}%{?dist:%dist}
