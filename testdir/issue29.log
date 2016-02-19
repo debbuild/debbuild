@@ -669,6 +669,102 @@ test -f %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz || exit 1
 test -f %{_sourcedir}/0002-Match-code-and-documentation.patch.zip || exit 1;\\
 %{uncompress:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:0002-Match-code-and-documentation.patch.zip}}}
 ';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC=4=';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC=5=';
+$VAR2 = '%{__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '%{__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'HMO<<<';
+$VAR2 = '%__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz';
+$VAR3 = '__scm_apply_patch';
+$VAR4 = '-q  -m0001-Second-way-of-secure-string-output.patch.xz';
+$VAR1 = 'HMO===';
+$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
+$VAR1 = 'HMO=1=';
+$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
+$VAR1 = '+++';
+$VAR2 = 'p';
+$VAR3 = '-p%{-p*}';
+$VAR1 = '+++';
+$VAR2 = 'q';
+$VAR3 = '-s';
+$VAR1 = 'HMO=2=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'HMO=3=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'HMO>>>';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC=4=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC=5=';
+$VAR2 = '/usr/bin/patch  -s';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/usr/bin/patch  -s';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/usr/bin/patch  -s';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC=4=';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC=5=';
+$VAR2 = '%{__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '%{__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'HMO<<<';
+$VAR2 = '%__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz';
+$VAR3 = '__scm_apply_patch';
+$VAR4 = '-q  -m0001-Second-way-of-secure-string-output.patch.xz';
+$VAR1 = 'HMO===';
+$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
+$VAR1 = 'HMO=1=';
+$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
+$VAR1 = '+++';
+$VAR2 = 'p';
+$VAR3 = '-p%{-p*}';
+$VAR1 = '+++';
+$VAR2 = 'q';
+$VAR3 = '-s';
+$VAR1 = 'HMO=2=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'HMO=3=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'HMO>>>';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC=4=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC=5=';
+$VAR2 = '/usr/bin/patch  -s';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/usr/bin/patch  -s';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/usr/bin/patch  -s';
 $VAR1 = 'EXPMAC=3=';
 $VAR2 = 'cd \'%{_builddir}\'
 %{__rm} -rf \'%{buildsubdir}\'
@@ -681,9 +777,9 @@ cd \'%{buildsubdir}\'
 %{__chmod} -Rf a+rX,u+w,go-w .
 %{nil}
 test -f %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-%{__xz} -dc \'%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz\' | %{__scm_apply_%{__scm} -q  -m0001-Second-way-of-secure-string-output.patch.xz}
+%{__xz} -dc \'%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz\' | /usr/bin/patch  -s
 test -f %{_sourcedir}/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-%{__unzip} -p %{_sourcedir}/0002-Match-code-and-documentation.patch.zip | %{__scm_apply_%{__scm} -q  -m0001-Second-way-of-secure-string-output.patch.xz}
+%{__unzip} -p %{_sourcedir}/0002-Match-code-and-documentation.patch.zip | /usr/bin/patch  -s
 ';
 $VAR1 = 'EXPMAC=4=';
 $VAR2 = 'cd \'%{_builddir}\'
@@ -697,9 +793,9 @@ cd \'%{buildsubdir}\'
 %{__chmod} -Rf a+rX,u+w,go-w .
 %{nil}
 test -f %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-%{__xz} -dc \'%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz\' | %{__scm_apply_%{__scm} -q  -m0001-Second-way-of-secure-string-output.patch.xz}
+%{__xz} -dc \'%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz\' | /usr/bin/patch  -s
 test -f %{_sourcedir}/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-%{__unzip} -p %{_sourcedir}/0002-Match-code-and-documentation.patch.zip | %{__scm_apply_%{__scm} -q  -m0001-Second-way-of-secure-string-output.patch.xz}
+%{__unzip} -p %{_sourcedir}/0002-Match-code-and-documentation.patch.zip | /usr/bin/patch  -s
 ';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%{_topdir}/BUILD';
@@ -891,142 +987,6 @@ cd \'advent\'
 /bin/chmod -Rf a+rX,u+w,go-w .
 
 test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-/usr/bin/xz -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | %{__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz}
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-/usr/bin/unzip -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | %{__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz}
-';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = 'cd \'/home/andreas/Work/tmp/rpm/BUILD\'
-/bin/rm -rf \'advent\'
-/bin/bzip2 -dc \'/home/andreas/Work/tmp/rpm/SOURCES/advent-1.0.tar.bz2\' | /bin/tar -xf -
-STATUS=$?
-if [ $STATUS -ne 0 ]; then
-  exit $STATUS
-fi
-cd \'advent\'
-/bin/chmod -Rf a+rX,u+w,go-w .
-
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-/usr/bin/xz -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | %{__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz}
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-/usr/bin/unzip -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | %{__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz}
-';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = 'cd \'/home/andreas/Work/tmp/rpm/BUILD\'
-/bin/rm -rf \'advent\'
-/bin/bzip2 -dc \'/home/andreas/Work/tmp/rpm/SOURCES/advent-1.0.tar.bz2\' | /bin/tar -xf -
-STATUS=$?
-if [ $STATUS -ne 0 ]; then
-  exit $STATUS
-fi
-cd \'advent\'
-/bin/chmod -Rf a+rX,u+w,go-w .
-
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-/usr/bin/xz -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | %{__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz}
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-/usr/bin/unzip -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | %{__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz}
-';
-$VAR1 = 'HMO<<<';
-$VAR2 = '%__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz';
-$VAR3 = '__scm_apply_patch';
-$VAR4 = '-q  -m0001-Second-way-of-secure-string-output.patch.xz';
-$VAR1 = 'HMO===';
-$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
-$VAR1 = 'HMO=1=';
-$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
-$VAR1 = '+++';
-$VAR2 = 'p';
-$VAR3 = '-p%{-p*}';
-$VAR1 = '+++';
-$VAR2 = 'q';
-$VAR3 = '-s';
-$VAR1 = 'HMO=2=';
-$VAR2 = '%{__patch}  -s';
-$VAR1 = 'HMO=3=';
-$VAR2 = '%{__patch}  -s';
-$VAR1 = 'HMO>>>';
-$VAR2 = '%{__patch}  -s';
-$VAR1 = 'HMO<<<';
-$VAR2 = '%__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz';
-$VAR3 = '__scm_apply_patch';
-$VAR4 = '-q  -m0001-Second-way-of-secure-string-output.patch.xz';
-$VAR1 = 'HMO===';
-$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
-$VAR1 = 'HMO=1=';
-$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
-$VAR1 = '+++';
-$VAR2 = 'p';
-$VAR3 = '-p%{-p*}';
-$VAR1 = '+++';
-$VAR2 = 'q';
-$VAR3 = '-s';
-$VAR1 = 'HMO=2=';
-$VAR2 = '%{__patch}  -s';
-$VAR1 = 'HMO=3=';
-$VAR2 = '%{__patch}  -s';
-$VAR1 = 'HMO>>>';
-$VAR2 = '%{__patch}  -s';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = 'cd \'/home/andreas/Work/tmp/rpm/BUILD\'
-/bin/rm -rf \'advent\'
-/bin/bzip2 -dc \'/home/andreas/Work/tmp/rpm/SOURCES/advent-1.0.tar.bz2\' | /bin/tar -xf -
-STATUS=$?
-if [ $STATUS -ne 0 ]; then
-  exit $STATUS
-fi
-cd \'advent\'
-/bin/chmod -Rf a+rX,u+w,go-w .
-
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-/usr/bin/xz -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | %{__patch}  -s
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-/usr/bin/unzip -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | %{__patch}  -s
-';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = 'cd \'/home/andreas/Work/tmp/rpm/BUILD\'
-/bin/rm -rf \'advent\'
-/bin/bzip2 -dc \'/home/andreas/Work/tmp/rpm/SOURCES/advent-1.0.tar.bz2\' | /bin/tar -xf -
-STATUS=$?
-if [ $STATUS -ne 0 ]; then
-  exit $STATUS
-fi
-cd \'advent\'
-/bin/chmod -Rf a+rX,u+w,go-w .
-
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-/usr/bin/xz -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | %{__patch}  -s
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-/usr/bin/unzip -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | %{__patch}  -s
-';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = 'cd \'/home/andreas/Work/tmp/rpm/BUILD\'
-/bin/rm -rf \'advent\'
-/bin/bzip2 -dc \'/home/andreas/Work/tmp/rpm/SOURCES/advent-1.0.tar.bz2\' | /bin/tar -xf -
-STATUS=$?
-if [ $STATUS -ne 0 ]; then
-  exit $STATUS
-fi
-cd \'advent\'
-/bin/chmod -Rf a+rX,u+w,go-w .
-
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-/usr/bin/xz -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | %{__patch}  -s
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-/usr/bin/unzip -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | %{__patch}  -s
-';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = 'cd \'/home/andreas/Work/tmp/rpm/BUILD\'
-/bin/rm -rf \'advent\'
-/bin/bzip2 -dc \'/home/andreas/Work/tmp/rpm/SOURCES/advent-1.0.tar.bz2\' | /bin/tar -xf -
-STATUS=$?
-if [ $STATUS -ne 0 ]; then
-  exit $STATUS
-fi
-cd \'advent\'
-/bin/chmod -Rf a+rX,u+w,go-w .
-
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
 /usr/bin/xz -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | /usr/bin/patch  -s
 test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;\\
 /usr/bin/unzip -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | /usr/bin/patch  -s
@@ -1047,21 +1007,5 @@ test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-outp
 test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;
 /usr/bin/unzip -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | /usr/bin/patch  -s
 ';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = 'cd \'/home/andreas/Work/tmp/rpm/BUILD\'
-/bin/rm -rf \'advent\'
-/bin/bzip2 -dc \'/home/andreas/Work/tmp/rpm/SOURCES/advent-1.0.tar.bz2\' | /bin/tar -xf -
-STATUS=$?
-if [ $STATUS -ne 0 ]; then
-  exit $STATUS
-fi
-cd \'advent\'
-/bin/chmod -Rf a+rX,u+w,go-w .
-
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;
-/usr/bin/xz -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | /usr/bin/patch  -s
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;
-/usr/bin/unzip -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | /usr/bin/patch  -s
-';
-Calling %prep script /var/tmp/deb-tmp.prep.3085...
+Calling %prep script /var/tmp/deb-tmp.prep.96945...
 patch unexpectedly ends in middle of line
