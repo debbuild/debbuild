@@ -1735,7 +1735,7 @@ sub expandmacros {
       s/%{$prefix:$arg}/$ENV{$arg}/g;
     } elsif ($prefix =~ /expand/) {
       # helper for parametrized macros
-      s/%{$prefix:.+}/$arg/g;
+      s/%{$prefix:.+}/expandmacros($arg)/eg;
     }
   }
   pos = 0; # reset to start of $_
