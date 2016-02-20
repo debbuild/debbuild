@@ -898,7 +898,7 @@ sub process_autopatch {
     $script{$stage} .= apply_patch($verbose,$plevel,$patchfile);
   } else { # now you're talkin', brother!
     for my $patch (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
-      my $patchfile = $pkgdata{main}{"patch$patch"};
+      my $patchfile = qq(%{_sourcedir}/$pkgdata{main}{"patch$patch"});
       $script{$stage} .= apply_patch($verbose,$plevel,$patchfile);
     }
   }
@@ -911,7 +911,7 @@ sub apply_patch {
   my ($verbose,$plevel,$patchfile) = @_;
   return '%{apply_patch'.
     ($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
-    " -m %{basename:$patchfile} %{_sourcedir}/$patchfile}\n";
+    " -m %{basename:$patchfile} $patchfile}\n";
 } # apply_patch()
 
 
