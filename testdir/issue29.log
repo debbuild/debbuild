@@ -4,8 +4,6 @@ $VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_topdir}';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=0=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=2=';
@@ -176,8 +174,6 @@ $VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_topdir}/SOURCES';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=0=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=2=';
@@ -200,8 +196,6 @@ $VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_topdir}/BUILD';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=0=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=2=';
@@ -224,8 +218,6 @@ $VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_topdir}/BUILD';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=0=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=2=';
@@ -598,8 +590,6 @@ $VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_topdir}/BUILD';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=0=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=2=';
@@ -622,8 +612,6 @@ $VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_topdir}/SOURCES';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=0=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=2=';
@@ -646,8 +634,6 @@ $VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_topdir}/SOURCES';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=0=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=2=';
@@ -670,8 +656,6 @@ $VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_topdir}/SOURCES';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=0=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=2=';
@@ -694,8 +678,6 @@ $VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_topdir}/SOURCES';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=0=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=2=';
@@ -718,8 +700,6 @@ $VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_topdir}/SOURCES';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=0=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=2=';
@@ -860,8 +840,10 @@ $VAR1 = 'EXPMAC=2=';
 $VAR2 = '%{__patch}  -s';
 $VAR1 = 'EXPMAC=3=';
 $VAR2 = '%{__patch}  -s';
-$VAR1 = 'EXPMAC>>>';
+$VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/usr/bin/patch  -s';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}}';
 $VAR1 = 'EXPMAC=0=';
@@ -892,8 +874,10 @@ $VAR1 = 'EXPMAC=2=';
 $VAR2 = '%{__patch}  -s';
 $VAR1 = 'EXPMAC=3=';
 $VAR2 = '%{__patch}  -s';
-$VAR1 = 'EXPMAC>>>';
+$VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/usr/bin/patch  -s';
 $VAR1 = 'EXPMAC=3=';
 $VAR2 = 'cd \'/home/andreas/Work/tmp/rpm/BUILD\'
 /bin/rm -rf \'advent\'
@@ -906,11 +890,11 @@ cd \'advent\'
 /bin/chmod -Rf a+rX,u+w,go-w .
 %{nil}
 test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-%{__xz} -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | %{__patch}  -s
+%{__xz} -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | /usr/bin/patch  -s
 test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-%{__unzip} -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | %{__patch}  -s
+%{__unzip} -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | /usr/bin/patch  -s
 ';
-$VAR1 = 'EXPMAC>>>';
+$VAR1 = 'EXPMAC=0=';
 $VAR2 = 'cd \'/home/andreas/Work/tmp/rpm/BUILD\'
 /bin/rm -rf \'advent\'
 /bin/bzip2 -dc \'/home/andreas/Work/tmp/rpm/SOURCES/advent-1.0.tar.bz2\' | /bin/tar -xf -
@@ -921,9 +905,32 @@ fi
 cd \'advent\'
 /bin/chmod -Rf a+rX,u+w,go-w .
 %{nil}
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;
-%{__xz} -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | %{__patch}  -s
-test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;
-%{__unzip} -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | %{__patch}  -s
+test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
+%{__xz} -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | /usr/bin/patch  -s
+test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;\\
+%{__unzip} -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | /usr/bin/patch  -s
 ';
-Calling %prep script /var/tmp/deb-tmp.prep.95265...
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{!?nil}';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '%{!?nil}';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = 'cd \'/home/andreas/Work/tmp/rpm/BUILD\'
+/bin/rm -rf \'advent\'
+/bin/bzip2 -dc \'/home/andreas/Work/tmp/rpm/SOURCES/advent-1.0.tar.bz2\' | /bin/tar -xf -
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+  exit $STATUS
+fi
+cd \'advent\'
+/bin/chmod -Rf a+rX,u+w,go-w .
+
+test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;
+/usr/bin/xz -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | /usr/bin/patch  -s
+test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;
+/usr/bin/unzip -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | /usr/bin/patch  -s
+';
+Calling %prep script /var/tmp/deb-tmp.prep.12843...
+patch unexpectedly ends in middle of line

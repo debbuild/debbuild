@@ -1783,6 +1783,7 @@ sub bracelet {
 # Expand 'simple' '%{macros}': %define's and %{all_the_rest}
 sub simplemacros {
   return unless m/%/;
+print Dumper('EXPMAC=0=',$_);
   while (/%{([a-z_]\w+)}/ig) {
     my $key = $1;
     if (defined $specglobals{$key}) {
