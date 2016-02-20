@@ -1709,6 +1709,8 @@ sub expandmacros {
   s/%\((.+)\)/my $in = expandmacros($1); chomp(my $res = qx($in)); $res/eg;
     # Yay!  ' characters apparently get properly exscapededed.
 
+  simplemacros();
+
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
   while (my ($prefix,$arg) = map { /{(\w+)\s+(.+)}/ } bracelet() ) {
     s/%{$prefix\s+$arg}/handle_macro_options("%$prefix $arg")/eg;
@@ -1752,19 +1754,7 @@ CONDMAC: while (my ($qex,$macro,$value) = map { /{([?!]+)(\w+)(?::(.+))?}/ }
   }
   pos = 0; # reset to start of $_
 
-  # %define's and %{all_the_rest}
-# note to self: find out valid chars for %define name/label so we can parse them
-  while (/%{([a-z0-9_-]+)}/ig) {
-    my $key = $1;
-    if (defined $specglobals{$key}) {
-      s/%{$key}/expandmacros($specglobals{$key})/eg;
-    } elsif (defined $pkgdata{main}{$key}) {
-      s/%{$key}/expandmacros($pkgdata{main}{$key})/eg;
-    }
-  }
-
-  # Special case "%__scm_apply_SCM":
-  $_ = expandmacros($_) if m/%{(\w+)\s+.+?}/;
+  simplemacros();
 
   # unescape multi-line macros
   s/\\"/"/g;
@@ -1781,6 +1771,21 @@ sub bracelet {
   return extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]);
 } # end bracelet()
 
+
+## simplemacros()
+# Expand 'simple' '%{macros}': %define's and %{all_the_rest}
+sub simplemacros {
+  return unless m/%/;
+  while (/%{([a-z_]\w+)}/ig) {
+    my $key = $1;
+    if (defined $specglobals{$key}) {
+      s/%{$key}/expandmacros($specglobals{$key})/eg;
+    } elsif (defined $pkgdata{main}{$key}) {
+      s/%{$key}/expandmacros($pkgdata{main}{$key})/eg;
+    }
+  }
+  pos = 0; # reset to start of $_
+} # end simplemacros()
 
 ## handle_macro_options()
 # Option handling for '%macro(ino:pts)'.
