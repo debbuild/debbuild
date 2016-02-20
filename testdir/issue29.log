@@ -1,142 +1,108 @@
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%{_topdir}';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_topdir}';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_topdir}';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_topdir}';
-$VAR1 = 'EXPMAC=4=';
+$VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_topdir}';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%(pwd)';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=2=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=3=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=3=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%{_arch}';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{_arch}';
 $VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_arch}';
+$VAR2 = 'i386';
 $VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_arch}';
+$VAR2 = 'i386';
 $VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_arch}';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_arch}';
-$VAR1 = 'EXPMAC=5=';
 $VAR2 = 'i386';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = 'i386';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%__scm';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{__scm}';
 $VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{__scm}';
+$VAR2 = 'patch';
 $VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{__scm}';
+$VAR2 = 'patch';
 $VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{__scm}';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{__scm}';
-$VAR1 = 'EXPMAC=5=';
 $VAR2 = 'patch';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = 'patch';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%{_tmppath}/%{name}-%{version}-root';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_tmppath}/%{name}-%{version}-root';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_tmppath}/%{name}-%{version}-root';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_tmppath}/%{name}-%{version}-root';
-$VAR1 = 'EXPMAC=4=';
+$VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_tmppath}/%{name}-%{version}-root';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%{_var}/tmp';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{_var}/tmp';
 $VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_var}/tmp';
+$VAR2 = '/var/tmp';
 $VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_var}/tmp';
+$VAR2 = '/var/tmp';
 $VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_var}/tmp';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_var}/tmp';
-$VAR1 = 'EXPMAC=5=';
 $VAR2 = '/var/tmp';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = '/var/tmp';
-$VAR1 = 'EXPMAC=5=';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/var/tmp/advent-1.0-root';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/var/tmp/advent-1.0-root';
+$VAR1 = 'EXPMAC=3=';
 $VAR2 = '/var/tmp/advent-1.0-root';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = '/var/tmp/advent-1.0-root';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%{_tmppath}';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_tmppath}';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_tmppath}';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_tmppath}';
-$VAR1 = 'EXPMAC=4=';
+$VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_tmppath}';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%{_var}/tmp';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{_var}/tmp';
 $VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_var}/tmp';
+$VAR2 = '/var/tmp';
 $VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_var}/tmp';
+$VAR2 = '/var/tmp';
 $VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_var}/tmp';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_var}/tmp';
-$VAR1 = 'EXPMAC=5=';
 $VAR2 = '/var/tmp';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = '/var/tmp';
-$VAR1 = 'EXPMAC=5=';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/var/tmp';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/var/tmp';
+$VAR1 = 'EXPMAC=3=';
 $VAR2 = '/var/tmp';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = '/var/tmp';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%{___build_template}';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{___build_template}';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{___build_template}';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{___build_template}';
-$VAR1 = 'EXPMAC=4=';
+$VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{___build_template}';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '#!%{___build_shell}\\
 %{___build_pre}\\
 %{nil}';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '#!%{___build_shell}\\
-%{___build_pre}\\
-%{nil}';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '#!%{___build_shell}\\
-%{___build_pre}\\
-%{nil}';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '#!%{___build_shell}\\
-%{___build_pre}\\
-%{nil}';
-$VAR1 = 'EXPMAC=4=';
+$VAR1 = 'EXPMAC=0=';
 $VAR2 = '#!%{___build_shell}\\
 %{___build_pre}\\
 %{nil}';
@@ -146,21 +112,15 @@ $VAR1 = 'EXPMAC=3=';
 $VAR2 = '%{?_buildshell:%{_buildshell}}%{!?_buildshell:/bin/sh}';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%{_buildshell}';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{_buildshell}';
 $VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_buildshell}';
+$VAR2 = '/bin/sh';
 $VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_buildshell}';
+$VAR2 = '/bin/sh';
 $VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_buildshell}';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_buildshell}';
-$VAR1 = 'EXPMAC=5=';
 $VAR2 = '/bin/sh';
 $VAR1 = 'EXPMAC>>>';
-$VAR2 = '/bin/sh';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '/bin/sh';
-$VAR1 = 'EXPMAC=5=';
 $VAR2 = '/bin/sh';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = '/bin/sh';
@@ -187,30 +147,7 @@ $VAR2 = '  RPM_SOURCE_DIR=\\"%{u2p:%{_sourcedir}}\\"\\
   umask 022\\
   cd \\"%{u2p:%{_builddir}}\\"\\
 ';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '  RPM_SOURCE_DIR=\\"%{u2p:%{_sourcedir}}\\"\\
-  RPM_BUILD_DIR=\\"%{u2p:%{_builddir}}\\"\\
-  RPM_OPT_FLAGS=\\"-O2 -g -march=i386 -mcpu=i686\\"\\
-  RPM_ARCH=\\"%{_arch}\\"\\
-  RPM_OS=\\"%{_os}\\"\\
-  export RPM_SOURCE_DIR RPM_BUILD_DIR RPM_OPT_FLAGS RPM_ARCH RPM_OS\\
-  RPM_DOC_DIR=\\"%{_docdir}\\"\\
-  export RPM_DOC_DIR\\
-  RPM_PACKAGE_NAME=\\"%{name}\\"\\
-  RPM_PACKAGE_VERSION=\\"%{version}\\"\\
-  RPM_PACKAGE_RELEASE=\\"%{release}\\"\\
-  export RPM_PACKAGE_NAME RPM_PACKAGE_VERSION RPM_PACKAGE_RELEASE\\
-  LANG=C\\
-  export LANG\\
-  unset CDPATH DISPLAY ||:\\
-  RPM_BUILD_ROOT=\\"%{u2p:%{buildroot}}\\"\\
-  export RPM_BUILD_ROOT\\
-  \\
-  set -x\\
-  umask 022\\
-  cd \\"%{u2p:%{_builddir}}\\"\\
-';
-$VAR1 = 'EXPMAC=2=';
+$VAR1 = 'EXPMAC=0=';
 $VAR2 = '  RPM_SOURCE_DIR=\\"%{u2p:%{_sourcedir}}\\"\\
   RPM_BUILD_DIR=\\"%{u2p:%{_builddir}}\\"\\
   RPM_OPT_FLAGS=\\"-O2 -g -march=i386 -mcpu=i686\\"\\
@@ -234,178 +171,148 @@ $VAR2 = '  RPM_SOURCE_DIR=\\"%{u2p:%{_sourcedir}}\\"\\
   cd \\"%{u2p:%{_builddir}}\\"\\
 ';
 $VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{_sourcedir}';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_sourcedir}';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_sourcedir}';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_sourcedir}';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_sourcedir}';
-$VAR1 = 'EXPMAC<<<';
 $VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=4=';
+$VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_topdir}/SOURCES';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%(pwd)';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=2=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=3=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
+$VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC>>>';
+$VAR1 = 'EXPMAC=2=';
 $VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC=5=';
+$VAR1 = 'EXPMAC=3=';
 $VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
 $VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{_builddir}';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_builddir}';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_builddir}';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_builddir}';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_builddir}';
-$VAR1 = 'EXPMAC<<<';
 $VAR2 = '%{_topdir}/BUILD';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_topdir}/BUILD';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_topdir}/BUILD';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_topdir}/BUILD';
-$VAR1 = 'EXPMAC=4=';
+$VAR1 = 'EXPMAC=0=';
 $VAR2 = '%{_topdir}/BUILD';
 $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%(pwd)';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=2=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=3=';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
+$VAR1 = 'EXPMAC=1=';
 $VAR2 = '/home/andreas/Work/tmp/rpm/BUILD';
-$VAR1 = 'EXPMAC>>>';
+$VAR1 = 'EXPMAC=2=';
 $VAR2 = '/home/andreas/Work/tmp/rpm/BUILD';
-$VAR1 = 'EXPMAC=5=';
+$VAR1 = 'EXPMAC=3=';
 $VAR2 = '/home/andreas/Work/tmp/rpm/BUILD';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = '/home/andreas/Work/tmp/rpm/BUILD';
 $VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{buildroot}';
+$VAR2 = '%{_topdir}/BUILD';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{_topdir}/BUILD';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%(pwd)';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{buildroot}';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{buildroot}';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{buildroot}';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{buildroot}';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/var/tmp/advent-1.0-root';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
 $VAR1 = 'EXPMAC>>>';
-$VAR2 = '/var/tmp/advent-1.0-root';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/BUILD';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/BUILD';
 $VAR1 = 'EXPMAC=3=';
-$VAR2 = '  RPM_SOURCE_DIR=\\"/home/andreas/Work/tmp/rpm/SOURCES\\"\\
-  RPM_BUILD_DIR=\\"/home/andreas/Work/tmp/rpm/BUILD\\"\\
+$VAR2 = '/home/andreas/Work/tmp/rpm/BUILD';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm/BUILD';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{_datadir}/doc';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{_datadir}/doc';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{_prefix}/share';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{_prefix}/share';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/usr/share';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/usr/share';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/usr/share';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/usr/share';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/usr/share/doc';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/usr/share/doc';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/usr/share/doc';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/usr/share/doc';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '  RPM_SOURCE_DIR=\\"%{u2p:/home/andreas/Work/tmp/rpm/SOURCES}\\"\\
+  RPM_BUILD_DIR=\\"%{u2p:/home/andreas/Work/tmp/rpm/BUILD}\\"\\
   RPM_OPT_FLAGS=\\"-O2 -g -march=i386 -mcpu=i686\\"\\
-  RPM_ARCH=\\"%{_arch}\\"\\
-  RPM_OS=\\"%{_os}\\"\\
+  RPM_ARCH=\\"i386\\"\\
+  RPM_OS=\\"linux\\"\\
   export RPM_SOURCE_DIR RPM_BUILD_DIR RPM_OPT_FLAGS RPM_ARCH RPM_OS\\
-  RPM_DOC_DIR=\\"%{_docdir}\\"\\
+  RPM_DOC_DIR=\\"/usr/share/doc\\"\\
   export RPM_DOC_DIR\\
-  RPM_PACKAGE_NAME=\\"%{name}\\"\\
-  RPM_PACKAGE_VERSION=\\"%{version}\\"\\
-  RPM_PACKAGE_RELEASE=\\"%{release}\\"\\
+  RPM_PACKAGE_NAME=\\"advent\\"\\
+  RPM_PACKAGE_VERSION=\\"1.0\\"\\
+  RPM_PACKAGE_RELEASE=\\"5\\"\\
   export RPM_PACKAGE_NAME RPM_PACKAGE_VERSION RPM_PACKAGE_RELEASE\\
   LANG=C\\
   export LANG\\
   unset CDPATH DISPLAY ||:\\
-  RPM_BUILD_ROOT=\\"/var/tmp/advent-1.0-root\\"\\
+  RPM_BUILD_ROOT=\\"%{u2p:/var/tmp/advent-1.0-root}\\"\\
   export RPM_BUILD_ROOT\\
   \\
   set -x\\
   umask 022\\
-  cd \\"/home/andreas/Work/tmp/rpm/BUILD\\"\\
+  cd \\"%{u2p:/home/andreas/Work/tmp/rpm/BUILD}\\"\\
 ';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '  RPM_SOURCE_DIR=\\"/home/andreas/Work/tmp/rpm/SOURCES\\"\\
-  RPM_BUILD_DIR=\\"/home/andreas/Work/tmp/rpm/BUILD\\"\\
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '  RPM_SOURCE_DIR=\\"%{u2p:/home/andreas/Work/tmp/rpm/SOURCES}\\"\\
+  RPM_BUILD_DIR=\\"%{u2p:/home/andreas/Work/tmp/rpm/BUILD}\\"\\
   RPM_OPT_FLAGS=\\"-O2 -g -march=i386 -mcpu=i686\\"\\
-  RPM_ARCH=\\"%{_arch}\\"\\
-  RPM_OS=\\"%{_os}\\"\\
+  RPM_ARCH=\\"i386\\"\\
+  RPM_OS=\\"linux\\"\\
   export RPM_SOURCE_DIR RPM_BUILD_DIR RPM_OPT_FLAGS RPM_ARCH RPM_OS\\
-  RPM_DOC_DIR=\\"%{_docdir}\\"\\
+  RPM_DOC_DIR=\\"/usr/share/doc\\"\\
   export RPM_DOC_DIR\\
-  RPM_PACKAGE_NAME=\\"%{name}\\"\\
-  RPM_PACKAGE_VERSION=\\"%{version}\\"\\
-  RPM_PACKAGE_RELEASE=\\"%{release}\\"\\
+  RPM_PACKAGE_NAME=\\"advent\\"\\
+  RPM_PACKAGE_VERSION=\\"1.0\\"\\
+  RPM_PACKAGE_RELEASE=\\"5\\"\\
   export RPM_PACKAGE_NAME RPM_PACKAGE_VERSION RPM_PACKAGE_RELEASE\\
   LANG=C\\
   export LANG\\
   unset CDPATH DISPLAY ||:\\
-  RPM_BUILD_ROOT=\\"/var/tmp/advent-1.0-root\\"\\
+  RPM_BUILD_ROOT=\\"%{u2p:/var/tmp/advent-1.0-root}\\"\\
   export RPM_BUILD_ROOT\\
   \\
   set -x\\
   umask 022\\
-  cd \\"/home/andreas/Work/tmp/rpm/BUILD\\"\\
+  cd \\"%{u2p:/home/andreas/Work/tmp/rpm/BUILD}\\"\\
 ';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{_datadir}/doc';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_datadir}/doc';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_datadir}/doc';
 $VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_datadir}/doc';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_datadir}/doc';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{_prefix}/share';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_prefix}/share';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_prefix}/share';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_prefix}/share';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_prefix}/share';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/usr/share';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/usr/share';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/usr/share/doc';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/usr/share/doc';
-$VAR1 = 'EXPMAC=5=';
 $VAR2 = '  RPM_SOURCE_DIR=\\"/home/andreas/Work/tmp/rpm/SOURCES\\"\\
   RPM_BUILD_DIR=\\"/home/andreas/Work/tmp/rpm/BUILD\\"\\
   RPM_OPT_FLAGS=\\"-O2 -g -march=i386 -mcpu=i686\\"\\
@@ -455,13 +362,59 @@ $VAR1 = 'EXPMAC<<<';
 $VAR2 = '%{!?nil}';
 $VAR1 = 'EXPMAC=3=';
 $VAR2 = '%{!?nil}';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = '';
-$VAR1 = 'EXPMAC=5=';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '#!/bin/sh\\
+  RPM_SOURCE_DIR="/home/andreas/Work/tmp/rpm/SOURCES"
+  RPM_BUILD_DIR="/home/andreas/Work/tmp/rpm/BUILD"
+  RPM_OPT_FLAGS="-O2 -g -march=i386 -mcpu=i686"
+  RPM_ARCH="i386"
+  RPM_OS="linux"
+  export RPM_SOURCE_DIR RPM_BUILD_DIR RPM_OPT_FLAGS RPM_ARCH RPM_OS
+  RPM_DOC_DIR="/usr/share/doc"
+  export RPM_DOC_DIR
+  RPM_PACKAGE_NAME="advent"
+  RPM_PACKAGE_VERSION="1.0"
+  RPM_PACKAGE_RELEASE="5"
+  export RPM_PACKAGE_NAME RPM_PACKAGE_VERSION RPM_PACKAGE_RELEASE
+  LANG=C
+  export LANG
+  unset CDPATH DISPLAY ||:
+  RPM_BUILD_ROOT="/var/tmp/advent-1.0-root"
+  export RPM_BUILD_ROOT
+  \\
+  set -x
+  umask 022
+  cd "/home/andreas/Work/tmp/rpm/BUILD"
+\\
+';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '#!/bin/sh\\
+  RPM_SOURCE_DIR="/home/andreas/Work/tmp/rpm/SOURCES"
+  RPM_BUILD_DIR="/home/andreas/Work/tmp/rpm/BUILD"
+  RPM_OPT_FLAGS="-O2 -g -march=i386 -mcpu=i686"
+  RPM_ARCH="i386"
+  RPM_OS="linux"
+  export RPM_SOURCE_DIR RPM_BUILD_DIR RPM_OPT_FLAGS RPM_ARCH RPM_OS
+  RPM_DOC_DIR="/usr/share/doc"
+  export RPM_DOC_DIR
+  RPM_PACKAGE_NAME="advent"
+  RPM_PACKAGE_VERSION="1.0"
+  RPM_PACKAGE_RELEASE="5"
+  export RPM_PACKAGE_NAME RPM_PACKAGE_VERSION RPM_PACKAGE_RELEASE
+  LANG=C
+  export LANG
+  unset CDPATH DISPLAY ||:
+  RPM_BUILD_ROOT="/var/tmp/advent-1.0-root"
+  export RPM_BUILD_ROOT
+  \\
+  set -x
+  umask 022
+  cd "/home/andreas/Work/tmp/rpm/BUILD"
+\\
+';
+$VAR1 = 'EXPMAC=3=';
 $VAR2 = '#!/bin/sh\\
   RPM_SOURCE_DIR="/home/andreas/Work/tmp/rpm/SOURCES"
   RPM_BUILD_DIR="/home/andreas/Work/tmp/rpm/BUILD"
@@ -511,7 +464,57 @@ $VAR2 = '#!/bin/sh
   cd "/home/andreas/Work/tmp/rpm/BUILD"
 \\
 ';
-$VAR1 = 'EXPMAC=5=';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '#!/bin/sh
+  RPM_SOURCE_DIR="/home/andreas/Work/tmp/rpm/SOURCES"
+  RPM_BUILD_DIR="/home/andreas/Work/tmp/rpm/BUILD"
+  RPM_OPT_FLAGS="-O2 -g -march=i386 -mcpu=i686"
+  RPM_ARCH="i386"
+  RPM_OS="linux"
+  export RPM_SOURCE_DIR RPM_BUILD_DIR RPM_OPT_FLAGS RPM_ARCH RPM_OS
+  RPM_DOC_DIR="/usr/share/doc"
+  export RPM_DOC_DIR
+  RPM_PACKAGE_NAME="advent"
+  RPM_PACKAGE_VERSION="1.0"
+  RPM_PACKAGE_RELEASE="5"
+  export RPM_PACKAGE_NAME RPM_PACKAGE_VERSION RPM_PACKAGE_RELEASE
+  LANG=C
+  export LANG
+  unset CDPATH DISPLAY ||:
+  RPM_BUILD_ROOT="/var/tmp/advent-1.0-root"
+  export RPM_BUILD_ROOT
+  \\
+  set -x
+  umask 022
+  cd "/home/andreas/Work/tmp/rpm/BUILD"
+\\
+';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '#!/bin/sh
+  RPM_SOURCE_DIR="/home/andreas/Work/tmp/rpm/SOURCES"
+  RPM_BUILD_DIR="/home/andreas/Work/tmp/rpm/BUILD"
+  RPM_OPT_FLAGS="-O2 -g -march=i386 -mcpu=i686"
+  RPM_ARCH="i386"
+  RPM_OS="linux"
+  export RPM_SOURCE_DIR RPM_BUILD_DIR RPM_OPT_FLAGS RPM_ARCH RPM_OS
+  RPM_DOC_DIR="/usr/share/doc"
+  export RPM_DOC_DIR
+  RPM_PACKAGE_NAME="advent"
+  RPM_PACKAGE_VERSION="1.0"
+  RPM_PACKAGE_RELEASE="5"
+  export RPM_PACKAGE_NAME RPM_PACKAGE_VERSION RPM_PACKAGE_RELEASE
+  LANG=C
+  export LANG
+  unset CDPATH DISPLAY ||:
+  RPM_BUILD_ROOT="/var/tmp/advent-1.0-root"
+  export RPM_BUILD_ROOT
+  \\
+  set -x
+  umask 022
+  cd "/home/andreas/Work/tmp/rpm/BUILD"
+\\
+';
+$VAR1 = 'EXPMAC=3=';
 $VAR2 = '#!/bin/sh
   RPM_SOURCE_DIR="/home/andreas/Work/tmp/rpm/SOURCES"
   RPM_BUILD_DIR="/home/andreas/Work/tmp/rpm/BUILD"
@@ -575,7 +578,7 @@ cd \'%{buildsubdir}\'
 %{apply_patch -q -m %{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz} %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}
 %{apply_patch -q -m %{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} %{_sourcedir}/0002-Match-code-and-documentation.patch.zip}
 ';
-$VAR1 = 'EXPMAC=1=';
+$VAR1 = 'EXPMAC=0=';
 $VAR2 = 'cd \'%{_builddir}\'
 %{__rm} -rf \'%{buildsubdir}\'
 %{__bzip2} -dc \'%{_sourcedir}/%{name}-%{version}.tar.bz2\' | %{__tar} -xf -
@@ -588,6 +591,164 @@ cd \'%{buildsubdir}\'
 %{__scm_setup_patch -q}
 %{apply_patch -q -m %{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz} %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}
 %{apply_patch -q -m %{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} %{_sourcedir}/0002-Match-code-and-documentation.patch.zip}
+';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{_topdir}/BUILD';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{_topdir}/BUILD';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%(pwd)';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/BUILD';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/BUILD';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/BUILD';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm/BUILD';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%(pwd)';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%(pwd)';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%(pwd)';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%(pwd)';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%(pwd)';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = 'cd \'/home/andreas/Work/tmp/rpm/BUILD\'
+/bin/rm -rf \'advent\'
+/bin/bzip2 -dc \'/home/andreas/Work/tmp/rpm/SOURCES/advent-1.0.tar.bz2\' | /bin/tar -xf -
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+  exit $STATUS
+fi
+cd \'advent\'
+/bin/chmod -Rf a+rX,u+w,go-w .
+%{__scm_setup_patch -q}
+%{apply_patch -q -m %{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz} /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}
+%{apply_patch -q -m %{basename:/home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip} /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip}
 ';
 $VAR1 = 'HMO<<<';
 $VAR2 = '%__scm_setup_patch -q';
@@ -604,9 +765,9 @@ $VAR2 = '%{nil}';
 $VAR1 = 'HMO>>>';
 $VAR2 = '%{nil}';
 $VAR1 = 'HMO<<<';
-$VAR2 = '%apply_patch -q -m %{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz} %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz';
+$VAR2 = '%apply_patch -q -m %{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz} /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz';
 $VAR3 = 'apply_patch';
-$VAR4 = '-q -m %{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz} %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz';
+$VAR4 = '-q -m %{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz} /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz';
 $VAR1 = 'HMO===';
 $VAR2 = 'test -f %{1} || exit 1;\\
 %{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*}} %{-m:-m%{-m*}}}}';
@@ -621,17 +782,17 @@ $VAR2 = 'm';
 $VAR3 = '-m%{-m*}}}';
 $VAR1 = 'HMO=2=';
 $VAR2 = 'test -f %{1} || exit 1;\\
-%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q}  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}}';
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q}  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}}}';
 $VAR1 = 'HMO=3=';
 $VAR2 = 'test -f %{1} || exit 1;\\
-%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}}';
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}}}';
 $VAR1 = 'HMO>>>';
-$VAR2 = 'test -f %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-%{uncompress:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}}';
+$VAR2 = 'test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
+%{uncompress:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}}}';
 $VAR1 = 'HMO<<<';
-$VAR2 = '%apply_patch -q -m %{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} %{_sourcedir}/0002-Match-code-and-documentation.patch.zip';
+$VAR2 = '%apply_patch -q -m %{basename:/home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip} /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip';
 $VAR3 = 'apply_patch';
-$VAR4 = '-q -m %{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} %{_sourcedir}/0002-Match-code-and-documentation.patch.zip';
+$VAR4 = '-q -m %{basename:/home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip} /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip';
 $VAR1 = 'HMO===';
 $VAR2 = 'test -f %{1} || exit 1;\\
 %{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*}} %{-m:-m%{-m*}}}}';
@@ -646,392 +807,14 @@ $VAR2 = 'm';
 $VAR3 = '-m%{-m*}}}';
 $VAR1 = 'HMO=2=';
 $VAR2 = 'test -f %{1} || exit 1;\\
-%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q}  -m%{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip}}}';
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q}  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip}}}';
 $VAR1 = 'HMO=3=';
 $VAR2 = 'test -f %{1} || exit 1;\\
-%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip}}}';
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip}}}';
 $VAR1 = 'HMO>>>';
-$VAR2 = 'test -f %{_sourcedir}/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-%{uncompress:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip}}}';
+$VAR2 = 'test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;\\
+%{uncompress:/home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip}}}';
 $VAR1 = 'EXPMAC=2=';
-$VAR2 = 'cd \'%{_builddir}\'
-%{__rm} -rf \'%{buildsubdir}\'
-%{__bzip2} -dc \'%{_sourcedir}/%{name}-%{version}.tar.bz2\' | %{__tar} -xf -
-STATUS=$?
-if [ $STATUS -ne 0 ]; then
-  exit $STATUS
-fi
-cd \'%{buildsubdir}\'
-%{__chmod} -Rf a+rX,u+w,go-w .
-%{nil}
-test -f %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-%{uncompress:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}}
-test -f %{_sourcedir}/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-%{uncompress:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip}}}
-';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '%{__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'HMO<<<';
-$VAR2 = '%__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz';
-$VAR3 = '__scm_apply_patch';
-$VAR4 = '-q  -m0001-Second-way-of-secure-string-output.patch.xz';
-$VAR1 = 'HMO===';
-$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
-$VAR1 = 'HMO=1=';
-$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
-$VAR1 = '+++';
-$VAR2 = 'p';
-$VAR3 = '-p%{-p*}';
-$VAR1 = '+++';
-$VAR2 = 'q';
-$VAR3 = '-s';
-$VAR1 = 'HMO=2=';
-$VAR2 = '%{__patch}  -s';
-$VAR1 = 'HMO=3=';
-$VAR2 = '%{__patch}  -s';
-$VAR1 = 'HMO>>>';
-$VAR2 = '%{__patch}  -s';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '%{__patch}  -s';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '%{__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
-$VAR1 = 'HMO<<<';
-$VAR2 = '%__scm_apply_patch -q  -m0001-Second-way-of-secure-string-output.patch.xz';
-$VAR3 = '__scm_apply_patch';
-$VAR4 = '-q  -m0001-Second-way-of-secure-string-output.patch.xz';
-$VAR1 = 'HMO===';
-$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
-$VAR1 = 'HMO=1=';
-$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
-$VAR1 = '+++';
-$VAR2 = 'p';
-$VAR3 = '-p%{-p*}';
-$VAR1 = '+++';
-$VAR2 = 'q';
-$VAR3 = '-s';
-$VAR1 = 'HMO=2=';
-$VAR2 = '%{__patch}  -s';
-$VAR1 = 'HMO=3=';
-$VAR2 = '%{__patch}  -s';
-$VAR1 = 'HMO>>>';
-$VAR2 = '%{__patch}  -s';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '%{__patch}  -s';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = 'cd \'%{_builddir}\'
-%{__rm} -rf \'%{buildsubdir}\'
-%{__bzip2} -dc \'%{_sourcedir}/%{name}-%{version}.tar.bz2\' | %{__tar} -xf -
-STATUS=$?
-if [ $STATUS -ne 0 ]; then
-  exit $STATUS
-fi
-cd \'%{buildsubdir}\'
-%{__chmod} -Rf a+rX,u+w,go-w .
-%{nil}
-test -f %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-%{__xz} -dc \'%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz\' | %{__patch}  -s
-test -f %{_sourcedir}/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-%{__unzip} -p %{_sourcedir}/0002-Match-code-and-documentation.patch.zip | %{__patch}  -s
-';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = 'cd \'%{_builddir}\'
-%{__rm} -rf \'%{buildsubdir}\'
-%{__bzip2} -dc \'%{_sourcedir}/%{name}-%{version}.tar.bz2\' | %{__tar} -xf -
-STATUS=$?
-if [ $STATUS -ne 0 ]; then
-  exit $STATUS
-fi
-cd \'%{buildsubdir}\'
-%{__chmod} -Rf a+rX,u+w,go-w .
-%{nil}
-test -f %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-%{__xz} -dc \'%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz\' | %{__patch}  -s
-test -f %{_sourcedir}/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-%{__unzip} -p %{_sourcedir}/0002-Match-code-and-documentation.patch.zip | %{__patch}  -s
-';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{_topdir}/BUILD';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_topdir}/BUILD';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_topdir}/BUILD';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_topdir}/BUILD';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_topdir}/BUILD';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm/BUILD';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm/BUILD';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '%{_topdir}/SOURCES';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%(pwd)';
-$VAR1 = 'EXPMAC=1=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=2=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
-$VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{!?nil}';
-$VAR1 = 'EXPMAC=3=';
-$VAR2 = '%{!?nil}';
-$VAR1 = 'EXPMAC=4=';
-$VAR2 = '';
-$VAR1 = 'EXPMAC=5=';
-$VAR2 = '';
-$VAR1 = 'EXPMAC>>>';
-$VAR2 = '';
-$VAR1 = 'EXPMAC=5=';
 $VAR2 = 'cd \'/home/andreas/Work/tmp/rpm/BUILD\'
 /bin/rm -rf \'advent\'
 /bin/bzip2 -dc \'/home/andreas/Work/tmp/rpm/SOURCES/advent-1.0.tar.bz2\' | /bin/tar -xf -
@@ -1041,11 +824,91 @@ if [ $STATUS -ne 0 ]; then
 fi
 cd \'advent\'
 /bin/chmod -Rf a+rX,u+w,go-w .
-
+%{nil}
 test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-/usr/bin/xz -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | /usr/bin/patch  -s
+%{uncompress:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}}}
 test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-/usr/bin/unzip -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | /usr/bin/patch  -s
+%{uncompress:/home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip}}}
+';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '%{__scm_apply_patch -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR1 = 'HMO<<<';
+$VAR2 = '%__scm_apply_patch -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR3 = '__scm_apply_patch';
+$VAR4 = '-q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'HMO===';
+$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
+$VAR1 = 'HMO=1=';
+$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
+$VAR1 = '+++';
+$VAR2 = 'p';
+$VAR3 = '-p%{-p*}';
+$VAR1 = '+++';
+$VAR2 = 'q';
+$VAR3 = '-s';
+$VAR1 = 'HMO=2=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'HMO=3=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'HMO>>>';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR1 = 'EXPMAC=0=';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '%{__scm_apply_patch -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR1 = 'HMO<<<';
+$VAR2 = '%__scm_apply_patch -q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR3 = '__scm_apply_patch';
+$VAR4 = '-q  -m%{basename:/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'HMO===';
+$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
+$VAR1 = 'HMO=1=';
+$VAR2 = '%{__patch} %{-p:-p%{-p*}} %{-q:-s}';
+$VAR1 = '+++';
+$VAR2 = 'p';
+$VAR3 = '-p%{-p*}';
+$VAR1 = '+++';
+$VAR2 = 'q';
+$VAR3 = '-s';
+$VAR1 = 'HMO=2=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'HMO=3=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'HMO>>>';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '%{__patch}  -s';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = 'cd \'/home/andreas/Work/tmp/rpm/BUILD\'
+/bin/rm -rf \'advent\'
+/bin/bzip2 -dc \'/home/andreas/Work/tmp/rpm/SOURCES/advent-1.0.tar.bz2\' | /bin/tar -xf -
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+  exit $STATUS
+fi
+cd \'advent\'
+/bin/chmod -Rf a+rX,u+w,go-w .
+%{nil}
+test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
+%{__xz} -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | %{__patch}  -s
+test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;\\
+%{__unzip} -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | %{__patch}  -s
 ';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = 'cd \'/home/andreas/Work/tmp/rpm/BUILD\'
@@ -1057,11 +920,10 @@ if [ $STATUS -ne 0 ]; then
 fi
 cd \'advent\'
 /bin/chmod -Rf a+rX,u+w,go-w .
-
+%{nil}
 test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz || exit 1;
-/usr/bin/xz -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | /usr/bin/patch  -s
+%{__xz} -dc \'/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz\' | %{__patch}  -s
 test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;
-/usr/bin/unzip -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | /usr/bin/patch  -s
+%{__unzip} -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | %{__patch}  -s
 ';
-Calling %prep script /var/tmp/deb-tmp.prep.16163...
-patch unexpectedly ends in middle of line
+Calling %prep script /var/tmp/deb-tmp.prep.95265...
