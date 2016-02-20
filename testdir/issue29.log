@@ -572,8 +572,8 @@ fi
 cd \'%{buildsubdir}\'
 %{__chmod} -Rf a+rX,u+w,go-w .
 %{__scm_setup_patch -q}
-%{apply_patch -q -m %{basename:0001-Second-way-of-secure-string-output.patch.xz} %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}
-%{apply_patch -q -m %{basename:0002-Match-code-and-documentation.patch.zip} %{_sourcedir}/0002-Match-code-and-documentation.patch.zip}
+%{apply_patch -q -m %{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz} %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}
+%{apply_patch -q -m %{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} %{_sourcedir}/0002-Match-code-and-documentation.patch.zip}
 ';
 $VAR1 = 'EXPMAC=1=';
 $VAR2 = 'cd \'%{_builddir}\'
@@ -586,8 +586,8 @@ fi
 cd \'%{buildsubdir}\'
 %{__chmod} -Rf a+rX,u+w,go-w .
 %{__scm_setup_patch -q}
-%{apply_patch -q -m %{basename:0001-Second-way-of-secure-string-output.patch.xz} %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}
-%{apply_patch -q -m %{basename:0002-Match-code-and-documentation.patch.zip} %{_sourcedir}/0002-Match-code-and-documentation.patch.zip}
+%{apply_patch -q -m %{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz} %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}
+%{apply_patch -q -m %{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} %{_sourcedir}/0002-Match-code-and-documentation.patch.zip}
 ';
 $VAR1 = 'HMO<<<';
 $VAR2 = '%__scm_setup_patch -q';
@@ -604,9 +604,9 @@ $VAR2 = '%{nil}';
 $VAR1 = 'HMO>>>';
 $VAR2 = '%{nil}';
 $VAR1 = 'HMO<<<';
-$VAR2 = '%apply_patch -q -m %{basename:0001-Second-way-of-secure-string-output.patch.xz} %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz';
+$VAR2 = '%apply_patch -q -m %{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz} %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz';
 $VAR3 = 'apply_patch';
-$VAR4 = '-q -m %{basename:0001-Second-way-of-secure-string-output.patch.xz} %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz';
+$VAR4 = '-q -m %{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz} %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz';
 $VAR1 = 'HMO===';
 $VAR2 = 'test -f %{1} || exit 1;\\
 %{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*}} %{-m:-m%{-m*}}}}';
@@ -621,17 +621,17 @@ $VAR2 = 'm';
 $VAR3 = '-m%{-m*}}}';
 $VAR1 = 'HMO=2=';
 $VAR2 = 'test -f %{1} || exit 1;\\
-%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q}  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}}';
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q}  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}}';
 $VAR1 = 'HMO=3=';
 $VAR2 = 'test -f %{1} || exit 1;\\
-%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}}';
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}}';
 $VAR1 = 'HMO>>>';
 $VAR2 = 'test -f %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-%{uncompress:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}}';
+%{uncompress:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}}';
 $VAR1 = 'HMO<<<';
-$VAR2 = '%apply_patch -q -m %{basename:0002-Match-code-and-documentation.patch.zip} %{_sourcedir}/0002-Match-code-and-documentation.patch.zip';
+$VAR2 = '%apply_patch -q -m %{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} %{_sourcedir}/0002-Match-code-and-documentation.patch.zip';
 $VAR3 = 'apply_patch';
-$VAR4 = '-q -m %{basename:0002-Match-code-and-documentation.patch.zip} %{_sourcedir}/0002-Match-code-and-documentation.patch.zip';
+$VAR4 = '-q -m %{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} %{_sourcedir}/0002-Match-code-and-documentation.patch.zip';
 $VAR1 = 'HMO===';
 $VAR2 = 'test -f %{1} || exit 1;\\
 %{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*}} %{-m:-m%{-m*}}}}';
@@ -646,13 +646,13 @@ $VAR2 = 'm';
 $VAR3 = '-m%{-m*}}}';
 $VAR1 = 'HMO=2=';
 $VAR2 = 'test -f %{1} || exit 1;\\
-%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q}  -m%{basename:0002-Match-code-and-documentation.patch.zip}}}';
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q}  -m%{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip}}}';
 $VAR1 = 'HMO=3=';
 $VAR2 = 'test -f %{1} || exit 1;\\
-%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:0002-Match-code-and-documentation.patch.zip}}}';
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip}}}';
 $VAR1 = 'HMO>>>';
 $VAR2 = 'test -f %{_sourcedir}/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-%{uncompress:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:0002-Match-code-and-documentation.patch.zip}}}';
+%{uncompress:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip}}}';
 $VAR1 = 'EXPMAC=2=';
 $VAR2 = 'cd \'%{_builddir}\'
 %{__rm} -rf \'%{buildsubdir}\'
@@ -665,16 +665,58 @@ cd \'%{buildsubdir}\'
 %{__chmod} -Rf a+rX,u+w,go-w .
 %{nil}
 test -f %{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz || exit 1;\\
-%{uncompress:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}}
+%{uncompress:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}}
 test -f %{_sourcedir}/0002-Match-code-and-documentation.patch.zip || exit 1;\\
-%{uncompress:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:0002-Match-code-and-documentation.patch.zip}}}
+%{uncompress:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip} | %{expand:%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0002-Match-code-and-documentation.patch.zip}}}
 ';
 $VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}';
 $VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}';
 $VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC=4=';
+$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC=4=';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%(pwd)';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=4=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=5=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=5=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC=5=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}';
 $VAR1 = 'EXPMAC=3=';
 $VAR2 = '%{__scm_apply_%{__scm} -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
 $VAR1 = 'EXPMAC=4=';
@@ -704,11 +746,53 @@ $VAR2 = '%{__patch}  -s';
 $VAR1 = 'EXPMAC>>>';
 $VAR2 = '%{__patch}  -s';
 $VAR1 = 'EXPMAC<<<';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}';
 $VAR1 = 'EXPMAC=1=';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}';
 $VAR1 = 'EXPMAC=2=';
-$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR2 = '%{__scm_apply_%{__scm} -q  -m%{basename:%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}}';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC=4=';
+$VAR2 = '%{_sourcedir}/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC=4=';
+$VAR2 = '%{_topdir}/SOURCES';
+$VAR1 = 'EXPMAC<<<';
+$VAR2 = '%(pwd)';
+$VAR1 = 'EXPMAC=1=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=2=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=3=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=4=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=5=';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm';
+$VAR1 = 'EXPMAC=5=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES';
+$VAR1 = 'EXPMAC=5=';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}';
+$VAR1 = 'EXPMAC>>>';
+$VAR2 = '/home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-output.patch.xz}';
 $VAR1 = 'EXPMAC=3=';
 $VAR2 = '%{__scm_apply_%{__scm} -q  -m0001-Second-way-of-secure-string-output.patch.xz}';
 $VAR1 = 'EXPMAC=4=';
@@ -979,5 +1063,5 @@ test -f /home/andreas/Work/tmp/rpm/SOURCES/0001-Second-way-of-secure-string-outp
 test -f /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip || exit 1;
 /usr/bin/unzip -p /home/andreas/Work/tmp/rpm/SOURCES/0002-Match-code-and-documentation.patch.zip | /usr/bin/patch  -s
 ';
-Calling %prep script /var/tmp/deb-tmp.prep.49306...
+Calling %prep script /var/tmp/deb-tmp.prep.16163...
 patch unexpectedly ends in middle of line
