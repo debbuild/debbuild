@@ -18,27 +18,30 @@ my @macros = ('%apply_patch',
 
 $_ = $macros[1];
 
-my @result = bracelet();
-print "Level 1\n".Dumper(@result)."\n";
+my @result1 = bracelet();
+print "Level 1\n".Dumper(@result1)."\n";
 
-my @result2 = grep { /{\w+:.*}/ } @result;
+my @result2 = map { /{(.+)}/ } grep { /{.+}/ } @result1;
 print "Level 2\n".Dumper(@result2)."\n";
 
-my @result3 = map { /{\w+:(.+)}/ } @result2;
-print "Level 3\n".Dumper(@result3)."\n";
+foreach (@result2) {
+  my @result3 = bracelet();
+  next unless @result3;
+  print "Level 3\n".Dumper(@result3)."\n";
 
-my @result4 = grep { /{\S+\s+.+}/ } @result3;
-print "Level 4\n".Dumper(@result4)."\n";
+  my @result4 = map { /{(.+)}/ } grep { /{.+}/ } @result3;
+  next unless @result4;
+  print "Level 4\n".Dumper(@result4)."\n";
 
-my @result5 = map { /{(.*)}/ } @result4;
-print "Level 5\n".Dumper(@result5)."\n";
+  foreach (@result4) {
+    my @result5 = bracelet();
+    next unless @result5;
+    print "Level 5\n".Dumper(@result5)."\n";
 
-$_ = $result5[0];
-
-my @result6 = bracelet();
-print "Level 6\n".Dumper(@result6)."\n";
-
-my @result7 = grep { /{-\w.*}/ } @result6;
-print "Level 7\n".Dumper(@result7)."\n";
+    my @result6 = map { /{(.+)}/ } grep { /{.+}/ } @result5;
+    next unless @result6;
+    print "Level 6\n".Dumper(@result6)."\n";
+  }
+}
 
 exit 0;
