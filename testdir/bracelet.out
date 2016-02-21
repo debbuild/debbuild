@@ -23,6 +23,27 @@ $VAR2 = 'q';
 +2+__scm_apply_%{__scm}  -p1 -z .bak -m/path/to/file0042.patch+2+
 +2+test -f %{1} || exit 1;\
 %{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm}  -p1 -z .bak -m/path/to/file0042.patch}}+2+
+$VAR1 = '+2+';
+$VAR2 = 'q';
+-2-expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}(74)-2-
+-2-expand:%{__scm_apply_%{__scm}  %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}-2-
++2+expand:%{__scm_apply_%{__scm}  %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}+2+
++2+test -f %{1} || exit 1;\
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm}  -p1 -z .bak -m/path/to/file0042.patch}}+2+
+$VAR1 = '+2+';
+$VAR2 = 'p';
+-2-expand:%{__scm_apply_%{__scm}  %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}(69)-2-
+-2-expand:%{__scm_apply_%{__scm}  %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}-2-
++2+expand:%{__scm_apply_%{__scm}  %{-p:-p1 -z .bak} %{-m:-m%{-m*}}}+2+
++2+test -f %{1} || exit 1;\
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm}  -p1 -z .bak -m/path/to/file0042.patch}}+2+
+$VAR1 = '+2+';
+$VAR2 = 'm';
+-2-expand:%{__scm_apply_%{__scm}  %{-p:-p1 -z .bak} %{-m:-m%{-m*}}}(64)-2-
+-2-expand:%{__scm_apply_%{__scm}  %{-p:-p1 -z .bak} %{-m:-m%{-m*}}}-2-
++2+expand:%{__scm_apply_%{__scm}  %{-p:-p1 -z .bak} %{-m:-m/path/to/file0042.patch}}+2+
++2+test -f %{1} || exit 1;\
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm}  -p1 -z .bak -m/path/to/file0042.patch}}+2+
 
 >>>>>>
 $VAR1 = 'test -f %{1} || exit 1;\\
