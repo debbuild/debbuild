@@ -14,7 +14,7 @@ sub bracelet {
 
 my @macros = ('%apply_patch',
   q(test -f %{1} || exit 1;\
-%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}}));
+%{uncompress:%{1} %{-p:--strip %{-p*}}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}}));
 
 my $macro = $macros[1];
 my %options = ('p' => '1', 'm' => '/path/to/file0042.patch');
