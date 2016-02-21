@@ -13,10 +13,15 @@ sub bracelet {
 } # end bracelet()
 
 my @macros = ('%apply_patch',
-  'test -f %{1} || exit 1;\\'.
-  '%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}}');
+  q(test -f %{1} || exit 1;\
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}}));
 
-$_ = $macros[1];
+my $macro = $macros[1];
+my %options = ('p' => '1', 'm' => '/path/to/file0042.patch');
+
+print "<<<<<<\n".Dumper($macro)."\n";
+
+$_ = $macro;
 
 my @result1 = bracelet();
 print "Level 1\n".Dumper(@result1)."\n";
@@ -34,14 +39,18 @@ foreach (@result2) {
   print "Level 4\n".Dumper(@result4)."\n";
 
   foreach (@result4) {
-    my @result5 = bracelet();
-    next unless @result5;
-    print "Level 5\n".Dumper(@result5)."\n";
-
-    my @result6 = map { /{(.+)}/ } grep { /{.+}/ } @result5;
-    next unless @result6;
-    print "Level 6\n".Dumper(@result6)."\n";
+    while (my ($option,$repl) = map { /{-(\w):\s*(.+)}/ } bracelet() ) {
+      print Dumper('+++',$option,$repl);
+      (my $result = $options{$option} ? $repl : '') =~ s/%{-(\w)\*}/$options{$1}/g;
+      $repl =~ s/([*{}])/\\$1/g; # mask Perlish special characters
+print "---$_(".pos.")---\n";
+      s/%{-$option:\s*$repl}/$result/g;
+print "+++$_+++\n";
+      $macro =~ s/%{-$option:\s*$repl}/$result/g;
+    }
   }
 }
+
+print "\n>>>>>>\n".Dumper($macro);
 
 exit 0;
