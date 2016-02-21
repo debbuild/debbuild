@@ -23,22 +23,10 @@ print "<<<<<<\n".Dumper($macro)."\n";
 
 $_ = $macro;
 
-my @result1 = bracelet();
-print "Level 1\n".Dumper(@result1)."\n";
+foreach ( map { /{(.+)}/ } grep { /{.+}/ } bracelet() ) {
 
-my @result2 = map { /{(.+)}/ } grep { /{.+}/ } @result1;
-print "Level 2\n".Dumper(@result2)."\n";
+  foreach ( map { /{(.+)}/ } grep { /{.+}/ } bracelet() ) {
 
-foreach (@result2) {
-  my @result3 = bracelet();
-  next unless @result3;
-  print "Level 3\n".Dumper(@result3)."\n";
-
-  my @result4 = map { /{(.+)}/ } grep { /{.+}/ } @result3;
-  next unless @result4;
-  print "Level 4\n".Dumper(@result4)."\n";
-
-  foreach (@result4) {
     while (my ($option,$repl) = map { /{-(\w):\s*(.+)}/ } bracelet() ) {
       print Dumper('+++',$option,$repl);
       (my $result = $options{$option} ? $repl : '') =~ s/%{-(\w)\*}/$options{$1}/g;
@@ -50,6 +38,7 @@ print "+++$_+++\n";
     }
     pos = 0; # reset to start of $_
     while (my ($option) = map { /{-(\w)(?:\*)?}/ } bracelet() ) {
+      print Dumper('+++',$option);
       my $result = $options{$option} ? "-$option" : '';
 print "---$_(".pos.")---\n";
       s/%{-$option}/$result/g;
