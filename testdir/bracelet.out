@@ -1,0 +1,52 @@
+<<<<<<
+$VAR1 = 'test -f %{1} || exit 1;\\
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}}';
+
+Level 1
+$VAR1 = 'test -f %';
+$VAR2 = '{1}';
+$VAR3 = ' || exit 1;\\
+%';
+$VAR4 = '{uncompress:%{1}}';
+$VAR5 = ' | %';
+$VAR6 = '{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}}';
+
+Level 2
+$VAR1 = '1';
+$VAR2 = 'uncompress:%{1}';
+$VAR3 = 'expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}';
+
+Level 3
+$VAR1 = '1';
+
+Level 3
+$VAR1 = 'uncompress:%';
+$VAR2 = '{1}';
+
+Level 4
+$VAR1 = '1';
+
+Level 3
+$VAR1 = 'expand:%';
+$VAR2 = '{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}';
+
+Level 4
+$VAR1 = '__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}';
+
+$VAR1 = '+++';
+$VAR2 = 'p';
+$VAR3 = '-p%{-p*} -z .bak';
+---__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}(64)---
++++__scm_apply_%{__scm} %{-q} -p1 -z .bak %{-m:-m%{-m*}}+++
+$VAR1 = '+++';
+$VAR2 = 'm';
+$VAR3 = '-m%{-m*}';
+---__scm_apply_%{__scm} %{-q} -p1 -z .bak %{-m:-m%{-m*}}(53)---
++++__scm_apply_%{__scm} %{-q} -p1 -z .bak -m/path/to/file0042.patch+++
+---__scm_apply_%{__scm} %{-q} -p1 -z .bak -m/path/to/file0042.patch(64)---
+---__scm_apply_%{__scm}  -p1 -z .bak -m/path/to/file0042.patch---
++++__scm_apply_%{__scm}  -p1 -z .bak -m/path/to/file0042.patch+++
+
+>>>>>>
+$VAR1 = 'test -f %{1} || exit 1;\\
+%{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm}  -p1 -z .bak -m/path/to/file0042.patch}}';
