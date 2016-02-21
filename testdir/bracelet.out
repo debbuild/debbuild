@@ -58,6 +58,36 @@ $VAR2 = 'm';
 +2+expand:%{__scm_apply_%{__scm}  %{-p:-p1 -z .bak} %{-m:-m/path/to/file0042.patch}}+2+
 +2+test -f %{1} || exit 1;\
 %{uncompress:%{1} %{-p:--strip 1}} | %{expand:%{__scm_apply_%{__scm}  %{-p:-p1 -z .bak} -m/path/to/file0042.patch}}+2+
+$VAR1 = '+2+';
+$VAR2 = 'p';
+-2-test -f %{1} || exit 1;\
+%{uncompress:%{1} %{-p:--strip %{-p*}}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}}(144)-2-
+-2-test -f %{1} || exit 1;\
+%{uncompress:%{1} %{-p:--strip %{-p*}}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*} -z .bak} %{-m:-m%{-m*}}}}-2-
++2+test -f %{1} || exit 1;\
+%{uncompress:%{1} %{-p:--strip 1}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p1 -z .bak} %{-m:-m%{-m*}}}}+2+
++2+test -f %{1} || exit 1;\
+%{uncompress:%{1} %{-p:--strip 1}} | %{expand:%{__scm_apply_%{__scm}  %{-p:-p1 -z .bak} -m/path/to/file0042.patch}}+2+
+$VAR1 = '+2+';
+$VAR2 = 'q';
+-2-test -f %{1} || exit 1;\
+%{uncompress:%{1} %{-p:--strip 1}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p1 -z .bak} %{-m:-m%{-m*}}}}(134)-2-
+-2-test -f %{1} || exit 1;\
+%{uncompress:%{1} %{-p:--strip 1}} | %{expand:%{__scm_apply_%{__scm}  %{-p:-p1 -z .bak} %{-m:-m%{-m*}}}}-2-
++2+test -f %{1} || exit 1;\
+%{uncompress:%{1} %{-p:--strip 1}} | %{expand:%{__scm_apply_%{__scm}  %{-p:-p1 -z .bak} %{-m:-m%{-m*}}}}+2+
++2+test -f %{1} || exit 1;\
+%{uncompress:%{1} %{-p:--strip 1}} | %{expand:%{__scm_apply_%{__scm}  %{-p:-p1 -z .bak} -m/path/to/file0042.patch}}+2+
+$VAR1 = '+2+';
+$VAR2 = 'm';
+-2-test -f %{1} || exit 1;\
+%{uncompress:%{1} %{-p:--strip 1}} | %{expand:%{__scm_apply_%{__scm}  %{-p:-p1 -z .bak} %{-m:-m%{-m*}}}}(129)-2-
+-2-test -f %{1} || exit 1;\
+%{uncompress:%{1} %{-p:--strip 1}} | %{expand:%{__scm_apply_%{__scm}  %{-p:-p1 -z .bak} %{-m:-m%{-m*}}}}-2-
++2+test -f %{1} || exit 1;\
+%{uncompress:%{1} %{-p:--strip 1}} | %{expand:%{__scm_apply_%{__scm}  %{-p:-p1 -z .bak} %{-m:-m/path/to/file0042.patch}}}+2+
++2+test -f %{1} || exit 1;\
+%{uncompress:%{1} %{-p:--strip 1}} | %{expand:%{__scm_apply_%{__scm}  %{-p:-p1 -z .bak} -m/path/to/file0042.patch}}+2+
 
 >>>>>>
 $VAR1 = 'test -f %{1} || exit 1;\\

@@ -35,6 +35,8 @@ foreach ( map { /{(.+)}/ } grep { /{.+}/ } bracelet() ) {
 
 }
 
+replace_options();
+
 print "\n>>>>>>\n".Dumper($macro);
 
 exit 0;
