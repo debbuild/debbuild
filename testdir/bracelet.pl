@@ -48,6 +48,7 @@ print "-1-$_(".pos.")-1-\n";
     s/%{-$option:\s*$repl}/$result/g;
 print "+1+$_+1+\n";
     $macro =~ s/%{-$option:\s*$repl}/$result/g;
+print "+1+$macro+1+\n";
   }
   pos = 0; # reset to start of $_
   while (my ($option) = map { /{-(\w)(?:\*)?}/ } bracelet() ) {
@@ -58,7 +59,8 @@ print "-2-$_(".pos.")-2-\n";
     $macro =~ s/%{-$option}/$result/g;
 print "-2-$_-2-\n";
     s/%{-($option)\*}/$options{$1}/g;
-    $macro =~ s/%{-($option)\*}/$options{$1}/g;
 print "+2+$_+2+\n";
+    $macro =~ s/%{-($option)\*}/$options{$1}/g;
+print "+2+$macro+2+\n";
   }
 } # end replace_options()
