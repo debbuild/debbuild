@@ -48,6 +48,17 @@ print "---$_(".pos.")---\n";
 print "+++$_+++\n";
       $macro =~ s/%{-$option:\s*$repl}/$result/g;
     }
+    pos = 0; # reset to start of $_
+    while (my ($option) = map { /{-(\w)(?:\*)?}/ } bracelet() ) {
+      my $result = $options{$option} ? "-$option" : '';
+print "---$_(".pos.")---\n";
+      s/%{-$option}/$result/g;
+      $macro =~ s/%{-$option}/$result/g;
+print "---$_---\n";
+      s/%{-($option)\*}/$options{$1}/g;
+      $macro =~ s/%{-($option)\*}/$options{$1}/g;
+print "+++$_+++\n";
+    }
   }
 }
 
