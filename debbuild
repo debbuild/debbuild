@@ -1711,16 +1711,60 @@ print Dumper('EXPMAC<<<',$_);
   s/%\((.+)\)/my $in = expandmacros($1); chomp(my $res = qx($in)); $res/eg;
     # Yay!  ' characters apparently get properly exscapededed.
 
-  simplemacros();
+  simple_macros();
+  parametrized_macros();
+  prefixed_macros();
+CONDMAC: conditional_macros();
+  simple_macros();
 
+  # unescape multi-line macros
+  s/\\"/"/g;
+  s/\\\\/\\/g;
+  s/(\S)\\+\n/$1\n/g;
+
+print Dumper('EXPMAC>>>',$_);
+  return $_;
+} # end expandmacros()
+
+
+## bracelet()
+# Shortcut for extracting paired curly braces
+sub bracelet {
+  return extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]);
+} # end bracelet()
+
+
+## simple_macros()
+# Expand 'simple' '%{macros}': %define's and %{all_the_rest}
+sub simple_macros {
+  return unless m/%/;
+print Dumper('EXPMAC=0=',$_);
+  while (/%{([a-z_]\w+)}/ig) {
+    my $key = $1;
+    if (defined $specglobals{$key}) {
+      s/%{$key}/expandmacros($specglobals{$key})/eg;
+    } elsif (defined $pkgdata{main}{$key}) {
+      s/%{$key}/expandmacros($pkgdata{main}{$key})/eg;
+    }
+  }
+  pos = 0; # reset to start of $_
+} # end simple_macros()
+
+
+## parametrized_macros()
+# handle '%{parametrized macros}' with nested curly braces, all in one go!
+sub parametrized_macros() {
 print Dumper('EXPMAC=1=',$_);
-  # handle '%{parametrized macros}' with nested curly braces, all in one go!
   while (my ($prefix,$arg) = map { /{(\w+)\s+(.+)}/ } bracelet() ) {
     s/%{$prefix\s+$arg}/handle_macro_options("%$prefix $arg")/eg;
   }
   pos = 0; # reset to start of $_
+} # end parametrized_macros()
 
-  # handle '%{prefixed:macros}' with nested curly braces, all in one go!
+
+## prefixed_macros()
+# handle '%{prefixed:macros}' with nested curly braces, all in one go!
+sub prefixed_macros {
   s/url2path/u2p/g;
 print Dumper('EXPMAC=2=',$_);
   while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ } bracelet() ) {
@@ -1745,10 +1789,13 @@ print Dumper('EXPMAC=2=',$_);
     }
   }
   pos = 0; # reset to start of $_
+} # end prefixed_macros()
 
-  # support for **some** %if constructs: handle '%{?conditional:macros}'
-  # with nested curly braces, all in one go!
-CONDMAC:
+
+## conditional_macros()
+# support for **some** %if constructs: handle '%{?conditional:macros}'
+# with nested curly braces, all in one go!
+sub conditional_macros {
 print Dumper('EXPMAC=3=',$_);
   while (my ($qex,$macro,$value) = map { /{([?!]+)(\w+)(?::(.+))?}/ }
       bracelet() ) {
@@ -1759,41 +1806,8 @@ print Dumper('EXPMAC=3=',$_);
     s/$initvalue/expandmacros($value)/eg;
   }
   pos = 0; # reset to start of $_
+} # end conditional_macros()
 
-  simplemacros();
-
-  # unescape multi-line macros
-  s/\\"/"/g;
-  s/\\\\/\\/g;
-  s/(\S)\\+\n/$1\n/g;
-
-print Dumper('EXPMAC>>>',$_);
-  return $_;
-} # end expandmacros()
-
-
-## bracelet()
-# Shortcut for extracting paired curly braces
-sub bracelet {
-  return extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]);
-} # end bracelet()
-
-
-## simplemacros()
-# Expand 'simple' '%{macros}': %define's and %{all_the_rest}
-sub simplemacros {
-  return unless m/%/;
-print Dumper('EXPMAC=0=',$_);
-  while (/%{([a-z_]\w+)}/ig) {
-    my $key = $1;
-    if (defined $specglobals{$key}) {
-      s/%{$key}/expandmacros($specglobals{$key})/eg;
-    } elsif (defined $pkgdata{main}{$key}) {
-      s/%{$key}/expandmacros($pkgdata{main}{$key})/eg;
-    }
-  }
-  pos = 0; # reset to start of $_
-} # end simplemacros()
 
 ## handle_macro_options()
 # Option handling for '%macro(ino:pts)'.
@@ -1811,31 +1825,15 @@ print Dumper('HMO<<<',$inline,$macro,$argv);
     getopts($macroopts{$macro},\%options) if $macroopts{$macro};
   }
   local $_ = $specglobals{$macro};
-print Dumper('HMO===',$_);
-  while (my ($qex,$arg,$value) = map { /{([?!]+)(\d+)(?::(.+))?}/ }
-      bracelet() ) { # handle '%{?2:%{2}}' et al.
-    (my $initvalue = "%{$qex$arg".(defined $value ? ":$value" : '').'}')
-      =~ s/([?!{}])/\\$1/g; # neutralisation
-    $value //= "%{$arg}";
-    $value = '' unless defined $nonoptions[$arg-1] xor $qex =~ /!/; # equivalence
-    s/$initvalue/$value/g;
-  }
-  pos = 0; # reset to start of $_
+
+print Dumper('HMO=0=',$_);
+  conditional_options(\$inline,\@nonoptions);
 print Dumper('HMO=1=',$_);
-  while (my ($option,$repl) = map { /{-(\w):\s*(\S+)}/ } bracelet() ) {
-	  print Dumper('+++',$option,$repl);
-    (my $result = $options{$option} ? $repl : '') =~ s/%{-(\w)\*}/$options{$1}/g;
-    $repl =~ s/([*{}])/\\$1/g; # mask Perlish special characters
-    s/%{-$option:\s*$repl}/$result/g;
-  }
-  pos = 0; # reset to start of $_
+  prefixed_options(\$inline,\%options);
 print Dumper('HMO=2=',$_);
-  while (my ($option) = map { /{-(\w)(?:\*)?}/ } bracelet() ) {
-    my $result = $options{$option} ? "-$option" : '';
-    s/%{-$option}/$result/g;
-    s/%{-($option)\*}/$options{$1}/g;
-  }
+  simple_options(\$inline,\%options);
 print Dumper('HMO=3=',$_);
+
   s/%%/%/g; # reduce level of macronization
   s/\s+\\+\n/\n/g; # prepare for multi-line shipment
   s/%\{\?\*\}/join(' ',@nonoptions)/eg; # replace 'all arguments'
@@ -1845,6 +1843,60 @@ print Dumper('HMO=3=',$_);
 print Dumper('HMO>>>',$_);
   return $_;
 } # end handle_macro_options()
+
+
+## conditional_options()
+# Expand all '%{?!conditional:options}' in '$_'.
+sub conditional_options {
+  my ($inline,$nonoptions) = @_;
+  while (my ($qex,$arg,$value) = map { /{([?!]+)(\d+)(?::(.+))?}/ }
+      bracelet() ) { # handle '%{?2:%{2}}' et al.
+    (my $initvalue = "%{$qex$arg".(defined $value ? ":$value" : '').'}')
+      =~ s/([?!{}])/\\$1/g; # neutralisation
+    $value //= "%{$arg}";
+    $value = '' unless defined $$nonoptions[$arg-1] xor $qex =~ /!/; # equivalence
+    s/$initvalue/$value/g;
+    $$inline =~ s/$initvalue/$value/g;
+  }
+  pos = 0; # reset to start of $_
+} # end conditional_options()
+
+
+## prefixed_options()
+# Expand all '%{-o:ptions}' '$_'.
+sub prefixed_options {
+  my ($inline,$options) = @_;
+  while (my ($option,$repl) = map { /{-(\w):\s*(\S+)}/ } bracelet() ) {
+print Dumper('+1+',$option,$repl);
+    (my $result = $$options{$option} ? $repl : '') =~ s/%{-(\w)\*}/$$options{$1}/g;
+    $repl =~ s/([*{}])/\\$1/g; # mask Perlish special characters
+print "-1-$_(".pos.")-1-\n";
+    s/%{-$option:\s*$repl}/$result/g;
+print "+1+$_+1+\n";
+    $$inline =~ s/%{-$option:\s*$repl}/$result/g;
+print "+1+$$inline+1+\n";
+  }
+  pos = 0; # reset to start of $_
+} # end conditional_options()
+
+
+## simple_options()
+# Expand all '%{o}ptions' in '$_'.
+sub simple_options {
+  my ($inline,$options) = @_;
+  while (my ($option) = map { /{-(\w)(?:\*)?}/ } bracelet() ) {
+print Dumper('+2+',$option);
+    my $result = $$options{$option} ? "-$option" : '';
+print "-2-$_(".pos.")-2-\n";
+    s/%{-$option}/$result/g;
+    $$inline =~ s/%{-$option}/$result/g;
+print "-2-$_-2-\n";
+    s/%{-($option)\*}/$$options{$1}/g;
+print "+2+$_+2+\n";
+    $$inline =~ s/%{-($option)\*}/$$options{$1}/g;
+print "+2+$$inline+2+\n";
+  }
+} # end replace_options()
 
 
 __END__
