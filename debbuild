@@ -909,9 +909,9 @@ sub process_autopatch {
 # Hard-coded variant of RPM's macro of the same name.
 sub apply_patch {
   my ($verbose,$plevel,$patchfile) = @_;
-  return '%{apply_patch'.
+  return expandmacros('%{apply_patch'.
     ($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
-    " -m %{basename:$patchfile} $patchfile}\n";
+    " -m %{basename:$patchfile} $patchfile}\n");
 } # apply_patch()
 
 
