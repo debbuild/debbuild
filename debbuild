@@ -433,7 +433,7 @@ sub parse_cmd {
       $opt_name = 'define'; # fall through with generic name
     }
     my ($macro,$value) = $opt_value =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i;
-    if ($value) {
+    if (defined $value) {
       store_value($macro,$value);
     } else {
       warn "WARNING: missing value for macro $macro in --$opt_name! Ignoring.\n";
@@ -1653,9 +1653,9 @@ sub store_value {
   my ($key,$value) = @_;
   if ($key =~ /^(?:summary|name|epoch|version|release|
       group|copyright|url|packager)$/ix) {
-    $pkgdata{main}{$key} = ($value ? expandmacros($value) : undef);
+    $pkgdata{main}{$key} = (defined $value ? expandmacros($value) : undef);
   } else {
-    $specglobals{$key} = ($value ? expandmacros($value) : undef);
+    $specglobals{$key} = (defined $value ? expandmacros($value) : undef);
   }
 } # end store_value()
 
