@@ -1590,6 +1590,7 @@ sub getreqs {
   my ($pkgtree) = @_;
 
   print "Checking library requirements...\n";
+  return () if 'all' eq $pkgdata{main}{arch}; # noarch package
   chomp( my @binlist = qx ( $specglobals{__find} $pkgtree -type f -perm 755 ) );
   return () unless @binlist;
 
