@@ -621,11 +621,11 @@ ENDIF: if (/^%endif/) {
     } # %if..%else..%endif
 
 ### Diagnostics '%{macros}'; these should actually be handled in expandmacros()
-    elsif (/^%{echo:(.+)}/) {
+    elsif (/^%\{echo:(.+)}/) {
       print expandmacros($1)."\n";
-    } elsif (/^%{warn:(.+)}/) {
+    } elsif (/^%\{warn:(.+)}/) {
       warn expandmacros($1)."\n";
-    } elsif (/^%{error:(.+)}/) {
+    } elsif (/^%\{error:(.+)}/) {
       die expandmacros($1)."\n";
     }
 
@@ -636,7 +636,7 @@ ENDIF: if (/^%endif/) {
     }
 
     # EXPERIMENTAL: %{perl:interpreter}
-    elsif (/^%{perl:(.+)}/) {
+    elsif (/^%\{perl:(.+)}/) {
       my $perl = expandmacros('%{_tmppath}')."/deb-tmp.perl.".int(rand(99998)+1);
       do {
         local *STDOUT;
@@ -1667,7 +1667,7 @@ sub expandmacros {
   local ($_) = @_;
   return $_ unless /%/; # nothing to substitute
 
-  goto CONDMAC if m/^%{[?!]+/; # OMG: Conditional macros everywhere!
+  goto CONDMAC if m/^%\{[?!]+/; # OMG: Conditional macros everywhere!
 
   # Process %define's and Conditional Build Stuff
   s/%(bcond_with(?:out)?)\s+(\S+)/%{$1 $2}/g;
@@ -1685,19 +1685,19 @@ sub expandmacros {
       or defined $specglobals{$macro}
       or defined $pkgdata{main}{$macro};
   }
-  s/%{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
-  s|%{getconfdir}|$specglobals{_libdir}/debbuild|g;
-  s/%{(__scm_setup\w+?)}/handle_macro_options("%$1")/eg;
+  s/%\{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
+  s|%\{getconfdir}|$specglobals{_libdir}/debbuild|g;
+  s/%\{(__scm_setup\w+?)}/handle_macro_options("%$1")/eg;
 
   # Package data
-  s/%{S:0}/%{source0}/g;
-  s|%{source0?}|%{_sourcedir}/$pkgdata{main}{source}|gi;
+  s/%\{S:0}/%{source0}/g;
+  s|%\{source0?}|%{_sourcedir}/$pkgdata{main}{source}|gi;
   foreach my $source (keys %{$pkgdata{sources}}) {
     s/%{S:$source}/%{source$source}/g;
     s|%{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
   }
-  s/%{P:(\d+)}/%{patch$1}/g;
-  s|%{(patch\d*)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
+  s/%\{P:(\d+)}/%{patch$1}/g;
+  s|%\{(patch\d*)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
 
   # Globals, and not-so-globals
   # special %define's.  Handle the general case where we eval anything.
@@ -1777,7 +1777,7 @@ sub bracelet {
 # Expand 'simple' '%{macros}': %define's and %{all_the_rest}
 sub simplemacros {
   return unless m/%/;
-  while (/%{([a-z_]\w+)}/ig) {
+  while (/%\{([a-z_]\w+)}/ig) {
     my $key = $1;
     if (defined $specglobals{$key}) {
       s/%{$key}/expandmacros($specglobals{$key})/eg;
@@ -1813,7 +1813,7 @@ sub handle_macro_options {
   }
   pos = 0; # reset to start of $_
   while (my ($option,$repl) = map { /{-(\w):\s*(\S+)}/ } bracelet() ) {
-    (my $result = $options{$option} ? $repl : '') =~ s/%{-(\w)\*}/$options{$1}/g;
+    (my $result = $options{$option} ? $repl : '') =~ s/%\{-(\w)\*}/$options{$1}/g;
     $repl =~ s/([*{}])/\\$1/g; # mask Perlish special characters
     s/%{-$option:\s*$repl}/$result/g;
   }
