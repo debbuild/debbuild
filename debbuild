@@ -1693,8 +1693,8 @@ sub expandmacros {
   s/%\{S:0}/%{source0}/g;
   s|%\{source0?}|%{_sourcedir}/$pkgdata{main}{source}|gi;
   foreach my $source (keys %{$pkgdata{sources}}) {
-    s/%{S:$source}/%{source$source}/g;
-    s|%{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
+    s/%\{S:$source}/%{source$source}/g;
+    s|%\{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
   }
   s/%\{P:(\d+)}/%{patch$1}/g;
   s|%\{(patch\d*)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
@@ -1713,8 +1713,9 @@ sub expandmacros {
   simplemacros();
 
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
-  while (my ($prefix,$arg) = map { /{(\w+)\s+(.+)}/ } bracelet() ) {
-    s/%{$prefix\s+$arg}/handle_macro_options("%$prefix $arg")/eg;
+  while (my ($prefix,$spc,$arg) = map { /{(\w+)(\s+)(.+)}/ } bracelet() ) {
+    (my $initvalue = "%{$prefix$spc$arg") =~ s/([{}])/\\$1/g; # neutralize curlies
+    s/$initvalue}/handle_macro_options("%$prefix $arg")/eg;
   }
   pos = 0; # reset to start of $_
 
@@ -1725,20 +1726,20 @@ sub expandmacros {
     if ($prefix =~ /u2p/) {
       # curious form of 'basename'? - strip domain host (and port)
       (my $path = expandmacros($arg)) =~ s|\w+://[\w.:-]+||;
-      s/%{$prefix:$arg}/$path/g;
+      s/%\{$prefix:$arg}/$path/g;
     } elsif ($prefix =~ /basename|dirname/) {
-      s/%{$prefix:$arg}/&$prefix(expandmacros($arg))/eg;
+      s/%\{$prefix:$arg}/&$prefix(expandmacros($arg))/eg;
     } elsif ($prefix =~ /suffix/) {
       my (undef,undef,$suffix) = fileparse(expandmacros($arg),qr/\.[^.]*/);
-      s/%{$prefix:$arg}/$suffix/g;
+      s/%\{$prefix:$arg}/$suffix/g;
     } elsif ($prefix =~ /uncompress/) {
-      s/%{$prefix:$arg}/uncompress($arg)/eg;
+      s/%\{$prefix:$arg}/uncompress($arg)/eg;
     } elsif ($prefix =~ /getenv/) {
       # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
-      s/%{$prefix:$arg}/$ENV{$arg}/g;
+      s/%\{$prefix:$arg}/$ENV{$arg}/g;
     } elsif ($prefix =~ /expand/) {
       # helper for parametrized macros
-      s/%{$prefix:.+}/expandmacros($arg)/eg;
+      s/%\{$prefix:.+}/expandmacros($arg)/eg;
     }
   }
   pos = 0; # reset to start of $_
@@ -1748,7 +1749,7 @@ sub expandmacros {
 CONDMAC: while (my ($qex,$macro,$value) = map { /{([?!]+)(\w+)(?::(.+))?}/ }
       bracelet() ) {
     (my $initvalue = "%{$qex$macro".(defined $value ? ":$value" : '').'}')
-      =~ s/([?!])/\\$1/g; # neutralize quantifiers
+      =~ s/([?!{}])/\\$1/g; # neutralize quantifiers
     $value //= ($specglobals{$macro} or '');
     $value = '' unless $specglobals{$macro} xor $qex =~ /!/; # equivalence
     s/$initvalue/expandmacros($value)/eg;
@@ -1780,9 +1781,9 @@ sub simplemacros {
   while (/%\{([a-z_]\w+)}/ig) {
     my $key = $1;
     if (defined $specglobals{$key}) {
-      s/%{$key}/expandmacros($specglobals{$key})/eg;
+      s/%\{$key}/expandmacros($specglobals{$key})/eg;
     } elsif (defined $pkgdata{main}{$key}) {
-      s/%{$key}/expandmacros($pkgdata{main}{$key})/eg;
+      s/%\{$key}/expandmacros($pkgdata{main}{$key})/eg;
     }
   }
   pos = 0; # reset to start of $_
@@ -1815,13 +1816,13 @@ sub handle_macro_options {
   while (my ($option,$repl) = map { /{-(\w):\s*(\S+)}/ } bracelet() ) {
     (my $result = $options{$option} ? $repl : '') =~ s/%\{-(\w)\*}/$options{$1}/g;
     $repl =~ s/([*{}])/\\$1/g; # mask Perlish special characters
-    s/%{-$option:\s*$repl}/$result/g;
+    s/%\{-$option:\s*$repl}/$result/g;
   }
   pos = 0; # reset to start of $_
   while (my ($option) = map { /{-(\w)(?:\*)?}/ } bracelet() ) {
     my $result = $options{$option} ? "-$option" : '';
-    s/%{-$option}/$result/g;
-    s/%{-($option)\*}/$options{$1}/g;
+    s/%\{-$option}/$result/g;
+    s/%\{-($option)\*}/$options{$1}/g;
   }
   s/%%/%/g; # reduce level of macronization
   s/\s+\\+\n/\n/g; # prepare for multi-line shipment
