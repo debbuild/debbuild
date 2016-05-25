@@ -142,8 +142,8 @@ my %distmap = (
   if (open OSREL, '/etc/os-release') {
     # Look for ID and VERSION_ID lines.
     while (<OSREL>) {
-      $baseos = $1 if /^ID=(\w+)/;
-      $basever = $1 if /^VERSION_ID="?([\d.]+)/; # " closed
+      $baseos = $1 if /^ID="?(\w+)"?/;
+      $basever = $1 if /^VERSION_ID="?([\d.]+)"?/;
     }
     close OSREL;
 
@@ -152,8 +152,8 @@ my %distmap = (
     # We could also theoretically extract the dist codename, but since we have to hand-map
     # it in so many other cases there's little point.
     while (<LSBREL>) {
-      $baseos = $1 if /^DISTRIB_ID=(\w+)/;
-      $basever = $1 if /^DISTRIB_RELEASE=([\d.]+)/;
+      $baseos = $1 if /^DISTRIB_ID="?(\w+)"?/;
+      $basever = $1 if /^DISTRIB_RELEASE="?([\d.]+)"?/;
     }
     close LSBREL;
 
