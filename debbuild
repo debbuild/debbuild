@@ -116,6 +116,9 @@ my %distmap = (
 #	Ubuntu 14.04.2 LTS (Trusty Tahr)
 	'7.2ubuntu'	=> 'trusty',
 	'14.04'		=> 'trusty',
+#	Ubuntu 16.04.0 LTS (Xenial Xerus)
+	'9.4ubuntu'	=> 'xenial',
+	'16.04'		=> 'xenial',
 # Debian releases
 	'3.0'	=> 'woody',
 	'3.1'	=> 'sarge',
