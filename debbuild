@@ -538,7 +538,7 @@ LINE: while (<$fh>) {
     if (/^%([a-z_]+)/ and not grep { /$1/ } qw(attr autopatch autosetup
 	bcond_with bcond_without build changelog check clean config
 	configure copyrightdata defattr define description dir doc docdir
-	dump else endif files ghost global if ifarch ifnarch ifnos ifos
+	dump else endif exclude files ghost global if ifarch ifnarch ifnos ifos
 	include install make_build make_install makeinstall package patch
 	post postun pre prep preun readme setup triggerin triggerpostun
 	triggerun undefine verify verifyscript)) {
@@ -794,6 +794,8 @@ ENDIF: if (/^%endif/) {
           \s*\)/x) {
         ($defattr{filemode}, $defattr{owner}, $defattr{group}) = ($1, $2, $4);
          $defattr{dirmode} = ($6 or $defattr{filemode}); # default directory setting is optional
+      } elsif (/^%exclude/) {
+        warn "'%exclude' keyword found, ignoring input line\n";
       } else {
         process_filesline($subname);
       }
