@@ -1728,23 +1728,24 @@ sub expandmacros {
   s/url2path/u2p/g;
   while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ } bracelet() ) {
     no strict qw(refs); # we use strings as function refs
+    (my $initvalue = "%{$prefix:$arg}") =~ s/([?!{}])/\\$1/g; # neutralize specials
     if ($prefix =~ /u2p/) {
       # curious form of 'basename'? - strip domain host (and port)
       (my $path = expandmacros($arg)) =~ s|\w+://[\w.:-]+||;
-      s/%\{$prefix:$arg}/$path/g;
+      s/$initvalue/$path/g;
     } elsif ($prefix =~ /basename|dirname/) {
-      s/%\{$prefix:$arg}/&$prefix(expandmacros($arg))/eg;
+      s/$initvalue/&$prefix(expandmacros($arg))/eg;
     } elsif ($prefix =~ /suffix/) {
       my (undef,undef,$suffix) = fileparse(expandmacros($arg),qr/\.[^.]*/);
-      s/%\{$prefix:$arg}/$suffix/g;
+      s/$initvalue/$suffix/g;
     } elsif ($prefix =~ /uncompress/) {
-      s/%\{$prefix:$arg}/uncompress($arg)/eg;
+      s/$initvalue/uncompress($arg)/eg;
     } elsif ($prefix =~ /getenv/) {
       # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
-      s/%\{$prefix:$arg}/$ENV{$arg}/g;
+      s/$initvalue/$ENV{$arg}/g;
     } elsif ($prefix =~ /expand/) {
       # helper for parametrized macros
-      s/%\{$prefix:.+}/expandmacros($arg)/eg;
+      s/$initvalue/expandmacros($arg)/eg;
     }
   }
   pos = 0; # reset to start of $_
