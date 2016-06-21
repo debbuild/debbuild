@@ -1719,8 +1719,8 @@ sub expandmacros {
 
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
   while (my ($prefix,$spc,$arg) = map { /{(\w+)(\s+)(.+)}/ } bracelet() ) {
-    (my $initvalue = "%{$prefix$spc$arg") =~ s/([{}])/\\$1/g; # neutralize curlies
-    s/$initvalue}/handle_macro_options("%$prefix $arg")/eg;
+    (my $initvalue = "%{$prefix$spc$arg}") =~ s/([{}])/\\$1/g; # neutralize curlies
+    s/$initvalue/handle_macro_options("%$prefix $arg")/eg;
   }
   pos = 0; # reset to start of $_
 
