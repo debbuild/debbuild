@@ -1,11 +1,11 @@
 # quick makefile for debbuild
-# $Id: Makefile 156 2010-06-16 21:30:01Z kdeugau $
+# $Id: Makefile 168 2012-06-11 00:53:50Z kdeugau $
 
 MANIFEST = \
 	debbuild Makefile COPYING debbuild.spec
 
 PKGNAME=debbuild
-VERSION=0.9.3
+VERSION=0.9.5
 
 MANDIR=/usr/share/man
 CONFDIR=/etc
@@ -25,7 +25,8 @@ dist:
 	mkdir $(PKGNAME)-$(VERSION)
 	tar cf - $(MANIFEST) | (cd $(PKGNAME)-$(VERSION); tar xvf -)
 	/usr/bin/perl -p -e 's/#VERSION#/$(VERSION)/' < $(PKGNAME).spec > $(PKGNAME)-$(VERSION)/$(PKGNAME).spec
+	/usr/bin/perl -p -e 's/[\d.]+";	#VERSION#/$(VERSION)";/' < debbuild > $(PKGNAME)-$(VERSION)/debbuild
 	tar cvf $(PKGNAME)-$(VERSION).tar $(PKGNAME)-$(VERSION)
 	gzip -v -f -9 $(PKGNAME)-$(VERSION).tar
 	rm -rf $(PKGNAME)-$(VERSION)
-	# gpg --detach-sign $(PKGNAME)-$(VERSION).tar.gz
+	gpg -a --detach-sign $(PKGNAME)-$(VERSION).tar.gz

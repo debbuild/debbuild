@@ -5,11 +5,11 @@
 # unlikely to conform to "Debian Policy".
 ###
 # SVN revision info
-# $Date: 2010-06-16 17:18:04 -0400 (Wed, 16 Jun 2010) $
-# SVN revision $Rev: 155 $
+# $Date: 2012-06-10 20:53:19 -0400 (Sun, 10 Jun 2012) $
+# SVN revision $Rev: 167 $
 # Last update by $Author: kdeugau $
 ###
-# Copyright 2005-2008 Kris Deugau <kdeugau@deepnet.cx>
+# Copyright (C) 2005-2012 Kris Deugau <kdeugau@deepnet.cx>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -31,9 +31,12 @@ use Fcntl;	# for sysopen flags
 use Cwd 'abs_path';	# for finding where files really are
 use Config;
 
+my $version = "0.9.5";
+
 # regex debugger
 #use re "debug";
 
+# Behavioural compatibility FTW!  Yes, rpmbuild does this too.
 die "No .spec file to work with!  Exiting.\n" if scalar(@ARGV) == 0;
 
 # Program flow:
@@ -123,7 +126,7 @@ q(
 
 # Hackery to try to bring some semblance of sanity to packages built for more
 # than one Debian version at the same time.  Whee.
-# /etc/debian-version
+# /etc/debian-version and/or version of base-files package
 my %distmap = (
 	"3.1.9ubuntu7.1"	=> "dapper",
 	"4ubuntu2"	=> "feisty",
@@ -131,7 +134,8 @@ my %distmap = (
 	"3.1"	=> "sarge",
 	"4"	=> "etch",
 	"5"	=> "lenny",
-	"5.0.0"	=> "squeeze",
+	"6.0"	=> "squeeze",
+	"7.0"	=> "wheezy", 	#maybe?
 	"99"	=> "sid");
 # Enh.  There doesn't seem to be any better way to do this...  :(
 {
@@ -145,17 +149,20 @@ my %distmap = (
     $basever = "3.0";
   } else {
 
+# *eyeroll*  there *really* has to be a better way to go about this.  You
+# can't sanely build packages for multiple distro targets if you can't
+# programmatically figure out which one you're building on.
+
+# note that we care only about major release numbers; tracking minor or point
+# releases would be...  exponentially more painful.
+
     # for the lazy copy-paster:  dpkg-query --showformat '${version}\n' -W base-files
     # avoid shellisms
     if (open BASEGETTER, "-|", "dpkg-query", "--showformat", '${version}', "-W", "base-files") {
       $basever = <BASEGETTER>;
       close BASEGETTER;
 
-      if ($basever =~ /^\d\.\d\.\d$/) {
-        # sarge, possibly squeeze O_o  (5.0.0 as of 2010/02/03)
-        $basever =~ s/\.\d$//;
-      }
-      $basever = 5 if ($basever =~ /lenny/);
+      ($basever) = ($basever =~ /^(\d(?:\.\d)?)/);
     }
 
   } # got dpkg-query?
@@ -351,6 +358,9 @@ sub parse_cmd {
   #use Getopt::Popt qw(:all);
   # Or not.  >:(  Stupid Debian lack of findable Perl module names in packages.
 
+  # ... also note, single-character options are mostly not flags, so they can't be
+  # sanely combined the way most other programs' single-character flag options can.
+
   # Stuff it.
   my $prevopt = '';
   foreach (@ARGV) {
@@ -367,6 +377,41 @@ sub parse_cmd {
 	  $cmdopts{type} = 's';
 	} elsif (/^--showpkgs/) {
 	  $cmdopts{type} = 'd';	# d for 'diagnostic' or 'debug' or 'dump'
+	} elsif (/^--help/) {
+	  print "debbuild v$version".q{
+Copyright 2005-2012 Kris Deugau <kdeugau@deepnet.cx>
+
+Build .deb packages from RPM-style .spec files
+debbuild supports most package-building options rpmbuild does.
+
+Build options with [ <specfile> | <tarball> | <source package> ]:
+      -bp                        build through %prep (unpack sources and apply patches) from <specfile>
+      -bc                        build through %build (%prep, then compile) from <specfile>
+      -bi                        build through %install (%prep, %build, then install) from <specfile>
+      -bl                        verify %files section from <specfile>
+      -ba                        build source and binary packages from <specfile>
+      -bb                        build binary package only from <specfile>
+      -bs                        build source package only from <specfile>
+      -tp                        build through %prep (unpack sources and apply patches) from <tarball>
+      -tc                        build through %build (%prep, then compile) from <tarball>
+      -ti                        build through %install (%prep, %build, then install) from <tarball>
+      -ta                        build source and binary packages from <tarball>
+      -tb                        build binary package only from <tarball>
+      -ts                        build source package only from <tarball>
+      --rebuild                  build binary package from <source package>
+      --buildroot=DIRECTORY      override build root
+      --short-circuit            skip straight to specified stage (only for c,i)
+
+Common options:
+  -D, --define='MACRO EXPR'      define MACRO with value EXPR
+
+debbuild-specific options:
+      -i                         Unpack a .sdeb in the %_topdir tree
+      --showpkgs                 Show package names that would be built.  Only works with .spec files.
+
+};
+	  exit;
+
 	} elsif (/^--define/) {
 	  # nothing to do?  Can't see anything needed, we handle the actual definition later.
 ##fixme
@@ -391,6 +436,8 @@ sub parse_cmd {
 	} elsif (/^-i/) {
 	  $cmdopts{install} = 1;
 	  $prevopt = '-i';
+	} elsif (/^-D/) {
+	  # --define.  nothing to do on this round;  actual work is done next time.
 	} else {
 	  die "Bad option $_\n";
 	}
@@ -404,7 +451,7 @@ sub parse_cmd {
       # on which one we meet.
       if ($prevopt eq '--buildroot') {
 	$cmdbuildroot = $_;
-      } elsif ($prevopt eq '--define') {
+      } elsif ($prevopt eq '--define' || $prevopt eq '-D') {
 	my ($macro,$value) = (/([a-z0-9_.-]+)(?:\s+(.+))?/i);
 	if ($value ne '') {
 	  $specglobals{$macro} = $value;
@@ -968,7 +1015,7 @@ sub prep {
   # create script filename
   my $prepscriptfile = "$tmpdir/deb-tmp.prep.".int(rand(99998)+1);
   sysopen(PREPSCRIPT, $prepscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
-	or die $!;
+	or die "Can't open/create prep script file $prepscriptfile: $!\n";
   print PREPSCRIPT $scriptletbase;
   print PREPSCRIPT $prepscript;
   close PREPSCRIPT;
@@ -992,7 +1039,7 @@ sub build {
   # create script filename
   my $buildscriptfile = "$tmpdir/deb-tmp.build.".int(rand(99998)+1);
   sysopen(BUILDSCRIPT, $buildscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
-	or die $!;
+	or die "Can't open/create build script file $buildscriptfile: $!\n";
   print BUILDSCRIPT $scriptletbase;
   print BUILDSCRIPT $buildscript;
   close BUILDSCRIPT;
@@ -1031,7 +1078,7 @@ sub install {
   # create script filename
   my $installscriptfile = "$tmpdir/deb-tmp.inst.".int(rand(99998)+1);
   sysopen(INSTSCRIPT, $installscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
-	or die $!;
+	or die "Can't open/create install script file $installscriptfile: $!\n";
   print INSTSCRIPT $scriptletbase;
   print INSTSCRIPT $installscript;
   close INSTSCRIPT;
@@ -1217,9 +1264,9 @@ sub binpackage {
     # create script filename
     my $debscriptfile = "$tmpdir/deb-tmp.pkg.".int(rand(99998)+1);
     sysopen(DEBSCRIPT, $debscriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW)
-	or die $!;
+	or die "Can't open/create package-creation script file $debscriptfile: $!\n";
     print DEBSCRIPT $scriptletbase;
-    print DEBSCRIPT "fakeroot dpkg-deb -b $specglobals{buildroot}/$pkg $topdir/DEBS/$pkgdata{$pkg}{arch}/".
+    print DEBSCRIPT "fakeroot -- dpkg-deb -b $specglobals{buildroot}/$pkg $topdir/DEBS/$pkgdata{$pkg}{arch}/".
 	"$pkgdata{$pkg}{name}_".
 	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
 	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}_$pkgdata{$pkg}{arch}.deb\n";
@@ -1242,6 +1289,9 @@ sub binpackage {
 	( defined($pkgdata{$pkg}{enhances}) ? "Enhances: $pkgdata{$pkg}{enhances}\n" : '' ).
 	( defined($pkgdata{$pkg}{replaces}) ? "Replaces: $pkgdata{$pkg}{replaces}\n" : '' ).
 	"Description: $pkgdata{$pkg}{summary}\n";
+    # Munge things so that Debian tools don't choke on errant blank lines
+    $pkgdata{$pkg}{desc} =~ s/\s+$//g;		# Trim trailing blanks
+    $pkgdata{$pkg}{desc} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
     $control .= "$pkgdata{$pkg}{desc}\n";
 
     open CONTROL, ">$specglobals{buildroot}/$pkg/DEBIAN/control";
@@ -1470,7 +1520,7 @@ sub getreqs() {
 
   my @reqlist;
   foreach (@binlist) {
-    push @reqlist, qx { ldd $_ };
+    push @reqlist, qx { LANG=C ldd $_ };
   }
 
   # Get the list of libs provided by this package.  Still doesn't
@@ -1507,7 +1557,7 @@ sub getreqs() {
 
   if ($reqlibs ne '') {
     foreach (qx { dpkg -S $reqlibs }) {
-      my ($libpkg,undef) = split /:\s+/;
+      my ($libpkg,undef) = split /:/;
       $reqs{$libpkg} = 1;
     }
   }
@@ -1717,19 +1767,20 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
     $macrostring =~ s|%{optflags}|$optflags{$hostarch}|g;
     $macrostring =~ s|%{_vendor}|$specglobals{'_vendor'}|g;
 
-# should probably stick a "no runaway" flag in here...  Just In Case...
-    # %define's
-    while (my ($key) = ($macrostring =~ /%{([a-z0-9]+)}/i) ) {
-# hrm.  This needs thinking.
-#die "A horrible death!  \%{$key}, '$macrostring'\n" if !$specglobals{$key};
-      $macrostring =~ s|%{$key}|$specglobals{$key}|g;
-		# wanna limit this to "... if $specglobals{$key}", but need more magic
-    }
-
     # system programs.  RPM uses a global config file for these;  we'll just
     # ASS-U-ME and make life a little simpler.
     if ($macrostring =~ /\%\{\_\_([a-z0-9_-]+)\}/) {
       $macrostring =~ s|%{__([a-z0-9_-]+)}|$1|g;
+    }
+
+# should probably stick a "no runaway" flag in here...  Just In Case...
+    # %define's
+# note to self: find out valid chars for %define name/label so we can parse them
+    while (my ($key) = ($macrostring =~ /%{([a-z0-9_]+)}/i) ) {
+# hrm.  This needs thinking.
+#die "A horrible death!  \%{$key}, '$macrostring'\n" if !$specglobals{$key};
+      $macrostring =~ s|%{$key}|$specglobals{$key}|g;
+		# wanna limit this to "... if $specglobals{$key}", but need more magic
     }
 
     # Perl @INC/...lib locations, and other related bits.

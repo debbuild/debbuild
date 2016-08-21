@@ -1,4 +1,4 @@
-# $Id: debbuild.spec 144 2008-06-10 17:00:32Z kdeugau $
+# $Id: debbuild.spec 162 2012-04-09 01:18:25Z kdeugau $
 # Refer to the following for more info on .spec file syntax:
 #   http://www.rpm.org/max-rpm/
 #   http://www.rpm.org/max-rpm-snapshot/	(Updated version of above)
@@ -22,6 +22,12 @@
 %if "%{debdist}" == "lenny"
 %define errata 3
 %endif
+if "%{debdist}" == "squeeze"
+%define errata 4
+%endif
+if "%{debdist}" == "wheezy"
+%define errata 5
+%endif
 %if %{?relnum:0}%{?!relnum:1}
 %define relnum 1
 %endif
@@ -38,7 +44,7 @@
 
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 Name: debbuild
-Version: 0.9.3
+Version: 0.9.5
 Release: %{release}
 Source: http://www.deepnet.cx/debbuild/debbuild-%{version}.tar.gz
 Group: Development/Tools
