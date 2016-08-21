@@ -5,8 +5,8 @@
 # unlikely to conform to "Debian Policy".
 ###
 # SVN revision info
-# $Date: 2013-01-10 15:01:19 -0500 (Thu, 10 Jan 2013) $
-# SVN revision $Rev: 178 $
+# $Date: 2015-06-07 11:55:54 -0400 (Sun, 07 Jun 2015) $
+# SVN revision $Rev: 186 $
 # Last update by $Author: kdeugau $
 ###
 # Copyright (C) 2005-2013 Kris Deugau <kdeugau@deepnet.cx>
@@ -31,7 +31,7 @@ use Fcntl;	# for sysopen flags
 use Cwd 'abs_path';	# for finding where files really are
 use Config;
 
-my $version = "0.9.9";
+my $version = "0.10.1";
 
 # regex debugger
 #use re "debug";
@@ -109,19 +109,31 @@ q(#!/bin/bash
   RPM_PACKAGE_VERSION="%{version}"
   RPM_PACKAGE_RELEASE="%{release}"
   export RPM_PACKAGE_NAME RPM_PACKAGE_VERSION RPM_PACKAGE_RELEASE
+  LANG=C
+  export LANG
+  unset CDPATH DISPLAY ||:
   RPM_BUILD_ROOT="%{buildroot}"
   export RPM_BUILD_ROOT
+
+  PKG_CONFIG_PATH="${PKG_CONFIG_PATH}:/usr/lib64/pkgconfig:/usr/share/pkgconfig"
+  export PKG_CONFIG_PATH
 );
-foreach (`dpkg-architecture`) {
-  s/=(.+)/="$1"/;
-  $scriptletbase .= "  $_";
-  ($hostarch) = (/^DEB_HOST_ARCH="(.+)"$/) if /DEB_HOST_ARCH=/;
+
+if (-e '/usr/bin/dpkg-architecture') {
+  foreach (`dpkg-architecture`) {
+    s/=(.+)/="$1"/;
+    $scriptletbase .= "  $_";
+    ($hostarch) = (/^DEB_HOST_ARCH="(.+)"$/) if /DEB_HOST_ARCH=/;
+  }
+} else {
+  warn "Missing dpkg-architecture, DEB_HOST_ARCH will not be set!\n";
 }
+
 $scriptletbase .=
 q(
   set -x
   umask 022
-  cd %{_topdir}/BUILD
+  cd "%{_topdir}/BUILD"
 );
 
 # Hackery to try to bring some semblance of sanity to packages built for more
@@ -568,7 +580,7 @@ LINE: while (<SPECFILE>) {
     if (/^%[a-z]/ &&
 		$_ !~ /^%(?:attr|build|changelog|check|clean|config|configure|defattr|define|description|
 		dir|doc|docdir|else|endif|files|ghost|if|ifarch|ifn|ifnarch|ifnos|ifnxxx|fos|ifxxx|
-		install|makeinstall|package|patch\d+|post|postun|pre|prep|preun|readme|setup|
+		install|makeinstall|package|patch\d+|post|postun|pre|prep|preun|readme|setup[^\s]*|
 		triggerin|triggerpostun|triggerun|verify|verifyscript)\b/x
 	) {
 	my ($badtag) = (/^%([a-z]+)/i);
@@ -682,19 +694,19 @@ LINE: while (<SPECFILE>) {
 
     if (/^\%build/) {
       $stage = 'build';
-      $buildscript .= "cd $tarballdir\n";
+      $buildscript .= "cd $tarballdir\n" if $pkgdata{main}{hassetup};
       next LINE;
     } # %build
 
     if (/^\%install/) {
       $stage = 'install';
-      $installscript .= "cd $tarballdir\n";
+      $installscript .= "cd $tarballdir\n" if $pkgdata{main}{hassetup};
       next LINE;
     } # %install
 
     if (/^\%clean/) {
       $stage = 'clean';
-      $cleanscript .= "cd $tarballdir\n";
+      $cleanscript .= "cd $tarballdir\n" if $pkgdata{main}{hassetup};
       next LINE;
     } # %clean
 
@@ -758,28 +770,110 @@ LINE: while (<SPECFILE>) {
       # Actual handling for %prep section.  May have %setup macro;  may
       # include %patch tags, may be just a bare shell script.
       if (/^\%setup/) {
-        # Parse out the %setup macro.  Note that we aren't supporting
-        # many of RPM's %setup features.
-        $prepscript .= "cd $topdir/BUILD\n";
-        if ( /\s+-n\s+([^\s]+)\s+/ ) {
-          $tarballdir = $1;
-        }
+        $pkgdata{main}{hassetup} = 1;  # flag the fact that we've got %setup
+        # Parse out the %setup macro.
+        chomp;
+        # rpmbuild doesn't complain about gibberish immediately following %setup, but we will
+        warn "Suspect \%setup tag '$_', continuing\n" if ! /^\%setup(?:\s|$)/;
+
+        # Prepare some flags
+        my $changedir = 0;
+        my $deldir = 1;
+        my $quietunpack = 0;
+        my $deftarball = 1;
+        my $snum = '';
+        my $sbefore;
+        my $safter;
+        my $altsource = 0;
+
+        my @sbits = split /\s+/;
+        shift @sbits;
+        while (my $sopt = shift @sbits) {
+          if ($sopt eq '-n') {
+            $tarballdir = shift @sbits;
+          } elsif ($sopt eq '-a') {
+            # shift, next opt must be numeric (which sourcenn:)
+            $sopt = shift @sbits;
+            die "Argument for \%setup -a must be numeric at $specfile line $.\n" if $sopt !~ /^\d+$/;
+            $safter = $sopt;
+            $snum = $sopt;
+            $altsource = 1;
+          } elsif ($sopt eq '-b') {
+            # shift, next opt must be numeric (which sourcenn:)
+            $sopt = shift @sbits;
+            die "Argument for \%setup -b must be numeric at $specfile line $.\n" if $sopt !~ /^\d+$/;
+            $sbefore = $sopt;
+            $snum = $sopt;
+            $altsource = 2;
+          } elsif ($sopt eq '-c') {
+            # flag, create and change directory before unpack
+            $changedir = 1;
+          } elsif ($sopt eq '-D') {
+            # flag, do not delete directory before unpack
+            $deldir = 0;
+          } elsif ($sopt eq '-T') {
+            # flag, do not unpack first source
+            $deftarball = 0;
+          } elsif ($sopt eq '-q') {
+            # SSSH!  Unpack quietly
+            $quietunpack = 1;
+          }
+        } # $sopt = shift @sbits
+
+# Note that this is an incomplete match to rpmbuild's full %setup expression.
+# Still known to do:
+# - Match implementation of -a and -b if both are specified.
+#   Looks to be "expand -a into $aftersource and expand -b into $beforesource inside the while()"
+#   instead of treating them as flags like the other arguments.
+# - -q appears to be somewhat positional
+
+        $prepscript .= "cd '$topdir/BUILD'\n";
         $tarballdir = expandmacros($tarballdir,'gp');
-        $prepscript .= "rm -rf $tarballdir\n";
-        if (/\s+-c\s+/) {
-          $prepscript .= "mkdir $tarballdir\ncd $tarballdir\n";
-        }
-        $prepscript .=
+        $prepscript .= "rm -rf '$tarballdir'\n" if $deldir;
+        $prepscript .= "/bin/mkdir -p $tarballdir\n" if $changedir;
+
+        if ($deftarball) {
+          $prepscript .=
 		( $pkgdata{main}{source} =~ /\.tar\.gz$/  ? "/bin/gzip"   : "" ).
 		( $pkgdata{main}{source} =~ /\.tar\.bz2$/ ? "/bin/bzip2"  : "" ).
 		( $pkgdata{main}{source} =~ /\.tar\.xz$/  ? "/usr/bin/xz" : "" ).
-		" -dc $topdir/SOURCES/$pkgdata{main}{source} | /bin/tar -".
-		( /\s+-q\s+/ ? '' : 'vv' )."xf -\n".
-		qq(STATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n).
-		"cd $topdir/BUILD/$tarballdir\n".
-		qq([ `/usr/bin/id -u` = '0' ] && /bin/chown -Rhf root .\n).
-		qq([ `/usr/bin/id -u` = '0' ] && /bin/chgrp -Rhf root .\n).
-		qq(/bin/chmod -Rf a+rX,g-w,o-w .\n);
+		" -dc '$topdir/SOURCES/$pkgdata{main}{source}' | /bin/tar -x".
+		( $quietunpack ? '' : 'vv' )."f -\n".
+		qq(STATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+        }
+
+        if ($altsource) {
+          if ($altsource == 1) { # -a
+            $prepscript .= "cd '$tarballdir'\n";
+            $prepscript .=
+		( $pkgdata{sources}{$snum} =~ /\.tar\.gz$/  ? "/bin/gzip"   : "" ).
+		( $pkgdata{sources}{$snum} =~ /\.tar\.bz2$/ ? "/bin/bzip2"  : "" ).
+		( $pkgdata{sources}{$snum} =~ /\.tar\.xz$/  ? "/usr/bin/xz" : "" ).
+		" -dc '$topdir/SOURCES/$pkgdata{sources}{$snum}' | /bin/tar -x".
+		( $quietunpack ? '' : 'vv' )."f -\n".
+		qq(STATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+          } # $altsource == 1
+
+          if ($altsource == 2) { # -b
+            $prepscript .=
+		( $pkgdata{sources}{$snum} =~ /\.tar\.gz$/  ? "/bin/gzip"   : "" ).
+		( $pkgdata{sources}{$snum} =~ /\.tar\.bz2$/ ? "/bin/bzip2"  : "" ).
+		( $pkgdata{sources}{$snum} =~ /\.tar\.xz$/  ? "/usr/bin/xz" : "" ).
+		" -dc '$topdir/SOURCES/$pkgdata{sources}{$snum}' | /bin/tar -x".
+		( $quietunpack ? '' : 'vv' )."f -\n".
+		qq(STATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+            $prepscript .= "cd '$tarballdir'\n";
+          } # $altsource == 2
+        } else {
+          $prepscript .= "cd '$tarballdir'\n" unless $changedir;
+        }
+
+# rpm doesn't seem to do the chowns any more
+#		qq([ `/usr/bin/id -u` = '0' ] && /bin/chown -Rhf root .\n).
+#		qq([ `/usr/bin/id -u` = '0' ] && /bin/chgrp -Rhf root .\n).
+        $prepscript .=
+		qq(/bin/chmod -Rf a+rX,u+w,g-w,o-w .\n);
+
       } elsif ( my ($patchnum,$patchopts) = (/^\%patch([^\s]+)(\s+.+)?$/) ) {
         chomp $patchnum;
         $prepscript .= qq(echo "Patch #$patchnum ($pkgdata{main}{"patch$patchnum"}):"\n);
@@ -957,13 +1051,16 @@ LINE: while (<SPECFILE>) {
         $pkgdata{main}{packager} = $1;
       } elsif (/^buildroot:\s*(.+)/i) {
         $specglobals{buildroot} = $1;
-      } elsif (/^source0?:\s*(.+)/i) {
-        $pkgdata{main}{source} = $1;
+      } elsif (my ($sval) = /^source0?:\s*(.+)/i) {
+        $sval =~ s/\s*$//;
+        $pkgdata{main}{source} = $sval;
         # Do this here since we don't use any URL forms elsewhere (maybe some other time)
         $pkgdata{main}{source} =~ s|^.+/([^/]+)$|$1|;
+        $pkgdata{sources}{0} = $pkgdata{main}{source};
 	# .tar, .tar.gz, .tar.bz2, .tgz, .xz
-        die "Unknown tarball format $1\n" if $1 !~ /\.(?:tar(?:\.(?:gz|bz2|xz))?|tgz)$/;
+        die "Unknown Source: header format $sval\n" if $sval !~ /\.(?:tar(?:\.(?:gz|bz2|xz))?|tgz)$/;
       } elsif (my ($srcnum, $src) = (/^source([0-9]+):\s*(.+)/i)) {
+        $src =~ s/\s*$//;
         $pkgdata{sources}{$srcnum} = $src;
         # Do this here since we don't use any URL forms elsewhere (maybe some other time)
         $pkgdata{sources}{$srcnum} =~ s|^.+/([^/]+)$|$1|;
@@ -1158,17 +1255,19 @@ sub binpackage {
       mkdir "$topdir/DEBS/$pkgdata{$pkg}{arch}";
     }
 
-    # Skip building a package if it doesn't actually have any files.  NB:  This
-    # differs slightly from rpm's behaviour where a package *will* be built -
-    # even without any files - if %files is specified anywhere.  I can think
-    # of odd corner cases where that *may* be desireable.
-    next if (!$filelist{$pkg} or $filelist{$pkg} =~ /^\s*$/);
+    # Skip building a package that doesn't have any files or dependencies.  True
+    # metapackages don't have any files, but they depend on a bunch of things.
+    # Packages with neither have, essentially, no content.
+    next if 
+        (!$filelist{$pkg} or $filelist{$pkg} =~ /^\s*$/) &&
+        (!$pkgdata{$pkg}{requires});
+    $filelist{$pkg} = '' if !$filelist{$pkg};
 
     # Gotta do this first, otherwise we don't have a place to move files from %files
     mkdir "$specglobals{buildroot}/$pkg";
 
     # Eliminate any lingering % macros
-    $filelist{$pkg} = expandmacros $filelist{$pkg}, 'g';
+    $filelist{$pkg} = expandmacros $filelist{$pkg}, 'gp';
 
     my @pkgfilelist = split ' ', $filelist{$pkg};
     foreach my $pkgfile (@pkgfilelist) {
@@ -1290,6 +1389,7 @@ sub binpackage {
       # %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
     close DEBSCRIPT;
 
+    $pkgdata{$pkg}{summary} = expandmacros($pkgdata{$pkg}{summary}, 'gp');
     my $control = "Package: $pkgdata{$pkg}{name}\n".
 	"Version: ".(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
 	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}\n".
@@ -1305,6 +1405,7 @@ sub binpackage {
 	( defined($pkgdata{$pkg}{enhances}) ? "Enhances: $pkgdata{$pkg}{enhances}\n" : '' ).
 	( defined($pkgdata{$pkg}{replaces}) ? "Replaces: $pkgdata{$pkg}{replaces}\n" : '' ).
 	"Description: $pkgdata{$pkg}{summary}\n";
+    $pkgdata{$pkg}{desc} = expandmacros($pkgdata{$pkg}{desc}, 'gp');
     # Munge things so that Debian tools don't choke on errant blank lines
     $pkgdata{$pkg}{desc} =~ s/\s+$//g;		# Trim trailing blanks
     $pkgdata{$pkg}{desc} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
@@ -1421,6 +1522,9 @@ sub srcpackage {
   }
 
   foreach my $source (keys %{$pkgdata{sources}}) {
+    # Skip Source0, since it's also $pkgdata{main}{source}.  Could arguably
+    # just remove that instead, but I think that might backfire.
+    next if $source eq '0';
     $paxcmd .= "SOURCES/$pkgdata{sources}{$source} ";
   }
 
@@ -1466,6 +1570,9 @@ sub clean {
 sub checkbuildreq {
   return 1 if $buildreq eq '';	# No use doing extra work.
 
+  # expand macros 
+  $buildreq = expandmacros($buildreq,'gp');
+
   if ( ! -e "/usr/bin/dpkg-query" ) {
     print "**WARNING**  dpkg-query not found.  Can't check build-deps.\n".
 	"  Required for sucessful build:\n".$buildreq."\n".
@@ -1478,6 +1585,7 @@ sub checkbuildreq {
   $buildreq =~ s/^, //;	# Strip the leading comma and space
   my @reqlist = split /,\s+/, $buildreq;
 
+  my @missinglist;
   foreach my $req (@reqlist) {
     # from rpmbuild error message
     # Dependency tokens must begin with alpha-numeric, '_' or '/'
@@ -1495,10 +1603,17 @@ sub checkbuildreq {
       $ver = 0;
     }
 
+## Apparently a package that has been installed, then uninstalled, has a "known" dpkg status of
+## "unknown ok not-installed" vs a package that has never been installed which returns nothing.  O_o
+## Virtual packages, of course, *also* show as "not installed" like this (WTF?)
+## This causes real packages to be misdetected as installed "possible virtual packages" instead of "missing
+## packages".  I don't think there's really a solution until/unless Debian's tools properly register virtual
+## packages as installed.
     my @pkglist = qx { dpkg-query --showformat '\${status}\t\${version}\n' -W $pkg };
     if (!$pkglist[0]) {
-      print " * Missing build-dependency $pkg!\n";
+      print " * Missing build-dependency $pkg!\n  $pkglist[0]";
       $reqflag = 0;
+      push @missinglist, $pkg;
     } else {
 # real package, installed
 #kdeugau:~$ dpkg-query --showformat '${status}\t${version}\n' -W libc-client2007e-dev 2>&1
@@ -1522,11 +1637,14 @@ sub checkbuildreq {
         }
       } else {
 	# whatever state it's in, it's not completely installed, therefore it's missing.
-	print " * Missing build-dependency $pkg!\n";
+	print " * Missing build-dependency $pkg!\n  $pkglist[0]";
 	$reqflag = 0;
+        push @missinglist, $pkg;
       } # end not installed/installed check
     }
   } # end req loop
+
+  print "To install all missing dependencies, run 'apt-get install ".join(' ', @missinglist)."'.\n" unless $reqflag;
 
   return $reqflag;
 } # end checkbuildreq()
@@ -1749,7 +1867,8 @@ sub expandmacros {
   if ($section =~ /g/) {
 
     $macrostring =~ s|%{_builddir}|%{_topdir}/BUILD|g;
-    $macrostring =~ s|%{buildsubdir}|$tarballdir|g;
+# no longer a valid macro/tag
+#    $macrostring =~ s|%{buildsubdir}|$tarballdir|g;
     $macrostring =~ s|%{_topdir}|$topdir|g;
     $macrostring =~ s|%{_tmppath}|$tmpdir|g;
     $macrostring =~ s'%{_docdir}'%{_datadir}/doc'g;
@@ -1813,6 +1932,7 @@ die "excessive recursive macro replacement;  dying.\n" if $tmpcount > 14;
     # system programs.  RPM uses a global config file for these;  we'll just
     # ASS-U-ME and make life a little simpler.
     if ($macrostring =~ /\%\{\_\_([a-z0-9_-]+)\}/) {
+# see /usr/lib/rpm/macros for most of the list.  we should arguably just parse that file, but..  ow.
       $macrostring =~ s|%{__([a-z0-9_-]+)}|$1|g;
     }
 

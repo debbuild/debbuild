@@ -1,11 +1,11 @@
 # quick makefile for debbuild
-# $Id: Makefile 178 2013-01-10 20:01:19Z kdeugau $
+# $Id: Makefile 186 2015-06-07 15:55:54Z kdeugau $
 
 MANIFEST = \
 	debbuild Makefile COPYING debbuild.spec
 
 PKGNAME=debbuild
-VERSION=0.9.9
+VERSION=0.10.1
 
 MANDIR=/usr/share/man
 CONFDIR=/etc

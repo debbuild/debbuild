@@ -1,4 +1,4 @@
-# $Id: debbuild.spec 169 2012-09-13 20:15:44Z kdeugau $
+# $Id: debbuild.spec 182 2015-05-28 01:49:52Z kdeugau $
 # Refer to the following for more info on .spec file syntax:
 #   http://www.rpm.org/max-rpm/
 #   http://www.rpm.org/max-rpm-snapshot/	(Updated version of above)
@@ -28,6 +28,9 @@ if "%{debdist}" == "squeeze"
 if "%{debdist}" == "wheezy"
 %define errata 5
 %endif
+if "%{debdist}" == "jessie"
+%define errata 6
+%endif
 %if %{?relnum:0}%{?!relnum:1}
 %define relnum 1
 %endif
@@ -44,7 +47,7 @@ if "%{debdist}" == "wheezy"
 
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 Name: debbuild
-Version: 0.9.9
+Version: 0.10.1
 Release: %{release}
 Source: http://www.deepnet.cx/debbuild/debbuild-%{version}.tar.gz
 Group: Development/Tools
@@ -52,7 +55,9 @@ License: GPLv2+
 Packager: Kris Deugau <kdeugau@deepnet.cx>
 Requires: perl, build-essential, pax, fakeroot, bash
 %if %{_vendor} == "debbuild"
-Recommends: patch, bzip2
+Recommends: patch, bzip2, xz-utils
+# For setting DEB_HOST_ARCH
+Recommends: dpkg-architecture
 Suggests: rpm, subversion
 %endif
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
