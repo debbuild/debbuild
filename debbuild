@@ -5,11 +5,11 @@
 # unlikely to conform to "Debian Policy".
 ###
 # SVN revision info
-# $Date: 2015-06-07 11:55:54 -0400 (Sun, 07 Jun 2015) $
-# SVN revision $Rev: 186 $
+# $Date: 2015-07-13 21:41:40 -0400 (Mon, 13 Jul 2015) $
+# SVN revision $Rev: 195 $
 # Last update by $Author: kdeugau $
 ###
-# Copyright (C) 2005-2013 Kris Deugau <kdeugau@deepnet.cx>
+# Copyright (C) 2005-2015 Kris Deugau <kdeugau@deepnet.cx>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ use Fcntl;	# for sysopen flags
 use Cwd 'abs_path';	# for finding where files really are
 use Config;
 
-my $version = "0.10.1";
+my $version = "0.11.1";
 
 # regex debugger
 #use re "debug";
@@ -66,6 +66,7 @@ my $tarballdir = '%{name}-%{version}';	# We do this in case of a spec file not u
 my %specglobals;	# For %define's in specfile, among other things.
 
 $specglobals{'_vendor'} = 'debbuild';
+# this can be changed by the Vendor: header in the spec file
 $specglobals{'vendor'} = 'debbuild';
 
 # Initialized globals
@@ -140,28 +141,83 @@ q(
 # than one Debian version at the same time.  Whee.
 # /etc/debian-version and/or version of base-files package
 my %distmap = (
-	"3.1.9ubuntu7.1"	=> "dapper",
-	"4ubuntu2"	=> "feisty",
+# legacy Unbuntu
+	"3.1.9ubuntu"	=> "dapper",
+	"6.06"		=> "dapper",
+	"4ubuntu"	=> "feisty",
+	"7.04"		=> "fiesty",
+        "4.0.1ubuntu"	=> "hardy",
+	"8.04"		=> "hardy",
+# Note we do NOT support identification of "subrelease" versions (ie semimajor updates
+# to a given release).  If your dependencies are really that tight, and you can't rely
+# on the versions of the actual dependencies, you're already in over your head, and
+# should probably only ship a tarballed installer.
+# only supporting LTS releases
+# base-files version doesn't map to the Ubuntu version the way Debian versions do, thus the doubled entries
+#	Ubuntu 12.04.5 LTS (Precise Pangolin)
+	"6.5ubuntu"	=> "precise",
+	"12.04"		=> "precise",
+#	Ubuntu 14.04.2 LTS (Trusty Tahr)
+	"7.2ubuntu"	=> "trusty",
+	"14.04"		=> "trusty",
+# Debian releases
 	"3.0"	=> "woody",
 	"3.1"	=> "sarge",
 	"4"	=> "etch",
 	"5"	=> "lenny",
-	"6.0"	=> "squeeze",
-	"7.0"	=> "wheezy",
-	"8.0"	=> "jessie",
-	"99"	=> "sid");
+	"6"	=> "squeeze",
+	"7"	=> "wheezy",
+	"8"	=> "jessie",
+	"9"	=> "stretch",
+	"99"	=> "sid",
+);
+
+# Map Ubuntu base-files versions to the nominal public versions
+
+my %ubnt_vermap = (
+	"6.5ubuntu6"	=> "12.04",
+	"7.2ubuntu5"	=> "14.04",
+);
+
 # Enh.  There doesn't seem to be any better way to do this...  :(
 {
 # could theoretically also do something with this...  it's about as stable as "dpkg-query ..." below...  :(
 #  my $releasever = qx { cat /etc/debian_version };
 #  chomp $releasever;
+  my $basefiles;
   my $basever;
+  my $baseos;
 
-  if ( ! -e '/usr/bin/dpkg-query' ) {
+  # Funny thing how files like this have become useful...
+  # Check for /etc/os-release.  If that doesn't exist, try /etc/lsb-release.  If that doesn't exist,
+  # check for existence of dpkg-query, and either call it Debian Woody (if missing), or fall through
+  # to guessing based on the version of the base-files package.
+  if (-e '/etc/os-release') {
+    open OSREL, "</etc/os-release";
+    # Look for ID and VERSION_ID lines.
+    while (<OSREL>) {
+      $baseos = $1 if /^ID=(\w+)/;
+      $basever = $1 if /^VERSION_ID="?([\d.]+)/;
+    }
+    close OSREL;
+
+  } elsif (-e '/etc/lsb-release') {
+    open LSBREL, "</etc/lsb-release";
+    # Look for DISTRIB_ID and DISTRIB_RELEASE lines.
+    # We could also theoretically extract the dist codename, but since we have to hand-map
+    # it in so many other cases there's little point.
+    while (<LSBREL>) {
+      $baseos = $1 if /^DISTRIB_ID=(\w+)/;
+      $basever = $1 if /^DISTRIB_RELEASE=([\d.]+)/;
+    }
+    close LSBREL;
+
+  } elsif ( ! -e '/usr/bin/dpkg-query' ) {
     # call it woody, since sarge and newer have dpkg-query, and we don't much care about obsolete^n releases
     $basever = "3.0";
-  } else {
+    $baseos = 'debian';
 
+  } else {
 # *eyeroll*  there *really* has to be a better way to go about this.  You
 # can't sanely build packages for multiple distro targets if you can't
 # programmatically figure out which one you're building on.
@@ -169,19 +225,48 @@ my %distmap = (
 # note that we care only about major release numbers; tracking minor or point
 # releases would be...  exponentially more painful.
 
+    my $majver;
     # for the lazy copy-paster:  dpkg-query --showformat '${version}\n' -W base-files
     # avoid shellisms
     if (open BASEGETTER, "-|", "dpkg-query", "--showformat", '${version}', "-W", "base-files") {
       $basever = <BASEGETTER>;
       close BASEGETTER;
 
-      ($basever) = ($basever =~ /^(\d(?:\.\d)?)/);
+      if ($basever =~ /ubuntu/) {
+        # Ubuntu, at least until they upset their versioning scheme again
+        # note that we remap the basefiles version to the public release number, to match the
+        # behaviour for Debian, and to match the unofficial standard for RHEL/Centos etc and Fedora
+        ($basefiles,$basever) = ($basever =~ /^(([\d.]+)ubuntu)\d/);
+        $baseos = 'ubuntu';
+      } else {
+        # Debian, or more "pure" derivative
+        $baseos = 'debian';
+        ($basever,$majver) = ($basever =~ /^((\d+)(?:\.\d)?)/);
+        if ($majver > 3) {
+          $basever = $majver;
+        }
+      }
     }
 
+    if (!$basever) {
+      # Your llama is on fire
+      $basever = '99';
+      print "Warning:  couldn't autodetect OS version, assuming sid/unstable\n";
+    }
   } # got dpkg-query?
 
+  # Set some legacy globals.
   $specglobals{"debdist"} = $distmap{$basever};
   $specglobals{"debver"} = $basever;   # this may have trouble with Ubuntu versions?
+
+  # Set the standard generic OS-class globals;
+  $baseos = lc($baseos);
+  $specglobals{"ubuntu"} = $basever if $baseos eq 'ubuntu';
+  $specglobals{"debian"} = $basever if $baseos eq 'debian';
+
+  # Default %{dist} to something marginally sane.  Note this should be overrideable by --define.
+  # This has been chosen to most closely follow the usage in RHEL/CentOS and Fedora, ie "el5" or "fc20".
+  $specglobals{"dist"} = $baseos.$basever;
 
 } # done trying to set debian dist/version
 
@@ -203,7 +288,8 @@ my $prepscript = '';
 my $buildscript = '';
 # %install doesn't need the full treatment from %clean;  just an empty place to install to.
 # NB - rpm doesn't do this;  is it really necessary?
-my $installscript = '[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT'."\n";
+my $installscript = '';
+#'[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT'."\n";
 my $cleanscript = '';
 
 # Snag some environment data
@@ -397,7 +483,7 @@ sub parse_cmd {
 	  $cmdopts{type} = 'd';	# d for 'diagnostic' or 'debug' or 'dump'
 	} elsif (/^--help/) {
 	  print "debbuild v$version".q{
-Copyright 2005-2012 Kris Deugau <kdeugau@deepnet.cx>
+Copyright 2005-2015 Kris Deugau <kdeugau@deepnet.cx>
 
 Build .deb packages from RPM-style .spec files
 debbuild supports most package-building options rpmbuild does.
@@ -588,7 +674,7 @@ LINE: while (<SPECFILE>) {
     }
 
 # preprocess %define's
-    if (my ($key, $def) = (/^\%define\s+([^\s]+)\s+(.+)$/) ) {
+    if (my ($key, $def) = (/^\%(?:define|global)\s+([^\s]+)\s+(.+)$/) ) {
       $specglobals{$key} = expandmacros($def,'g');
     }
 
@@ -655,6 +741,7 @@ LINE: while (<SPECFILE>) {
     if (/^\%{echo:(.+)}/) {
       my $output = expandmacros($1, 'gp');
       print "$output";
+      next LINE;
     }
 
 # now we pick out the sections and set "state" to parse that section.  Fugly but I can't see a better way.  >:(
@@ -694,19 +781,19 @@ LINE: while (<SPECFILE>) {
 
     if (/^\%build/) {
       $stage = 'build';
-      $buildscript .= "cd $tarballdir\n" if $pkgdata{main}{hassetup};
+      $buildscript .= "cd '$tarballdir'\n" if $pkgdata{main}{hassetup};
       next LINE;
     } # %build
 
     if (/^\%install/) {
       $stage = 'install';
-      $installscript .= "cd $tarballdir\n" if $pkgdata{main}{hassetup};
+      $installscript .= "cd '$tarballdir'\n" if $pkgdata{main}{hassetup};
       next LINE;
     } # %install
 
     if (/^\%clean/) {
       $stage = 'clean';
-      $cleanscript .= "cd $tarballdir\n" if $pkgdata{main}{hassetup};
+      $cleanscript .= "cd '$tarballdir'\n" if $pkgdata{main}{hassetup};
       next LINE;
     } # %clean
 
@@ -786,11 +873,14 @@ LINE: while (<SPECFILE>) {
         my $safter;
         my $altsource = 0;
 
+        # yes, really.  It's not clear how this cascades down to %build or %install
+        my $thistarballdir = $tarballdir;
+
         my @sbits = split /\s+/;
         shift @sbits;
         while (my $sopt = shift @sbits) {
           if ($sopt eq '-n') {
-            $tarballdir = shift @sbits;
+            $thistarballdir = shift @sbits;
           } elsif ($sopt eq '-a') {
             # shift, next opt must be numeric (which sourcenn:)
             $sopt = shift @sbits;
@@ -829,10 +919,11 @@ LINE: while (<SPECFILE>) {
 
         $prepscript .= "cd '$topdir/BUILD'\n";
         $tarballdir = expandmacros($tarballdir,'gp');
-        $prepscript .= "rm -rf '$tarballdir'\n" if $deldir;
-        $prepscript .= "/bin/mkdir -p $tarballdir\n" if $changedir;
+        $prepscript .= "rm -rf '$thistarballdir'\n" if $deldir;
+        $prepscript .= "/bin/mkdir -p $thistarballdir\n" if $changedir;
 
         if ($deftarball) {
+          $prepscript .= "cd '$thistarballdir'\n" if $changedir;
           $prepscript .=
 		( $pkgdata{main}{source} =~ /\.tar\.gz$/  ? "/bin/gzip"   : "" ).
 		( $pkgdata{main}{source} =~ /\.tar\.bz2$/ ? "/bin/bzip2"  : "" ).
@@ -844,7 +935,7 @@ LINE: while (<SPECFILE>) {
 
         if ($altsource) {
           if ($altsource == 1) { # -a
-            $prepscript .= "cd '$tarballdir'\n";
+            $prepscript .= "cd '$thistarballdir'\n";
             $prepscript .=
 		( $pkgdata{sources}{$snum} =~ /\.tar\.gz$/  ? "/bin/gzip"   : "" ).
 		( $pkgdata{sources}{$snum} =~ /\.tar\.bz2$/ ? "/bin/bzip2"  : "" ).
@@ -862,10 +953,8 @@ LINE: while (<SPECFILE>) {
 		" -dc '$topdir/SOURCES/$pkgdata{sources}{$snum}' | /bin/tar -x".
 		( $quietunpack ? '' : 'vv' )."f -\n".
 		qq(STATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
-            $prepscript .= "cd '$tarballdir'\n";
+            $prepscript .= "cd '$thistarballdir'\n";
           } # $altsource == 2
-        } else {
-          $prepscript .= "cd '$tarballdir'\n" unless $changedir;
         }
 
 # rpm doesn't seem to do the chowns any more
@@ -1049,6 +1138,8 @@ LINE: while (<SPECFILE>) {
         $pkgdata{main}{url} = $1;
       } elsif (/^packager:\s*(.+)/i) {
         $pkgdata{main}{packager} = $1;
+      } elsif (/^vendor:\s*(.+)/i) {
+        $specglobals{vendor} = $1;
       } elsif (/^buildroot:\s*(.+)/i) {
         $specglobals{buildroot} = $1;
       } elsif (my ($sval) = /^source0?:\s*(.+)/i) {
@@ -1088,15 +1179,22 @@ LINE: while (<SPECFILE>) {
       } elsif (/^recommends:\s*(.+)/i) {
         $pkgdata{main}{recommends} .= ", $1";
 	warn "Warning:  Debian-specific 'Recommends:' outside \%if wrapper\n" if $iflevel == 0;
+# As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
+# along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
       } elsif (/^suggests:\s*(.+)/i) {
         $pkgdata{main}{suggests} .= ", $1";
-	warn "Warning:  Debian-specific 'Suggests:' outside \%if wrapper\n" if $iflevel == 0;
+	warn "Warning:  'Suggests:' outside \%if wrapper\n" if $iflevel == 0;
       } elsif (/^enhances:\s*(.+)/i) {
         $pkgdata{main}{enhances} .= ", $1";
-	warn "Warning:  Debian-specific 'Enhances:' outside \%if wrapper\n" if $iflevel == 0;
+	warn "Warning:  'Enhances:' outside \%if wrapper\n" if $iflevel == 0;
+      } elsif (/^supplements:\s*(.+)/i) {
+        $pkgdata{main}{enhances} .= ", $1";
+        warn "Warning:  'Supplements:' is not natively supported by .deb packages.  Downgrading relationship to Enhances:.\n";
       } elsif (/^replaces:\s*(.+)/i) {
         $pkgdata{main}{replaces} .= ", $1";
-	warn "Warning:  Debian-specific 'Replaces:' outside \%if wrapper\n" if $iflevel == 0;
+	warn "Warning:  'Replaces:' outside \%if wrapper\n" if $iflevel == 0;
+      } elsif (/^obsoletes:\s*(.+)/i) {
+        $pkgdata{main}{replaces} .= ", $1";
       } elsif (/^autoreq(?:prov)?:\s*(.+)/i) {
 	# we don't handle auto-provides (yet)
 	$NoAutoReq = 1 if $1 =~ /(?:no|0)/i;
@@ -1907,8 +2005,12 @@ sub expandmacros {
     while ($macrostring =~ m/\%\{([?!]+)([a-z0-9_.-]+)(?:\:([a-z0-9_.\/\-\\]+)?)?\}/g) {       #Whew....
       my $qex = $1;
       my $macro = $2;
-      my $value = (defined($3) ? $3 : '');
-
+      my $value = '';
+      if (defined($3)) {
+        $value = $3;
+      } else {
+        $value = $specglobals{$macro} if $specglobals{$macro};
+      }
       my $neg = '1' if $qex =~ /\!/;
       if ($specglobals{$macro}) {
 	$value = '' if $neg;
@@ -1978,6 +2080,8 @@ debbuild - Build Debian-compatible .deb packages from RPM .spec files
 
  debbuild --showpkgs
 
+ debbuild -i foo.sdeb
+
 =head1 DESCRIPTION
 
 debbuild attempts to build Debian-friendly semi-native packages from RPM spec files, 
@@ -2006,6 +2110,11 @@ you'll have to make heavy modifications anyway.
 
 If you see something you don't like, mail me.  Send a patch if you feel inspired.  I don't 
 promise I'll do anything other than say "Yup, that's broken" or "Got your message".
+
+The source package container I invented for debbuild, the .sdeb file, can be "installed"
+with debbuild -i exactly the same way as a .src.rpm can be installed with "rpm -i".  Both
+will unpack the file and place the source(s) and .spec file in the appropriate places in
+%_topdir/SOURCES and %_topdir/SPECS respectively.
 
 =head1 ASSUMPTIONS
 
@@ -2096,6 +2205,12 @@ Dcumentation, such as it is, will likely remain perpetually out of date.
 
 %_topdir and the five "working" directories under %_topdir could arguably be created by 
 debbuild.  However, rpmbuild doesn't create these directories either.
+
+debbuild's %setup -q is arguably less buggy than rpmbuild's implementation;  with rpmbuild
+it must appear before -a or -b at least to be effective.  debbuild does not care.
+
+%setup -c, -a, and -b should arguably throw errors if specified together;  otherwise the
+results are almost certainly not what you want to happen.
 
 =head1 SEE ALSO
 

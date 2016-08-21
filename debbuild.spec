@@ -1,4 +1,4 @@
-# $Id: debbuild.spec 182 2015-05-28 01:49:52Z kdeugau $
+# $Id: debbuild.spec 192 2015-07-14 01:16:36Z kdeugau $
 # Refer to the following for more info on .spec file syntax:
 #   http://www.rpm.org/max-rpm/
 #   http://www.rpm.org/max-rpm-snapshot/	(Updated version of above)
@@ -47,9 +47,9 @@ if "%{debdist}" == "jessie"
 
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 Name: debbuild
-Version: 0.10.1
+Version: 0.11.1
 Release: %{release}
-Source: http://www.deepnet.cx/debbuild/debbuild-%{version}.tar.gz
+Source: https://secure.deepnet.cx/releases/debbuild/debbuild-%{version}.tar.gz
 Group: Development/Tools
 License: GPLv2+
 Packager: Kris Deugau <kdeugau@deepnet.cx>
