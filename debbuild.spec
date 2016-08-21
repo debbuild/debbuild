@@ -1,4 +1,4 @@
-# $Id: debbuild.spec 162 2012-04-09 01:18:25Z kdeugau $
+# $Id: debbuild.spec 169 2012-09-13 20:15:44Z kdeugau $
 # Refer to the following for more info on .spec file syntax:
 #   http://www.rpm.org/max-rpm/
 #   http://www.rpm.org/max-rpm-snapshot/	(Updated version of above)
@@ -44,13 +44,13 @@ if "%{debdist}" == "wheezy"
 
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 Name: debbuild
-Version: 0.9.5
+Version: 0.9.7
 Release: %{release}
 Source: http://www.deepnet.cx/debbuild/debbuild-%{version}.tar.gz
 Group: Development/Tools
-License: GPLv2
+License: GPLv2+
 Packager: Kris Deugau <kdeugau@deepnet.cx>
-Requires: perl, build-essential, pax, fakeroot
+Requires: perl, build-essential, pax, fakeroot, bash
 %if %{_vendor} == "debbuild"
 Recommends: patch, bzip2
 Suggests: rpm, subversion

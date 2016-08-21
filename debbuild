@@ -5,8 +5,8 @@
 # unlikely to conform to "Debian Policy".
 ###
 # SVN revision info
-# $Date: 2012-06-10 20:53:19 -0400 (Sun, 10 Jun 2012) $
-# SVN revision $Rev: 167 $
+# $Date: 2012-09-21 12:24:09 -0400 (Fri, 21 Sep 2012) $
+# SVN revision $Rev: 172 $
 # Last update by $Author: kdeugau $
 ###
 # Copyright (C) 2005-2012 Kris Deugau <kdeugau@deepnet.cx>
@@ -31,7 +31,7 @@ use Fcntl;	# for sysopen flags
 use Cwd 'abs_path';	# for finding where files really are
 use Config;
 
-my $version = "0.9.5";
+my $version = "0.9.7";
 
 # regex debugger
 #use re "debug";
@@ -77,7 +77,7 @@ my %cmdopts = (type => '',
 	);
 my $topdir = "/usr/src/debian";
 #my $specglobals{buildroot} = "%{_tmppath}/%{name}-%{version}-%{release}.root".int(rand(99998)+1);
-$specglobals{buildroot} = '';
+$specglobals{buildroot} = '%{_topdir}/BUILDROOT/%{name}-%{version}-%{release}';
 
 # "Constants"
 my %targets = ('p' => 'Prep',
@@ -95,7 +95,7 @@ my %optflags = ( 'i386'	=>	'-O2 -g -march=i386 -mcpu=i686',
 	);
 my $hostarch;	# we set this later...
 my $scriptletbase =
-q(#!/bin/sh
+q(#!/bin/bash
 
   RPM_SOURCE_DIR="%{_topdir}/SOURCES"
   RPM_BUILD_DIR="%{_topdir}/BUILD"
@@ -178,7 +178,7 @@ my %distmap = (
 #	Source, URL, Packager, BuildRoot, Description, BuildRequires,
 #	Requires, Provides
 # 10/31/2005 Maybe this should be flatter?  -kgd
-my %pkgdata;
+my %pkgdata = (main => {source => ''});
 my @pkglist = ('main');	#sigh
 # Files listing.  Embedding this in %pkgdata would be, um, messy.
 my %filelist;
@@ -284,6 +284,7 @@ if ($cmdopts{type} eq 't') {
 # -> srcpkg if -.s
 if ($cmdopts{stage} eq 's') {
   srcpackage();
+  print $finalmessages;
   exit 0;
 }
 
@@ -669,8 +670,6 @@ LINE: while (<SPECFILE>) {
 
     if (/^\%prep/) {
       $stage = 'prep';
-      # This really should be local-ish, but we need just the filename for the source
-      $pkgdata{main}{source} =~ s|.+/([^/]+)$|$1|;
       # Replace some core macros
       $pkgdata{main}{source} = expandmacros($pkgdata{main}{source},'gp');
       next LINE;
@@ -724,6 +723,7 @@ LINE: while (<SPECFILE>) {
 # now we handle individual lines from the various sections
 
     if ($stage eq 'desc') {
+      next LINE if /^\s*#/;
       $pkgdata{$subname}{desc} .= " $_";
     } # description
 
@@ -741,7 +741,11 @@ LINE: while (<SPECFILE>) {
           $buildarch = $dvalue;     # Emulate rpm's behaviour to a degree
           $dname = 'arch';
         }
-        $pkgdata{$subname}{$dname} = expandmacros($dvalue, 'gp');
+        if ($dname =~ /recommends|suggests|enhances|replaces|requires|conflicts|provides/) {
+          $pkgdata{$subname}{$dname} .= ", ".expandmacros($dvalue, 'gp');
+        } else {
+          $pkgdata{$subname}{$dname} = expandmacros($dvalue, 'gp');
+        }
       }
     } # package
 
@@ -842,6 +846,8 @@ LINE: while (<SPECFILE>) {
       # Debian dpkg doesn't speak "%docdir".  Meh.
       next LINE if /^\%docdir/;
 #      my $singleton = 0;	# don't recall what this was for
+      next LINE if /^\s*#/;
+      next LINE if /^\s*$/;
 
 # create and initialize flags
       my ($perms, $owner, $group, $conf, $filesline);
@@ -946,10 +952,14 @@ LINE: while (<SPECFILE>) {
         $specglobals{buildroot} = $1;
       } elsif (/^source0?:\s*(.+)/i) {
         $pkgdata{main}{source} = $1;
+        # Do this here since we don't use any URL forms elsewhere (maybe some other time)
+        $pkgdata{main}{source} =~ s|^.+/([^/]+)$|$1|;
 	# .tar, .tar.gz, .tar.bz2, .tgz
         die "Unknown tarball format $1\n" if $1 !~ /\.(?:tar(?:\.(?:gz|bz2))?|tgz)$/;
-      } elsif (/^source([0-9]+):\s*(.+)/i) {
-        $pkgdata{sources}{$1} = $2;
+      } elsif (my ($srcnum, $src) = (/^source([0-9]+):\s*(.+)/i)) {
+        $pkgdata{sources}{$srcnum} = $src;
+        # Do this here since we don't use any URL forms elsewhere (maybe some other time)
+        $pkgdata{sources}{$srcnum} =~ s|^.+/([^/]+)$|$1|;
       } elsif (/^patch([^:]+):\s*(.+)$/i) {
         my $patchname = "patch$1";
         $pkgdata{main}{$patchname} = $2;
@@ -979,7 +989,7 @@ LINE: while (<SPECFILE>) {
 	warn "Warning:  Debian-specific 'Suggests:' outside \%if wrapper\n" if $iflevel == 0;
       } elsif (/^enhances:\s*(.+)/i) {
         $pkgdata{main}{enhances} .= ", $1";
-	warn "Warning:  Debian-specific 'Enahnces:' outside \%if wrapper\n" if $iflevel == 0;
+	warn "Warning:  Debian-specific 'Enhances:' outside \%if wrapper\n" if $iflevel == 0;
       } elsif (/^replaces:\s*(.+)/i) {
         $pkgdata{main}{replaces} .= ", $1";
 	warn "Warning:  Debian-specific 'Replaces:' outside \%if wrapper\n" if $iflevel == 0;
@@ -1393,9 +1403,8 @@ sub srcpackage {
   # use pax -w [file] [file] ... >outfile.sdeb
   $paxcmd = "cd $topdir; pax -w ";
 
-# tweak source entry into usable form.  Need it locally somewhere along the line.
-  (my $pkgsrc = $pkgdata{main}{source}) =~ s|.+/([^/]+)$|$1|;
-  $paxcmd .= "SOURCES/$pkgsrc ";
+  # some packages may not have a "main" source.
+  $paxcmd .= "SOURCES/$pkgdata{main}{source} " if $pkgdata{main}{source};
 
   # create file list:  Source[nn], Patch[nn]
   foreach my $specbit (keys %{$pkgdata{main}} ) {
@@ -1464,6 +1473,9 @@ sub checkbuildreq {
   my @reqlist = split /,\s+/, $buildreq;
 
   foreach my $req (@reqlist) {
+    # from rpmbuild error message
+    # Dependency tokens must begin with alpha-numeric, '_' or '/'
+##fixme:  check for suitable whitespace around $rel
     my ($pkg,$rel,$ver);
 
     # We have two classes of requirements - versioned and unversioned.
@@ -1478,21 +1490,34 @@ sub checkbuildreq {
     }
 
     my @pkglist = qx { dpkg-query --showformat '\${status}\t\${version}\n' -W $pkg };
-# need to check if no lines returned - means a bad buildreq
     if (!$pkglist[0]) {
       print " * Missing build-dependency $pkg!\n";
       $reqflag = 0;
     } else {
+# real package, installed
+#kdeugau:~$ dpkg-query --showformat '${status}\t${version}\n' -W libc-client2007e-dev 2>&1
+#install ok installed    8:2007f~dfsg-1
+# virtual package, provided by ???
+#kdeugau:~$ dpkg-query --showformat '${status}\t${version}\n' -W libc-client-dev 2>&1
+#unknown ok not-installed
+# real package or virtual package not installed or provided
+#kdeugau:~$ dpkg-query --showformat '${status}\t${version}\n' -W libdb4.8-dbg 2>&1
+#dpkg-query: no packages found matching libdb4.8-dbg
+
       my ($reqstat,undef,undef,$reqver) = split /\s+/, $pkglist[0];
-      if ($reqstat !~ /install/) {
-	print " * Missing build-dependency $pkg!\n";
-	$reqflag = 0;
-      } else {
+      if ($reqstat =~ /^unknown/) {
+	# this seems to be a virtual package.
+	print " * Warning: $pkg is probably installed but seems to be a virtual package.\n";
+      } elsif ($reqstat =~ /^install/) {
 	my ($resp) = qx { dpkg --compare-versions $reqver '$rel' $ver && echo "ok" };
 	if ($resp !~ /^ok/) {
 	  $reqflag = 0;
 	  print " * Buildreq $pkg is installed, but wrong version ($reqver):  Need $ver\n"
         }
+      } else {
+	# whatever state it's in, it's not completely installed, therefore it's missing.
+	print " * Missing build-dependency $pkg!\n";
+	$reqflag = 0;
       } # end not installed/installed check
     }
   } # end req loop
@@ -1542,7 +1567,7 @@ sub getreqs() {
     next if /linux-gate.so/;		# Kernel hackery for teh W1n!!1!1eleventy-one!1  (Don't ask.  Feh.)
     next if /linux-vdso.so/;		# More kernel hackery.  Whee!
 
-    my ($req) = (m|=\>\s+([a-z0-9._/-]+)|); # dig out the actual library (so)name.
+    my ($req) = (m|=\>\s+([a-zA-Z0-9._/+-]+)|); # dig out the actual library (so)name.
 	# And feh, we need the *path*, since I've discovered a new edge case where
 	# the same libnnn.1.2.3 *file*name is found across *several* lib dirs.  >:(
 
@@ -1708,6 +1733,7 @@ sub expandmacros {
   if ($section =~ /g/) {
 
     $macrostring =~ s|%{_builddir}|%{_topdir}/BUILD|g;
+    $macrostring =~ s|%{buildsubdir}|$tarballdir|g;
     $macrostring =~ s|%{_topdir}|$topdir|g;
     $macrostring =~ s|%{_tmppath}|$tmpdir|g;
     $macrostring =~ s'%{_docdir}'%{_datadir}/doc'g;
