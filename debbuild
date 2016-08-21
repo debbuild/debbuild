@@ -5,8 +5,8 @@
 # unlikely to conform to "Debian Policy".
 ###
 # SVN revision info
-# $Date: 2015-07-13 21:41:40 -0400 (Mon, 13 Jul 2015) $
-# SVN revision $Rev: 195 $
+# $Date: 2015-07-15 21:34:28 -0400 (Wed, 15 Jul 2015) $
+# SVN revision $Rev: 196 $
 # Last update by $Author: kdeugau $
 ###
 # Copyright (C) 2005-2015 Kris Deugau <kdeugau@deepnet.cx>
@@ -31,7 +31,7 @@ use Fcntl;	# for sysopen flags
 use Cwd 'abs_path';	# for finding where files really are
 use Config;
 
-my $version = "0.11.1";
+my $version = "0.11.2";
 
 # regex debugger
 #use re "debug";
@@ -873,14 +873,11 @@ LINE: while (<SPECFILE>) {
         my $safter;
         my $altsource = 0;
 
-        # yes, really.  It's not clear how this cascades down to %build or %install
-        my $thistarballdir = $tarballdir;
-
         my @sbits = split /\s+/;
         shift @sbits;
         while (my $sopt = shift @sbits) {
           if ($sopt eq '-n') {
-            $thistarballdir = shift @sbits;
+            $tarballdir = shift @sbits;
           } elsif ($sopt eq '-a') {
             # shift, next opt must be numeric (which sourcenn:)
             $sopt = shift @sbits;
@@ -919,11 +916,11 @@ LINE: while (<SPECFILE>) {
 
         $prepscript .= "cd '$topdir/BUILD'\n";
         $tarballdir = expandmacros($tarballdir,'gp');
-        $prepscript .= "rm -rf '$thistarballdir'\n" if $deldir;
-        $prepscript .= "/bin/mkdir -p $thistarballdir\n" if $changedir;
+        $prepscript .= "rm -rf '$tarballdir'\n" if $deldir;
+        $prepscript .= "/bin/mkdir -p $tarballdir\n" if $changedir;
 
         if ($deftarball) {
-          $prepscript .= "cd '$thistarballdir'\n" if $changedir;
+          $prepscript .= "cd '$tarballdir'\n" if $changedir;
           $prepscript .=
 		( $pkgdata{main}{source} =~ /\.tar\.gz$/  ? "/bin/gzip"   : "" ).
 		( $pkgdata{main}{source} =~ /\.tar\.bz2$/ ? "/bin/bzip2"  : "" ).
@@ -935,7 +932,7 @@ LINE: while (<SPECFILE>) {
 
         if ($altsource) {
           if ($altsource == 1) { # -a
-            $prepscript .= "cd '$thistarballdir'\n";
+            $prepscript .= "cd '$tarballdir'\n";
             $prepscript .=
 		( $pkgdata{sources}{$snum} =~ /\.tar\.gz$/  ? "/bin/gzip"   : "" ).
 		( $pkgdata{sources}{$snum} =~ /\.tar\.bz2$/ ? "/bin/bzip2"  : "" ).
@@ -953,7 +950,7 @@ LINE: while (<SPECFILE>) {
 		" -dc '$topdir/SOURCES/$pkgdata{sources}{$snum}' | /bin/tar -x".
 		( $quietunpack ? '' : 'vv' )."f -\n".
 		qq(STATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
-            $prepscript .= "cd '$thistarballdir'\n";
+            $prepscript .= "cd '$tarballdir'\n";
           } # $altsource == 2
         }
 

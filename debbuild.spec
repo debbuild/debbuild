@@ -47,7 +47,7 @@ if "%{debdist}" == "jessie"
 
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 Name: debbuild
-Version: 0.11.1
+Version: 0.11.2
 Release: %{release}
 Source: https://secure.deepnet.cx/releases/debbuild/debbuild-%{version}.tar.gz
 Group: Development/Tools
