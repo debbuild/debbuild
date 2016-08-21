@@ -44,7 +44,7 @@ if "%{debdist}" == "wheezy"
 
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 Name: debbuild
-Version: 0.9.7
+Version: 0.9.9
 Release: %{release}
 Source: http://www.deepnet.cx/debbuild/debbuild-%{version}.tar.gz
 Group: Development/Tools

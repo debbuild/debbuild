@@ -5,11 +5,11 @@
 # unlikely to conform to "Debian Policy".
 ###
 # SVN revision info
-# $Date: 2012-09-21 12:24:09 -0400 (Fri, 21 Sep 2012) $
-# SVN revision $Rev: 172 $
+# $Date: 2013-01-10 15:01:19 -0500 (Thu, 10 Jan 2013) $
+# SVN revision $Rev: 178 $
 # Last update by $Author: kdeugau $
 ###
-# Copyright (C) 2005-2012 Kris Deugau <kdeugau@deepnet.cx>
+# Copyright (C) 2005-2013 Kris Deugau <kdeugau@deepnet.cx>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ use Fcntl;	# for sysopen flags
 use Cwd 'abs_path';	# for finding where files really are
 use Config;
 
-my $version = "0.9.7";
+my $version = "0.9.9";
 
 # regex debugger
 #use re "debug";
@@ -135,7 +135,8 @@ my %distmap = (
 	"4"	=> "etch",
 	"5"	=> "lenny",
 	"6.0"	=> "squeeze",
-	"7.0"	=> "wheezy", 	#maybe?
+	"7.0"	=> "wheezy",
+	"8.0"	=> "jessie",
 	"99"	=> "sid");
 # Enh.  There doesn't seem to be any better way to do this...  :(
 {
@@ -267,12 +268,16 @@ if ($cmdopts{type} eq 't') {
   # collect some info about the tarball
   $specfile = "$topdir/BUILD/". qx { zcat $tarball |tar -t |grep -e '[\.]spec\$' };
   chomp $specfile;
-  my ($fileonly, $dirname) = ($tarball =~ /(([a-zA-Z0-9._-]+)\.tar\.(?:gz|bz2))$/);
+  my ($fileonly, $dirname) = ($tarball =~ /(([a-zA-Z0-9._-]+)\.tar\.(?:gz|bz2|xz))$/);
 
   $tarball = abs_path($tarball);
-  my $unpackcmd = "cd $topdir/BUILD; tar -".
-	( $tarball =~ /\.tar\.gz$/ ? "z" : "" ).
-	( $tarball =~ /\.tar\.bz2$/ ? "j" : "" ). "xf $tarball";
+##fixme:  use macro expansions for the executables
+  my $unpackcmd = "cd $topdir/BUILD; ".
+	( $tarball =~ /\.tar\.gz$/	 ? "/bin/gzip"   : "" ).
+	( $tarball =~ /\.tar\.bz2$/	 ? "/bin/bzip2"  : "" ).
+	( $tarball =~ /\.tar\.(?:gz|Z)$/ ? "/usr/bin/xz" : "" ).
+	" -dc $tarball |/bin/tar -xf -";
+
   system "$unpackcmd";
   system "cp $tarball $topdir/SOURCES/$fileonly";
   system "cp $specfile $topdir/SPECS/";
@@ -764,11 +769,12 @@ LINE: while (<SPECFILE>) {
         if (/\s+-c\s+/) {
           $prepscript .= "mkdir $tarballdir\ncd $tarballdir\n";
         }
-        $prepscript .= "tar -".
-		( $pkgdata{main}{source} =~ /\.tar\.gz$/ ? "z" : "" ).
-		( $pkgdata{main}{source} =~ /\.tar\.bz2$/ ? "j" : "" ).
-		( /\s+-q\s+/ ? '' : 'vv' )."xf ".
-		"$topdir/SOURCES/$pkgdata{main}{source}\n".
+        $prepscript .=
+		( $pkgdata{main}{source} =~ /\.tar\.gz$/  ? "/bin/gzip"   : "" ).
+		( $pkgdata{main}{source} =~ /\.tar\.bz2$/ ? "/bin/bzip2"  : "" ).
+		( $pkgdata{main}{source} =~ /\.tar\.xz$/  ? "/usr/bin/xz" : "" ).
+		" -dc $topdir/SOURCES/$pkgdata{main}{source} | /bin/tar -".
+		( /\s+-q\s+/ ? '' : 'vv' )."xf -\n".
 		qq(STATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n).
 		"cd $topdir/BUILD/$tarballdir\n".
 		qq([ `/usr/bin/id -u` = '0' ] && /bin/chown -Rhf root .\n).
@@ -783,11 +789,12 @@ LINE: while (<SPECFILE>) {
 	# Need to decompress .bz2 and .gz patches on the fly.  Not sure why one
 	# would ever have such things, but there they are...  and rpmbuild supports 'em
 	# patch originally suggested by Lucian Cristian for .bz2
-	# reworked and expanded to support .Z/.gz as well
-	if ( $pkgdata{main}{"patch$patchnum"} =~ /\.(?:Z|gz|bz2)$/ ) {
+	# reworked and expanded to support .Z/.gz/.xz as well
+	if ( $pkgdata{main}{"patch$patchnum"} =~ /\.(?:Z|gz|bz2|xz)$/ ) {
 	  my $decompressor;
-	  $decompressor = 'gzip' if $pkgdata{main}{"patch$patchnum"} =~ /\.(?:Z|gz)$/;
+	  $decompressor = 'gzip'  if $pkgdata{main}{"patch$patchnum"} =~ /\.(?:Z|gz)$/;
 	  $decompressor = 'bzip2' if $pkgdata{main}{"patch$patchnum"} =~ /\.bz2$/;
+	  $decompressor = 'xz'    if $pkgdata{main}{"patch$patchnum"} =~ /\.xz$/;
 	  $prepscript .= qq(/bin/$decompressor -d < $topdir/SOURCES/$pkgdata{main}{"patch$patchnum"} | patch );
 	  $prepscript .= $patchopts if $patchopts;
 	  $prepscript .= "-p0" if !$patchopts;
@@ -954,8 +961,8 @@ LINE: while (<SPECFILE>) {
         $pkgdata{main}{source} = $1;
         # Do this here since we don't use any URL forms elsewhere (maybe some other time)
         $pkgdata{main}{source} =~ s|^.+/([^/]+)$|$1|;
-	# .tar, .tar.gz, .tar.bz2, .tgz
-        die "Unknown tarball format $1\n" if $1 !~ /\.(?:tar(?:\.(?:gz|bz2))?|tgz)$/;
+	# .tar, .tar.gz, .tar.bz2, .tgz, .xz
+        die "Unknown tarball format $1\n" if $1 !~ /\.(?:tar(?:\.(?:gz|bz2|xz))?|tgz)$/;
       } elsif (my ($srcnum, $src) = (/^source([0-9]+):\s*(.+)/i)) {
         $pkgdata{sources}{$srcnum} = $src;
         # Do this here since we don't use any URL forms elsewhere (maybe some other time)
@@ -1284,10 +1291,9 @@ sub binpackage {
     close DEBSCRIPT;
 
     my $control = "Package: $pkgdata{$pkg}{name}\n".
-	"Version: ".
-	(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
+	"Version: ".(defined($pkgdata{main}{epoch}) ? "$pkgdata{main}{epoch}:" : '').
 	"$pkgdata{$pkg}{version}-$pkgdata{main}{release}\n".
-	"Section: $pkgdata{$pkg}{group}\n".
+	"Section: ".($pkgdata{$pkg}{group} ? $pkgdata{$pkg}{group} : $pkgdata{main}{group})."\n".
 	"Priority: optional\n".
 	"Architecture: $pkgdata{$pkg}{arch}\n".
 	"Maintainer: $pkgdata{main}{packager}\n".
@@ -1559,6 +1565,7 @@ sub getreqs() {
 
   my %reqs;
   my $reqlibs = '';
+  my %reqliblist;
 
   foreach (@reqlist) {
     next if /^$pkgtree/;
@@ -1566,6 +1573,13 @@ sub getreqs() {
     next if m|/lib(?:64)?/ld-linux|;	# Hack! Hack!  PTHBTT!  (libc suxx0rz)
     next if /linux-gate.so/;		# Kernel hackery for teh W1n!!1!1eleventy-one!1  (Don't ask.  Feh.)
     next if /linux-vdso.so/;		# More kernel hackery.  Whee!
+
+    # Whee!  more hackery to detect provided-here libs.  Some apparently return from ldd as "not found".
+    my ($a,$b) = split / => /;
+    $a =~ s/\s*//g;
+    if ($b =~ /not found/) {
+      next if qx { find $specglobals{buildroot} -name "*$a" };
+    }
 
     my ($req) = (m|=\>\s+([a-zA-Z0-9._/+-]+)|); # dig out the actual library (so)name.
 	# And feh, we need the *path*, since I've discovered a new edge case where
@@ -1578,11 +1592,13 @@ sub getreqs() {
     next if $provlist =~ /\b$req/;
 
     $reqlibs .= " $req";
+    $reqliblist{$req} = 1;
   }
 
-  if ($reqlibs ne '') {
-    foreach (qx { dpkg -S $reqlibs }) {
-      my ($libpkg,undef) = split /:/;
+  if (%reqliblist) {
+    foreach my $rlib (keys %reqliblist) {
+      my $libpkg = qx { dpkg -S $rlib };
+      ($libpkg,undef) = split /:/, $libpkg;
       $reqs{$libpkg} = 1;
     }
   }
@@ -1747,6 +1763,7 @@ sub expandmacros {
     $macrostring =~ s'%{_libdir}'/usr/lib'g;
     $macrostring =~ s'%{_sysconfdir}'/etc'g;
     $macrostring =~ s'%{_localstatedir}'/var'g;
+    $macrostring =~ s'%{_prefix}'/usr'g;
 
     # FHS-ish locations that aren't quite actually FHS-specified.
     $macrostring =~ s'%{_datadir}'/usr/share'g;
@@ -1835,7 +1852,7 @@ debbuild - Build Debian-compatible .deb packages from RPM .spec files
 
  debbuild {-ba|-bb|-bp|-bc|-bi|-bl|-bs} [build-options] file.spec
 
- debbuild {-ta|-tb|-tp|-tc|-ti|-tl|-ts} [build-options] file.tar.{gz|bz2}
+ debbuild {-ta|-tb|-tp|-tc|-ti|-tl|-ts} [build-options] file.tar.{gz|bz2|xz}
 
  debbuild --rebuild file.{src.rpm|sdeb}
 
