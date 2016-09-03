@@ -1526,10 +1526,11 @@ sub srcpackage {
 # Spits out a rude warning and returns a true-false error if any
 # requirements are not met.
 sub checkbuildreq {
-  return 1 unless @buildreq; # No use doing extra work.
+  return 1 unless @buildreq or @buildconflicts; # No use doing extra work.
 
   # expand macros
   my @reqlist = map { expandmacros($_) } @buildreq;
+  my @cnflist = map { expandmacros($_) } @buildconflicts;
 
   if ( not -e $specglobals{__dpkg_query} ) {
     warn "**WARNING**  $specglobals{__dpkg_query} not found.  Can't check build-deps.\n".
@@ -1583,7 +1584,18 @@ sub checkbuildreq {
   print q(To install all missing dependencies, run 'apt-get install ).
     join(' ', @missinglist)."'.\n" if @missinglist;
 
-  return 0 == @missinglist;
+  my @conflicting;
+  foreach my $cnf (@cnflist) {
+    my ($pkg,$rel,$ver) = splitver($cnf);
+
+    my ($pkgdep) = qx ( $specglobals{__dpkg_query} --showformat '\${status}\t\${version}\n' -W $pkg );
+    if ($pkgdep) {
+      warn " * Conflicting build-dependency $pkg!\n";
+      push @conflicting, $pkg;
+    }
+  }
+
+  return 0 == @missinglist + @conflicting;
 } # end checkbuildreq()
 
 
