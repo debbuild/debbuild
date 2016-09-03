@@ -1595,6 +1595,9 @@ sub checkbuildreq {
     }
   }
 
+  print q(To remove all conflicting dependencies, run 'apt-get remove ).
+    join(' ', @conflicting)."'.\n" if @conflicting;
+
   return 0 == @missinglist + @conflicting;
 } # end checkbuildreq()
 
