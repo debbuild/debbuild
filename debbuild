@@ -78,6 +78,7 @@ my @pkglist = ('main');	#sigh
 my %filelist;
 my %doclist;
 my @buildreq;
+my @buildconflicts;
 
 # "Constants"
 my %targets = ('p' => 'Prep',
@@ -825,6 +826,8 @@ ENDIF: if (/^%endif/) {
         ($pkgdata{main}{arch} = $1) =~ s/^noarch$/all/;
       } elsif (/^buildrequires:\s*(.+)/i) {
         push @buildreq, splitreqs($1);
+      } elsif (/^buildconflicts:\s*(.+)/i) {
+        push @buildconflicts, splitreqs($1);
       } elsif (/^(requires|provides|conflicts):\s*(.+)/i) {
         push @{$pkgdata{main}{lc $1}}, splitreqs($2);
       } elsif (/^(?:prereq|requires\((?:pre|preun)\)):\s*(.+)/i) {
