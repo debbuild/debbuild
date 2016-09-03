@@ -1581,7 +1581,7 @@ sub checkbuildreq {
     }
   } # end req loop
 
-  print q(To install all missing dependencies, run 'apt-get install ).
+  print q(To install all missing dependencies, run 'apt install ).
     join(' ', @missinglist)."'.\n" if @missinglist;
 
   my @conflicting;
@@ -1595,7 +1595,7 @@ sub checkbuildreq {
     }
   }
 
-  print q(To remove all conflicting dependencies, run 'apt-get remove ).
+  print q(To remove all conflicting dependencies, run 'apt remove ).
     join(' ', @conflicting)."'.\n" if @conflicting;
 
   return 0 == @missinglist + @conflicting;
