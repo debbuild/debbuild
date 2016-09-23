@@ -119,7 +119,7 @@ my %optflags = ( 'i386' => '-O2 -g -march=i386 -mcpu=i686',
     chomp( $basecodename = <LSBREL> );
     close LSBREL
 
-  } else ( die "No 'os-release' file or 'lsb_release' program found. Sorry, I quit.\n"; ) }
+  } else { die "No 'os-release' file or 'lsb_release' program found. Sorry, I quit.\n"; }
 
   # rpmbuild expects either integers or strings, and some distros (*cough*Ubuntu*cough*)
   # have versions that get interpreted as strings, which creates comparison problems.
