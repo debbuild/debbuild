@@ -135,7 +135,6 @@ my %distmap = (
 {
 # could theoretically also do something with this...  it's about as stable as "dpkg-query ..." below...  :(
 #  chomp( my $releasever = qx ( $specglobals{__cat} /etc/debian_version ) );
-  my $basefiles;
   my $basever;
   my $baseos;
 
@@ -179,7 +178,7 @@ my %distmap = (
         # Ubuntu, at least until they upset their versioning scheme again
         # note that we remap the basefiles version to the public release number, to match the
         # behaviour for Debian, and to match the unofficial standard for RHEL/Centos etc and Fedora
-        ($basefiles,$basever,$baseos) = $basever =~ /^(([\d.]+)(ubuntu))\d/;
+        ($basever,$baseos) = $basever =~ /^([\d.]+)(ubuntu)\d/;
       } else {
         # Debian, or more "pure" derivative
         $baseos = 'debian';
