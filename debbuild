@@ -94,126 +94,30 @@ my %optflags = ( 'i386' => '-O2 -g -march=i386 -mcpu=i686',
 		'amd64'	=> '-O2 -g',
 		  'all'	=> '');
 
-# Hackery to try to bring some semblance of sanity to packages built for more
-# than one Debian version at the same time.  Whee.
-# /etc/debian-version and/or version of base-files package
-my %distmap = (
-# legacy Unbuntu
-	'3.1.9ubuntu'	=> 'dapper',
-	'6.06'		=> 'dapper',
-	'4ubuntu'	=> 'feisty',
-	'7.04'		=> 'feisty',
-        '4.0.1ubuntu'	=> 'hardy',
-	'8.04'		=> 'hardy',
-# Note we do NOT support identification of "subrelease" versions (ie semimajor updates
-# to a given release).  If your dependencies are really that tight, and you can't rely
-# on the versions of the actual dependencies, you're already in over your head, and
-# should probably only ship a tarballed installer.
-# only supporting LTS releases
-# base-files version doesn't map to the Ubuntu version the way Debian versions do, thus the doubled entries
-#	Ubuntu 12.04.5 LTS (Precise Pangolin)
-	'6.5ubuntu'	=> 'precise',
-	'12.04'		=> 'precise',
-#	Ubuntu 14.04.2 LTS (Trusty Tahr)
-	'7.2ubuntu'	=> 'trusty',
-	'14.04'		=> 'trusty',
-#	Ubuntu 16.04.0 LTS (Xenial Xerus)
-	'9.4ubuntu'	=> 'xenial',
-	'16.04'		=> 'xenial',
-# Debian releases
-	'3.0'	=> 'woody',
-	'3.1'	=> 'sarge',
-	'4'	=> 'etch',
-	'5'	=> 'lenny',
-	'6'	=> 'squeeze',
-	'7'	=> 'wheezy',
-	'8'	=> 'jessie',
-	'9'	=> 'stretch',
-	'99'	=> 'sid');
 
-# Enh.  There doesn't seem to be any better way to do this...  :(
-{
-# could theoretically also do something with this...  it's about as stable as "dpkg-query ..." below...  :(
-#  chomp( my $releasever = qx ( $specglobals{__cat} /etc/debian_version ) );
-  my $basever;
-  my $baseos;
+{ # Analyze LSB information
+  my %lsb;
 
-  # Funny thing how files like this have become useful...
-  # Check for /etc/os-release.  If that doesn't exist, try /etc/lsb-release.  If that doesn't exist,
-  # check for existence of dpkg-query, and either call it Debian Woody (if missing), or fall through
-  # to guessing based on the version of the base-files package.
-  if (open OSREL, '/etc/os-release') {
-    # Look for ID and VERSION_ID lines.
-    while (<OSREL>) {
-      $baseos = $1 if /^ID="?(\w+)"?/;
-      $basever = $1 if /^VERSION_ID="?([\d.]+)"?/;
-    }
-    close OSREL;
-
-  } elsif (open LSBREL, '/etc/lsb-release') {
-    # Look for DISTRIB_ID and DISTRIB_RELEASE lines.
-    # We could also theoretically extract the dist codename, but since we have to hand-map
-    # it in so many other cases there's little point.
-    while (<LSBREL>) {
-      $baseos = $1 if /^DISTRIB_ID="?(\w+)"?/;
-      $basever = $1 if /^DISTRIB_RELEASE="?([\d.]+)"?/;
-    }
-    close LSBREL;
-
-  } elsif (-e $specglobals{__dpkg_query}) {
-# *eyeroll*  there *really* has to be a better way to go about this.  You
-# can't sanely build packages for multiple distro targets if you can't
-# programmatically figure out which one you're building on.
-
-# note that we care only about major release numbers; tracking minor or point
-# releases would be...  exponentially more painful.
-
-    # for the lazy copy-paster:  dpkg-query --showformat '${version}\n' -W base-files
-    # avoid shellisms
-    if (open BASEGETTER, '-|', $specglobals{__dpkg_query}, '--showformat', '${version}', '-W', 'base-files') {
-      $basever = <BASEGETTER>;
-      close BASEGETTER;
-
-      if ($basever =~ /ubuntu/) {
-        # Ubuntu, at least until they upset their versioning scheme again
-        # note that we remap the basefiles version to the public release number, to match the
-        # behaviour for Debian, and to match the unofficial standard for RHEL/Centos etc and Fedora
-        ($basever,$baseos) = $basever =~ /^([\d.]+)(ubuntu)\d/;
-      } else {
-        # Debian, or more "pure" derivative
-        $baseos = 'debian';
-        ($basever,my $majver) = $basever =~ /^((\d+)(?:\.\d)?)/;
-        $basever = $majver if $majver > 3;
-      }
-    }
-
-    if (not $basever) {
-      # Your llama is on fire
-      $basever = '99';
-      warn "Warning:  couldn't autodetect OS version, assuming sid/unstable\n";
-    }
-  } else { # got dpkg-query?
-    # call it woody, since sarge and newer have dpkg-query, and we don't much care about obsolete^n releases
-    $basever = '3.0';
-    $baseos = 'debian';
-  }
+  if (open LSBINFO, '-|', 'lsb_release', '-s', '-i', '-r', '-c') {
+    chomp( $lsb{distributor} = lc <LSBINFO> );
+    chomp( $lsb{release} = <LSBINFO> );
+    chomp( $lsb{codename} = <LSBINFO> );
+    close LSBINFO;
+  } else { die "No 'lsb_release' found. Sorry, I quit.\n"; }
 
   # rpmbuild expects either integers or strings, and some distros (*cough*Ubuntu*cough*)
   # have versions that get interpreted as strings, which creates comparison problems.
   # This will make sure it's an integer to remain compatible.
-  (my $specbasever = $basever) =~ s/\.//;
+  (my $specbasever = $lsb{release}) =~ s/\.//;
 
   # Set some legacy globals.
-  $specglobals{debdist} = $distmap{$basever};
+  $specglobals{debdist} = $lsb{codename};
   $specglobals{debver} = $specbasever;
-
-  # Set the standard generic OS-class globals;
-  $baseos = lc $baseos;
-  $specglobals{$baseos} = $specbasever;
+  $specglobals{$lsb{distributor}} = $specbasever;
 
   # Default %{dist} to something marginally sane.  Note this should be overrideable by --define.
   # This has been chosen to most closely follow the usage in RHEL/CentOS and Fedora, ie "el5" or "fc20".
-  $specglobals{dist} = $baseos.$basever;
+  $specglobals{dist} = $lsb{distributor}.$lsb{release};
 
 } # done trying to set debian dist/version
 
