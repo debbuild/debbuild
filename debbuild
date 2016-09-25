@@ -247,7 +247,7 @@ sub lsb_detection {
     }
     close OSREL;
 
-  } elsif (open LSBREL, '-|', 'lsb_release', '-s', '-i', '-r', '-c') {
+  } elsif (open LSBREL, '-|', $specglobals{__lsb_release}, '-s', '-i', '-r', '-c') {
     # Retrive dist name, version, and codename from lsb_release
     chomp( $baseos = lc <LSBREL> );
     chomp( $basever = <LSBREL> );
