@@ -94,52 +94,6 @@ my %optflags = ( 'i386' => '-O2 -g -march=i386 -mcpu=i686',
 		'amd64'	=> '-O2 -g',
 		  'all'	=> '');
 
-{
-# Setup for OS detection
-  my $basever;
-  my $baseos;
-  my $basecodename;
-
-  # Funny thing how files like this have become useful...
-  # Check for /etc/os-release.  If that doesn't exist, try calling lsb_release.
-  # If neither exist, then die, as we don't really care anymore...
-  if (open OSREL, '/etc/os-release') {
-    # Look for ID, VERSION_ID, and VERSION_CODENAME lines.
-    while (<OSREL>) {
-      $baseos = $1 if /^ID="?(\w+)"?/;
-      $basever = $1 if /^VERSION_ID="?([\d.]+)"?/;
-      $basecodename =  $1 if ( /^VERSION_CODENAME="?(\w+)"?/ || /^UBUNTU_CODENAME="?(\w+)"?/ );
-    }
-    close OSREL;
-
-  } elsif (open LSBREL, '-|', 'lsb_release', '-s', '-i', '-r', '-c') {
-    # Retrive dist name, version, and codename from lsb_release
-    chomp( $baseos = lc <LSBREL> );
-    chomp( $basever = <LSBREL> );
-    chomp( $basecodename = <LSBREL> );
-    close LSBREL
-
-  } else { die "No 'os-release' file or 'lsb_release' program found. Sorry, I quit.\n"; }
-
-  # rpmbuild expects either integers or strings, and some distros (*cough*Ubuntu*cough*)
-  # have versions that get interpreted as strings, which creates comparison problems.
-  # This will make sure it's an integer to remain compatible.
-  (my $specbasever = $basever) =~ s/\.//;
-
-  # Set some legacy globals.
-  $specglobals{debdist} = $basecodename;
-  $specglobals{debver} = $specbasever;
-
-  # Set the standard generic OS-class globals;
-  $baseos = lc $baseos;
-  $specglobals{$baseos} = $specbasever;
-
-  # Default %{dist} to something marginally sane.  Note this should be overrideable by --define.
-  # This has been chosen to most closely follow the usage in RHEL/CentOS and Fedora, ie "el5" or "fc20".
-  $specglobals{dist} = $baseos.$basever;
-
-} # done trying to set debian dist/version
-
 
 #### main ####
 
@@ -149,6 +103,7 @@ my %optflags = ( 'i386' => '-O2 -g -march=i386 -mcpu=i686',
 # -> Parse command line for options, spec file/tarball/.src.deb (NB - also accept .src.rpm)
 
 load_config();
+lsb_detection();
 parse_cmd();
 
 # global shortcuts
@@ -271,6 +226,54 @@ sub load_config {
     close MACROS;
   }
 } # end load_config()
+
+
+## lsb_detection()
+# Setup for OS detection
+sub lsb_detection {
+  my $basever;
+  my $baseos;
+  my $basecodename;
+
+  # Funny thing how files like this have become useful...
+  # Check for /etc/os-release.  If that doesn't exist, try calling lsb_release.
+  # If neither exist, then die, as we don't really care anymore...
+  if (open OSREL, '/etc/os-release') {
+    # Look for ID, VERSION_ID, and VERSION_CODENAME lines.
+    while (<OSREL>) {
+      $baseos = $1 if /^ID="?(\w+)"?/;
+      $basever = $1 if /^VERSION_ID="?([\d.]+)"?/;
+      $basecodename =  $1 if ( /^VERSION_CODENAME="?(\w+)"?/ || /^UBUNTU_CODENAME="?(\w+)"?/ );
+    }
+    close OSREL;
+
+  } elsif (open LSBREL, '-|', 'lsb_release', '-s', '-i', '-r', '-c') {
+    # Retrive dist name, version, and codename from lsb_release
+    chomp( $baseos = lc <LSBREL> );
+    chomp( $basever = <LSBREL> );
+    chomp( $basecodename = <LSBREL> );
+    close LSBREL
+
+  } else { die "No 'os-release' file or 'lsb_release' program found. Sorry, I quit.\n"; }
+
+  # rpmbuild expects either integers or strings, and some distros (*cough*Ubuntu*cough*)
+  # have versions that get interpreted as strings, which creates comparison problems.
+  # This will make sure it's an integer to remain compatible.
+  (my $specbasever = $basever) =~ s/\.//;
+
+  # Set some legacy globals.
+  $specglobals{debdist} = $basecodename;
+  $specglobals{debver} = $specbasever;
+
+  # Set the standard generic OS-class globals;
+  $baseos = lc $baseos;
+  $specglobals{$baseos} = $specbasever;
+
+  # Default %{dist} to something marginally sane.  Note this should be overrideable by --define.
+  # This has been chosen to most closely follow the usage in RHEL/CentOS and Fedora, ie "el5" or "fc20".
+  $specglobals{dist} = $baseos.$basever;
+
+} # end lsb_detection()
 
 
 ## parse_cmd()
