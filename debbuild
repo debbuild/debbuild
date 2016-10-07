@@ -670,11 +670,11 @@ ENDIF: if (/^%endif/) {
           $dvalue =~ s/^noarch/all/ig;
           $dname = 'arch';
         }
-        if (grep { /$dname/ } qw{prereq requires(pre) requires(preun)}) {
-          push @{$pkgdata{$subname}{'pre-depends'}}, splitreqs($dvalue);
-        } elsif (grep { /$dname/ } qw(recommends suggests enhances replaces
+        if (grep { /$dname/ } qw(recommends suggests enhances replaces
             requires conflicts provides pre-depends)) {
           push @{$pkgdata{$subname}{$dname}}, splitreqs($dvalue);
+        } elsif (grep { /$dname/ } qw{prereq requires(pre) requires(preun)}) {
+          push @{$pkgdata{$subname}{'pre-depends'}}, splitreqs($dvalue);
         } elsif (grep { /$dname/ } qw(obsoletes)) {
           push @{$pkgdata{$subname}{replaces}}, splitreqs($dvalue);
         } else {
