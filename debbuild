@@ -663,7 +663,7 @@ ENDIF: if (/^%endif/) {
 # although they will have to be wrapped in '%if %{_vendor} == "debbuild"' for
 # an rpmbuild-compatible .spec file
       if (my ($dname,$dvalue) = /^(Summary|Group|Version|BuildArch(?:itecture)?|
-          Recommends|Suggests|Enhances|Replaces|PreReq|
+          Recommends|Suggests|Enhances|Obsoletes|Replaces|PreReq|
           Requires(?:\(pre(?:un)?\))?|Conflicts|Provides|Pre-Depends):\s+(.+)$/ix) {
         $dname =~ tr/[A-Z]/[a-z]/;
         if ($dname =~ /^BuildArch/i) {
@@ -675,6 +675,8 @@ ENDIF: if (/^%endif/) {
         } elsif (grep { /$dname/ } qw(recommends suggests enhances replaces
             requires conflicts provides pre-depends)) {
           push @{$pkgdata{$subname}{$dname}}, splitreqs($dvalue);
+        } elsif (grep { /$dname/ } qw(obsoletes)) {
+          push @{$pkgdata{$subname}{replaces}}, splitreqs($dvalue);
         } else {
           $pkgdata{$subname}{$dname} = expandmacros($dvalue);
         }
