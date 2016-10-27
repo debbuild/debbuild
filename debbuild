@@ -1398,7 +1398,9 @@ sub splitver {
      $req .= $ver if $ver;
   }
   # Pick up the details of versioned buildreqs
-  return $req =~ /([\w.+-]+)\s*([><=]+)\s*([\w:.~+-]+)/;
+  my ($pkg,$rel,$ver) = $req =~ /([\w.+-]+)\s*([><=]+)\s*([\w:.~+-]+)/;
+  $rel =~ s/^([><])$/$1$1/;
+  return ($pkg,$rel,$ver);
 } # end splitver()
 
 
