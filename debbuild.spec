@@ -27,6 +27,7 @@ Requires: perl, fakeroot
 Recommends: bzip2, gzip, xz-utils, unzip, zip
 Recommends: git, patch, pax, quilt
 Suggests: rpm, subversion
+Requires: lsb-release
 %endif
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
@@ -71,6 +72,9 @@ rebuild .src.rpm source packages as .deb binary packages.
 %include %{S:101}
 
 %changelog
+* Fri Oct 28 2016  Neal Gompa <ngompa13@gmail.com>
+- Add lsb-release as requirement
+
 * Sat Dec 12 2015  Andreas Scherer <https://ascherer.github.io/>
 - Centrally control and distribute the 'version' number
 
