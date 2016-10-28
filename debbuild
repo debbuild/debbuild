@@ -666,6 +666,7 @@ ENDIF: if (/^%endif/) {
           Recommends|Suggests|Enhances|Obsoletes|Replaces|PreReq|
           Requires(?:\(pre(?:un)?\))?|Conflicts|Provides|Pre-Depends):\s+(.+)$/ix) {
         $dname =~ tr/[A-Z]/[a-z]/;
+        $dname =~ s/([\(\)])/\\$1/g;
         if ($dname =~ /^BuildArch/i) {
           $dvalue =~ s/^noarch/all/ig;
           $dname = 'arch';
