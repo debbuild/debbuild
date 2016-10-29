@@ -1861,24 +1861,6 @@ You could symlink F<~/.rpmmacros> to F<~/.debmacros> (or vice versa) and save yo
 
 B<debbuild> deliberately does a few things differently from B<rpmbuild>.
 
-=head2 BuildArch or BuildArchitecture
-
-B<rpmbuild> takes the last BuildArch entry it finds in the .spec file, whatever it is, and runs with that for all packages.  Debian’s repository system is fairly heavily designed around the assumption that a single source package may generate small binary (executable) packages for each arch, and large binary arch-all packages containing shared data.
-
-B<debbuild> allows this by using the architecture specified by (in order of preference):
-
-=over 4
-
-=item * Host architecture
-
-=item * BuildArch specified in .spec file preamble
-
-=item * “Last specified” BuildArch for packages with several subpackages
-
-=item * BuildArch specified in the %package section for that subpackage
-
-=back
-
 =head2 Finding out what packages should be built (--showpkgs)
 
 B<rpmbuild> does not include any convenient method I know of to list the packages a spec file will produce.  Since I needed this ability for another tool, I added it.
