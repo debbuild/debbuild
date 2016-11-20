@@ -300,6 +300,7 @@ sub parse_cmd {
     'with=s'      => \&define_handler, # dito for 'with|without=s'
     'without=s'   => \&define_handler,
     'define|D=s'  => \&define_handler,
+    'S=s'         => sub { store_value('__scm',$_[1]) },
     'help|?'      => \&help_handler,
     'version'     => sub { print "debbuild v$version\n" },
     '<>'          => \&catchall # process non-option arguments
@@ -397,6 +398,7 @@ Build options with [ <specfile> | <tarball> | <source package> ]:
 Common options:
   -D, --define='MACRO EXPR'      define MACRO with value EXPR
       --with/--without FLAG      define build conditionals from FLAG
+      -S SCM                     short for '--define "__scm SCM"'
 
 debbuild-specific options:
       -i, --install              Unpack a .sdeb in the %_topdir tree
