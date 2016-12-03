@@ -11,7 +11,6 @@ Version: 16.10.2
 Release: ascherer.%{dist}
 
 Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
-Source101: https://github.com/ascherer/debbuild/blob/master/scripts/post.sh
 URL: https://github.com/ascherer/debbuild
 %if %{_vendor} == "debbuild"
 # Use Debian sections here
@@ -22,7 +21,7 @@ Group: Development/Tools
 License: GPLv2+
 Packager: Andreas Scherer <https://ascherer.github.io/>
 
-Requires: perl, fakeroot
+Requires: dpkg-dev, perl, fakeroot
 %if %{_vendor} == "debbuild"
 Recommends: bzip2, gzip, xz-utils, unzip, zip
 Recommends: git, patch, pax, quilt
@@ -68,10 +67,13 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{_libdir}/%{name}/macros.d/*
 %{_sysconfdir}/%{name}/macros.*
 
-%post
-%include %{S:101}
 
 %changelog
+* Sat Dec  3 2016  Neal Gompa <ngompa13@gmail.com>
+- Integrate platform detection into macros
+- Set correct value for _libexecdir
+- Remove unnecessary scriptlet
+
 * Fri Oct 28 2016  Neal Gompa <ngompa13@gmail.com>
 - Add lsb-release as requirement
 

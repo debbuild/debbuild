@@ -178,10 +178,10 @@ package or when debugging this package.\
 #	Macros that are specific to an individual platform. The values here
 #	will be used if the per-platform macro file does not exist..
 #
-%_arch			@HOST_ARCH@
-%_build_arch		@BUILD_ARCH@
+%_arch			%(%{__dpkg_architecture} -qDEB_HOST_ARCH)
+%_build_arch		%(%{__dpkg_architecture} -qDEB_BUILD_ARCH)
 %_vendor		debbuild
-%_os			@HOST_OS@
+%_os			%(%{__dpkg_architecture} -qDEB_HOST_ARCH_OS)
 
 #==============================================================================
 # ---- Scriptlet template templates.
@@ -255,11 +255,11 @@ package or when debugging this package.\
 %_build_cpu		%{_host_cpu}
 %_build_vendor		%{_host_vendor}
 %_build_os		%{_host_os}
-%_host			@HOST_CPU@-pc-@HOST_SYSTEM@
+%_host			%(%{__dpkg_architecture} -qDEB_HOST_GNU_TYPE)
 %_host_alias		%{nil}
-%_host_cpu		@HOST_CPU@
+%_host_cpu		%(%{__dpkg_architecture} -qDEB_HOST_GNU_CPU)
 %_host_vendor		pc
-%_host_os		@HOST_OS@
+%_host_os		%(%{__dpkg_architecture} -qDEB_HOST_ARCH_OS)
 %_target		%{_host}
 %_target_alias		%{_host_alias}
 %_target_cpu		%{_host_cpu}
