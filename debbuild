@@ -283,7 +283,7 @@ sub parse_cmd {
   # Don't feel like coding my own option parser...
   Getopt::Long::GetOptions(
     'buildroot=s'   => \$specglobals{CBR},
-    'eval=s'        => sub { print expandmacros($_[1])."\n" },
+    'eval|E=s'      => sub { print expandmacros($_[1])."\n" },
     'short-circuit' => \$cmdopts{short},
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
     'noprep'        => \$specglobals{NOPREP},
