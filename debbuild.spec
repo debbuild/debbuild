@@ -7,7 +7,7 @@
 
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 Name: debbuild
-Version: 16.10.2
+Version: 16.12.0
 Release: ascherer.%{dist}
 
 Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
@@ -71,7 +71,6 @@ rebuild .src.rpm source packages as .deb binary packages.
 %changelog
 * Sat Dec  3 2016  Neal Gompa <ngompa13@gmail.com>
 - Integrate platform detection into macros
-- Set correct value for _libexecdir
 - Remove unnecessary scriptlet
 
 * Fri Oct 28 2016  Neal Gompa <ngompa13@gmail.com>
