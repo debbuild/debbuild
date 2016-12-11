@@ -1628,6 +1628,7 @@ sub expandmacros {
   s/%(bcond_with(?:out)?)\s+(\S+)/%{$1 $2}/g;
   # Store %globals (from '%bcond_with[out]()' in 'macros[.in]')
   s/%(?:define|global)\s+(\S+)\s+(.+)/store_value($1,$2)/eg;
+  die "Missing value for '%$1 $2'. Aborting!" if m/%(define|global)\s+(.+)/;
   # Permit unsetting/deleting of stored values
   { no warnings; s/%undefine\s+(\S+)/store_value($1)/eg; }
 
