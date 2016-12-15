@@ -1181,7 +1181,7 @@ sub install {
       (my $linkdest = readlink $manpage) =~ s/\.(?:Z|gz|bz2)//;
       unlink $manpage;
       $manpage =~ s/\.(?:Z|gz|bz2)//;
-      symlink "$linkdest.gz", "$manpage.gz" or print "DEBUG: wibble: symlinking manpage failed: $!\n";
+      symlink "$linkdest.gz", "$manpage.gz" or warn "Warning: symlinking manpage failed: $!\n";
     }
   }
 
