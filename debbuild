@@ -1341,9 +1341,11 @@ sub binpackage {
       my $scrfile = $scr;
       $scrfile .= 'inst' unless $scrfile =~ s/un/rm/;
       if ($pkgdata{$pkg}{$scr}) {
+        (my $content = expandmacros($pkgdata{$pkg}{$scr})) =~ s/^[\s]*$//mg;
+        next unless $content;
         open SCRIPT, ">$specglobals{buildroot}/$pkg/DEBIAN/$scrfile" or die;
         print SCRIPT expandmacros("#!%{___build_shell} %{___build_args}\n");
-        print SCRIPT expandmacros($pkgdata{$pkg}{$scr});
+        print SCRIPT $content;
         close SCRIPT;
         chmod 0755, "$specglobals{buildroot}/$pkg/DEBIAN/$scrfile";
       }
