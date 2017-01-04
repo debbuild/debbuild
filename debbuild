@@ -106,6 +106,8 @@ load_config();
 lsb_detection();
 parse_cmd();
 
+print "This is debbuild v$version\n" if $verbosity;
+
 # global shortcuts
 my $topdir = expandmacros('%{_topdir}');
 
@@ -1141,7 +1143,8 @@ sub execute_script {
   close SCRIPT;
 
   # execute
-  print 'Calling '.($what or "%$stage")." script $scriptfile".($for or '')."...\n";
+  print 'Calling '.($what or "%$stage")." script $scriptfile".
+    ($for or '')."...\n" if $verbosity;
   system($scriptfile) and die "Can't exec: $!\n";
 
   # and clean up
@@ -1546,7 +1549,7 @@ sub checkbuildreq {
 sub getreqs {
   my ($pkgtree) = @_;
 
-  print "Checking library requirements...\n";
+  print "Checking library requirements...\n" if $verbosity;
   return () if 'all' eq $pkgdata{main}{arch}; # noarch package
   chomp( my @binlist = qx ( $specglobals{__find} $pkgtree -type f -perm 755 ) );
   return () unless @binlist;
@@ -1601,7 +1604,7 @@ sub install_sdeb {
   die "Can't install $srcpkg\n" unless $srcpkg =~ /\.sdeb$/;
   $srcpkg = abs_path($srcpkg);
   system(expandmacros("(cd %{_topdir}; %{__pax} -r -f $srcpkg)")) == 0 and
-  print "Extracted source package $srcpkg to $topdir.\n";
+  print "Extracted source package $srcpkg to $topdir.\n" if $verbosity;
 } # end install_sdeb()
 
 

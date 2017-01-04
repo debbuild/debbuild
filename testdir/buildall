@@ -4,8 +4,9 @@
 stage=p
 flags=--verbose
 scm=patch
+verbose=
 
-while getopts pcilabsS: opt
+while getopts pcilabsS:v opt
 do
 	case $opt in
 		[pcil]) # prepare, compile, install, list
@@ -17,6 +18,9 @@ do
 			;;
 		S) # choose SCM
 			scm=$OPTARG
+			;;
+		v) # bump verbosity
+			verbose=-v
 			;;
 		?)
 			exit 1
@@ -33,5 +37,5 @@ do
 		project=anschrift
 	fi
 	debbuild --define="__scm $scm" --define="_default_patch_flags $flags" \
-		-b$stage SPECS/$project.spec
+		-b$stage SPECS/$project.spec $verbose
 done
