@@ -4,9 +4,9 @@
 stage=p
 flags=--verbose
 scm=patch
-verbose=
+verbose=-v
 
-while getopts pcilabsS:v opt
+while getopts pcilabsS:vq opt
 do
 	case $opt in
 		[pcil]) # prepare, compile, install, list
@@ -20,7 +20,10 @@ do
 			scm=$OPTARG
 			;;
 		v) # bump verbosity
-			verbose=-v
+			verbose=-vv
+			;;
+		q) # dump verbosity
+			verbose=
 			;;
 		?)
 			exit 1

@@ -106,7 +106,7 @@ load_config();
 lsb_detection();
 parse_cmd();
 
-print "This is debbuild v$version\n" if $verbosity;
+print "This is debbuild, Version $version\n";
 
 # global shortcuts
 my $topdir = expandmacros('%{_topdir}');
@@ -1138,14 +1138,17 @@ sub execute_script {
   my $scriptfile = expandmacros('%{_tmppath}')."/deb-tmp.$stage.".int(rand(99998)+1);
   sysopen(SCRIPT, $scriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW, 0777)
     or die "Can't open/create ".($what or $stage)."script file $scriptfile: $!\n";
-  print SCRIPT expandmacros('%{___build_template}');
+  my $build_template = expandmacros('%{___build_template}');
+  $build_template =~ s/set -x/set +x/ unless $verbosity;
+  print SCRIPT $build_template;
   print SCRIPT expandmacros($script{$stage});
   close SCRIPT;
 
   # execute
   print 'Calling '.($what or "%$stage")." script $scriptfile".
     ($for or '')."...\n" if $verbosity;
-  system($scriptfile) and die "Can't exec: $!\n";
+  system($scriptfile . ($verbosity > 1 ? '' : ' >/dev/null 2>&1'))
+    and die "Can't exec: $!\n";
 
   # and clean up
   unlink $scriptfile;
