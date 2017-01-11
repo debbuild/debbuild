@@ -5,28 +5,27 @@
 #   http://docs.fedoraproject.org/drafts/rpm-guide-en/
 # More links may be available from http://www.rpm.org
 
-Summary: Build Debian-compatible .deb packages from RPM .spec files
 Name: debbuild
+Summary: Build Debian-compatible .deb packages from RPM .spec files
 Version: 17.1.0
 Release: ascherer.%{dist}
 
 Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
 URL: https://github.com/ascherer/debbuild
 %if %{_vendor} == "debbuild"
-# Use Debian sections here
 Group: devel
 %else
-Group: Development/Tools
+Group: Development/Tools/Building
 %endif
 License: GPLv2+
 Packager: Andreas Scherer <https://ascherer.github.io/>
 
 Requires: dpkg-dev, perl, fakeroot
 %if %{_vendor} == "debbuild"
+Requires: lsb-release
 Recommends: bzip2, gzip, xz-utils, unzip, zip
 Recommends: git, patch, pax, quilt
 Suggests: rpm, subversion
-Requires: lsb-release
 %endif
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
