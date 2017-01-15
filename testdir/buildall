@@ -37,6 +37,7 @@ do
 	git checkout $project-master
 	if [ "$project" = "tetex-anschrift" ]
 	then
+		scm=patch # can't commit patches due to local mods
 		project=anschrift
 	fi
 	debbuild --define="__scm $scm" --define="_default_patch_flags $flags" \
