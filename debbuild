@@ -834,7 +834,7 @@ sub process_autopatch {
   my ($plevel) = /-p\s*(\d+)/;
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
-    my $patchfile = $pkgdata{main}{$patches[0]};
+    my $patchfile = qq(%{_sourcedir}/$pkgdata{main}{$patches[0]});
     $script{$stage} .= apply_patch($verbose,$plevel,$patchfile);
   } else { # now you're talkin', brother!
     for my $patch (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
