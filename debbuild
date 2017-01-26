@@ -374,7 +374,7 @@ sub parse_cmd {
   ## help_handler()
   # Factor-out the 'help' text. Could as well be SYNOPSIS in pod.
   sub help_handler {
-    print <<HELP_MSG;
+    my $help_msg = <<HELP_MSG;
 debbuild v$version
 Copyright 2005-2015 Kris Deugau <kdeugau\@deepnet.cx>
 Copyright 2015 Andreas Scherer <https://ascherer.github.io/>
@@ -408,6 +408,9 @@ debbuild-specific options:
       --showpkgs                 Show package names that would be built.
       --nobuild                  Parse <specfile>, but do no processing
 HELP_MSG
+    open(my $pipe, '|-', 'less') or exit 1;
+    print $pipe $help_msg;
+    close $pipe;
     exit 0;
   }
 
