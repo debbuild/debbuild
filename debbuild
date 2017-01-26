@@ -5,7 +5,7 @@
 # unlikely to conform to "Debian Policy".
 #
 # Copyright (C) 2005-2015 Kris Deugau <kdeugau@deepnet.cx>
-# Copyright (C) 2015 Andreas Scherer <https://ascherer.github.io/>
+# Copyright (C) 2015-2017 Andreas Scherer <https://ascherer.github.io/>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -376,8 +376,8 @@ sub parse_cmd {
   sub help_handler {
     my $help_msg = <<HELP_MSG;
 debbuild v$version
-Copyright 2005-2015 Kris Deugau <kdeugau\@deepnet.cx>
-Copyright 2015 Andreas Scherer <https://ascherer.github.io/>
+Copyright © 2005-2015 Kris Deugau <kdeugau\@deepnet.cx>
+Copyright © 2015-2017 Andreas Scherer <https://ascherer.github.io/>
 
 Build .deb packages from RPM-style .spec files
 debbuild supports most package-building options rpmbuild does.
