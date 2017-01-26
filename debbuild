@@ -374,8 +374,9 @@ sub parse_cmd {
   ## help_handler()
   # Factor-out the 'help' text. Could as well be SYNOPSIS in pod.
   sub help_handler {
-    print "debbuild v$version".q{
-Copyright 2005-2015 Kris Deugau <kdeugau@deepnet.cx>
+    print <<HELP_MSG;
+debbuild v$version
+Copyright 2005-2015 Kris Deugau <kdeugau\@deepnet.cx>
 Copyright 2015 Andreas Scherer <https://ascherer.github.io/>
 
 Build .deb packages from RPM-style .spec files
@@ -406,7 +407,7 @@ debbuild-specific options:
       -i, --install              Unpack a .sdeb in the %_topdir tree
       --showpkgs                 Show package names that would be built.
       --nobuild                  Parse <specfile>, but do no processing
-};
+HELP_MSG
     exit 0;
   }
 
