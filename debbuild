@@ -408,7 +408,8 @@ debbuild-specific options:
       --showpkgs                 Show package names that would be built.
       --nobuild                  Parse <specfile>, but do no processing
 HELP_MSG
-    open(my $pipe, '|-', 'less') or exit 1;
+    my $pager = $ENV{PAGER} || 'less -e';
+    open(my $pipe, '|-', $pager) or exit 1;
     print $pipe $help_msg;
     close $pipe;
     exit 0;
