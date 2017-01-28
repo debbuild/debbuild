@@ -5,8 +5,9 @@ stage=p
 flags=--verbose
 scm=patch
 verbose=-v
+builder=debbuild
 
-while getopts pcilabsS:vq opt
+while getopts pcilabsS:vqr opt
 do
 	case $opt in
 		[pcil]) # prepare, compile, install, list
@@ -25,6 +26,9 @@ do
 		q) # dump verbosity
 			verbose=
 			;;
+		r) # use 'rpmbuild' instead of 'debbuild'
+			builder=rpmbuild
+			;;
 		?)
 			exit 1
 			;;
@@ -40,6 +44,6 @@ do
 		scm=patch # can't commit patches due to local mods
 		project=anschrift
 	fi
-	debbuild --define="__scm $scm" --define="_default_patch_flags $flags" \
+	$builder --define="__scm $scm" --define="_default_patch_flags $flags" \
 		-b$stage SPECS/$project.spec $verbose
 done
