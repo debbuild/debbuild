@@ -698,10 +698,10 @@ ENDIF: if (/^%endif/) {
       # %patch tags, may be just a bare shell script.
       # %autosetup and %autopatch are supported, too.
       if (s/^%autosetup//) {
-        process_autosetup($stage);
+        $script{$stage} .= process_autosetup();
       } # fall through, most likely to '%autopatch'
       if (s/^%autopatch//) {
-        process_autopatch($stage);
+        $script{$stage} .= process_autopatch();
       } elsif (s/^%setup//) {
         $script{$stage} .= process_setup();
       } elsif (s/^%patch//) {
@@ -811,21 +811,21 @@ sub splitreqs {
 # 'process_setup()', then create an '%autopatch' line and fall through to
 # 'process_autopatch()'.
 sub process_autosetup {
-  my ($stage) = @_;
-  chomp; $_ = expandmacros($_); # permit '%{!?with_patches:-N}'
+  chomp( $_ = expandmacros($_) ); # permit '%{!?with_patches:-N}'
   my $plevel = $1 if s/\s+-p\s*(\d+)//;
   my $verbose = s/\s+-v//; $_ .= ($verbose ? '': ' -q');
   my $noautopatch = s/\s+-N//; # Eat '-N', which is unknown to %setup
   expandmacros("%global __scm $1") if s/\s+\-S\s+(\w+)//; # dito '-S'
   # Generic %setup invocation
-  $script{$stage} .= process_setup(); # hmm, how to fall to '%setup'?
+  my $script = process_setup(); # hmm, how to fall to '%setup'?
   # Do SCM stuff
   my $scm = expandmacros('%__scm');
   die "%autosetup: option '-S $scm' currently not supported at line $..\n"
     unless $specglobals{"__scm_setup_$scm"};
-  $script{$stage} .= "%{__scm_setup_$scm".($verbose ? '' : ' -q')."}\n";
+  $script .= "%{__scm_setup_$scm".($verbose ? '' : ' -q')."}\n";
   $_ = $noautopatch ? '' :
     '%autopatch'.($plevel ? " -p $plevel" : '').($verbose ? ' -v' : '');
+  return $script;
 } # process_autosetup()
 
 
@@ -834,19 +834,20 @@ sub process_autosetup {
 # specfile. The '%autopatch' command only knows the options '-v' ('verbose) and
 # '-p[N]' ('path strip level').
 sub process_autopatch {
-  my ($stage) = @_;
   my $verbose = /-v/;
   my ($plevel) = /-p\s*(\d+)/;
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
+  my $script;
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
     my $patchfile = qq(%{_sourcedir}/$pkgdata{main}{$patches[0]});
-    $script{$stage} .= apply_patch($verbose,$plevel,$patchfile);
+    $script .= apply_patch($verbose,$plevel,$patchfile);
   } else { # now you're talkin', brother!
     for my $patch (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
       my $patchfile = qq(%{_sourcedir}/$pkgdata{main}{"patch$patch"});
-      $script{$stage} .= apply_patch($verbose,$plevel,$patchfile);
+      $script .= apply_patch($verbose,$plevel,$patchfile);
     }
   }
+  return $script;
 } # process_autopatch()
 
 
