@@ -35,13 +35,17 @@ do
 	esac
 done
 
-for project in tetex-anschrift cwebbin lucida mmix sgb advent xstar debbuild
+for project in tetex-anschrift cwebbin lucida mmix sgb advent xstar loki debbuild
 do
 	printf "\n\nbuilding %s\n\n" "$project"
 	git checkout $project-master
 	if [ "$project" = "tetex-anschrift" ]
 	then
 		project=anschrift
+	fi
+	if [ "$project" = "loki" ]
+	then
+		verbose='--without doc'
 	fi
 	$builder --define="__scm $scm" --define="_default_patch_flags $flags" \
 		-b$stage SPECS/$project.spec $verbose
