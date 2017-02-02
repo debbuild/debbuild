@@ -636,17 +636,19 @@ ENDIF: if (/^%endif/) {
       $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
     } # %build,install,check,clean
 
-    elsif (/^%(pre|post|preun|postun)\b(?:\s+(?:-n\s+)?(.+))?(?:\s+(?:-p\s+)?(.+))?/i) {
+    elsif (s/^%((?:pre|post)(?:un)?)//i) {
       $stage = 'prepost';
       $scriptlet = lc $1;
       $subname = 'main';
-      if ($2) {       # Magic to add entries to the right package
-        my $tmp = expandmacros($2);
-        $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
-      }
-      if ($3) { # Rudimentary support for '-p <command>'
-        $pkgdata{$subname}{$scriptlet} .= $3;
-      }
+
+      Getopt::Long::GetOptionsFromString($_,
+        # Rudimentary support for '-p <command>'
+        'p=s' => sub { $pkgdata{$subname}{$scriptlet} .= $_[1] },
+        # Magic to add entries to the right package
+        'n=s' => sub { $subname = expandmacros($_[1]) },
+        '<>'  => sub { $subname = "$pkgdata{main}{name}-" .
+          expandmacros( join '', @_ ) }
+      );
     } # %pre/%post/%preun/%postun
 
     elsif (/^%(changelog)/) {
