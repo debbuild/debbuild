@@ -646,8 +646,8 @@ ENDIF: if (/^%endif/) {
         'p=s' => sub { $pkgdata{$subname}{$scriptlet} .= $_[1] },
         # Magic to add entries to the right package
         'n=s' => sub { $subname = expandmacros($_[1]) },
-        '<>'  => sub { $subname = "$pkgdata{main}{name}-" .
-          expandmacros( join '', @_ ) }
+        '<>'  => sub { $subname =
+          "$pkgdata{main}{name}-" . expandmacros( $_[0] ) }
       );
     } # %pre/%post/%preun/%postun
 
