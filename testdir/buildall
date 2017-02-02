@@ -45,7 +45,7 @@ do
 	fi
 	if [ "$project" = "loki" ]
 	then
-		verbose='--without doc'
+		verbose="$verbose --without doc"
 	fi
 	$builder --define="__scm $scm" --define="_default_patch_flags $flags" \
 		-b$stage SPECS/$project.spec $verbose
