@@ -39,14 +39,10 @@ for project in tetex-anschrift cwebbin lucida mmix sgb advent xstar loki debbuil
 do
 	printf "\n\nbuilding %s\n\n" "$project"
 	git checkout $project-master
-	if [ "$project" = "tetex-anschrift" ]
-	then
-		project=anschrift
-	fi
-	if [ "$project" = "loki" ]
-	then
-		verbose="$verbose --without doc"
-	fi
+	case $project in
+		"tetex-anschrift") project=anschrift ;;
+		"loki") verbose="$verbose --without doc" ;;
+	esac
 	$builder --define="__scm $scm" --define="_default_patch_flags $flags" \
 		-b$stage SPECS/$project.spec $verbose
 done
