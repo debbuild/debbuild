@@ -233,9 +233,7 @@ sub load_config {
 ## lsb_detection()
 # Setup for OS detection
 sub lsb_detection {
-  my $basever;
-  my $baseos;
-  my $basecodename;
+  my ($basever, $baseos, $basecodename);
 
   # Funny thing how files like this have become useful...
   # Check for /etc/os-release.  If that doesn't exist, try calling lsb_release.
@@ -408,8 +406,7 @@ debbuild-specific options:
       --showpkgs                 Show package names that would be built.
       --nobuild                  Parse <specfile>, but do no processing
 HELP_MSG
-    my $pager = $ENV{PAGER} || 'less -e';
-    open(my $pipe, '|-', $pager) or exit 1;
+    open(my $pipe, '|-', $ENV{PAGER} || 'less -e') or exit 1;
     print $pipe $help_msg;
     close $pipe;
     exit 0;
@@ -573,7 +570,7 @@ ENDIF: if (/^%endif/) {
       parse_spec(expandmacros($1),$stage,$subname,$scriptlet);
     }
 
-    # EXPERIMENTAL: %{perl:interpreter}
+    # %{perl:interpreter}
     elsif (/^%\{perl:(.+)}/) {
       my $perl = expandmacros('%{_tmppath}')."/deb-tmp.perl.".int(rand(99998)+1);
       do {
@@ -601,7 +598,6 @@ ENDIF: if (/^%endif/) {
 ### Multi-line sectioning %commands
 # Now we pick out the sections and set "state" to parse that section.
 # Fugly but I can't see a better way.  >:(
-
     elsif (/^%(description|copyrightdata|files)(?:\s+(?:-n\s+)?(.+))?/) {
       $stage = $1;
       $subname = 'main';
@@ -640,15 +636,13 @@ ENDIF: if (/^%endif/) {
       $stage = 'prepost';
       $scriptlet = lc $1;
       $subname = 'main';
-
       Getopt::Long::GetOptionsFromString($_,
         # Rudimentary support for '-p <command>'
         'p=s' => sub { $pkgdata{$subname}{$scriptlet} .= $_[1] },
         # Magic to add entries to the right package
         'n=s' => sub { $subname = expandmacros($_[1]) },
         '<>'  => sub { $subname =
-          "$pkgdata{main}{name}-" . expandmacros( $_[0] ) }
-      );
+          "$pkgdata{main}{name}-" . expandmacros( $_[0] ) } );
     } # %pre/%post/%preun/%postun
 
     elsif (/^%(changelog)/) {
@@ -662,7 +656,6 @@ ENDIF: if (/^%endif/) {
 
 ### Actual section contents
 # now we handle individual lines from the various sections
-
     elsif ($stage eq 'description') {
       $pkgdata{$subname}{$stage} .= " $_";
     } # description
@@ -788,8 +781,8 @@ ENDIF: if (/^%endif/) {
       } elsif (/^obsoletes:\s*(.+)/i) {
         push @{$pkgdata{main}{replaces}}, splitreqs($1);
       } elsif (/^autoreq(?:prov)?:\s*(.+)/i) {
-	# we don't handle auto-provides (yet)
-	$NoAutoReq = 1 if $1 =~ /(?:no|0)/i;
+        # we don't handle auto-provides (yet)
+        $NoAutoReq = 1 if $1 =~ /(?:no|0)/i;
       } else { # Other lines may contain '%{?!contional:macros}' as well
         expandmacros($_);
       }
@@ -921,9 +914,6 @@ sub process_setup {
     $setupscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
   }
 
-# rpm doesn't seem to do the chowns any more
-#		qq([ `%{__id_u}` = '0' ] && %{__chown} -Rhf root .\n).
-#		qq([ `%{__id_u}` = '0' ] && %{__chgrp} -Rhf root .\n).
   return $setupscript .= qq(%{__chmod} -Rf a+rX,u+w,go-w .\n);
 } # end process_setup()
 
@@ -969,8 +959,7 @@ sub lookup_specfile {
      $tarball =~ /\.tar$/ ? # plain .tar files don't need to be uncompressed
         q(%{__tar} -tf %{tarball} --wildcards '*.spec') :
      decompress($tarball).q( | %{__tar} -tf - --wildcards '*.spec') );
-}
-# end lookup_specfile()
+} # end lookup_specfile()
 
 
 ## extract_specfile()
@@ -984,8 +973,7 @@ sub extract_specfile {
         q(%{__tar} -xOf %{tarball} --wildcards '*.spec') :
      decompress($tarball).q( | %{__tar} -xOf - --wildcards '*.spec') ).
      qq( > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir});
-}
-# end extract_specfile()
+} # end extract_specfile()
 
 
 ## process_patch()
@@ -1216,10 +1204,9 @@ sub binpackage {
   foreach my $pkg (@pkglist) {
 
     # Just In Case.
-    $pkgdata{$pkg}{arch} //= $pkgdata{main}{arch};
-    $pkgdata{$pkg}{copyrightdata} //= $pkgdata{main}{copyrightdata};
-    $pkgdata{$pkg}{changelog} //= $pkgdata{main}{changelog};
-    $pkgdata{$pkg}{group} //= $pkgdata{main}{group};
+    foreach my $entry (qw(arch copyrightdata changelog group)) {
+      $pkgdata{$pkg}{$entry} //= $pkgdata{main}{$entry};
+    }
 
     # Make sure we have somewhere to write the .deb file
     mkdir "$topdir/DEBS/$pkgdata{$pkg}{arch}" unless -e "$topdir/DEBS/$pkgdata{$pkg}{arch}";
@@ -1275,7 +1262,7 @@ sub binpackage {
       qx ( $specglobals{__cp} -ar $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath );
     }
 
-    # EXPERIMENTAL: Add 'changelog' and 'copyrightdata' sections as 'doc' files.
+    # Add 'changelog' and 'copyrightdata' sections as 'doc' files.
     if ($pkgdata{$pkg}{changelog}) {
       $pkgdata{$pkg}{changelog} =~ s/\s+$//g; # Trim trailing blanks
       my $clpath = expandmacros("%{buildroot}/$pkg%{_docdir}/$pkgdata{$pkg}{name}");
