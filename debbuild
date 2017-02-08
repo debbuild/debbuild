@@ -55,15 +55,8 @@ my %script = ( prep => '',
 		clean => qq([ "\$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf \$RPM_BUILD_ROOT\n) );
 my $finalmessages = ''; # A place to stuff messages that I want printed at the *very* end of any processing.
 
-# User's prefs for dirs, environment, etc,etc,etc.
-# config file ~/.debmacros
-# Default ordered search paths for config/macros:
-# /usr/lib/rpm/rpmrc  /usr/lib/rpm/redhat/rpmrc  /etc/rpmrc      ~/.rpmrc
-# /usr/lib/rpm/macros /usr/lib/rpm/redhat/macros /etc/rpm/macros ~/.rpmmacros
-# **NOTE:  May be possible to (ab)use bits of debhelper
-my %specglobals = ( # For %define's in specfile, among other things.
-	# this can be changed by the Vendor: header in the spec file
-	vendor => 'debbuild');
+# For %define's in specfile, among many other things.
+my %specglobals = (vendor => 'debbuild'); # this can be changed by the Vendor: header in the spec file
 my %macroopts; # For macro options
 
 # Package data
