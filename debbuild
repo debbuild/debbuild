@@ -1889,7 +1889,7 @@ Many macro expansions are supported, some are incompletely supported, some not a
 
 The generated scriptlets don’t quite match those from B<rpmbuild> exactly.  There are extra environment variables and preprocessing that I haven't needed (yet).
 
-Dcumentation, such as it is, will likely remain perpetually out of date (in which way it follows in RPM’s tradition).
+Documentation, such as it is, will likely remain perpetually out of date (in which way it follows in RPM’s tradition).
 
 %_topdir and the five “working” directories under %_topdir could arguably be created by B<debbuild>.  However, B<rpmbuild> doesn't create these directories either.
 
