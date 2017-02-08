@@ -697,8 +697,7 @@ ENDIF: if (/^%endif/) {
       # %autosetup and %autopatch are supported, too.
       if (s/^%autosetup//) {
         $script{$stage} .= process_autosetup();
-      } # fall through, most likely to '%autopatch'
-      if (s/^%autopatch//) {
+      } elseif (s/^%autopatch//) {
         $script{$stage} .= process_autopatch();
       } elsif (s/^%setup//) {
         $script{$stage} .= process_setup();
@@ -806,7 +805,7 @@ sub splitreqs {
 
 ## process_autosetup()
 # Convert the current '$_' line from '%autosetup' to '%setup' and call
-# 'process_setup()', then create an '%autopatch' line and fall through to
+# 'process_setup()', then create an '%autopatch' line and invoke
 # 'process_autopatch()'.
 sub process_autosetup {
   chomp( $_ = expandmacros($_) ); # permit '%{!?with_patches:-N}'
@@ -821,8 +820,10 @@ sub process_autosetup {
   die "%autosetup: option '-S $scm' currently not supported at line $..\n"
     unless $specglobals{"__scm_setup_$scm"};
   $script .= "%{__scm_setup_$scm".($verbose ? '' : ' -q')."}\n";
-  $_ = $noautopatch ? '' :
-    '%autopatch'.($plevel ? " -p $plevel" : '').($verbose ? ' -v' : '');
+  if (not $noautopatch) {
+    $_ = ($plevel ? " -p $plevel" : '').($verbose ? ' -v' : '');
+    $script .= process_autopatch();
+  }
   return $script;
 } # process_autosetup()
 
