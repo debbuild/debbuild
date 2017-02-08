@@ -938,7 +938,7 @@ sub decompress {
       $filename =~ /\.(?:tgz|(?:gz|Z))$/ ? '%{__gzip}'  :
       $filename =~ /\.bz2$/              ? '%{__bzip2}' :
       $filename =~ /\.xz$/               ? '%{__xz}'    :
-      die("Can't handle unknown file type '$filename'.\n") ).
+      die "Can't handle unknown file type '$filename'.\n" ).
       " -dc '$filename'";
 } # end decompress()
 
