@@ -690,7 +690,7 @@ ENDIF: if (/^%endif/) {
       # %autosetup and %autopatch are supported, too.
       if (s/^%autosetup//) {
         $script{$stage} .= process_autosetup();
-      } elseif (s/^%autopatch//) {
+      } elsif (s/^%autopatch//) {
         $script{$stage} .= process_autopatch();
       } elsif (s/^%setup//) {
         $script{$stage} .= process_setup();
