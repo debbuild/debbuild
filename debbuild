@@ -518,9 +518,9 @@ LINE: while (<$fh>) {
       }
 
       # http://www.donath.org/Quotes/AllTruthIsOne/
-      unshift @ifexpr, (eval $expr or 0);
+      push @ifexpr, (eval $expr or 0);
 
-      next LINE if $ifexpr[0]; # This appears to be the only case we call false.
+      next LINE if $ifexpr[-1]; # This appears to be the only case we call false.
       my $iflevel = @ifexpr;
       while (<$fh>) { # Skip %if-block, inluding nested %if..%else..%endif
         if (/^%if/) {
@@ -536,7 +536,7 @@ LINE: while (<$fh>) {
     }
 ELSE: if (/^%else/) {
       die "Unmatched %else in line $.. Missing %if.\n" unless @ifexpr;
-      next LINE unless $ifexpr[0];
+      next LINE unless $ifexpr[-1];
       my $iflevel = @ifexpr;
       while (<$fh>) { # Skip %else-block, inluding nested %if..%else..%endif
         if (/^%if/) {
@@ -552,7 +552,7 @@ ELSE: if (/^%else/) {
     }
 ENDIF: if (/^%endif/) {
       die "Unmatched %endif in line $.. Missing %if/%else.\n" unless @ifexpr;
-      shift @ifexpr;
+      pop @ifexpr;
     } # %if..%else..%endif
 
 ### Diagnostics '%{macros}'; these should actually be handled in expandmacros()
