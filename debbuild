@@ -689,6 +689,7 @@ ENDIF: if (/^%endif/) {
       # %patch tags, may be just a bare shell script.
       # %autosetup and %autopatch are supported, too.
       if (s/^%((?:auto)?(?:setup|patch))//) {
+        no strict qw(refs); # we use strings as function refs
         $script{$stage} .= "process_$1"->();
       } else {
         $script{$stage} .= $_;
