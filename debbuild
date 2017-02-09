@@ -688,14 +688,8 @@ ENDIF: if (/^%endif/) {
       # Actual handling for %prep section.  May have %setup macro, may include
       # %patch tags, may be just a bare shell script.
       # %autosetup and %autopatch are supported, too.
-      if (s/^%autosetup//) {
-        $script{$stage} .= process_autosetup();
-      } elsif (s/^%autopatch//) {
-        $script{$stage} .= process_autopatch();
-      } elsif (s/^%setup//) {
-        $script{$stage} .= process_setup();
-      } elsif (s/^%patch//) {
-        $script{$stage} .= process_patch();
+      if (s/^%((?:auto)?(?:setup|patch))//) {
+        $script{$stage} .= "process_$1"->();
       } else {
         $script{$stage} .= $_;
       }
