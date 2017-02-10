@@ -355,7 +355,7 @@ sub parse_cmd {
       $opt_value = "\_$opt_name\_$opt_value --$opt_name-$opt_value";
       $opt_name = 'define'; # fall through with generic name
     }
-    my ($macro,$value) = $opt_value =~ m/([a-z0-9_.-]+)(?:\s+(.+))?/i;
+    my ($macro,$value) = $opt_value =~ m/(\S+)(?:\s+(.+))?/i;
     if (defined $value) {
       store_value($macro,$value);
     } else {
