@@ -1631,7 +1631,9 @@ sub expandmacros {
 
   # Replace global macros
   if (my ($macro) = m/^%(\w.*)$/) {
+    $macro =~ s/([{}])/\\$1/g; # neutralize curlies
     s/$macro/{$macro}/;
+    s/\\([{}])/$1/g; # un-neutralize curlies
   }
   if (my ($macro) = m/%(\w+)/) {
     s/%$macro/%{$macro}/g if grep { /$macro/ } qw(optflags getconfdir)
