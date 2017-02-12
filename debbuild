@@ -215,8 +215,7 @@ sub load_config {
           last unless /\\$/;
         }
       }
-      $macroopts{$macro} = $1 if $macro =~ s/\((.*)\)//;
-      chomp( $specglobals{$macro} = $eq eq '=' ? $specglobals{$value} : $value );
+      store_value($macro, $eq eq '=' ? $specglobals{$value} : $value);
     }
     close MACROS;
   }
@@ -1604,6 +1603,7 @@ sub store_value {
   my ($key,$value) = @_;
   # Strip and store '%macro(options)'
   $macroopts{$key} = $1 if $key =~ s/\((.*)\)//;
+  chomp $value if defined $value; # strip newline from 'macros' input
   if ($key =~ /^(?:summary|name|epoch|version|release|
       group|copyright|url|packager)$/ix) {
     $pkgdata{main}{$key} = (defined $value ? $value : undef);
