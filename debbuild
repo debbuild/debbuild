@@ -1606,9 +1606,9 @@ sub store_value {
   $macroopts{$key} = $1 if $key =~ s/\((.*)\)//;
   if ($key =~ /^(?:summary|name|epoch|version|release|
       group|copyright|url|packager)$/ix) {
-    $pkgdata{main}{$key} = (defined $value ? expandmacros($value) : undef);
+    $pkgdata{main}{$key} = (defined $value ? $value : undef);
   } else {
-    $specglobals{$key} = (defined $value ? expandmacros($value) : undef);
+    $specglobals{$key} = (defined $value ? $value : undef);
   }
 } # end store_value()
 
