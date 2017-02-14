@@ -283,7 +283,8 @@ sub parse_cmd {
     'nobuild'       => \$specglobals{NOBUILD},
     'nocheck'       => \$specglobals{NOCHECK},
     'noclean'       => \$specglobals{NOCLEAN},
-    'v+' => \$verbosity, # bump verbosity.  Not sure what I'll actually do here...
+    'v+' => \$verbosity, # bump verbosity.
+    'q'  => sub { $verbosity = 0 }, # dump verbosity.
     'rebuild=s'   => \&srcpkg_handler,
     'recompile=s' => \&srcpkg_handler,
     'install|i=s' => \&srcpkg_handler,
