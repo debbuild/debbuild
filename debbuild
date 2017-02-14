@@ -1630,12 +1630,12 @@ sub expandmacros {
   { no warnings; s/%undefine\s+(\S+)/store_value($1)/eg; }
 
   # Replace global macros
-  if (my ($macro) = m/^%(\w.*)$/) {
+  if (my ($macro) = m/^%(\w.*)$/m) {
     $macro =~ s/([{}])/\\$1/g; # neutralize curlies
     s/$macro/{$macro}/;
     s/\\([{}])/$1/g; # un-neutralize curlies
   }
-  if (my ($macro) = m/%(\w+)/) {
+  if (my ($macro) = m/%(\w+)/m) {
     s/%$macro/%{$macro}/g if grep { /$macro/ } qw(optflags getconfdir)
       or defined $specglobals{$macro}
       or defined $pkgdata{main}{$macro};
