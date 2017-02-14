@@ -1593,7 +1593,7 @@ sub install_sdeb {
   die "Can't install $srcpkg\n" unless $srcpkg =~ /\.sdeb$/;
   $srcpkg = abs_path($srcpkg);
   system(expandmacros("(cd %{_topdir}; %{__pax} -r -f $srcpkg)")) == 0 and
-  print "Extracted source package $srcpkg to $topdir.\n" if $verbosity;
+  print "Extracted source package $srcpkg to $topdir.\n";
 } # end install_sdeb()
 
 
