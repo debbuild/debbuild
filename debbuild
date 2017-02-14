@@ -37,7 +37,7 @@ my $version = '@VERSION@';
 die "No .spec file to work with!  Exiting.\n" unless @ARGV;
 
 # Initialized globals
-my $verbosity = 0;
+my $verbosity;
 my $NoAutoReq = 0;
 my %cmdopts = (type => '',
 		stage => 'a',
@@ -103,6 +103,7 @@ print "This is debbuild, Version $version\n";
 
 # global shortcuts
 my $topdir = expandmacros('%{_topdir}');
+$verbosity //= expandmacros("%{?_default_verbosity}%{!?_default_verbosity:0}");
 
 if ($cmdopts{type} eq 's') {
   install_sdeb($specglobals{srcpkg});
