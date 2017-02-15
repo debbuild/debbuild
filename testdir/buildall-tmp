@@ -5,9 +5,9 @@ stage=p
 flags=--verbose
 scm=patch
 verbose=-v
-builder=/opt/github/debbuild/debbuild
+builder=debbuild
 
-while getopts pcilabsS:vq opt
+while getopts pcilabsS:vqr opt
 do
 	case $opt in
 		[pcil]) # prepare, compile, install, list
@@ -26,6 +26,9 @@ do
 		q) # dump verbosity
 			verbose=
 			;;
+		r) # use 'rpmbuild' instead of 'debbuild'
+			builder=rpmbuild
+			;;
 		?)
 			exit 1
 			;;
@@ -35,6 +38,7 @@ done
 printf "\n\nbuilding cwebbin with makemake patch\n\n"
 $builder -b$stage SPECS/cwebbin.spec $verbose
 
+if [ $builder != "rpmbuild" ]; then
 for extension in tgz tar tar.bz2 tar.gz tar.xz zip
 do
 	printf "\n\nbuilding from advent-1.0.%s\n\n" "$extension"
@@ -46,11 +50,12 @@ printf "\n\nbuilding advent with patches\n\n"
 git checkout SPECS/advent.spec
 $builder --define="__scm $scm" --define="_default_patch_flags $flags" \
 	-b$stage SPECS/advent.spec $verbose
+fi
 
 printf "\n\nCheck '%%_CamelCase_Macros'\n\n"
 $builder -bp SPECS/Camel.spec $verbose
-rpmbuild -bp SPECS/Camel.spec
 
+if [ $builder != "rpmbuild" ]; then
 printf "\n\nCheck other specials\n\n"
 $builder -bp SPECS/dummy.spec $verbose
 $builder -bp SPECS/mageia.spec $verbose
@@ -62,6 +67,7 @@ $builder --define="_default_patch_flags $flags" \
 printf "\n\nbuilding Pod::Simple project\n\n"
 $builder --define="_default_patch_flags $flags" \
 	-b$stage SPECS/perl-Pod-Simple.spec $verbose
+fi
 
 printf "\n\nbuilding HW project\n\n"
 $builder --define="__scm $scm" --define="_default_patch_flags $flags" \

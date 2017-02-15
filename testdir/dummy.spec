@@ -25,7 +25,9 @@ URL:             https://www.gnu.org/software/hello/
 Source0:         http://ftp.gnu.org/gnu/hello/%{name}-%{version}.tar.gz
 #Source1:         http://ftp.gnu.org/gnu/hello/%{name}-%{version}-II.tar.gz
 
+%if %{_vendor} == "debbuild"
 %{perl:for my $val (1..12) { printf("Patch%d: bash42\_%04d\n",$val,$val) }}
+%endif
 
 %if %{_vendor} == "debbuild"
 Packager:        Neal Gompa <ngompa13@gmail.com>
@@ -138,6 +140,7 @@ ls %{mklibname test 1 -d 0 -s}-whatever
 %check
 echo CHECK
 
+%if %{_vendor} == "debbuild"
 %install
 %make_install
 rm -f %{buildroot}%{_infodir}/dir
@@ -174,5 +177,6 @@ fi
 %endif
 
 %{echo:%{?_with_fulldoc}}
+%endif
 
 %changelog
