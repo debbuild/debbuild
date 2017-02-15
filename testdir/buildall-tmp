@@ -4,8 +4,10 @@
 stage=p
 flags=--verbose
 scm=patch
+verbose=-v
+builder=/opt/github/debbuild/debbuild
 
-while getopts pcilabsS: opt
+while getopts pcilabsS:vq opt
 do
 	case $opt in
 		[pcil]) # prepare, compile, install, list
@@ -18,6 +20,12 @@ do
 		S)	# choose SCM
 			scm=$OPTARG
 			;;
+		v) # bump verbosity
+			verbose=-vv
+			;;
+		q) # dump verbosity
+			verbose=
+			;;
 		?)
 			exit 1
 			;;
@@ -25,36 +33,36 @@ do
 done
 
 printf "\n\nbuilding cwebbin with makemake patch\n\n"
-debbuild -b$stage SPECS/cwebbin.spec
+$builder -b$stage SPECS/cwebbin.spec $verbose
 
 for extension in tgz tar tar.bz2 tar.gz tar.xz zip
 do
 	printf "\n\nbuilding from advent-1.0.%s\n\n" "$extension"
-	debbuild -D "_default_patch_flags $flags" \
-		-t$stage advent-1.0.$extension
+	$builder -D "_default_patch_flags $flags" \
+		-t$stage advent-1.0.$extension $verbose
 done
 
 printf "\n\nbuilding advent with patches\n\n"
 git checkout SPECS/advent.spec
-debbuild --define="__scm $scm" --define="_default_patch_flags $flags" \
-	-b$stage SPECS/advent.spec
+$builder --define="__scm $scm" --define="_default_patch_flags $flags" \
+	-b$stage SPECS/advent.spec $verbose
 
 printf "\n\nCheck '%%_CamelCase_Macros'\n\n"
-debbuild -bp SPECS/Camel.spec
+$builder -bp SPECS/Camel.spec $verbose
 rpmbuild -bp SPECS/Camel.spec
 
 printf "\n\nCheck other specials\n\n"
-debbuild -bp SPECS/dummy.spec
-debbuild -bp SPECS/mageia.spec
+$builder -bp SPECS/dummy.spec $verbose
+$builder -bp SPECS/mageia.spec $verbose
 
 printf "\n\nbuilding hello project\n\n"
-debbuild --define="_default_patch_flags $flags" \
-	-b$stage SPECS/hello.spec
+$builder --define="_default_patch_flags $flags" \
+	-b$stage SPECS/hello.spec $verbose
 
 printf "\n\nbuilding Pod::Simple project\n\n"
-debbuild --define="_default_patch_flags $flags" \
-	-b$stage SPECS/perl-Pod-Simple.spec
+$builder --define="_default_patch_flags $flags" \
+	-b$stage SPECS/perl-Pod-Simple.spec $verbose
 
 printf "\n\nbuilding HW project\n\n"
-debbuild --define="__scm $scm" --define="_default_patch_flags $flags" \
-	-b$stage SPECS/hw.spec
+$builder --define="__scm $scm" --define="_default_patch_flags $flags" \
+	-b$stage SPECS/hw.spec $verbose
