@@ -471,7 +471,7 @@ LINE: while (<$fh>) {
       if (defined $specglobals{$1}) {
         # This looks like a user-defined macro, possibly with arguments.
         # Wrap the whole thing in curly braces for easier processing.
-        s/^%(.+)$/%{$1}/;
+        s/^%(.+)$/%{$1}/ if defined $macroopts{$1};
       } else {
         die "Unknown tag '%$1' at line $. of $specfile\n";
       }
@@ -1290,13 +1290,16 @@ sub binpackage {
 
     my $control = "Package: $pkgdata{$pkg}{name}\n".
 	'Version: '.format_version($pkg)."\n".
-	( defined $pkgdata{$pkg}{group} ? "Section: $pkgdata{$pkg}{group}\n" : '' ).
+	( defined $pkgdata{$pkg}{group} ?
+	  "Section: $pkgdata{$pkg}{group}\n" : '' ).
 	"Priority: optional\n".
 	"Architecture: $pkgdata{$pkg}{arch}\n".
 	"Installed-Size: $installedsize\n".
-	"Maintainer: %{packager}\n".
+	( defined $pkgdata{main}{packager} ?
+	  "Maintainer: $pkgdata{main}{packager}\n" : '' ).
 	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{description}\n".
-	( defined $pkgdata{main}{url} ? "Homepage: %{url}\n" : '' );
+	( defined $pkgdata{main}{url} ?
+	  "Homepage: $pkgdata{main}{url}\n" : '' );
     foreach my $deplist (qw(recommends suggests enhances replaces
                             requires conflicts provides pre-depends)) {
       if (defined $pkgdata{$pkg}{$deplist} and @{$pkgdata{$pkg}{$deplist}}) {
@@ -1312,7 +1315,7 @@ sub binpackage {
     }
 
     open CONTROL, ">$specglobals{buildroot}/$pkg/DEBIAN/control" or die;
-    print CONTROL expandmacros($control);
+    print CONTROL $control;
     close CONTROL;
 
     # Iff there are conffiles (as specified in the %files list(s), add'em
@@ -1632,15 +1635,11 @@ sub expandmacros {
   { no warnings; s/%undefine\s+(\S+)/store_value($1)/eg; }
 
   # Replace global macros
-  if (my ($macro) = m/^%(\w.*)$/m) {
-    $macro =~ s/([{}])/\\$1/g; # neutralize curlies
-    s/$macro/{$macro}/;
-    s/\\([{}])/$1/g; # un-neutralize curlies
-  }
-  if (my ($macro) = m/%(\w+)/m) {
+  while (my ($macro) = m/%(\w+)/) {
     s/%$macro/%{$macro}/g if grep { /$macro/ } qw(optflags getconfdir)
       or defined $specglobals{$macro}
       or defined $pkgdata{main}{$macro};
+    last if m/%$macro/;
   }
   s/%\{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
   s|%\{getconfdir}|$specglobals{_libdir}/debbuild|g;
