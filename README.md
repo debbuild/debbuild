@@ -6,7 +6,7 @@ and “if you're careful about filesystem paths, commands, pre/post/(un)install 
 ## bug fixes …
 
 starting from [version 0.11.3 of
-debbuild](https://github.com/ascherer/debbuild/releases/tag/debbuild-0.11.3) the
+debbuild](https://github.com/ascherer/debbuild/releases/tag/0.11.3) the
 commits of this project deal with
 
 * handling tarballs compressed with various packers
