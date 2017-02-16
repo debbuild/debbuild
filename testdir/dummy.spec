@@ -33,7 +33,7 @@ Source0:         http://ftp.gnu.org/gnu/hello/%{name}-%{version}.tar.gz
 Packager:        Neal Gompa <ngompa13@gmail.com>
 %endif
 
-#BuildRequires:   gettext
+#uildRequires:   gettext
 
 Requires(post):  info
 Requires(preun): info
@@ -55,7 +55,7 @@ echo %{F:scripts/post.sh}
 echo %{S:0}
 echo %{P:7}
 
-#%include %{_rpmconfigdir}/macros.perl
+%{?_rpmconfigdir:%include %{_rpmconfigdir}/macros.perl}
 echo %perl_sitearch
 echo %perl_sitelib
 echo %perl_vendorarch
@@ -87,11 +87,8 @@ echo %perl_privlib
 %if %{without patches}
 %{echo:Hello 2}
 %endif
-#%ifdef %{with patches}
-#{echo:Hello 3}
-#%endif
 
-#echo PREP
+echo PREP
 %{echo:%{url2path:https://www.server.com:6666/their/local/path//%{_datadir}/%{S:0}}}
 %{echo:%{basename:%{S:0}},%{basename:%{S:1}}}
 %{echo:%{dirname:%{S:0}}}
@@ -124,15 +121,17 @@ echo %perl_privlib
 %setup -q
 %endif
 
+%if %{_vendor} == "debbuild"
 %mklibsymbols test 42
 %mklibname test 1 -d 0 -s
 ls %{mklibname test 1 -d 0 -s}-whatever
 %systemd_preun foo.service bar.service
 %{echo:%{libname}}
+%endif
 
 %build
 %{echo:%{?_with_fulldoc}}
-#echo BUILD
+echo BUILD
 %configure
 # --enable-doc --disable-static
 %{?make_build:%make_build}%{?!make_build:make %{?_smp_mflags}}
