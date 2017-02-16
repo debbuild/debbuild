@@ -1680,14 +1680,15 @@ sub expandmacros {
   while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ } bracelet() ) {
     no strict qw(refs); # we use strings as function refs
     (my $initvalue = "%{$prefix:$arg}") =~ s/([?!{}])/\\$1/g; # neutralize specials
+    $arg = expandmacros($arg);
     if ($prefix =~ /u2p/) {
       # curious form of 'basename'? - strip domain host (and port)
-      (my $path = expandmacros($arg)) =~ s|\w+://[\w.:-]+||;
-      s/$initvalue/$path/g;
+      $arg =~ s|\w+://[\w.:-]+||;
+      s/$initvalue/$arg/g;
     } elsif ($prefix =~ /basename|dirname/) {
-      s/$initvalue/&$prefix(expandmacros($arg))/eg;
+      s/$initvalue/&$prefix($arg)/eg;
     } elsif ($prefix =~ /suffix/) {
-      my (undef,undef,$suffix) = fileparse(expandmacros($arg),qr/\.[^.]*/);
+      my (undef,undef,$suffix) = fileparse($arg,qr/\.[^.]*/);
       s/$initvalue/$suffix/g;
     } elsif ($prefix =~ /uncompress/) {
       s/$initvalue/uncompress($arg)/eg;
@@ -1696,7 +1697,7 @@ sub expandmacros {
       s/$initvalue/$ENV{$arg}/g;
     } elsif ($prefix =~ /expand/) {
       # helper for parametrized macros
-      s/$initvalue/expandmacros($arg)/eg;
+      s/$initvalue/$arg/g;
     }
   }
   pos = 0; # reset to start of $_
