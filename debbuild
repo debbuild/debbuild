@@ -801,11 +801,11 @@ sub process_autosetup {
   my $plevel = $1 if s/\s+-p\s*(\d+)//;
   my $verbose = s/\s+-v//; $_ .= ($verbose ? '': ' -q');
   my $noautopatch = s/\s+-N//; # Eat '-N', which is unknown to %setup
-  expandmacros("%global __scm $1") if s/\s+\-S\s+(\w+)//; # dito '-S'
+  $specglobals{'__scm'} = $1 if s/\s+\-S\s+(\w+)//; # dito '-S'
   # Generic %setup invocation
   my $script = process_setup(); # hmm, how to fall to '%setup'?
   # Do SCM stuff
-  my $scm = expandmacros('%__scm');
+  my $scm = $specglobals{'__scm'};
   die "%autosetup: option '-S $scm' currently not supported at line $..\n"
     unless $specglobals{"__scm_setup_$scm"};
   $script .= "%{__scm_setup_$scm".($verbose ? '' : ' -q')."}\n";
