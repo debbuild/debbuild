@@ -1635,11 +1635,11 @@ sub expandmacros {
   { no warnings; s/%undefine\s+(\S+)/store_value($1)/eg; }
 
   # Replace global macros
-  while (my ($macro) = m/%(\w+)/) {
+  while (m/%(\w+)/g) {
+    my $macro = $1;
     s/%$macro/%{$macro}/g if grep { /$macro/ } qw(optflags getconfdir)
       or defined $specglobals{$macro}
       or defined $pkgdata{main}{$macro};
-    last if m/%$macro/;
   }
   s/%\{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
   s|%\{getconfdir}|$specglobals{_libdir}/debbuild|g;
