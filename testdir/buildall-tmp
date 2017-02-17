@@ -40,7 +40,7 @@ $builder -b$stage SPECS/cwebbin.spec $verbose
 
 for extension in tgz tar tar.bz2 tar.gz tar.xz zip
 do
-	if [ $builder != "debbuild" ] && [ $extension = "zip" ]; then break; fi
+	[ $builder != "debbuild" ] && [ $extension = "zip" ] && break
 	printf "\n\nbuilding from advent-1.0.%s\n\n" "$extension"
 	$builder -D "_default_patch_flags $flags" \
 		-t$stage advent-1.0.$extension $verbose
