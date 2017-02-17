@@ -139,7 +139,6 @@ echo BUILD
 %check
 echo CHECK
 
-%if %{_vendor} == "debbuild"
 %install
 %make_install
 rm -f %{buildroot}%{_infodir}/dir
@@ -176,6 +175,5 @@ fi
 %endif
 
 %{echo:%{?_with_fulldoc}}
-%endif
 
 %changelog
