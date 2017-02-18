@@ -279,6 +279,7 @@ sub parse_cmd {
     'eval|E=s'      => sub { print expandmacros($_[1])."\n" },
     'short-circuit' => \$cmdopts{short},
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
+    'sign'          => \$specglobals{GPGSIGN},
     'noprep'        => \$specglobals{NOPREP},
     'nobuild'       => \$specglobals{NOBUILD},
     'nocheck'       => \$specglobals{NOCHECK},
