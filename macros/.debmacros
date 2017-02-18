@@ -1,4 +1,5 @@
 %_topdir %(pwd)
-%_gpg_name andreas
 %_default_patch_flags --verbose
 %_default_verbosity 1
+%_signature gpg
+%_gpg_name Andreas Scherer
