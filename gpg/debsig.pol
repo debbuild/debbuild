@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE Policy SYSTEM "http://www.debian.org/debsig/1.0/policy.dtd">
+<Policy xmlns="http://www.debian.org/debsig/1.0/">
+
+<Origin Name="Andreas Scherer" id="DDB6787D850B1239"
+Description="Another package from Andreas Scherer"/>
+
+<Selection>
+<Required Type="origin" File="debsig.gpg" id="DDB6787D850B1239"/>
+</Selection>
+
+<Verification MinOptional="0">
+<Required Type="origin" File="debsig.gpg" id="DDB6787D850B1239"/>
+</Verification>
+
+</Policy>
