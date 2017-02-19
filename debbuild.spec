@@ -29,6 +29,7 @@ Requires: lsb-release
 Recommends: bzip2, gzip, xz-utils, unzip, zip
 Recommends: git, patch, pax, quilt
 %if %{with signature}
+BuildRequires: gnupg
 Recommends: debsigs, debsig-verify
 %endif
 Suggests: rpm
@@ -64,6 +65,10 @@ for i in debbuild Makefile; do %{__sed} "s/\@VERSION\@/%{version}/" -i $i; done
 %{__cp} macros/macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
 %{__cp} macros/macros.texlive %{buildroot}%{_sysconfdir}/%{name}
 %if %{with signature}
+%{__mkdir_p} %{buildroot}%{_datadir}/debsig/keyrings/DDB6787D850B1239/
+%{__gpg} --keyserver pgp.mit.edu --no-default-keyring --keyring \
+  %{buildroot}%{_datadir}/debsig/keyrings/DDB6787D850B1239/debsig.gpg \
+  --recv-keys 0x850B1239
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/debsig/policies/DDB6787D850B1239/
 %{__cp} gpg/debsig.pol %{buildroot}%{_sysconfdir}/debsig/policies/DDB6787D850B1239/
 %endif
@@ -76,10 +81,14 @@ for i in debbuild Makefile; do %{__sed} "s/\@VERSION\@/%{version}/" -i $i; done
 %{_libdir}/%{name}/macros.d/*
 %{_sysconfdir}/%{name}/macros.*
 %if %{with signature}
+%attr(664,root,root) %{_datadir}/debsig/keyrings/DDB6787D850B1239/debsig.gpg
 %{_sysconfdir}/debsig/policies/DDB6787D850B1239/debsig.pol
 %endif
 
 %changelog
+* Sun Feb 19 2017  Andreas Scherer <https://ascherer.github.io/>
+- Set up infrastructure for signing packages
+
 * Sat Dec  3 2016  Neal Gompa <ngompa13@gmail.com>
 - Integrate platform detection into macros
 - Remove unnecessary scriptlet

@@ -34,6 +34,7 @@
 %__echo			/bin/echo
 %__fakeroot		/usr/bin/fakeroot
 %__find			/usr/bin/find
+%__gpg			/usr/bin/gpg
 %__gzip			/bin/gzip
 %__id			/usr/bin/id
 %__id_u			%{__id} -u
