@@ -5,6 +5,8 @@
 #   http://docs.fedoraproject.org/drafts/rpm-guide-en/
 # More links may be available from http://www.rpm.org
 
+%bcond_without signature
+
 Name: debbuild
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 Version: 17.2.3
@@ -26,7 +28,10 @@ Requires: dpkg-dev, perl, fakeroot
 Requires: lsb-release
 Recommends: bzip2, gzip, xz-utils, unzip, zip
 Recommends: git, patch, pax, quilt
-Suggests: rpm, subversion
+%if %{with signature}
+Recommends: debsigs, debsig-verify
+%endif
+Suggests: rpm
 %endif
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
@@ -58,6 +63,10 @@ for i in debbuild Makefile; do %{__sed} "s/\@VERSION\@/%{version}/" -i $i; done
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/%{name}
 %{__cp} macros/macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
 %{__cp} macros/macros.texlive %{buildroot}%{_sysconfdir}/%{name}
+%if %{with signature}
+%{__mkdir_p} %{buildroot}%{_sysconfdir}/debsig/policies/DDB6787D850B1239/
+%{__cp} gpg/debsig.pol %{buildroot}%{_sysconfdir}/debsig/policies/DDB6787D850B1239/
+%endif
 
 %files
 # Fill in the pathnames to be packaged here
@@ -66,7 +75,9 @@ for i in debbuild Makefile; do %{__sed} "s/\@VERSION\@/%{version}/" -i $i; done
 %{_libdir}/%{name}/macros
 %{_libdir}/%{name}/macros.d/*
 %{_sysconfdir}/%{name}/macros.*
-
+%if %{with signature}
+%{_sysconfdir}/debsig/policies/DDB6787D850B1239/debsig.pol
+%endif
 
 %changelog
 * Sat Dec  3 2016  Neal Gompa <ngompa13@gmail.com>
