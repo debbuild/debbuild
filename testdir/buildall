@@ -42,6 +42,7 @@ do
 	case $project in
 		"tetex-anschrift") project=anschrift ;;
 		"loki") verbose="$verbose --without doc" ;;
+		"debbuild") verbose="$verbose --without signature" ;;
 	esac
 	$builder --define="__scm $scm" --define="_default_patch_flags $flags" \
 		-b$stage SPECS/$project.spec $verbose
