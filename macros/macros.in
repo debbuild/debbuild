@@ -26,6 +26,7 @@
 %__chmod		/bin/chmod
 %__chown		/bin/chown
 %__cp			/bin/cp
+%__debsigs		/usr/bin/debsigs
 %__dpkg			/usr/bin/dpkg
 %__dpkg_architecture	/usr/bin/dpkg-architecture
 %__dpkg_deb		/usr/bin/dpkg-deb

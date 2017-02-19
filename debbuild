@@ -1356,6 +1356,17 @@ sub binpackage {
 
     $finalmessages .= 'Wrote binary package '.format_debfile($pkg).
 	" in $topdir/DEBS/$pkgdata{$pkg}{arch}\n";
+
+    if ($specglobals{GPGSIGN}) {
+      $script{pkg} = "%{__fakeroot} -- %{__debsigs} --sign=origin ".
+        "%{_debdir}/$pkgdata{$pkg}{arch}/".format_debfile($pkg)."\n";
+
+      execute_script('pkg', 'package-signature', " for $pkgdata{$pkg}{name}");
+
+      $finalmessages .= 'Signed binary package '.format_debfile($pkg).
+	" in $topdir/DEBS/$pkgdata{$pkg}{arch}\n";
+    }
+
   } # subpackage loop
 
 } # end binpackage()
