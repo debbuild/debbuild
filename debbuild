@@ -823,8 +823,8 @@ sub process_autopatch {
     my $patchfile = qq(%{_sourcedir}/$pkgdata{main}{$patches[0]});
     $script .= apply_patch($verbose,$plevel,$patchfile);
   } else { # now you're talkin', brother!
-    for my $patch (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
-      my $patchfile = qq(%{_sourcedir}/$pkgdata{main}{"patch$patch"});
+    for (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
+      my $patchfile = qq(%{_sourcedir}/$pkgdata{main}{"patch$_"});
       $script .= apply_patch($verbose,$plevel,$patchfile);
     }
   }
