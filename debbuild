@@ -1114,6 +1114,7 @@ sub execute_script {
   my ($stage, $what, $for) = @_;
 
   # anything to do?
+  $script{$stage} = expandmacros($script{$stage});
   return if $specglobals{uc "no$stage"} or not $script{$stage};
 
   # create script filename
@@ -1123,7 +1124,7 @@ sub execute_script {
   my $build_template = expandmacros('%{___build_template}');
   $build_template =~ s/set -x/set +x/ unless $verbosity;
   print SCRIPT $build_template;
-  print SCRIPT expandmacros($script{$stage});
+  print SCRIPT $script{$stage};
   close SCRIPT;
 
   # execute
