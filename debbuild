@@ -664,10 +664,7 @@ ENDIF: if (/^%endif/) {
           Requires(?:\(pre(?:un)?\))?|Conflicts|Provides|Pre-Depends):\s+(.+)$/ix) {
         $dname =~ tr/[A-Z]/[a-z]/;
         $dname =~ s/([()])/\\$1/g;
-        if ($dname =~ /^BuildArch/i) {
-          $dvalue =~ s/^noarch/all/ig;
-          $dname = 'arch';
-        }
+        $dvalue =~ s/^noarch/all/i if $dname =~ s/^BuildArch(?:itecture)?/arch/i;
         if (grep { /$dname/ } qw(recommends suggests enhances replaces
             requires conflicts provides pre-depends)) {
           push @{$pkgdata{$subname}{$dname}}, splitreqs($dvalue);
