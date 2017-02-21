@@ -1827,7 +1827,6 @@ As far as possible, the command-line options are identical to those from B<rpmbu
  --rmsource
  --rmspec
  --showrc
- --sign
  --target
 
 Some of these could probably be trivially added.  Feel free to send me a patch.  ;)
