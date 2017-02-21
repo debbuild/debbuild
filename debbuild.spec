@@ -9,7 +9,7 @@
 
 Name: debbuild
 Summary: Build Debian-compatible .deb packages from RPM .spec files
-Version: 17.2.3
+Version: 17.2.4
 Release: ascherer.%{dist}
 
 Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
