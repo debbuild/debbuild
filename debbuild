@@ -461,7 +461,7 @@ LINE: while (<$fh>) {
 	bcond_with bcond_without build changelog check clean config
 	configure copyrightdata defattr define description dir doc docdir
 	dump else endif exclude files ghost global if ifarch ifnarch ifnos ifos
-	include install make_build make_install makeinstall package patch
+	include install license make_build make_install makeinstall package patch
 	post postun pre prep preun readme setup triggerin triggerpostun
 	triggerun undefine verify verifyscript)) {
       if (defined $specglobals{$1}) {
@@ -1073,7 +1073,12 @@ sub process_filesline {
   # into place in the %install script, because Debian doesn't really have the concept
   # of "documentation file" that rpm does.  (Debian "documentation files" are files
   # in /usr/share/doc/<packagename>.)
-  if (s/%doc\s+//) {
+  # Note: %license in RPM behaves in the same manner as %doc, but on RPM systems,
+  # it does not mark the file as a documentation file and will install it to
+  # /usr/share/licenses/<packagename>. Debian has no concept of this, so we just
+  # reuse the %doc handling and put it there. That's where these things used to go
+  # anyway...
+  if (s/(%doc|%license)\s+//) {
     # have to extract the partial pathnames that %doc installs automagically
     foreach my $pp (split) {
       if (not $pp =~ m|^[%/]|) {
