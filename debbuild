@@ -656,16 +656,16 @@ ENDIF: if (/^%endif/) {
 
     elsif ($stage eq 'package') {
       # gotta expand %defines here.  Whee.
-# Note that we look for the Debian-specific Recommends, Suggests, and Replaces,
+# Note that we look for the Debian-specific Breaks and Replaces,
 # although they will have to be wrapped in '%if %{_vendor} == "debbuild"' for
 # an rpmbuild-compatible .spec file
       if (my ($dname,$dvalue) = /^(Summary|Group|Version|BuildArch(?:itecture)?|
-          Recommends|Suggests|Enhances|Obsoletes|Replaces|PreReq|
+          Recommends|Suggests|Enhances|Obsoletes|Breaks|Replaces|PreReq|
           Requires(?:\(pre(?:un)?\))?|Conflicts|Provides|Pre-Depends):\s+(.+)$/ix) {
         $dname =~ tr/[A-Z]/[a-z]/;
         $dname =~ s/([()])/\\$1/g;
         $dvalue =~ s/^noarch/all/i if $dname =~ s/^BuildArch(?:itecture)?/arch/i;
-        if (grep { /$dname/ } qw(recommends suggests enhances replaces
+        if (grep { /$dname/ } qw(recommends suggests enhances breaks replaces
             requires conflicts provides pre-depends)) {
           push @{$pkgdata{$subname}{$dname}}, splitreqs($dvalue);
         } elsif (grep { /$dname/ } qw{prereq requires(pre) requires(preun)}) {
@@ -748,14 +748,14 @@ ENDIF: if (/^%endif/) {
         push @{$pkgdata{main}{lc $1}}, splitreqs($2);
       } elsif (/^(?:prereq|requires\((?:pre|preun)\)):\s*(.+)/i) {
         push @{$pkgdata{main}{'pre-depends'}}, splitreqs($1);
-      } elsif (/^recommends:\s*(.+)/i) {
-        push @{$pkgdata{main}{recommends}}, splitreqs($1);
-        warn "Warning:  Debian-specific 'Recommends:' outside %if wrapper\n" unless @ifexpr;
+      } elsif (/^(suggests|enhances|recommends):\s*(.+)/i) {
+        push @{$pkgdata{main}{lc $1}}, splitreqs($2);
 # As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
 # along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
-      } elsif (/^(suggests|enhances|replaces|pre-depends):\s*(.+)/i) {
-        push @{$pkgdata{main}{lc $1}}, splitreqs($2);
         warn "Warning:  '$1:' outside %if wrapper\n" unless @ifexpr;
+      } elsif (/^(breaks|replaces|pre-depends):\s*(.+)/i) {
+        push @{$pkgdata{main}{lc $1}}, splitreqs($2);
+        warn "Warning:  Debian-specific '$1:' outside %if wrapper\n" unless @ifexpr;
       } elsif (/^supplements:\s*(.+)/i) {
         push @{$pkgdata{main}{enhances}}, splitreqs($1);
         warn "Warning:  'Supplements:' is not natively supported by .deb packages.  Downgrading relationship to Enhances:.\n";
@@ -1295,7 +1295,7 @@ sub binpackage {
 	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{description}\n".
 	( defined $pkgdata{main}{url} ?
 	  "Homepage: $pkgdata{main}{url}\n" : '' );
-    foreach my $deplist (qw(recommends suggests enhances replaces
+    foreach my $deplist (qw(recommends suggests enhances breaks replaces
                             requires conflicts provides pre-depends)) {
       if (defined $pkgdata{$pkg}{$deplist} and @{$pkgdata{$pkg}{$deplist}}) {
         my $tag = $deplist eq 'requires' ? 'depends' : $deplist;
