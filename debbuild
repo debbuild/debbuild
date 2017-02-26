@@ -1359,7 +1359,7 @@ sub binpackage {
         chomp(my @keys = <GPGKEYS>); # catch all keys of "%_gpg_name"
         close GPGKEYS;
         @keys = grep { /^pub:[^idren]:/ } @keys; # select only valid keys
-        ($signkey) = $keys[-1] =~ m/.+?:.+?:.+?:.+?:(.+?):/ if @keys;
+        ($signkey) = $keys[-1] =~ m/(?:.+?:){4}(.+?):/ if @keys;
           # use the most recent key
       }
       $script{pkg} = "%{__fakeroot} -- %{__debsigs} --sign=origin ".
