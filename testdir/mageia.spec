@@ -13,6 +13,10 @@
 %global libname2 %mklibname %{shortname} 1 2
 %global devname %mklibname -d %{shortname}
 
+# Issue 55:
+%{!?__python3:%global __python3 /usr/bin/python3}
+{!?python3_sitelib:%global python3_sitelib %(%{__python3} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))")}
+
 Name:           %{name}
 
 #(!) summary for SRPM only
@@ -57,6 +61,9 @@ ToolKit) GUI library.
 %{echo:%develname}
 %{echo:%devname}
 %{echo:'%release'}
+# Issue 55
+%{echo:%__python3}
+%{echo:%python3_sitelib}
 
 %files -n %{libname}
 # ..
