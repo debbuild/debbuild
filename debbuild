@@ -1730,7 +1730,7 @@ sub expandmacros {
 CONDMAC: while (my ($qex,$macro,$value) = map { /{([?!]+)(\w+)(?::(.+))?}/ }
       bracelet() ) {
     (my $initvalue = "%{$qex$macro".(defined $value ? ":$value" : '').'}')
-      =~ s/([?!{}])/\\$1/g; # neutralize quantifiers
+      =~ s/([?!{}()])/\\$1/g; # neutralize quantifiers
     $value //= ($specglobals{$macro} or '');
     $value = '' unless $specglobals{$macro} xor $qex =~ /!/; # equivalence
     s/$initvalue/expandmacros($value)/eg;

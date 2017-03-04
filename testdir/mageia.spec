@@ -15,7 +15,7 @@
 
 # Issue 55:
 %{!?__python3:%global __python3 /usr/bin/python3}
-{!?python3_sitelib:%global python3_sitelib %(%{__python3} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))")}
+%{!?python3_sitelib:%global python3_sitelib %(%{__python3} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))")}
 
 Name:           %{name}
 
