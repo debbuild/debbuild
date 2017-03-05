@@ -1688,8 +1688,6 @@ sub expandmacros {
   s/%\((.+)\)/my $in = expandmacros($1); chomp(my $res = qx($in)); $res/eg;
     # Yay!  ' characters apparently get properly exscapededed.
 
-  simplemacros();
-
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
   while (my ($prefix,$spc,$arg) = map { /{(\w+)(\s+)(.+)}/ } bracelet() ) {
     (my $initvalue = "%{$prefix$spc$arg}") =~ s/([{}])/\\$1/g; # neutralize curlies
