@@ -1630,7 +1630,7 @@ sub store_value {
     my @open = $value =~ m/{/g;
     my @close = $value =~ m/}/g;
     my $unmatched = scalar @close - scalar @open;
-    $value =~ s/}{$unmatched}$//; # strip asymmetrical closing braces
+    $value =~ s/}{$unmatched}$// if 0 < $unmatched; # strip asymmetrical closing braces
   }
   if ($key =~ /^(?:summary|name|epoch|version|release|
       group|copyright|url|packager)$/ix) {
