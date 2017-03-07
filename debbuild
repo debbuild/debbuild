@@ -575,9 +575,7 @@ ENDIF: if (/^%endif/) {
 
     # Print the active macro table
     elsif (/^%dump/) {
-      for (sort keys %specglobals) {
-        print "%$_ ==> $specglobals{$_}\n" unless $_ =~ /^[A-Z]+$/;
-      }
+      print "%$_ ==> $specglobals{$_}\n" for (sort keys %specglobals);
     }
 
     # Preprocess %define's and Conditional Build Stuff
