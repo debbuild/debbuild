@@ -1625,10 +1625,9 @@ sub store_value {
   $macroopts{$key} = $1 if $key =~ s/\((.*)\)//;
   if (defined $value) {
     chomp $value; # strip newline from 'macros' input
-    my @open = $value =~ m/{/g;
-    my @close = $value =~ m/}/g;
-    my $unmatched = scalar @close - scalar @open;
-    $value =~ s/}{$unmatched}$// if 0 < $unmatched; # strip asymmetrical closing braces
+    # strip asymmetrical closing braces
+    my $unmatched = (() = $value =~ m/}/g) - (() = $value =~ m/{/g);
+    $value =~ s/}{$unmatched}$// if 0 < $unmatched;
   }
   if ($key =~ /^(?:summary|name|epoch|version|release|
       group|copyright|url|packager)$/ix) {
