@@ -163,7 +163,7 @@ if ($cmdopts{type} eq 'b') {
   exit 0 if $specglobals{NOBUILD};
 
   # Expand macros as necessary.
-  $specglobals{buildroot} = $specglobals{CBR} if defined $specglobals{CBR};
+  $specglobals{buildroot} = $cmdopts{buildroot} if defined $cmdopts{buildroot};
   $specglobals{buildroot} = expandmacros($specglobals{buildroot});
 }
 
@@ -270,15 +270,15 @@ sub lsb_detection {
 sub parse_cmd {
   # Don't feel like coding my own option parser...
   Getopt::Long::GetOptions(
-    'buildroot=s'   => \$specglobals{CBR},
+    'buildroot=s'   => \$cmdopts{buildroot},
     'eval|E=s'      => sub { print expandmacros($_[1])."\n" },
     'short-circuit' => \$cmdopts{short},
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
-    'sign'          => \$specglobals{GPGSIGN},
-    'noprep'        => \$specglobals{NOPREP},
-    'nobuild'       => \$specglobals{NOBUILD},
-    'nocheck'       => \$specglobals{NOCHECK},
-    'noclean'       => \$specglobals{NOCLEAN},
+    'sign'          => \$cmdopts{sign},
+    'noprep'        => \$cmdopts{noprep},
+    'nobuild'       => \$cmdopts{nobuild},
+    'nocheck'       => \$cmdopts{nocheck},
+    'noclean'       => \$cmdopts{noclean},
     'v+' => \$verbosity, # bump verbosity.
     'q'  => sub { $verbosity = 0 }, # dump verbosity.
     'rebuild=s'   => \&srcpkg_handler,
@@ -1119,7 +1119,7 @@ sub execute_script {
   my ($stage, $what, $for) = @_;
 
   # anything to do?
-  return if $specglobals{uc "no$stage"} or not $script{$stage};
+  return if $cmdopts{"no$stage"} or not $script{$stage};
 
   # create script filename
   my $scriptfile = expandmacros('%{_tmppath}')."/deb-tmp.$stage.".int(rand(99998)+1);
@@ -1351,7 +1351,7 @@ sub binpackage {
     $finalmessages .= 'Wrote binary package '.format_debfile($pkg).
 	" in $topdir/DEBS/$pkgdata{$pkg}{arch}\n";
 
-    if ($specglobals{GPGSIGN}) {
+    if ($cmdopts{sign}) {
       my $signkey = '';
       if (defined $specglobals{_gpg_name} and
           open GPGKEYS, '-|', $specglobals{__gpg}, '-k', '--with-colons',
