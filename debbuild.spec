@@ -39,7 +39,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 
 %description
-debbuild attempts to build Debian-friendly semi-native packages from
+%{name} attempts to build Debian-friendly semi-native packages from
 RPM spec files, RPM-friendly tarballs, and RPM source packages
 (.src.rpm files).  It accepts most of the options rpmbuild does, and
 should be able to interpret most spec files usefully.

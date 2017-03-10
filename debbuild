@@ -1308,7 +1308,7 @@ sub binpackage {
     }
 
     open CONTROL, ">$specglobals{buildroot}/$pkg/DEBIAN/control" or die;
-    print CONTROL $control;
+    print CONTROL expandmacros($control);
     close CONTROL;
 
     # Iff there are conffiles (as specified in the %files list(s), add'em
