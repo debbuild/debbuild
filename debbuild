@@ -1333,6 +1333,23 @@ sub binpackage {
       if ($pkgdata{$pkg}{$scr}) {
         (my $content = expandmacros($pkgdata{$pkg}{$scr})) =~ s/^[\s]*$//mg;
         next unless $content;
+
+        # glob all %files lines if necessary
+        # attow, only a rightmost '*' glob is recognized
+        # more complicated replacements would require 'bsd_glob()'
+        my @content = split /^/, $content;
+        for my $inline (@content) {
+          next unless $inline =~ m/\*/;
+          my ($pre,$glob) = $inline =~ m/(.*\s)(\S+\*)/;
+          # add and remove '%buildroot' path
+          my @globbed = glob("$specglobals{buildroot}$glob");
+          @globbed = map { s/$specglobals{buildroot}//; $_ } @globbed;
+          # expand and replace '*' lines in the script '$content'
+          my $outline = $pre . join("\n$pre", @globbed) . "\n";
+          $inline =~ s/([*])/\\$1/g;
+          $content =~ s/$inline/$outline/m;
+        }
+
         open SCRIPT, ">$specglobals{buildroot}/$pkg/DEBIAN/$scrfile" or die;
         print SCRIPT expandmacros("#!%{___build_shell} %{___build_args}\n");
         print SCRIPT $content;
