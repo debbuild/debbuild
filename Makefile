@@ -14,8 +14,7 @@ all:
 	# nothing to do
 
 install:
-	mkdir -p $(DESTDIR)/usr/bin
-	cp debbuild $(DESTDIR)/usr/bin
+	install debbuild -D -t $(DESTDIR)/usr/bin
 
 	mkdir -p $(DESTDIR)$(MANDIR)/man8
 	pod2man --utf8 --center="DeepNet Dev Tools" --section 8 \
