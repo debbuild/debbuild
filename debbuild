@@ -451,6 +451,9 @@ LINE: while (<$fh>) {
     # need to deal with these someday
     next if /^%verify/ or /^%ghost/;
 
+    # Escape '%' -- rpmbuild seems to do this
+    s/%%/%/g;
+
 # no sense in continuing if we find something we don't grok
     # Yes, this is really horribly fugly.  But it's a cheap crosscheck against invalid
     # %-tags which also make rpmbuild barf.  In theory.
