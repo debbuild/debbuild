@@ -55,6 +55,7 @@
 %__sed			/bin/sed
 %__tar			/bin/tar
 %__unzip		/usr/bin/unzip
+%__xargs		/usr/bin/xargs
 %__xz			/usr/bin/xz
 
 #==============================================================================

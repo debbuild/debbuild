@@ -1010,7 +1010,7 @@ sub process_patch {
 
   my $patchscript;
   foreach my $pnum (@patchlist) {
-    $patchscript .= q(echo "Patch ).($pnum eq '' ? '' : "#$pnum ");
+    $patchscript .= q(%{__echo} "Patch ).($pnum eq '' ? '' : "#$pnum ");
     $pnum = expandmacros("%{patch$pnum}");
     $patchscript .= q|(|.basename($pnum).qq|):"\n|;
     $patchscript .= qq(%{uncompress:$pnum} | %{__patch} $patchopts\n\n);
@@ -1581,7 +1581,8 @@ sub getreqs {
   return () unless @binlist;
 
   my $binlist = join(' ', @binlist);
-  my @reqlist = grep { ! m|^/| } qx ( LANG=C $specglobals{__ldd} $binlist );
+  my @reqlist = grep { ! m|^/| } qx ( $specglobals{__echo} $binlist |
+    LANG=C $specglobals{__xargs} $specglobals{__ldd} );
 
   # Get the list of libs provided by this package.  Still doesn't
   # handle the case where the lib gets stuffed into a subpackage.  :/
