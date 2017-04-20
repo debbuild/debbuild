@@ -27,6 +27,7 @@ use warnings;
 use Cwd qw(abs_path);	# for finding where files really are
 use Fcntl;		# for sysopen flags
 use File::Basename;
+use File::Temp qw(tempfile);
 use Getopt::Long qw(:config no_ignore_case bundling);
 use Getopt::Std;
 use Text::Balanced qw(extract_bracketed extract_multiple);
@@ -1581,7 +1582,10 @@ sub getreqs {
   return () unless @binlist;
 
   my $binlist = join(' ', @binlist);
-  my @reqlist = grep { ! m|^/| } qx ( $specglobals{__echo} $binlist |
+  my ($tf, $tfn) = tempfile();
+  print $tf $binlist;
+  close $tf;
+  my @reqlist = grep { ! m|^/| } qx ( $specglobals{__cat} $tfn |
     LANG=C $specglobals{__xargs} $specglobals{__ldd} );
 
   # Get the list of libs provided by this package.  Still doesn't
