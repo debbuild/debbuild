@@ -23,6 +23,7 @@
 
 use strict;
 use warnings;
+use threads;
 
 use Cwd qw(abs_path);	# for finding where files really are
 use Fcntl;		# for sysopen flags
@@ -30,6 +31,7 @@ use File::Basename;
 use File::Temp qw(tempfile);
 use Getopt::Long qw(:config no_ignore_case bundling);
 use Getopt::Std;
+use IPC::Open2;
 use Text::Balanced qw(extract_bracketed extract_multiple);
 
 my $version = '@VERSION@';
@@ -1581,12 +1583,20 @@ sub getreqs {
   chomp( my @binlist = qx ( $specglobals{__find} $pkgtree -type f -perm 755 ) );
   return () unless @binlist;
 
-  my $binlist = join(' ', @binlist);
-  my ($tf, $tfn) = tempfile();
-  print $tf $binlist;
-  close $tf;
-  my @reqlist = grep { ! m|^/| } qx ( $specglobals{__cat} $tfn |
-    LANG=C $specglobals{__xargs} $specglobals{__ldd} );
+  my @reqlist;
+  my $pid = open2(\*IN,\*OUT,"LANG=C $specglobals{__xargs} $specglobals{__ldd}");
+  my $thread = async {
+    close IN;
+    print OUT join(' ', @binlist);
+    close OUT;
+  };
+  {
+    close OUT;
+    @reqlist = grep { not m|^/| } <IN>;
+    close IN;
+  }
+  $thread->join();
+  waitpid($pid,0);
 
   # Get the list of libs provided by this package.  Still doesn't
   # handle the case where the lib gets stuffed into a subpackage.  :/
