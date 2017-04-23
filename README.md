@@ -13,7 +13,7 @@ commits of this project deal with
 * extracting specfiles from such tarballs
 * improved handling of the `%setup` and `%patch` macros
 * configuration and invocation of debbuild
-* many more nuts and bolts under the hood
+* some nuts and bolts under the hood
 
 some – but unfortunately not all – of these improvements have made it back into
 [the original source
@@ -30,3 +30,4 @@ this project took
 * conditional build stuff
 * advanced option handling
 * `%autosetup`/`%autopatch`
+* many more nuts and bolts under the hood
