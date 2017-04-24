@@ -59,17 +59,19 @@ for i in debbuild Makefile; do %{__sed} "s/\@VERSION\@/%{version}/" -i $i; done
 %install
 # Steps to install to a temporary location for packaging
 %make_install
-%{__install} macros/macros.in -D %{buildroot}%{_libdir}/%{name}/macros
-%{__install} macros/macros.perl -D -t %{buildroot}%{_libdir}/%{name}/macros.d
-%{__install} macros/macros.sysutils macros/macros.texlive \
-  -D -t %{buildroot}%{_sysconfdir}/%{name}
+%{__mkdir_p} %{buildroot}%{_libdir}/%{name}/macros.d
+%{__cp} macros/macros.in %{buildroot}%{_libdir}/%{name}/macros
+%{__cp} macros/macros.perl %{buildroot}%{_libdir}/%{name}/macros.d
+%{__mkdir_p} %{buildroot}%{_sysconfdir}/%{name}
+%{__cp} macros/macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
+%{__cp} macros/macros.texlive %{buildroot}%{_sysconfdir}/%{name}
 %if %{with signature}
 %{__mkdir_p} %{buildroot}%{_datadir}/debsig/keyrings/DDB6787D850B1239/
 %{__gpg} --keyserver pgp.mit.edu --no-default-keyring --keyring \
   %{buildroot}%{_datadir}/debsig/keyrings/DDB6787D850B1239/debsig.gpg \
   --recv-keys 0x850B1239
-%{__install} gpg/debsig.pol -D -t \
-  %{buildroot}%{_sysconfdir}/debsig/policies/DDB6787D850B1239/
+%{__mkdir_p} %{buildroot}%{_sysconfdir}/debsig/policies/DDB6787D850B1239/
+%{__cp} gpg/debsig.pol %{buildroot}%{_sysconfdir}/debsig/policies/DDB6787D850B1239/
 %endif
 
 %files

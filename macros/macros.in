@@ -39,7 +39,6 @@
 %__gzip			/bin/gzip
 %__id			/usr/bin/id
 %__id_u			%{__id} -u
-%__install		/usr/bin/install
 %__ldd			/usr/bin/ldd
 %__ln_s			/bin/ln -s
 %__lsb_release		/usr/bin/lsb_release
