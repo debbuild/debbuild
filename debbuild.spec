@@ -58,6 +58,7 @@ for i in debbuild Makefile; do %{__sed} "s/\@VERSION\@/%{version}/" -i $i; done
 
 %install
 # Steps to install to a temporary location for packaging
+%{__rm} -rf %{buildroot}
 %make_install
 %{__mkdir_p} %{buildroot}%{_libdir}/%{name}/macros.d
 %{__cp} macros/macros.in %{buildroot}%{_libdir}/%{name}/macros
