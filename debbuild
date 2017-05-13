@@ -1340,10 +1340,10 @@ sub binpackage {
         next unless $content;
 
         # glob all %files lines if necessary
-        # attow, only '*' globs in the rightmost blob are recognized
+        # attow, only a rightmost '*' glob is recognized
         # more complicated replacements would require 'bsd_glob()'
         foreach my $inline (split /^/, $content) {
-          next unless $inline =~ m/\*/;
+          next unless $inline =~ m/\*$/;
           my ($pre,$glob) = $inline =~ m/(.*\s)(\S+)/;
           my @globbed = glob("$specglobals{buildroot}$glob");
           (my $outline = $pre . join("\n$pre", @globbed) . "\n") =~
