@@ -87,6 +87,8 @@ my %targets = ('p' => 'Prep',
 # As copied from rpm
 my %optflags = ( 'i386' => '-O2 -g -march=i386 -mcpu=i686',
 		'amd64'	=> '-O2 -g',
+		'arm64'	=> '-O2 -g',
+		'armhf'	=> '-O2 -g -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16',
 		  'all'	=> '');
 
 
