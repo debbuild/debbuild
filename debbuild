@@ -1,5 +1,4 @@
 #!/usr/bin/perl -w
-use Data::Dumper;
 # debbuild script
 # Shamelessly steals interface from rpm's "rpmbuild" to create
 # Debian packages.  Please note that such packages are highly
@@ -1327,7 +1326,6 @@ sub binpackage {
 	$conffile = expandmacros($conffile);
 	foreach (glob "$specglobals{buildroot}/$pkg/$conffile") {
 	  (my $buildroot = $specglobals{buildroot}) =~ s/([+])/\\$1/g;
-print Dumper($specglobals{buildroot},$buildroot);
 	  s|$buildroot/$pkg/||g;	# nrgl.  gotta be a better way to do this...
 	  s/\s+/\n/g;	# Not gonna support spaces in filenames.  Ewww.
 	  print CONFLIST "$_\n";
@@ -1732,7 +1730,7 @@ sub expandmacros {
   s/url2path/u2p/g;
   while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ } bracelet() ) {
     no strict qw(refs); # we use strings as function refs
-    (my $initvalue = "%{$prefix:$arg}") =~ s/([?!{}])/\\$1/g; # neutralize specials
+    (my $initvalue = "%{$prefix:$arg}") =~ s/([?!{+}])/\\$1/g; # neutralize specials
     $arg = expandmacros($arg);
     if ($prefix =~ /u2p/) {
       # curious form of 'basename'? - strip domain host (and port)
@@ -1760,7 +1758,7 @@ sub expandmacros {
 CONDMAC: while (my ($qex,$macro,$value) = map { /{([?!]+)(\w+)(?::(.+))?}/ }
       bracelet() ) {
     (my $initvalue = "%{$qex$macro".(defined $value ? ":$value" : '').'}')
-      =~ s/([?!{}()*+])/\\$1/g; # neutralize quantifiers
+      =~ s/([?!{*}(+)])/\\$1/g; # neutralize quantifiers
     $value //= ($specglobals{$macro} or '');
     $value = '' unless $specglobals{$macro} xor $qex =~ /!/; # equivalence
     s/$initvalue/expandmacros($value)/eg;
@@ -1818,7 +1816,7 @@ sub handle_macro_options {
   while (my ($qex,$arg,$value) = map { /{([?!]+)(\d+)(?::(.+))?}/ }
       bracelet() ) { # handle '%{?2:%{2}}' et al.
     (my $initvalue = "%{$qex$arg".(defined $value ? ":$value" : '').'}')
-      =~ s/([?!{}])/\\$1/g; # neutralisation
+      =~ s/([?!{+}])/\\$1/g; # neutralisation
     $value //= "%{$arg}";
     $value = '' unless defined $nonoptions[$arg-1] xor $qex =~ /!/; # equivalence
     s/$initvalue/$value/g;
