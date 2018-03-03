@@ -1349,8 +1349,9 @@ sub binpackage {
           next unless $inline =~ m/\*$/;
           my ($pre,$glob) = $inline =~ m/(.*\s)(\S+)/;
           my @globbed = glob("$specglobals{buildroot}$glob");
+          (my $savebuildroot = $specglobals{buildroot}) =~ s/([+])/\\$1/g;
           (my $outline = $pre . join("\n$pre", @globbed) . "\n") =~
-            s/$specglobals{buildroot}//mg;
+            s/$savebuildroot//mg;
           $inline =~ s/([*])/\\$1/g;
           $content =~ s/$inline/$outline/m;
         }
