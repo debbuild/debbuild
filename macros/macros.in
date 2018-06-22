@@ -45,7 +45,7 @@
 %__lsb_release		/usr/bin/lsb_release
 %__make			/usr/bin/make
 %__mkdir		/bin/mkdir
-%__mkdir_p		/bin/mkdir -p
+%__mkdir_p		%{__mkdir} -p
 %__mv			/bin/mv
 %__patch		/usr/bin/patch
 %__pax			/bin/pax
@@ -182,9 +182,9 @@ package or when debugging this package.\
 #	Macros that are specific to an individual platform. The values here
 #	will be used if the per-platform macro file does not exist..
 #
+%_vendor		debbuild
 %_arch			%(%{__dpkg_architecture} -qDEB_HOST_ARCH)
 %_build_arch		%(%{__dpkg_architecture} -qDEB_BUILD_ARCH)
-%_vendor		debbuild
 %_os			%(%{__dpkg_architecture} -qDEB_HOST_ARCH_OS)
 
 #==============================================================================
@@ -397,5 +397,6 @@ package or when debugging this package.\
 %apply_patch(qp:m:)\
 test -f %{1} || exit 1;\
 %{uncompress:%{1}} | %{expand:%{__scm_apply_%{__scm} %{-q} %{-p:-p%{-p*}} %{-m:-m%{-m*}}}}
+
 # \endverbatim
 #*/
