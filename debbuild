@@ -83,13 +83,10 @@ my %targets = ('p' => 'Prep',
 		'a' => 'Build binary and source',
 		'b' => 'Build binary',
 		's' => 'Build source');
+
 # Ah, the joys of multiple architectures.  :(  Feh.
-# As copied from rpm
-my %optflags = ( 'i386' => '-O2 -g -march=i386 -mcpu=i686',
-		'amd64'	=> '-O2 -g',
-		'arm64'	=> '-O2 -g',
-		'armhf'	=> '-O2 -g -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16',
-		  'all'	=> '');
+# Compiler options will be loaded from 'debrc' file(s).
+my %optflags = ('all'	=> '');
 
 
 #### main ####
@@ -100,6 +97,7 @@ my %optflags = ( 'i386' => '-O2 -g -march=i386 -mcpu=i686',
 # -> Parse command line for options, spec file/tarball/.src.deb (NB - also accept .src.rpm)
 
 load_config();
+config_debrc();
 lsb_detection();
 parse_cmd();
 
@@ -225,6 +223,26 @@ sub load_config {
     close MACROS;
   }
 } # end load_config()
+
+
+## config_debrc()
+# Load default configuration similar to RPM which digests global configuration
+# /usr/lib/rpm/rpmrc, per-system configuration /etc/rpmrc and per-user
+# configuration ~/.rpmrc. ATTOW, only 'optflags' are loaded.
+sub config_debrc {
+  # Load default configuration, permitting local override
+  my $homedir = $ENV{HOME} // $ENV{LOGDIR} // (getpwuid($<))[7];
+  foreach my $macros ( ('/usr/lib/debbuild/debrc',
+                        '/etc/debrc',
+                        "$homedir/.debrc") ) {
+    open MACROS,$macros or next; # should we warn about missing macro files?
+    while (<MACROS>) {
+      next unless my ($flag,$value) = /^optflags:\s+(\w+)\s+(.+)$/;
+      $optflags{$flag} = $value;
+    }
+    close MACROS;
+  }
+} # end config_debrc()
 
 
 ## lsb_detection()
