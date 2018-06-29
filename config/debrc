@@ -1,0 +1,17 @@
+#/*! \page config_debrc Default configuration: /usr/lib/debbuild/debrc
+# \verbatim
+#
+# This is a global DEBBUILD configuration file. All changes made here will be
+# lost when the debbuild package is upgraded. Any per-system configuration
+# should be added to /etc/debrc, while per-user configuration should be added
+# to ~/.debrc.
+#
+#############################################################
+
+optflags: i386 -O2 -g -march=i386 -mcpu=i686
+optflags: amd64 -O2 -g
+optflags: arm64 -O2 -g
+optflags: armhf -O2 -g -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3-d16
+
+# \endverbatim
+#*/
