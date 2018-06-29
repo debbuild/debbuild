@@ -5,7 +5,7 @@ use warnings;
 
 use Data::Dumper;
 
-my %optflags;
+my %optflags = ('all' => '');
 
 ## config_debrc()
 # Load default configuration similar to RPM which digests global configuration
