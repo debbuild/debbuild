@@ -9,7 +9,7 @@
 
 Name: debbuild
 Summary: Build Debian-compatible .deb packages from RPM .spec files
-Version: 18.5.0
+Version: 18.6.0
 Release: ascherer.%{dist}
 
 Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
@@ -66,6 +66,7 @@ for i in debbuild Makefile; do %{__sed} "s/\@VERSION\@/%{version}/" -i $i; done
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/%{name}
 %{__cp} macros/macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
 %{__cp} macros/macros.texlive %{buildroot}%{_sysconfdir}/%{name}
+%{__cp} config/debrc %{buildroot}%{_libdir}/%{name}
 %if %{with signature}
 %{__mkdir_p} %{buildroot}%{_datadir}/debsig/keyrings/DDB6787D850B1239/
 %{__gpg} --keyserver pgp.mit.edu --no-default-keyring --keyring \
@@ -82,6 +83,7 @@ for i in debbuild Makefile; do %{__sed} "s/\@VERSION\@/%{version}/" -i $i; done
 %{_libdir}/%{name}/macros
 %{_libdir}/%{name}/macros.d/*
 %{_sysconfdir}/%{name}/macros.*
+%{_libdir}/%{name}/debrc
 %if %{with signature}
 %attr(664,root,root) %{_datadir}/debsig/keyrings/DDB6787D850B1239/debsig.gpg
 %{_sysconfdir}/debsig/policies/DDB6787D850B1239/debsig.pol
