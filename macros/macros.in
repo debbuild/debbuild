@@ -38,14 +38,14 @@
 %__gpg			/usr/bin/gpg
 %__gzip			/bin/gzip
 %__id			/usr/bin/id
-%__id_u			%{__id} -u
+%__id_u			/usr/bin/id -u
 %__install		/usr/bin/install
 %__ldd			/usr/bin/ldd
 %__ln_s			/bin/ln -s
 %__lsb_release		/usr/bin/lsb_release
 %__make			/usr/bin/make
 %__mkdir		/bin/mkdir
-%__mkdir_p		%{__mkdir} -p
+%__mkdir_p		/bin/mkdir -p
 %__mv			/bin/mv
 %__patch		/usr/bin/patch
 %__pax			/bin/pax
