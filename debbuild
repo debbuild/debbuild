@@ -1152,13 +1152,14 @@ sub execute_script {
   $build_template =~ s/set -x/set +x/ unless $verbosity;
   print SCRIPT $build_template;
   print SCRIPT expandmacros($script{$stage});
+  print SCRIPT expandmacros('%{___build_post}');
   close SCRIPT;
 
   # execute
-  print 'Calling '.($what or "%$stage")." script $scriptfile".
-    ($for or '')."...\n" if $verbosity;
-  system($scriptfile . ($verbosity > 1 ? '' : ' >/dev/null 2>&1'))
-    and die "Can't exec: $!\n";
+  print "Executing(".($what or "%$stage")."): " . expandmacros('%{___build_cmd}') ." ". $scriptfile.
+    ($for or '')."\n" if $verbosity;
+  system(expandmacros('%{___build_cmd}') .' '. $scriptfile . ($verbosity > 1 ? '' : ' >/dev/null 2>&1'))
+    and die "Exec of $scriptfile failed (%$stage): $?\n";
 
   # and clean up
   unlink $scriptfile;
