@@ -1148,11 +1148,10 @@ sub execute_script {
   my $scriptfile = expandmacros('%{_tmppath}')."/deb-tmp.$stage.".int(rand(99998)+1);
   sysopen(SCRIPT, $scriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW, 0777)
     or die "Can't open/create ".($what or $stage)."script file $scriptfile: $!\n";
+  $specglobals{___build_body} = $script{$stage};
   my $build_template = expandmacros('%{___build_template}');
   $build_template =~ s/set -x/set +x/ unless $verbosity;
   print SCRIPT $build_template;
-  print SCRIPT expandmacros($script{$stage});
-  print SCRIPT expandmacros('%{___build_post}');
   close SCRIPT;
 
   # execute

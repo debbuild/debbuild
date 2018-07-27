@@ -219,16 +219,14 @@ package or when debugging this package.\
   cd \"%{u2p:%{_builddir}}\"\
 
 
-#%___build_body		%{nil}
+%___build_body		%{nil}
 %___build_post		exit $?
 
 %___build_template	#!%{___build_shell}\
 %{___build_pre}\
+%{___build_body}\
+%{___build_post}\
 %{nil}
-
-#%{___build_body}\
-#%{___build_post}\
-#%{nil}
 
 #==============================================================================
 # ---- configure macros.
