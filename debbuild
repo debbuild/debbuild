@@ -499,17 +499,17 @@ LINE: while (<$fh>) {
     }
 
     # RPM conditionals - transform to generic form
-    if (s/^%if(arch|os)\s+//) {
+    if (s/^\s*%if(arch|os)\s+//) {
       my @args = map { "%{_$1}==$_" } split /[\s,]+/;
       $_ = '%if ' . join '||', @args;
     }
-    if (s/^%ifn(arch|os)\s+//) {
+    if (s/^\s*%ifn(arch|os)\s+//) {
       my @args = map { "%{_$1}!=$_" } split /[\s,]+/;
       $_ = '%if ' . join '&&', @args;
     }
 
     # Generic %if..%else..%endif construct
-    if (s/^%if//) {
+    if (s/^\s*%if//) {
       chomp( my $expr = lc expandmacros($_) );
 
       if ($expr =~ /^[\d\s<=>&|\(\)+-]+$/) {
@@ -538,34 +538,34 @@ LINE: while (<$fh>) {
       next LINE if $ifexpr[-1]; # This appears to be the only case we call false.
       my $iflevel = @ifexpr;
       while (<$fh>) { # Skip %if-block, inluding nested %if..%else..%endif
-        if (/^%if/) {
+        if (/^\s*%if/) {
           $iflevel++;
-        } elsif (/^%else/) {
+        } elsif (/^\s*%else/) {
           goto ELSE if $iflevel == @ifexpr;
-        } elsif (/^%endif/) {
+        } elsif (/^\s*%endif/) {
           goto ENDIF if $iflevel == @ifexpr;
           $iflevel--;
         }
       }
       die "Unmatched %if at end of file. Missing %else/%endif.\n";
     }
-ELSE: if (/^%else/) {
+ELSE: if (/^\s*%else/) {
       die "Unmatched %else in line $.. Missing %if.\n" unless @ifexpr;
       next LINE unless $ifexpr[-1];
       my $iflevel = @ifexpr;
       while (<$fh>) { # Skip %else-block, inluding nested %if..%else..%endif
-        if (/^%if/) {
+        if (/^\s*%if/) {
           $iflevel++;
-        } elsif (/^%else/) {
+        } elsif (/^\s*%else/) {
           goto ELSE if $iflevel == @ifexpr;
-        } elsif (/^%endif/) {
+        } elsif (/^\s*%endif/) {
           goto ENDIF if $iflevel == @ifexpr;
           $iflevel--;
         }
       }
       die "Unmatched %else at end of file. Missing %endif.\n";
     }
-ENDIF: if (/^%endif/) {
+ENDIF: if (/^\s*%endif/) {
       die "Unmatched %endif in line $.. Missing %if/%else.\n" unless @ifexpr;
       pop @ifexpr;
     } # %if..%else..%endif

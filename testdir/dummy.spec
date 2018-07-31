@@ -127,6 +127,9 @@ echo PREP
 ls %{mklibname test 1 -d 0 -s}-whatever
 %systemd_preun foo.service bar.service
 %{echo:%{libname}}
+  %if 1
+    echo "Hello, indented."
+  %endif
 %endif
 
 %build
