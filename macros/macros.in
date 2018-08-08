@@ -363,7 +363,7 @@ package or when debugging this package.\
 %{__git} config user.name "%{__scm_username}"\
 %{__git} config user.email "%{__scm_usermail}"\
 %{__git} add .\
-%{__git} commit %{-q} -a --author "%{__scm_author}" -m "%{name}-%{version} base"
+%{__git} commit %{-q} --allow-empty -a --author "%{__scm_author}" -m "%{name}-%{version} base"
 
 %__scm_apply_git(qp:m:)\
 %{__git} apply --index %{-p:-p%{-p*}} -\
