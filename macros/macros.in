@@ -277,9 +277,6 @@ package or when debugging this package.\
 # directory structure (--prefix, --libdir etc) and compiler flags
 # such as CFLAGS.
 #
-# The configure macro should be invoked as %configure (rather than %{configure})
-# because the rest of the arguments will be expanded using %*.
-#
 %_configure ./configure
 %configure \
   CFLAGS="${CFLAGS:-%optflags}" ; export CFLAGS ; \
