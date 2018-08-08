@@ -27,7 +27,7 @@ Packager: Andreas Scherer <https://ascherer.github.io/>
 Requires: dpkg-dev, perl, fakeroot
 %if %{_vendor} == "debbuild"
 Requires: lsb-release
-Recommends: bzip2, gzip, xz-utils, unzip, zip
+Recommends: bzip2, gzip, xz-utils, unzip, zip, zstd
 Recommends: git, patch, pax, quilt
 %if %{with signature}
 BuildRequires: gnupg

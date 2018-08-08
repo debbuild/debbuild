@@ -57,6 +57,7 @@
 %__unzip		/usr/bin/unzip
 %__xargs		/usr/bin/xargs
 %__xz			/usr/bin/xz
+%__zstd			/usr/bin/zstd
 
 #==============================================================================
 # Conditional build stuff.
