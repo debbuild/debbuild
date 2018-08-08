@@ -175,7 +175,7 @@ package or when debugging this package.\
 %_default_patch_fuzz	0
 
 #	Default patch flags
-#%_default_patch_flags	-s
+%_default_patch_flags	--no-backup-if-mismatch
 
 #==============================================================================
 # ---- per-platform macros.
