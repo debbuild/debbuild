@@ -1049,7 +1049,7 @@ sub uncompress {
   my ($patchfile) = @_;
   return (
     # Compressed patch.  You weirdo.
-    $patchfile =~ /\.(?:Z|gz|bz2|xz)$/ ? decompress($patchfile) :
+    $patchfile =~ /\.(?:Z|gz|bz2|xz|zst)$/ ? decompress($patchfile) :
     # .zip'ed patch.  *backs away slowly*
     $patchfile =~ /\.zip$/ ? "%{__unzip} -p $patchfile" :
     # else uncompressed patch
