@@ -9,8 +9,7 @@
 
 Name: debbuild
 Summary: Build Debian-compatible .deb packages from RPM .spec files
-Version: 18.7.0
-Release: ascherer.%{dist}
+Version: 18.8.0
 
 Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
 URL: https://github.com/ascherer/debbuild
@@ -23,6 +22,7 @@ Group: Development/Tools/Building
 %endif
 License: GPLv2+
 Packager: Andreas Scherer <https://ascherer.github.io/>
+Release: ascherer.%{dist}
 
 Requires: dpkg-dev, perl, fakeroot
 %if %{_vendor} == "debbuild"
