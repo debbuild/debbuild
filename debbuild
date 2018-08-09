@@ -486,7 +486,7 @@ LINE: while (<$fh>) {
     if ((/^%([a-z_]+)/ and not grep { /$1/ } qw(build changelog check clean
 	config copyrightdata description files ghost install package patch
 	post postun pre prep preun setup verify))
-	or # And then a set of %-tags that are permitted in more liberal layouts:
+	and # And then a set of %-tags that are permitted in more liberal layouts:
 	(/^\s*%([a-z_]+)/ and not grep { /$1/ } qw(attr autopatch autosetup
 	bcond_with bcond_without configure defattr define dir doc docdir
 	dump else endif exclude global if ifarch ifnarch ifnos ifos
