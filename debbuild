@@ -482,17 +482,20 @@ LINE: while (<$fh>) {
 # notes:  some of these are not *entirely* case-sensitive (%ifxxx), but most are.
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
-    if (/^%([a-z_]+)/ and not grep { /$1/ } qw(attr autopatch autosetup
-	bcond_with bcond_without build changelog check clean config
-	configure copyrightdata defattr define description dir doc docdir
-	dump else endif exclude files ghost global if ifarch ifnarch ifnos ifos
-	include install license make_build make_install makeinstall package patch
-	post postun pre prep preun readme setup triggerin triggerpostun
-	triggerun undefine verify verifyscript)) {
+    # First a set of %-tags that are required to be used flush-left:
+    if ((/^%([a-z_]+)/ and not grep { /$1/ } qw(build changelog check clean
+	config copyrightdata description files ghost install package patch
+	post postun pre prep preun setup verify))
+	or # And then a set of %-tags that are permitted in more liberal layouts:
+	(/^\s*%([a-z_]+)/ and not grep { /$1/ } qw(attr autopatch autosetup
+	bcond_with bcond_without configure defattr define dir doc docdir
+	dump else endif exclude global if ifarch ifnarch ifnos ifos
+	include license make_build make_install makeinstall readme
+	triggerin triggerpostun triggerun undefine verifyscript))) {
       if (defined $specglobals{$1}) {
         # This looks like a user-defined macro, possibly with arguments.
         # Wrap the whole thing in curly braces for easier processing.
-        s/^%(.+)$/%{$1}/ if defined $macroopts{$1};
+        s/^\s*%(.+)\s*$/%{$1}/ if defined $macroopts{$1};
       } else {
         die "Unknown tag '%$1' at line $. of $specfile\n";
       }
@@ -571,22 +574,22 @@ ENDIF: if (/^\s*%endif/) {
     } # %if..%else..%endif
 
 ### Diagnostics '%{macros}'; these should actually be handled in expandmacros()
-    elsif (/^%\{echo:(.+)}/) {
+    elsif (/^\s*%\{echo:(.+)}/) {
       print expandmacros($1)."\n";
-    } elsif (/^%\{warn:(.+)}/) {
+    } elsif (/^\s*%\{warn:(.+)}/) {
       warn expandmacros($1)."\n";
-    } elsif (/^%\{error:(.+)}/) {
+    } elsif (/^\s*%\{error:(.+)}/) {
       die expandmacros($1)."\n";
     }
 
 ### Single-line %commands
     # Multi-level submodules
-    elsif (/^%include\s+(.+)/) {
+    elsif (/^\s*%include\s+(.+)/) {
       parse_spec(expandmacros($1),$stage,$subname,$scriptlet);
     }
 
     # %{perl:interpreter}
-    elsif (/^%\{perl:(.+)}/) {
+    elsif (/^\s*%\{perl:(.+)}/) {
       my $perl = expandmacros('%{_tmppath}')."/deb-tmp.perl.".int(rand(99998)+1);
       do {
         local *STDOUT;
@@ -599,12 +602,12 @@ ENDIF: if (/^\s*%endif/) {
     }
 
     # Print the active macro table
-    elsif (/^%dump/) {
+    elsif (/^\s*%dump/) {
       print "%$_ ==> $specglobals{$_}\n" for (sort keys %specglobals);
     }
 
     # Preprocess %define's and Conditional Build Stuff
-    elsif (/^%(?:(?:un)?define|global|bcond_with(?:out)?)\s/) {
+    elsif (/^\s*%(?:(?:un)?define|global|bcond_with(?:out)?)\s/) {
       expandmacros($_);
     }
 
@@ -705,7 +708,7 @@ ENDIF: if (/^\s*%endif/) {
       # Actual handling for %prep section.  May have %setup macro, may include
       # %patch tags, may be just a bare shell script.
       # %autosetup and %autopatch are supported, too.
-      if (s/^%((?:auto)?(?:setup|patch))//) {
+      if (s/^%((?:setup|patch))// or s/^\s*%((?:auto)(?:setup|patch))//) {
         no strict qw(refs); # we use strings as function refs
         $script{$stage} .= "process_$1"->();
       } else {
@@ -722,7 +725,7 @@ ENDIF: if (/^\s*%endif/) {
     } # prepost
 
     elsif ($stage eq 'files') {
-      if (/^%defattr         # lot of formatting whitespace permitted
+      if (/^\s*%defattr      # lot of formatting whitespace permitted
           \s*\(\s*           # opening and closing parentheses; required
             (-|\d+)          # (1) file mode, numeric (octal) or '-'
           [\s,]+             # field separator, comma or space
@@ -734,7 +737,7 @@ ENDIF: if (/^\s*%endif/) {
           \s*\)/x) {
         ($defattr{filemode}, $defattr{owner}, $defattr{group}) = ($1, $2, $4);
          $defattr{dirmode} = ($6 or $defattr{filemode}); # default directory setting is optional
-      } elsif (/^%exclude/) {
+      } elsif (/^\s*%exclude/) {
         warn "'%exclude' keyword found, ignoring input line\n";
       } else {
         process_filesline($subname);
@@ -1066,10 +1069,10 @@ sub process_filesline {
     ($defattr{filemode}, $defattr{owner}, $defattr{group}, '-');
 
   # Debian dpkg doesn't speak "%docdir".  Meh.
-  my $dir_only = s/^%(?:dir|docdir)\s*//;
+  my $dir_only = s/^\s*%(?:dir|docdir)\s*//;
 
   # strip and flag %attr constructs ... and wipe it when we're done.
-  if (s/^%attr           # lot of formatting whitespace permitted
+  if (s/^\s*%attr        # lot of formatting whitespace permitted
       \s*\(\s*           # opening and closing parentheses; required
         (-|\d+)          # (1) file mode, numeric (octal) or '-'
       [\s,]+             # field separator, comma or space
@@ -1700,7 +1703,7 @@ sub expandmacros {
   local ($_) = @_;
   return $_ unless /%/; # nothing to substitute
 
-  goto CONDMAC if m/^%\{[?!]+/; # OMG: Conditional macros everywhere!
+  goto CONDMAC if m/^\s*%\{[?!]+/; # OMG: Conditional macros everywhere!
 
   # Process %define's and Conditional Build Stuff
   s/%(bcond_with(?:out)?)\s+(\S+)/%{$1 $2}/g;
