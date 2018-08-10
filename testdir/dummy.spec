@@ -122,9 +122,9 @@ echo PREP
 %endif
 
 %if %{_vendor} == "debbuild"
-%mklibsymbols test 42
-%mklibname test 1 -d 0 -s
-ls %{mklibname test 1 -d 0 -s}-whatever
+%{echo:%mklibsymbols test 42}
+%{echo:%mklibname test 1 -d 0 -s}
+%{echo:%{mklibname test 1 -d 0 -s}-whatever}
 %systemd_preun foo.service bar.service
 %{echo:%{libname}}
   %if 1
