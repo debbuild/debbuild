@@ -573,7 +573,7 @@ ENDIF: if (/^\s*%endif/) {
       pop @ifexpr;
     } # %if..%else..%endif
 
-### Diagnostics '%{macros}'; these should actually be handled in expandmacros()
+### Diagnostics '%{macros}'; react immediately to these items
     elsif (/^\s*%\{echo:(.+)}/) {
       print expandmacros($1)."\n";
     } elsif (/^\s*%\{warn:(.+)}/) {
