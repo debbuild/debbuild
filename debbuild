@@ -1703,7 +1703,18 @@ sub expandmacros {
   local ($_) = @_;
   return $_ unless /%/; # nothing to substitute
 
-  goto CONDMAC if m/^\s*%\{[?!]+/; # OMG: Conditional macros everywhere!
+  # support for **some** %if constructs: handle '%{?conditional:macros}'
+  # with nested curly braces, all in one go!
+  while (my ($qex,$macro,$value) = map { /{([?!]+)(\w+)(?::(.+))?}/ }
+      bracelet() ) {
+    (my $initvalue = "%{$qex$macro".(defined $value ? ":$value" : '').'}')
+      =~ s/([?!{*}(+)])/\\$1/g; # neutralize quantifiers
+    $value //= ($specglobals{$macro} or '');
+    $value = '' unless $specglobals{$macro} xor $qex =~ /!/; # equivalence
+    s/$initvalue/expandmacros($value)/eg;
+  }
+  pos = 0; # reset to start of $_
+
 
   # Process %define's and Conditional Build Stuff
   s/%(bcond_with(?:out)?)\s+(\S+)/%{$1 $2}/g;
@@ -1775,18 +1786,6 @@ sub expandmacros {
       # helper for parametrized macros
       s/$initvalue/$arg/g;
     }
-  }
-  pos = 0; # reset to start of $_
-
-  # support for **some** %if constructs: handle '%{?conditional:macros}'
-  # with nested curly braces, all in one go!
-CONDMAC: while (my ($qex,$macro,$value) = map { /{([?!]+)(\w+)(?::(.+))?}/ }
-      bracelet() ) {
-    (my $initvalue = "%{$qex$macro".(defined $value ? ":$value" : '').'}')
-      =~ s/([?!{*}(+)])/\\$1/g; # neutralize quantifiers
-    $value //= ($specglobals{$macro} or '');
-    $value = '' unless $specglobals{$macro} xor $qex =~ /!/; # equivalence
-    s/$initvalue/expandmacros($value)/eg;
   }
   pos = 0; # reset to start of $_
 
