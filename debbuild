@@ -1715,7 +1715,6 @@ sub expandmacros {
   }
   pos = 0; # reset to start of $_
 
-
   # Process %define's and Conditional Build Stuff
   s/%(bcond_with(?:out)?)\s+(\S+)/%{$1 $2}/g;
   # Store %globals (from '%bcond_with[out]()' in 'macros[.in]')
@@ -1789,7 +1788,16 @@ sub expandmacros {
   }
   pos = 0; # reset to start of $_
 
-  simplemacros();
+  # Expand 'simple' '%{macros}': %define's and %{all_the_rest}
+  while (/%\{([a-z_]\w+)}/ig) {
+    my $key = $1;
+    if (defined $specglobals{$key}) {
+      s/%\{$key}/expandmacros($specglobals{$key})/eg;
+    } elsif (defined $pkgdata{main}{$key}) {
+      s/%\{$key}/expandmacros($pkgdata{main}{$key})/eg;
+    }
+  }
+  pos = 0; # reset to start of $_
 
   # unescape multi-line macros
   s/\\"/"/g;
@@ -1806,21 +1814,6 @@ sub bracelet {
   return extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]);
 } # end bracelet()
 
-
-## simplemacros()
-# Expand 'simple' '%{macros}': %define's and %{all_the_rest}
-sub simplemacros {
-  return unless m/%/;
-  while (/%\{([a-z_]\w+)}/ig) {
-    my $key = $1;
-    if (defined $specglobals{$key}) {
-      s/%\{$key}/expandmacros($specglobals{$key})/eg;
-    } elsif (defined $pkgdata{main}{$key}) {
-      s/%\{$key}/expandmacros($pkgdata{main}{$key})/eg;
-    }
-  }
-  pos = 0; # reset to start of $_
-} # end simplemacros()
 
 ## handle_macro_options()
 # Option handling for '%macro(ino:pts)'.
