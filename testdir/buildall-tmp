@@ -38,7 +38,7 @@ done
 printf "\n\nbuilding cwebbin with makemake patch\n\n"
 $builder -b$stage SPECS/cwebbin.spec $verbose
 
-for extension in tgz tar tar.bz2 tar.gz tar.xz zip
+for extension in tgz tar tar.bz2 tar.gz tar.xz tar.zst zip
 do
 	[ $builder != "debbuild" ] && [ $extension = "zip" ] && break
 	printf "\n\nbuilding from advent-1.0.%s\n\n" "$extension"
