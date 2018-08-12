@@ -50,7 +50,7 @@ my %defattr = (filemode => '-',
 		dirmode => '-');
 
 # Scriptlets
-my %script = ( prep => '',
+my %script = (prep => '',
 		build => '',
 		install => '',
 		check => '',
@@ -76,17 +76,17 @@ my @buildrequires;
 my @buildconflicts;
 
 # "Constants"
-my %targets = ('p' => 'Prep',
-		'c' => 'Compile',
-		'i' => 'Install',
-		'l' => 'Verify %files',
-		'a' => 'Build binary and source',
-		'b' => 'Build binary',
-		's' => 'Build source');
+my %targets = (p => 'Prep',
+		c => 'Compile',
+		i => 'Install',
+		l => 'Verify %files',
+		a => 'Build binary and source',
+		b => 'Build binary',
+		s => 'Build source');
 
 # Ah, the joys of multiple architectures.  :(  Feh.
 # Compiler options will be loaded from 'debrc' file(s).
-my %optflags = ('all'	=> '');
+my %optflags = (all => '');
 
 
 #### main ####
@@ -105,7 +105,7 @@ print "This is debbuild, Version $version\n";
 
 # global shortcuts
 my $topdir = expandmacros('%{_topdir}');
-$verbosity //= expandmacros("%{?_default_verbosity}%{!?_default_verbosity:0}");
+$verbosity //= expandmacros('%{?_default_verbosity}%{!?_default_verbosity:0}');
 
 if ($cmdopts{type} eq 's') {
   install_sdeb($specglobals{srcpkg});
@@ -486,7 +486,7 @@ LINE: while (<$fh>) {
     if ((/^%([a-z_]+)/ and not grep { /$1/ } qw(build changelog check clean
 	config copyrightdata description files ghost install package patch
 	post postun pre prep preun setup verify))
-	and # And then a set of %-tags that are permitted in more liberal layouts:
+	and # then a set of %-tags that are permitted in more liberal layouts:
 	(/^\s*%([a-z_]+)/ and not grep { /$1/ } qw(attr autopatch autosetup
 	bcond_with bcond_without configure defattr define dir doc docdir
 	dump else endif exclude global if ifarch ifnarch ifnos ifos
@@ -820,11 +820,11 @@ sub process_autosetup {
   my $plevel = $1 if s/\s+-p\s*(\d+)//;
   my $verbose = s/\s+-v//; $_ .= ($verbose ? '': ' -q');
   my $noautopatch = s/\s+-N//; # Eat '-N', which is unknown to %setup
-  $specglobals{'__scm'} = $1 if s/\s+\-S\s+(\w+)//; # dito '-S'
+  $specglobals{__scm} = $1 if s/\s+\-S\s+(\w+)//; # dito '-S'
   # Generic %setup invocation
   my $script = process_setup(); # hmm, how to fall to '%setup'?
   # Do SCM stuff
-  my $scm = $specglobals{'__scm'};
+  my $scm = $specglobals{__scm};
   die "%autosetup: option '-S $scm' currently not supported at line $..\n"
     unless $specglobals{"__scm_setup_$scm"};
   $script .= "%{__scm_setup_$scm".($verbose ? '' : ' -q')."}\n";
@@ -846,7 +846,7 @@ sub process_autopatch {
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
   my $script = '';
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
-    my $patchfile = qq(%{_sourcedir}/$pkgdata{main}{$patches[0]});
+    my $patchfile = "%{_sourcedir}/$pkgdata{main}{$patches[0]}";
     $script .= apply_patch($verbose,$plevel,$patchfile,1);
   } else { # now you're talkin', brother!
     my $k = 1;
@@ -925,7 +925,7 @@ sub process_setup {
     $setupscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
   }
 
-  return $setupscript .= qq(%{__chmod} -Rf a+rX,u+w,go-w .\n);
+  return $setupscript .= "%{__chmod} -Rf a+rX,u+w,go-w .\n";
 } # end process_setup()
 
 
@@ -943,7 +943,7 @@ sub unpackcmd {
          "'%{_sourcedir}/$sourcedrop'" :
       decompress("%{_sourcedir}/$sourcedrop").
           ' | %{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f -' ).
-      qq(\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n);
+      "\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n";
 } # end unpackcmd()
 
 
@@ -984,7 +984,7 @@ sub extract_specfile {
      $tarball =~ /\.tar$/ ? # plain .tar files don't need to be uncompressed
         q(%{__tar} -xOf %{tarball} --wildcards '*.spec') :
      decompress($tarball).q( | %{__tar} -xOf - --wildcards '*.spec') ).
-     qq( > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir});
+     " > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir}";
 } # end extract_specfile()
 
 
@@ -1041,7 +1041,7 @@ sub process_patch {
     $patchscript .= q(%{__echo} "Patch ).($pnum eq '' ? '' : "#$pnum ");
     $pnum = expandmacros("%{patch$pnum}");
     $patchscript .= q|(|.basename($pnum).qq|):"\n|;
-    $patchscript .= qq(%{uncompress:$pnum} | %{__patch} $patchopts\n\n);
+    $patchscript .= "%{uncompress:$pnum} | %{__patch} $patchopts\n\n";
   }
   return $patchscript;
 } # end process_patch()
@@ -1502,7 +1502,7 @@ sub srcpackage {
   }
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
-    $paxcmd .= qq(SOURCES/$pkgdata{main}{$patches[0]});
+    $paxcmd .= "SOURCES/$pkgdata{main}{$patches[0]}";
   } else { # now you're talkin', brother!
     $paxcmd .= join(' ', map { qq(SOURCES/$pkgdata{main}{"patch$_"}) }
       sort { $a =~ s/patch//; $b =~ s/patch//; $a <=> $b } @patches);
