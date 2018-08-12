@@ -112,6 +112,12 @@
 #	These are the default values that can be overridden by other
 #	(e.g. per-platform, per-system, per-packager, per-package) macros.
 #
+#	The directory where debbuild's configuration and scripts live
+%_debconfigdir		%{getconfdir}
+
+#       The directory where debbuild's macro files live
+%_debmacrodir		%{_debconfigdir}/macros.d
+
 #	The directory where sources/patches will be unpacked and built.
 %_builddir		%{_topdir}/BUILD
 
