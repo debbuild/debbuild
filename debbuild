@@ -847,11 +847,12 @@ sub process_autopatch {
   my $script = '';
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
     my $patchfile = qq(%{_sourcedir}/$pkgdata{main}{$patches[0]});
-    $script .= apply_patch($verbose,$plevel,$patchfile);
+    $script .= apply_patch($verbose,$plevel,$patchfile,1);
   } else { # now you're talkin', brother!
+    my $k = 1;
     for (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
       my $patchfile = qq(%{_sourcedir}/$pkgdata{main}{"patch$_"});
-      $script .= apply_patch($verbose,$plevel,$patchfile);
+      $script .= apply_patch($verbose,$plevel,$patchfile,$k++);
     }
   }
   return $script;
@@ -861,11 +862,11 @@ sub process_autopatch {
 ## apply_patch()
 # Hard-coded variant of RPM's macro of the same name.
 sub apply_patch {
-  my ($verbose,$plevel,$patchfile) = @_;
+  my ($verbose,$plevel,$patchfile,$ordinal) = @_;
   return "test -f $patchfile || exit 1;\n".
     "%{uncompress:$patchfile} | %{__scm_apply_$specglobals{__scm}".
       ($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
-      " -m %{basename:$patchfile} $patchfile}\n";
+      " -m %{basename:$patchfile} $patchfile $ordinal}\n";
 } # apply_patch()
 
 
