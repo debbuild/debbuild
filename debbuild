@@ -863,7 +863,7 @@ sub process_autopatch {
 # Hard-coded variant of RPM's macro of the same name.
 sub apply_patch {
   my ($verbose,$plevel,$patchfile,$ordinal) = @_;
-  return "test -f $patchfile || exit 1;\n".
+  return "test -r $patchfile || { echo 'Cannot read $patchfile'; exit 1; }\n".
     "%{uncompress:$patchfile} | %{__scm_apply_$specglobals{__scm}".
       ($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
       " -m %{basename:$patchfile} $patchfile $ordinal}\n";
