@@ -685,9 +685,10 @@ ENDIF: if (/^\s*%endif/) {
 # Note that we look for the Debian-specific Breaks and Replaces,
 # although they will have to be wrapped in '%if %{_vendor} == "debbuild"' for
 # an rpmbuild-compatible .spec file
-      if (my ($dname,$dvalue) = /^(Summary|Group|Version|BuildArch(?:itecture)?|
-          Recommends|Suggests|Enhances|Obsoletes|Breaks|Replaces|PreReq|
-          Requires(?:\(pre(?:un)?\))?|Conflicts|Provides|Pre-Depends):\s+(.+)$/ix) {
+      if (my ($dname,$dvalue) = /^(Summary|Group|Version|Conflicts|Provides|
+          BuildArch(?:itecture)?|BuildRequires|BuildConflicts|
+          Recommends|Suggests|Enhances|Obsoletes|Breaks|Replaces|
+          PreReq|Requires(?:\(pre(?:un)?\))?|Pre-Depends):\s+(.+)$/ix) {
         $dname =~ tr/[A-Z]/[a-z]/;
         $dname =~ s/([()])/\\$1/g;
         $dvalue =~ s/^noarch/all/i if $dname =~ s/^BuildArch(?:itecture)?/arch/i;
@@ -698,6 +699,10 @@ ENDIF: if (/^\s*%endif/) {
           push @{$pkgdata{$subname}{'pre-depends'}}, splitreqs($dvalue);
         } elsif (grep { /$dname/ } qw(obsoletes)) {
           push @{$pkgdata{$subname}{replaces}}, splitreqs($dvalue);
+        } elsif (grep { /$dname/ } qw(buildrequires)) {
+          push @buildrequires, splitreqs($dvalue);
+        } elsif (grep { /$dname/ } qw(buildconflicts)) {
+          push @buildconflicts, splitreqs($dvalue);
         } else {
           $pkgdata{$subname}{$dname} = expandmacros($dvalue);
         }
