@@ -795,7 +795,7 @@ ENDIF: if (/^\s*%endif/) {
       } elsif (/^autoreq(?:prov)?:\s*(.+)/i) {
         # we don't handle auto-provides (yet)
         $NoAutoReq = 1 if $1 =~ /(?:no|0)/i;
-      } else { # Other lines may contain '%{?!contional:macros}' as well
+      } else { # Other lines may contain '%{?!conditional:macros}' as well
         expandmacros($_);
       }
     } # preamble
