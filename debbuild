@@ -759,17 +759,15 @@ ENDIF: if (/^\s*%endif/) {
              group|copyright|url|packager):\s*(.+)/ix) {
         $pkgdata{main}{lc $1} //= expandmacros($2);
         $pkgdata{main}{lc $1} =~ tr/_/-/ if 'name' eq $1;
-      } elsif (/^(vendor|buildroot):\s*(.+)/i) {
+      } elsif (/^(vendor|buildroot):\s*(.+)\s*/i) {
         $specglobals{lc $1} = $2;
-      } elsif (my ($srcnum, $src) = /^source(\d*):\s*(.+)/i) {
-        $src =~ s/\s*$//;
+      } elsif (my ($srcnum, $src) = /^source(\d*):\s*(.+)\s*$/i) {
         $srcnum ||= 0;
         $pkgdata{sources}{$srcnum} = basename($src);
         $pkgdata{main}{source} = $pkgdata{sources}{0} if 0 == $srcnum;
-      } elsif (my ($patchnum, $patch) = /^(patch\d*):\s*(.+)/i) {
-        $patch =~ s/\s*$//;
+      } elsif (my ($patchnum, $patch) = /^(patch\d*):\s*(.+)\s*$/i) {
         $pkgdata{main}{lc $patchnum} = basename($patch);
-      } elsif (/^buildarch(?:itecture)?:\s*(.+)/i) {
+      } elsif (/^buildarch(?:itecture)?:\s*(.+)\s*$/i) {
         ($pkgdata{main}{arch} = $1) =~ s/^noarch$/all/;
       } elsif (/^buildrequires:\s*(.+)/i) {
         push @buildrequires, splitreqs($1);
