@@ -301,21 +301,21 @@ sub parse_cmd {
     'nobuild'       => \$cmdopts{nobuild},
     'nocheck'       => \$cmdopts{nocheck},
     'noclean'       => \$cmdopts{noclean},
-    'v+' => \$verbosity, # bump verbosity.
-    'q'  => sub { $verbosity = 0 }, # dump verbosity.
-    'rebuild=s'   => \&srcpkg_handler,
-    'recompile=s' => \&srcpkg_handler,
-    'install|i=s' => \&srcpkg_handler,
-    'b=s'         => \&build_handler, # do NOT use 'b|t=s' here!
-    't=s'         => \&build_handler, # see 'build_handler' for details
-    'r=s'         => \&build_handler,
-    'with=s'      => \&define_handler, # dito for 'with|without=s'
-    'without=s'   => \&define_handler,
-    'define|D=s'  => \&define_handler,
-    'S=s'         => sub { store_value('__scm',$_[1]) },
-    'help|?'      => \&help_handler,
-    'version'     => sub { print "debbuild v$version\n" },
-    '<>'          => \&catchall # process non-option arguments
+    'v+'            => \$verbosity, # bump verbosity.
+    'q'             => sub { $verbosity = 0 }, # dump verbosity.
+    'rebuild=s'     => \&srcpkg_handler,
+    'recompile=s'   => \&srcpkg_handler,
+    'install|i=s'   => \&srcpkg_handler,
+    'b=s'           => \&build_handler, # do NOT use 'b|t=s' here!
+    't=s'           => \&build_handler, # see 'build_handler' for details
+    'r=s'           => \&build_handler,
+    'with=s'        => \&define_handler, # dito for 'with|without=s'
+    'without=s'     => \&define_handler,
+    'define|D=s'    => \&define_handler,
+    'S=s'           => sub { store_value('__scm',$_[1]) },
+    'help|?'        => \&help_handler,
+    'version'       => sub { print "debbuild v$version\n" },
+    '<>'            => \&catchall # process non-option arguments
   ); # Getopt::Long::Getoptions()
   ## catchall()
   # --buildroot, --define|-D, --rebuild, --recompile, and --install|-i are the
