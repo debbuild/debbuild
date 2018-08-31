@@ -170,10 +170,10 @@ if ($cmdopts{type} eq 'b') {
 }
 
 # work out the [pcilabs] stages
-if ($cmdopts{stage} eq 'p' || ($cmdopts{stage} =~ /[cilab]/ and not $cmdopts{short})) {
+if ($cmdopts{stage} eq 'p' or ($cmdopts{stage} =~ /[cilab]/ and not $cmdopts{short})) {
   execute_script('prep');
 }
-if ($cmdopts{stage} eq 'c' || ($cmdopts{stage} =~ /[ilab]/ and not $cmdopts{short})) {
+if ($cmdopts{stage} eq 'c' or ($cmdopts{stage} =~ /[ilab]/ and not $cmdopts{short})) {
   execute_script('build');
 }
 if ($cmdopts{stage} =~ /[ilab]/) {
@@ -258,7 +258,7 @@ sub lsb_detection {
     while (<OSREL>) {
       $baseos = lc $1 if /^ID="?(\w+)"?/;
       $basever = $1 if /^VERSION_ID="?([\d.]+)"?/;
-      $basecodename =  $1 if ( /^VERSION_CODENAME="?(\w+)"?/ || /^UBUNTU_CODENAME="?(\w+)"?/ );
+      $basecodename =  $1 if ( /^VERSION_CODENAME="?(\w+)"?/ or /^UBUNTU_CODENAME="?(\w+)"?/ );
     }
     close OSREL;
 
@@ -324,7 +324,7 @@ sub parse_cmd {
   # one we meet.
   sub catchall {
     my ($opt_arg) = @_;
-    if ($cmdopts{type} eq 'b' || $cmdopts{type} eq 'd') {
+    if ($cmdopts{type} eq 'b' or $cmdopts{type} eq 'd') {
       # Spec file
       $specglobals{specfile} = $opt_arg;
     } elsif ($cmdopts{type} eq 't') {
@@ -428,7 +428,7 @@ HELP_MSG
   # the "compile" and "install" targets - with good reason IMO.
   # Note that --short-circuit with -.p is not really an error, just redundant.
   # NB - this is NOT fatal, just ignored!
-  if ($cmdopts{short} && $cmdopts{stage} =~ /[labs]/) {
+  if ($cmdopts{short} and $cmdopts{stage} =~ /[labs]/) {
     warn "Can't use --short-circuit for $targets{$cmdopts{stage}} stage.  Ignoring.\n";
     $cmdopts{short} = undef;
   }
@@ -1237,7 +1237,7 @@ sub binpackage {
     # metapackages don't have any files, but they depend on a bunch of things.
     # Packages with neither have, essentially, no content.
     next if
-        (not $filelist{$pkg} or $filelist{$pkg} =~ /^\s*$/) &&
+        (not $filelist{$pkg} or $filelist{$pkg} =~ /^\s*$/) and
         (not $pkgdata{$pkg}{requires});
     $filelist{$pkg} //= '';
 
