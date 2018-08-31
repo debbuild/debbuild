@@ -831,7 +831,7 @@ sub process_autosetup {
   die "%autosetup: option '-S $scm' currently not supported at line $..\n"
     unless $specglobals{"__scm_setup_$scm"};
   $script .= "%{__scm_setup_$scm".($verbose ? '' : ' -q')."}\n";
-  if (not $noautopatch) {
+  unless ($noautopatch) {
     $_ = ($plevel ? " -p $plevel" : '').($verbose ? ' -v' : '');
     $script .= process_autopatch();
   }
@@ -878,7 +878,7 @@ sub process_setup {
   $pkgdata{main}{hassetup} = 1;  # flag the fact that we've got %setup
   # Parse out the %setup macro.  rpmbuild doesn't complain about
   # gibberish immediately following %setup, but we will
-  if (not /^(?:\s|$)/) {
+  unless (/^(?:\s|$)/) {
     chomp;
     warn "Suspect %setup tag '%setup$_', continuing\n";
     s/^\S+//;
@@ -1530,7 +1530,7 @@ sub checkbuildreq {
   my @reqlist = map { expandmacros($_) } @buildrequires;
   my @cnflist = map { expandmacros($_) } @buildconflicts;
 
-  if ( not -e $specglobals{__dpkg_query} ) {
+  unless ( -e $specglobals{__dpkg_query} ) {
     warn "**WARNING**  $specglobals{__dpkg_query} not found.  Can't check build-deps.\n".
 	"  Required for sucessful build:\n".join(', ', @reqlist)."\n".
 	"  Continuing anyway.\n";
@@ -1548,7 +1548,7 @@ sub checkbuildreq {
 ## packages".  I don't think there's really a solution until/unless Debian's tools properly register virtual
 ## packages as installed.
     my ($pkgdep) = qx ( $specglobals{__dpkg_query} --showformat '\${status}\t\${version}\n' -W $pkg );
-    if (not $pkgdep) {
+    unless ($pkgdep) {
       warn " * Missing build-dependency $pkg!\n";
       push @missinglist, $pkg;
     } else {
