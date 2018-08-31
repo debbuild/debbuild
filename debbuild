@@ -471,7 +471,7 @@ LINE: while (<$fh>) {
     next if /^\s*$/ and $stage !~ /changelog|copyrightdata|description/; # ... and blank lines.
 
     # need to deal with these someday
-    next if /^%verify/ or /^%ghost/;
+    next if /^%(?:verify|ghost)/;
 
     # Escape '%' -- rpmbuild seems to do this
     s/%%/%/g;
