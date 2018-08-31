@@ -258,7 +258,7 @@ sub lsb_detection {
     while (<OSREL>) {
       $baseos = lc $1 if /^ID="?(\w+)"?/;
       $basever = $1 if /^VERSION_ID="?([\d.]+)"?/;
-      $basecodename =  $1 if ( /^VERSION_CODENAME="?(\w+)"?/ or /^UBUNTU_CODENAME="?(\w+)"?/ );
+      $basecodename =  $1 if ( /^(?:VERSION|UBUNTU)_CODENAME="?(\w+)"?/ );
     }
     close OSREL;
 
