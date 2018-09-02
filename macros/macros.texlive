@@ -7,7 +7,10 @@
 #==============================================================================
 # ---- TeX Live utilities
 #
-%__texlive_bin /opt/texlive/current/bin/%{_build_cpu}-%{_os}
+# /path/to/yout/texlive/installation; adapt in .debmacros
+%__texlive_base /opt/texlive/current
+#
+%__texlive_bin %{__texlive_base}/bin/%{_build_cpu}-%{_os}
 #
 %__latex %{__texlive_bin}/latex
 %__pdftex %{__texlive_bin}/pdftex
