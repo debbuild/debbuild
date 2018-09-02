@@ -1,13 +1,12 @@
 #!/bin/sh -e
 
-# prepare only
-stage=p
-flags=--verbose
-scm=patch
-verbose=-v
-builder=debbuild
+stage=p # prepare only by default
+flags=--verbose # default flag for 'patch' et al.
+scm=patch # default SCM; use '-S git' et al.
+verbose=-v # intermediate verbosity; switch with -v and -q
+builder=debbuild # override with '-r rpmbuild' or append path
 
-while getopts pcilabsS:vqr opt
+while getopts pcilabsS:vqr: opt
 do
 	case $opt in
 		[pcil]) # prepare, compile, install, list
@@ -17,7 +16,7 @@ do
 		       	stage=$opt
 		       	flags=--silent
 			;;
-		S)	# choose SCM
+		S) # choose SCM
 			scm=$OPTARG
 			;;
 		v) # bump verbosity
@@ -26,8 +25,8 @@ do
 		q) # dump verbosity
 			verbose=
 			;;
-		r) # use 'rpmbuild' instead of 'debbuild'
-			builder=rpmbuild
+		r) # use alternative package builder
+			builder=$OPTARG
 			;;
 		?)
 			exit 1
