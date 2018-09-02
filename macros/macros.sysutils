@@ -11,7 +11,7 @@
 %__recode %{_bindir}/recode
 %__touch %{_bindir}/touch
 
-%__ldconfig /sbin/ldconfig
+%__ldconfig %{_sbindir}/ldconfig
 
 # \endverbatim
 #*/
