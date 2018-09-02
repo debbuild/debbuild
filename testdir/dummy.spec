@@ -23,7 +23,7 @@ Summary:         A Hello World application from the GNU Project
 License:         GPLv3+
 URL:             https://www.gnu.org/software/hello/
 Source0:         http://ftp.gnu.org/gnu/hello/%{name}-%{version}.tar.gz
-#Source1:         http://ftp.gnu.org/gnu/hello/%{name}-%{version}-II.tar.gz
+Source1:         http://ftp.gnu.org/gnu/hello/%{name}-%{version}-II.tar.gz
 
 %if %{_vendor} == "debbuild"
 %{perl:for my $val (1..12) { printf("Patch%d: bash42\_%04d\n",$val,$val) }}
@@ -89,7 +89,7 @@ echo %perl_privlib
 %endif
 
 echo PREP
-%{echo:%{url2path:https://www.server.com:6666/their/local/path//%{_datadir}/%{S:0}}}
+%{echo:%{url2path:https://www.server.com:6666/their/local/path%{_datadir}/%{basename:%{S:0}}}}
 %{echo:%{basename:%{S:0}},%{basename:%{S:1}}}
 %{echo:%{dirname:%{S:0}}}
 %{echo:%{suffix:%{S:0}}}
