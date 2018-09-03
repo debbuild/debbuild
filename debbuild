@@ -955,10 +955,10 @@ sub unpackcmd {
 sub decompress {
    my ($filename) = @_;
    return (
-      $filename =~ /\.(?:tgz|(?:gz|Z))$/ ? '%{__gzip}'  :
-      $filename =~ /\.bz2$/              ? '%{__bzip2}' :
-      $filename =~ /\.xz$/               ? '%{__xz}'    :
-      $filename =~ /\.zst$/              ? '%{__zstd}'  :
+      $filename =~ /\.(?:t?gz|Z)$/  ? '%{__gzip}'  :
+      $filename =~ /\.(?:t?bz?2?)$/ ? '%{__bzip2}' :
+      $filename =~ /\.xz$/          ? '%{__xz}'    :
+      $filename =~ /\.zst$/         ? '%{__zstd}'  :
       die "Can't handle unknown file type '$filename'.\n" ).
       " -dc '$filename'";
 } # end decompress()
@@ -1057,7 +1057,7 @@ sub uncompress {
   my ($patchfile) = @_;
   return (
     # Compressed patch.  You weirdo.
-    $patchfile =~ /\.(?:Z|gz|bz2|xz|zst)$/ ? decompress($patchfile) :
+    $patchfile =~ /\.(?:Z|gz|bz2?|xz|zst)$/ ? decompress($patchfile) :
     # .zip'ed patch.  *backs away slowly*
     $patchfile =~ /\.zip$/ ? "%{__unzip} -p $patchfile" :
     # else uncompressed patch
@@ -1196,9 +1196,9 @@ sub install {
   # should probably error-check all kinds of things.  <g>
   foreach my $manpage (glob("$specglobals{buildroot}/usr/share/man/man*/*")) {
     if ( -f $manpage) {
-      if (my ($newpage) = $manpage =~ /^(.+)\.(?:Z|gz|bz2|xz|zst)\n?$/) {
+      if (my ($newpage) = $manpage =~ /^(.+)\.(?:Z|gz|bz2?|xz|zst)\n?$/) {
        qx($specglobals{__gzip} -d $manpage) if $manpage =~ /\.(?:Z|gz)$/;
-       qx($specglobals{__bzip2} -d $manpage) if $manpage =~ /\.bz2$/;
+       qx($specglobals{__bzip2} -d $manpage) if $manpage =~ /\.bz2?$/;
        qx($specglobals{__xz} -d $manpage) if $manpage =~ /\.xz$/;
        qx($specglobals{__zstd} -d $manpage) if $manpage =~ /\.zst$/;
        $manpage = $newpage;
@@ -1875,7 +1875,7 @@ debbuild — Build Debian-compatible .deb packages from RPM .spec files
 
  debbuild {-ba|-bb|-bp|-bc|-bi|-bl|-bs} [build-options] file.spec
 
- debbuild {-ta|-tb|-tp|-tc|-ti|-tl|-ts} [build-options] file.{tgz|zip|tar.{gz|bz2|xz|Z}}
+ debbuild {-ta|-tb|-tp|-tc|-ti|-tl|-ts} [build-options] file.{t{bz|gz}|zip|tar.{gz|bz2|xz|zst|Z}}
 
  debbuild {-ra|-rb|-rp|-rc|-ri|-rl|-rs} [build-options] file.{.src.rpm|sdeb}
 
