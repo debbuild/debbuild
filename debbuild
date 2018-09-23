@@ -1731,12 +1731,24 @@ sub expandmacros {
   # Replace global macros
   while (m/%(\w+)/g) {
     my $macro = $1;
-    s/%$macro/%{$macro}/g if grep { /$macro/ } qw(optflags getconfdir)
+    s/%$macro/%{$macro}/g if grep { /$macro/ } qw(optflags getconfdir sources patches)
       or defined $specglobals{$macro}
       or defined $pkgdata{main}{$macro};
   }
   s/%\{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
   s|%\{getconfdir}|$specglobals{_libdir}/debbuild|g;
+  s|%\{sources}|my $res;
+    for my $_s (sort keys %{$pkgdata{sources}}) {
+      $res .= qq(%{_sourcedir}/$pkgdata{sources}{$_s} ); }
+    expandmacros($res)|eg;
+  s|%\{patches}|my $res; my @patches = grep {/^patch/} keys %{$pkgdata{main}};
+    if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
+      $res = "%{_sourcedir}/$pkgdata{main}{$patches[0]}";
+    } else {
+      for my $_p (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
+        $res .= qq(%{_sourcedir}/$pkgdata{main}{"patch$_p"} ); }
+    }
+    expandmacros($res)|eg;
 
   # Package data
   s/%\{S:0}/%{source0}/g;
