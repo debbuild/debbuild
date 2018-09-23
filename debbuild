@@ -1503,14 +1503,9 @@ sub srcpackage {
   # use pax -w [file] [file] ... -f outfile.sdeb
   $paxcmd .= '(cd %{_topdir}; %{__pax} -L -w ';
 
-  # some packages may not have a "main" source.
-  $paxcmd .= "SOURCES/$pkgdata{main}{source} " if $pkgdata{main}{source};
-
   # create file list:  Source[nn], Patch[nn]
   foreach my $source (sort keys %{$pkgdata{sources}}) {
-    # Skip Source0, since it's also $pkgdata{main}{source}.  Could arguably
-    # just remove that instead, but I think that might backfire.
-    $paxcmd .= "SOURCES/$pkgdata{sources}{$source} " if $source != 0;
+    $paxcmd .= "SOURCES/$pkgdata{sources}{$source} ";
   }
   $paxcmd .= join(' ', map { s/\%\{_sourcedir}/SOURCES/; $_ } patches());
 
@@ -1747,8 +1742,7 @@ sub expandmacros {
   s|%\{patches}|my $res = join(' ', patches()); expandmacros($res)|eg;
 
   # Package data
-  s/%\{S:0}/%{source0}/g;
-  s|%\{source0?}|%{_sourcedir}/$pkgdata{main}{source}|gi;
+  s|%\{source}|%{_sourcedir}/$pkgdata{main}{source}|gi;
   foreach my $source (keys %{$pkgdata{sources}}) {
     s/%\{S:$source}/%{source$source}/g;
     s|%\{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
