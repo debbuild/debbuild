@@ -855,6 +855,14 @@ sub process_autopatch {
 } # process_autopatch()
 
 
+## sources()
+#
+sub sources {
+  return sort keys %{$pkgdata{sources}};
+}
+# sources()
+
+
 ## patches()
 #
 sub patches {
@@ -1504,7 +1512,7 @@ sub srcpackage {
   $paxcmd .= '(cd %{_topdir}; %{__pax} -L -w ';
 
   # create file list:  Source[nn], Patch[nn]
-  foreach my $source (sort keys %{$pkgdata{sources}}) {
+  foreach my $source (sources()) {
     $paxcmd .= "SOURCES/$pkgdata{sources}{$source} ";
   }
   $paxcmd .= join(' ', map { s/\%\{_sourcedir}/SOURCES/; $_ } patches());
@@ -1737,14 +1745,14 @@ sub expandmacros {
   s/%\{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
   s|%\{getconfdir}|$specglobals{_libdir}/debbuild|g;
   s|%\{sources}|my $res;
-    for my $_s (sort keys %{$pkgdata{sources}}) {
+    for my $_s (sources()) {
       $res .= qq(%{_sourcedir}/$pkgdata{sources}{$_s} ); }
     expandmacros($res)|eg;
   s|%\{patches}|my $res = join(' ', patches()); expandmacros($res)|eg;
 
   # Package data
   s|%\{source}|%{_sourcedir}/$pkgdata{main}{source}|gi;
-  foreach my $source (keys %{$pkgdata{sources}}) {
+  foreach my $source (sources()) {
     s/%\{S:$source}/%{source$source}/g;
     s|%\{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
   }
