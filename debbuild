@@ -356,7 +356,7 @@ sub parse_cmd {
   sub build_handler {
     my ($opt_name,$opt_value) = @_;
     die "Unknown stage '$opt_value' for option '-$opt_name'.\n"
-      unless grep { /$opt_value/ } keys %targets;
+      unless grep { $opt_value eq $_ } keys %targets;
     if ($cmdopts{type} eq 'r') {
       # Mutually exclusive options.
       die "Can't use -$opt_name$opt_value with --rebuild\n";
@@ -483,15 +483,15 @@ LINE: while (<$fh>) {
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
     # First a set of %-tags that are required to be used flush-left:
-    if ((/^%([a-z_]+)/ and not grep { /$1/ } qw(build changelog check clean
-	config copyrightdata description files ghost install package patch
-	post postun pre prep preun setup verify))
-	and # then a set of %-tags that are permitted in more liberal layouts:
-	(/^\s*%([a-z_]+)/ and not grep { /$1/ } qw(attr autopatch autosetup
-	bcond_with bcond_without configure defattr define dir doc docdir
-	dump else endif exclude global if ifarch ifnarch ifnos ifos
-	include license make_build make_install makeinstall readme
-	triggerin triggerpostun triggerun undefine verifyscript))) {
+    if ((/^%([a-z_]+)/ and not grep { $1 eq $_ } qw(build changelog check
+        clean config copyrightdata description files ghost install package
+        patch post postun pre prep preun setup verify))
+        and # then a set of %-tags that are permitted in more liberal layouts:
+        (/^\s*%([a-z_]+)/ and not grep { $1 eq $_ } qw(attr autopatch
+        autosetup bcond_with bcond_without configure defattr define dir
+        doc docdir dump else endif exclude global if ifarch ifnarch ifnos
+        ifos include license make_build make_install makeinstall readme
+        triggerin triggerpostun triggerun undefine verifyscript))) {
       if (defined $specglobals{$1}) {
         # This looks like a user-defined macro, possibly with arguments.
         # Wrap the whole thing in curly braces for easier processing.
@@ -692,16 +692,16 @@ ENDIF: if (/^\s*%endif/) {
         $dname =~ tr/[A-Z]/[a-z]/;
         $dname =~ s/([()])/\\$1/g;
         $dvalue =~ s/^noarch/all/i if $dname =~ s/^BuildArch(?:itecture)?/arch/i;
-        if (grep { /$dname/ } qw(recommends suggests enhances breaks replaces
-            requires conflicts provides pre-depends)) {
+        if (grep { $dname eq $_ } qw(recommends suggests enhances breaks
+            replaces requires conflicts provides pre-depends)) {
           push @{$pkgdata{$subname}{$dname}}, splitreqs($dvalue);
-        } elsif (grep { /$dname/ } qw{prereq requires(pre) requires(preun)}) {
+        } elsif (grep { $dname eq $_ } qw{prereq requires(pre) requires(preun)}) {
           push @{$pkgdata{$subname}{'pre-depends'}}, splitreqs($dvalue);
-        } elsif (grep { /$dname/ } qw(obsoletes)) {
+        } elsif (grep { $dname eq $_ } qw(obsoletes)) {
           push @{$pkgdata{$subname}{replaces}}, splitreqs($dvalue);
-        } elsif (grep { /$dname/ } qw(buildrequires)) {
+        } elsif (grep { $dname eq $_ } qw(buildrequires)) {
           push @buildrequires, splitreqs($dvalue);
-        } elsif (grep { /$dname/ } qw(buildconflicts)) {
+        } elsif (grep { $dname eq $_ } qw(buildconflicts)) {
           push @buildconflicts, splitreqs($dvalue);
         } else {
           $pkgdata{$subname}{$dname} = expandmacros($dvalue);
@@ -1729,7 +1729,8 @@ sub expandmacros {
   # Replace global macros
   while (m/%(\w+)/g) {
     my $macro = $1;
-    s/%$macro/%{$macro}/g if grep { /$macro/ } qw(optflags getconfdir sources patches)
+    s/%$macro/%{$macro}/g if grep { $macro eq $_ }
+        qw(optflags getconfdir sources patches)
       or defined $specglobals{$macro}
       or defined $pkgdata{main}{$macro};
   }
