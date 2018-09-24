@@ -846,12 +846,8 @@ sub process_autosetup {
 sub process_autopatch {
   my $verbose = /-v/;
   my ($plevel) = /-p\s*(\d+)/;
-  my $script = '';
   my $k = 1;
-  for my $patchfile (patches()) {
-    $script .= apply_patch($verbose,$plevel,$patchfile,$k++);
-  }
-  return $script;
+  return join('', map { apply_patch($verbose,$plevel,$_,$k++) } patches());
 } # process_autopatch()
 
 
@@ -1512,13 +1508,11 @@ sub srcpackage {
   $paxcmd .= '(cd %{_topdir}; %{__pax} -L -w ';
 
   # create file list:  Source[nn], Patch[nn]
-  foreach my $source (sources()) {
-    $paxcmd .= "SOURCES/$pkgdata{sources}{$source} ";
-  }
-  $paxcmd .= join(' ', map { s/\%\{_sourcedir}/SOURCES/; $_ } patches());
+  $paxcmd .= join(' ', map { "SOURCES/$pkgdata{sources}{$_}" } sources()) . ' ';
+  $paxcmd .= join(' ', map { s/\%\{_sourcedir}/SOURCES/; $_ } patches()). ' ';
 
   # add the spec file and write to source package destination.
-  $paxcmd .= " SPECS/$barespec -f %{_srcdebdir}/$pkgsrcname)";
+  $paxcmd .= "SPECS/$barespec -f %{_srcdebdir}/$pkgsrcname)";
 
   system(expandmacros($paxcmd)) == 0 and
   $finalmessages .= "Wrote source package $pkgsrcname in $topdir/SDEBS.\n";
@@ -1744,11 +1738,9 @@ sub expandmacros {
   }
   s/%\{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
   s|%\{getconfdir}|$specglobals{_libdir}/debbuild|g;
-  s|%\{sources}|my $res;
-    for my $_s (sources()) {
-      $res .= qq(%{_sourcedir}/$pkgdata{sources}{$_s} ); }
-    expandmacros($res)|eg;
-  s|%\{patches}|my $res = join(' ', patches()); expandmacros($res)|eg;
+  s|%\{sources}|expandmacros( join(' ',
+    map { qq(%{_sourcedir}/$pkgdata{sources}{$_}) } sources()))|eg;
+  s|%\{patches}|expandmacros( join(' ', patches()) )|eg;
 
   # Package data
   s|%\{source}|%{_sourcedir}/$pkgdata{main}{source}|gi;
