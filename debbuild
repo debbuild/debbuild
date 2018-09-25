@@ -852,15 +852,13 @@ sub process_autopatch {
 
 
 ## sources()
-#
 sub sources {
-  return sort keys %{$pkgdata{sources}};
-}
-# sources()
+  return map { "%{_sourcedir}/$pkgdata{sources}{$_}" }
+         sort keys %{$pkgdata{sources}};
+} # sources()
 
 
 ## patches()
-#
 sub patches {
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
   my @res;
@@ -1508,7 +1506,7 @@ sub srcpackage {
   $paxcmd .= '(cd %{_topdir}; %{__pax} -L -w ';
 
   # create file list:  Source[nn], Patch[nn]
-  $paxcmd .= join(' ', map { "SOURCES/$pkgdata{sources}{$_}" } sources()) . ' ';
+  $paxcmd .= join(' ', map { s/\%\{_sourcedir}/SOURCES/; $_ } sources()). ' ';
   $paxcmd .= join(' ', map { s/\%\{_sourcedir}/SOURCES/; $_ } patches()). ' ';
 
   # add the spec file and write to source package destination.
@@ -1738,13 +1736,12 @@ sub expandmacros {
   }
   s/%\{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
   s|%\{getconfdir}|$specglobals{_libdir}/debbuild|g;
-  s|%\{sources}|expandmacros( join(' ',
-    map { qq(%{_sourcedir}/$pkgdata{sources}{$_}) } sources()))|eg;
+  s|%\{sources}|expandmacros( join(' ', sources()) )|eg;
   s|%\{patches}|expandmacros( join(' ', patches()) )|eg;
 
   # Package data
   s|%\{source}|%{_sourcedir}/$pkgdata{main}{source}|gi;
-  foreach my $source (sources()) {
+  foreach my $source (keys %{$pkgdata{sources}}) {
     s/%\{S:$source}/%{source$source}/g;
     s|%\{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
   }
