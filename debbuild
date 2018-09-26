@@ -297,6 +297,7 @@ sub parse_cmd {
     'eval|E=s'      => sub { print expandmacros($_[1])."\n" },
     'short-circuit' => \$cmdopts{short},
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
+    'showrc'        => \&dump_macros,
     'sign'          => \$cmdopts{sign},
     'noprep'        => \$cmdopts{noprep},
     'nobuild'       => \$cmdopts{nobuild},
@@ -423,6 +424,10 @@ HELP_MSG
     print $pipe $help_msg;
     close $pipe;
     exit 0;
+  }
+  ## dump_macros()
+  sub dump_macros {
+    print "%$_ ==> $specglobals{$_}\n" for (sort keys %specglobals);
   }
 
   # Some cross-checks.  rpmbuild limits --short-circuit to just
@@ -604,7 +609,7 @@ ENDIF: if (/^\s*%endif/) {
 
     # Print the active macro table
     elsif (/^\s*%dump/) {
-      print "%$_ ==> $specglobals{$_}\n" for (sort keys %specglobals);
+      dump_macros();
     }
 
     # Preprocess %define's and Conditional Build Stuff
@@ -1897,7 +1902,6 @@ As far as possible, the command-line options are identical to those from B<rpmbu
  --clean
  --rmsource
  --rmspec
- --showrc
  --target
 
 Some of these could probably be trivially added.  Feel free to send me a patch.  ;)
