@@ -528,7 +528,7 @@ LINE: while (<$fh>) {
         # got a logic statement we want to turn into a 1 or a 0.
         # correctly "quote" the Boolean variables for Perl's eval below
         $expr =~ s/"//g;
-        $expr =~ s/(\w+)/"$1"/g;
+        $expr =~ s/([\w\/]+)/"$1"/g;
 
         # Done in this order so we don't cascade incorrectly.
         # Yes, those spaces ARE correct in the replacements!
