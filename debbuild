@@ -1616,7 +1616,7 @@ sub getreqs {
 
   print "Checking library requirements...\n" if $verbosity;
   return () if 'all' eq $pkgdata{main}{arch}; # noarch package
-  chomp( my @binlist = qx ( $specglobals{__find} $pkgtree -type f -perm 755 ) );
+  chomp( my @binlist = qx ( $specglobals{__find} $pkgtree -type f -perm /ugo=x ) );
   return () unless @binlist;
 
   my @reqlist;
