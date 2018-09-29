@@ -427,7 +427,7 @@ HELP_MSG
   }
   ## dump_macros()
   sub dump_macros {
-    print "%$_ ==> $specglobals{$_}\n" for (sort keys %specglobals);
+    print join "\n", map { "%$_ ==> $specglobals{$_}" } sort keys %specglobals;
   }
 
   # Some cross-checks.  rpmbuild limits --short-circuit to just
@@ -607,13 +607,8 @@ ENDIF: if (/^\s*%endif/) {
       unlink $perl;
     }
 
-    # Print the active macro table
-    elsif (/^\s*%dump/) {
-      dump_macros();
-    }
-
     # Preprocess %define's and Conditional Build Stuff
-    elsif (/^\s*%(?:(?:un)?define|global|bcond_with(?:out)?)\s/) {
+    elsif (/^\s*%(?:(?:un)?define|dump|global|bcond_with(?:out)?)\s/) {
       expandmacros($_);
     }
 
@@ -853,7 +848,7 @@ sub process_autopatch {
   my $verbose = /-v/;
   my ($plevel) = /-p\s*(\d+)/;
   my $k = 1;
-  return join('', map { apply_patch($verbose,$plevel,$_,$k++) } patches());
+  return join '', map { apply_patch($verbose,$plevel,$_,$k++) } patches();
 } # process_autopatch()
 
 
@@ -1513,7 +1508,7 @@ sub srcpackage {
 
   # create file list:  Source[nn], Patch[nn]
   $paxcmd .= join(' ', map { s/\%\{_sourcedir}/SOURCES/; $_ } sources(),
-                       map { s/\%\{_sourcedir}/SOURCES/; $_ } patches()). ' ';
+                       map { s/\%\{_sourcedir}/SOURCES/; $_ } patches()).' ';
 
   # add the spec file and write to source package destination.
   $paxcmd .= "SPECS/$barespec -f %{_srcdebdir}/$pkgsrcname)";
@@ -1623,7 +1618,7 @@ sub getreqs {
   my $pid = open2(\*IN,\*OUT,"LANG=C $specglobals{__xargs} $specglobals{__ldd}");
   my $thread = async {
     close IN;
-    print OUT join(' ', @binlist);
+    print OUT join ' ', @binlist;
     close OUT;
   };
   {
@@ -1731,6 +1726,8 @@ sub expandmacros {
   die "Missing value for '%$1 $2'. Aborting!" if m/%(define|global)\s+(.+)/;
   # Permit unsetting/deleting of stored values
   { no warnings; s/%undefine\s+(\S+)/store_value($1)/eg; }
+  # Print the active macro table
+  s/^\s*%dump/dump_macros()/e;
 
   # Replace global macros
   while (m/%(\w+)/g) {
@@ -1742,8 +1739,8 @@ sub expandmacros {
   }
   s/%\{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
   s|%\{getconfdir}|$specglobals{_libdir}/debbuild|g;
-  s|%\{sources}|expandmacros( join(' ', sources()) )|eg;
-  s|%\{patches}|expandmacros( join(' ', patches()) )|eg;
+  s|%\{sources}|expandmacros( join ' ', sources() )|eg;
+  s|%\{patches}|expandmacros( join ' ', patches() )|eg;
 
   # Package data
   s|%\{source}|%{_sourcedir}/$pkgdata{main}{source}|gi;
