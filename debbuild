@@ -1775,26 +1775,26 @@ sub expandmacros {
     no strict qw(refs); # we use strings as function refs
     (my $initvalue = "%{$prefix:$arg}") =~ s/([?!{+}])/\\$1/g; # neutralize specials
     $arg = expandmacros($arg);
-    if ($prefix =~ /u2p/) {
+    if ($prefix eq 'u2p') {
       # curious form of 'basename'? - strip domain host (and port)
       $arg =~ s|\w+://[\w.:-]+||;
       s/$initvalue/$arg/g;
-    } elsif ($prefix =~ /basename|dirname|uncompress/) {
+    } elsif (grep {$prefix eq $_} qw(basename dirname uncompress)) {
       s/$initvalue/&$prefix($arg)/eg;
-    } elsif ($prefix =~ /suffix/) {
+    } elsif ($prefix eq 'suffix') {
       my (undef,undef,$suffix) = fileparse($arg,qr/\.[^.]*/);
       s/$initvalue/$suffix/g;
-    } elsif ($prefix =~ /getenv/) {
+    } elsif ($prefix eq 'getenv') {
       # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
       s/$initvalue/$ENV{$arg}/g;
-    } elsif ($prefix =~ /expand/) {
+    } elsif ($prefix eq 'expand') {
       # helper for parametrized macros
       s/$initvalue/$arg/g;
-    } elsif ($prefix =~ /shrink/) {
+    } elsif ($prefix eq 'shrink') {
       # trim leading, intermediate, and trailing whitespace
       $arg =~ s/^\s*//; $arg =~ s/\s*$//; $arg =~ s/\s+/ /g;
       s/$initvalue/$arg/g;
-    } elsif ($prefix =~ /quote/) {
+    } elsif ($prefix eq 'quote') {
       # quote a parametric macro argument
       s/$initvalue/$arg/g;
     }
