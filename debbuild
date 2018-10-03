@@ -55,6 +55,8 @@ my %script = (prep => '',
 		install => '',
 		check => '',
 		clean => qq([ "\$RPM_BUILD_ROOT" != "/" ] && %{__rm} -rf \$RPM_BUILD_ROOT\n) );
+my $check_status = "\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n";
+
 my $finalmessages = ''; # A place to stuff messages that I want printed at the *very* end of any processing.
 
 # For %define's in specfile, among many other things.
@@ -881,7 +883,7 @@ sub apply_patch {
   return "test -r $patchfile || { echo 'Cannot read $patchfile'; exit 1; }\n".
     "%{uncompress:$patchfile} | %{__scm_apply_$specglobals{__scm}".
       ($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
-      " -m %{basename:$patchfile} $patchfile $ordinal}\n";
+      " -m %{basename:$patchfile} $patchfile $ordinal}$check_status";
 } # apply_patch()
 
 
@@ -958,7 +960,7 @@ sub unpackcmd {
          "'%{_sourcedir}/$sourcedrop'" :
       decompress("%{_sourcedir}/$sourcedrop").
           ' | %{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f -' ).
-      "\nSTATUS=\$?\nif [ \$STATUS -ne 0 ]; then\n  exit \$STATUS\nfi\n";
+      $check_status;
 } # end unpackcmd()
 
 
@@ -985,7 +987,8 @@ sub lookup_specfile {
         q(%{__unzip} -Z1 %{tarball} '*.spec') :
      $tarball =~ /\.tar$/ ? # plain .tar files don't need to be uncompressed
         q(%{__tar} -tf %{tarball} --wildcards '*.spec') :
-     decompress($tarball).q( | %{__tar} -tf - --wildcards '*.spec') );
+     decompress($tarball).q( | %{__tar} -tf - --wildcards '*.spec') ).
+     $check_status;
 } # end lookup_specfile()
 
 
@@ -999,7 +1002,8 @@ sub extract_specfile {
      $tarball =~ /\.tar$/ ? # plain .tar files don't need to be uncompressed
         q(%{__tar} -xOf %{tarball} --wildcards '*.spec') :
      decompress($tarball).q( | %{__tar} -xOf - --wildcards '*.spec') ).
-     " > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir}";
+     " > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir}".
+     $check_status;
 } # end extract_specfile()
 
 
@@ -1056,7 +1060,8 @@ sub process_patch {
     $patchscript .= q(%{__echo} "Patch ).($pnum eq '' ? '' : "#$pnum ");
     $pnum = expandmacros("%{patch$pnum}");
     $patchscript .= q|(|.basename($pnum).qq|):"\n|;
-    $patchscript .= "%{uncompress:$pnum} | %{__patch} $patchopts\n\n";
+    $patchscript .= "%{uncompress:$pnum} | %{__patch} $patchopts";
+    $patchscript .= $check_status;
   }
   return $patchscript;
 } # end process_patch()
