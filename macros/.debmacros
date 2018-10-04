@@ -3,3 +3,5 @@
 %_default_verbosity 1
 %_signature gpg
 %_gpg_name Andreas Scherer
+
+%_default_tar_flags --skip-old-files
