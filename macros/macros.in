@@ -25,7 +25,6 @@
 %__chgrp		/bin/chgrp
 %__chmod		/bin/chmod
 %__chown		/bin/chown
-%__cd			/usr/bin/cd
 %__cp			/bin/cp
 %__debsigs		/usr/bin/debsigs
 %__dpkg			/usr/bin/dpkg
@@ -55,7 +54,7 @@
 %__rpm			/usr/bin/rpm
 %__sed			/bin/sed
 %__tar			/bin/tar
-%__test			/bin/test
+%__test			/usr/bin/test
 %__unzip		/usr/bin/unzip
 %__xargs		/usr/bin/xargs
 %__xz			/usr/bin/xz
@@ -220,7 +219,7 @@ package or when debugging this package.\
   \
   set -x\
   umask 022\
-  %{__cd} \"%{u2p:%{_builddir}}\"\
+  cd \"%{u2p:%{_builddir}}\"\
 
 %___build_body		%{nil}
 %___build_post		exit $?
