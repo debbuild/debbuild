@@ -1870,6 +1870,7 @@ sub handle_macro_options {
   }
   s/%%/%/g; # reduce level of macronization
   s/\s+\\+\n/\n/g; # prepare for multi-line shipment
+  s/%\{?0\}?/$macro/g; # the name of the macro invoked
   s/%\{\?\*\}/join(' ',@nonoptions)/eg; # replace 'all arguments'
   for my $i (1..@nonoptions) { # fill '%{i}' parameters
     s/%\{?$i\}?/$nonoptions[$i-1]/g;
