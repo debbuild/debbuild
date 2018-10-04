@@ -1689,17 +1689,19 @@ sub store_value {
   my ($caller,$key,$value) = @_;
   # Strip and store '%macro(options)'
   $macroopts{$key} = $1 if $key =~ s/\((.*)\)//;
+  my $recipient = ( grep { $key eq lc $_ } qw(summary name version
+      release epoch group copyright url packager) ) ?
+    \$pkgdata{main}{$key} : \$specglobals{$key};
   if (defined $value) {
     chomp $value; # strip newline from 'macros' input
     # strip asymmetrical closing braces
     my $unmatched = (() = $value =~ m/}/g) - (() = $value =~ m/{/g);
     $value =~ s/}{$unmatched}$// if 0 < $unmatched;
+    # fast vs. lazy expansion
+    $$recipient = $caller eq 'global' ? expandmacros($value) : $value;
+  } else { # delete table entry
+    $$recipient = undef;
   }
-  my $recipient = ( grep { $key eq lc $_ } qw(summary name version
-      release epoch group copyright url packager) ) ?
-    \$pkgdata{main}{$key} : \$specglobals{$key};
-  $$recipient = not defined $value ? undef :
-    $caller eq 'global' ? expandmacros($value) : $value;
 } # end store_value()
 
 
