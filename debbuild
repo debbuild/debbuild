@@ -220,7 +220,7 @@ sub load_config {
           last unless /\\$/;
         }
       }
-      store_value($macro, $eq eq '=' ? $specglobals{$value} : $value);
+      store_value('define', $macro, $eq eq '=' ? $specglobals{$value} : $value);
     }
     close MACROS;
   }
@@ -316,7 +316,7 @@ sub parse_cmd {
     'with=s'        => \&define_handler, # dito for 'with|without=s'
     'without=s'     => \&define_handler,
     'define|D=s'    => \&define_handler,
-    'S=s'           => sub { store_value('__scm',$_[1]) },
+    'S=s'           => sub { store_value('define','__scm',$_[1]) },
     'help|?'        => \&help_handler,
     'version'       => sub { print "debbuild v$version\n" },
     '<>'            => \&catchall # process non-option arguments
@@ -380,7 +380,7 @@ sub parse_cmd {
     }
     my ($macro,$value) = $opt_value =~ m/(\S+)(?:\s+(.+))?/i;
     if (defined $value) {
-      store_value($macro,$value);
+      store_value('define',$macro,$value);
     } else {
       warn "WARNING: missing value for macro $macro in --$opt_name! Ignoring.\n";
     }
@@ -1686,7 +1686,7 @@ sub install_sdeb {
 ## store_value()
 # Helper function for writing to the %macro storage(s)
 sub store_value {
-  my ($key,$value) = @_;
+  my ($caller,$key,$value) = @_;
   # Strip and store '%macro(options)'
   $macroopts{$key} = $1 if $key =~ s/\((.*)\)//;
   if (defined $value) {
@@ -1695,12 +1695,11 @@ sub store_value {
     my $unmatched = (() = $value =~ m/}/g) - (() = $value =~ m/{/g);
     $value =~ s/}{$unmatched}$// if 0 < $unmatched;
   }
-  if ($key =~ /^(?:summary|name|epoch|version|release|
-      group|copyright|url|packager)$/ix) {
-    $pkgdata{main}{$key} = (defined $value ? $value : undef);
-  } else {
-    $specglobals{$key} = (defined $value ? $value : undef);
-  }
+  my $recipient = ($key =~ /^(?:summary|name|epoch|version|release|
+      group|copyright|url|packager)$/ix) ?
+    \$pkgdata{main}{$key} : \$specglobals{$key};
+  $$recipient = not defined $value ? undef :
+    $caller eq 'global' ? expandmacros($value) : $value;
 } # end store_value()
 
 
@@ -1725,10 +1724,10 @@ sub expandmacros {
   # Process %define's and Conditional Build Stuff
   s/%(bcond_with(?:out)?)\s+(\S+)/%{$1 $2}/g;
   # Store %globals (from '%bcond_with[out]()' in 'macros[.in]')
-  s/%(?:define|global)\s+(\S+)\s+(.+)/store_value($1,$2)/eg;
+  s/%(define|global)\s+(\S+)\s+(.+)/store_value($1,$2,$3)/eg;
   die "Missing value for '%$1 $2'. Aborting!" if m/%(define|global)\s+(.+)/;
   # Permit unsetting/deleting of stored values
-  { no warnings; s/%undefine\s+(\S+)/store_value($1)/eg; }
+  { no warnings; s/%(undefine)\s+(\S+)/store_value($1,$2)/eg; }
   # Print the active macro table
   s/^\s*%dump/dump_macros()/e;
   # Is debbuild in verbose mode?
