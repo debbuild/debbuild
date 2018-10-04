@@ -1695,8 +1695,8 @@ sub store_value {
     my $unmatched = (() = $value =~ m/}/g) - (() = $value =~ m/{/g);
     $value =~ s/}{$unmatched}$// if 0 < $unmatched;
   }
-  my $recipient = ($key =~ /^(?:summary|name|epoch|version|release|
-      group|copyright|url|packager)$/ix) ?
+  my $recipient = ( grep { $key eq lc $_ } qw(summary name version
+      release epoch group copyright url packager) ) ?
     \$pkgdata{main}{$key} : \$specglobals{$key};
   $$recipient = not defined $value ? undef :
     $caller eq 'global' ? expandmacros($value) : $value;
