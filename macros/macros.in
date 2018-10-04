@@ -219,7 +219,7 @@ package or when debugging this package.\
   \
   set -x\
   umask 022\
-  cd \"%{u2p:%{_builddir}}\"\
+  cd $RPM_BUILD_DIR\
 
 %___build_body		%{nil}
 %___build_post		exit $?

@@ -916,8 +916,7 @@ sub process_setup {
 # - rpmbuild requires -n on all %setup macros, but carries the first down to
 #   %install etc, debbuild sets the global on the first call, and keeps using
 #   it for further %setup calls
-  my $setupscript = "cd '%{_builddir}'\n";
-  $setupscript .= "%{__rm} -rf '%{buildsubdir}'\n" unless $leavedirs;
+  my $setupscript = "%{__rm} -rf '%{buildsubdir}'\n" unless $leavedirs;
 
   foreach (@sbefore) {
     $setupscript .= unpackcmd($pkgdata{sources}{$_},$quietunpack);
