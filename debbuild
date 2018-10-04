@@ -1797,8 +1797,8 @@ sub expandmacros {
       # helper for parametrized macros
       s/$initvalue/$arg/g;
     } elsif ($prefix eq 'shrink') {
-      # trim leading, intermediate, and trailing whitespace
-      $arg =~ s/^\s*//; $arg =~ s/\s*$//; $arg =~ s/\s+/ /g;
+      # trim leading, trailing, and intermediate whitespace
+      $arg =~ s/^\s*(.*)\s*/$1/; $arg =~ s/\s+/ /g;
       s/$initvalue/$arg/g;
     } elsif ($prefix eq 'quote') {
       # quote a parametric macro argument
