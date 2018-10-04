@@ -924,8 +924,7 @@ sub process_setup {
   }
 
   if ($createdir) {
-    $setupscript .= "%{__mkdir_p} %{buildsubdir}\n";
-    $setupscript .= "cd '%{buildsubdir}'\n";
+    $setupscript .= "%{__mkdir_p} %{buildsubdir}\ncd '%{buildsubdir}'\n";
   }
   elsif (not $skipdefault) {
     $setupscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
@@ -1059,9 +1058,8 @@ sub process_patch {
   foreach my $pnum (@patchlist) {
     $patchscript .= q(%{__echo} "Patch ).($pnum eq '' ? '' : "#$pnum ");
     $pnum = expandmacros("%{patch$pnum}");
-    $patchscript .= q|(|.basename($pnum).qq|):"\n|;
-    $patchscript .= "%{uncompress:$pnum} | %{__patch} $patchopts";
-    $patchscript .= $check_status;
+    $patchscript .= q|(|.basename($pnum).qq|):"\n|.
+      "%{uncompress:$pnum} | %{__patch} $patchopts".$check_status;
   }
   return $patchscript;
 } # end process_patch()
@@ -1198,8 +1196,8 @@ sub install {
   # munge %doc entries into place
   # rpm handles this with a separate executed %doc script, we're not going to bother.
   foreach my $docpkg (keys %doclist) {
-    $script{install} .= "DOCDIR=\$RPM_BUILD_ROOT%{_docdir}/$pkgdata{$docpkg}{name}\nexport DOCDIR\n";
-    $script{install} .= "%{__mkdir_p} \$DOCDIR\n";
+    $script{install} .= "DOCDIR=\$RPM_BUILD_ROOT%{_docdir}/".
+      $pkgdata{$docpkg}{name}."\nexport DOCDIR\n%{__mkdir_p} \$DOCDIR\n";
     $doclist{$docpkg} =~ s/^\s*//;
     foreach (split ' ', $doclist{$docpkg}) {
       $script{install} .= "%{__cp} -pr $_ \$DOCDIR/\n";
