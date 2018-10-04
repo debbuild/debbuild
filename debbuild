@@ -1733,6 +1733,8 @@ sub expandmacros {
   { no warnings; s/%undefine\s+(\S+)/store_value($1)/eg; }
   # Print the active macro table
   s/^\s*%dump/dump_macros()/e;
+  # Is debbuild in verbose mode?
+  s/%verbose/$verbosity/g;
 
   # Replace global macros
   while (m/%(\w+)/g) {
