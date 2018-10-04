@@ -648,7 +648,7 @@ ENDIF: if (/^\s*%endif/) {
 
     elsif (/^%(build|install|check|clean)/) {
       $stage = $1;
-      $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
+      $script{$stage} .= "%{__cd} '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
     } # %build,install,check,clean
 
     elsif (s/^%((?:pre|post)(?:un)?)//i) {
@@ -880,7 +880,7 @@ sub patches {
 # Hard-coded variant of RPM's macro of the same name.
 sub apply_patch {
   my ($verbose,$plevel,$patchfile,$ordinal) = @_;
-  return "test -r $patchfile || { echo 'Cannot read $patchfile'; exit 1; }\n".
+  return "%{__test} -r $patchfile || { %{__echo} 'Cannot read $patchfile'; exit 1; }\n".
     "%{uncompress:$patchfile} | %{__scm_apply_$specglobals{__scm}".
       ($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
       " -m %{basename:$patchfile} $patchfile $ordinal}$check_status";
@@ -916,7 +916,7 @@ sub process_setup {
 # - rpmbuild requires -n on all %setup macros, but carries the first down to
 #   %install etc, debbuild sets the global on the first call, and keeps using
 #   it for further %setup calls
-  my $setupscript = "cd '%{_builddir}'\n";
+  my $setupscript = "%{__cd} '%{_builddir}'\n";
   $setupscript .= "%{__rm} -rf '%{buildsubdir}'\n" unless $leavedirs;
 
   foreach (@sbefore) {
@@ -924,14 +924,14 @@ sub process_setup {
   }
 
   if ($createdir) {
-    $setupscript .= "%{__mkdir_p} %{buildsubdir}\ncd '%{buildsubdir}'\n";
+    $setupscript .= "%{__mkdir_p} %{buildsubdir}\n%{__cd} '%{buildsubdir}'\n";
   }
   elsif (not $skipdefault) {
     $setupscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
   }
 
   if (not $createdir) {
-    $setupscript .= "cd '%{buildsubdir}'\n";
+    $setupscript .= "%{__cd} '%{buildsubdir}'\n";
   }
   elsif (not $skipdefault) {
     $setupscript .= unpackcmd($pkgdata{main}{source},$quietunpack);
@@ -1179,9 +1179,9 @@ sub execute_script {
   close SCRIPT;
 
   # execute
-  print 'Executing('.($what or "%$stage").'): '.expandmacros('%{___build_cmd}').' '. $scriptfile.
-    ($for or '')."\n" if $verbosity;
-  system(expandmacros('%{___build_cmd}') .' '. $scriptfile . ($verbosity > 1 ? '' : ' >/dev/null 2>&1'))
+  my $cmdline = expandmacros('%{___build_cmd}').' '. $scriptfile;
+  print 'Executing('.($what or "%$stage").'): '.$cmdline.($for or '')."\n" if $verbosity;
+  system($cmdline . ($verbosity > 1 ? '' : ' >/dev/null 2>&1'))
     and die "Exec of $scriptfile failed (%$stage): $?\n";
 
   # and clean up
@@ -1507,7 +1507,7 @@ sub srcpackage {
   }
 
   # use pax -w [file] [file] ... -f outfile.sdeb
-  $paxcmd .= '(cd %{_topdir}; %{__pax} -L -w ';
+  $paxcmd .= '(%{__cd} %{_topdir}; %{__pax} -L -w ';
 
   # create file list:  Source[nn], Patch[nn]
   $paxcmd .= join(' ', map { s/\%\{_sourcedir}/SOURCES/; $_ } sources(),
@@ -1678,7 +1678,7 @@ sub install_sdeb {
   my ($srcpkg) = @_;
   die "Can't install $srcpkg\n" unless $srcpkg =~ /\.sdeb$/;
   $srcpkg = abs_path($srcpkg);
-  system(expandmacros("(cd %{_topdir}; %{__pax} -r -f $srcpkg)")) == 0 and
+  system(expandmacros("(%{__cd} %{_topdir}; %{__pax} -r -f $srcpkg)")) == 0 and
   print "Extracted source package $srcpkg to $topdir.\n";
 } # end install_sdeb()
 

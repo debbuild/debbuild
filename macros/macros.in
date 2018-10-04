@@ -25,6 +25,7 @@
 %__chgrp		/bin/chgrp
 %__chmod		/bin/chmod
 %__chown		/bin/chown
+%__cd			/usr/bin/cd
 %__cp			/bin/cp
 %__debsigs		/usr/bin/debsigs
 %__dpkg			/usr/bin/dpkg
@@ -54,6 +55,7 @@
 %__rpm			/usr/bin/rpm
 %__sed			/bin/sed
 %__tar			/bin/tar
+%__test			/bin/test
 %__unzip		/usr/bin/unzip
 %__xargs		/usr/bin/xargs
 %__xz			/usr/bin/xz
@@ -218,7 +220,7 @@ package or when debugging this package.\
   \
   set -x\
   umask 022\
-  cd \"%{u2p:%{_builddir}}\"\
+  %{__cd} \"%{u2p:%{_builddir}}\"\
 
 %___build_body		%{nil}
 %___build_post		exit $?
@@ -302,7 +304,7 @@ package or when debugging this package.\
 #------------------------------------------------------------------------------
 # Tested features of make
 # Output synchronization for parallel make:
-%_make_output_sync %(! %{__make} --version -O >/dev/null 2>&1 || echo -O)
+%_make_output_sync %(! %{__make} --version -O >/dev/null 2>&1 || %{__echo} -O)
 
 #------------------------------------------------------------------------------
 # The "make" analogue, hiding the _smp_mflags magic from specs
@@ -316,7 +318,7 @@ package or when debugging this package.\
 # Former make install analogue, kept for compatibility and for old/broken
 #  packages that don't support DESTDIR properly.
 %makeinstall \
-  echo "warning: macro 'makeinstall' is deprecated, try 'make_install' instead" 1>&2\
+  %{__echo} "warning: macro 'makeinstall' is deprecated, try 'make_install' instead" 1>&2\
   %{__make} \\\
 	prefix=%{?buildroot:%{buildroot}}%{_prefix} \\\
 	exec_prefix=%{?buildroot:%{buildroot}}%{_exec_prefix} \\\
