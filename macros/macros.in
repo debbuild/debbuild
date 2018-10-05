@@ -217,7 +217,7 @@ package or when debugging this package.\
   RPM_BUILD_ROOT=\"%{u2p:%{buildroot}}\"\
   export RPM_BUILD_ROOT\
   \
-  set -x\
+  %{verbose:set -x}%{!verbose:exec > /dev/null}\
   umask 022\
   cd $RPM_BUILD_DIR\
 

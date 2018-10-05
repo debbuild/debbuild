@@ -1173,7 +1173,6 @@ sub execute_script {
     or die "Can't open/create ".($what or $stage)."script file $scriptfile: $!\n";
   $specglobals{___build_body} = $script{$stage};
   my $build_template = expandmacros('%{___build_template}');
-  $build_template =~ s/set -x/set +x/ unless $verbosity;
   print SCRIPT $build_template;
   close SCRIPT;
 
@@ -1718,6 +1717,7 @@ sub expandmacros {
       =~ s/([?!{*}(+)])/\\$1/g; # neutralize quantifiers
     $value //= ($specglobals{$macro} or '');
     $value = '' unless $specglobals{$macro} xor $qex =~ /!/; # equivalence
+    $value = '' if $macro eq 'verbose' and 0 < $verbosity; # shut up!
     s/$initvalue/expandmacros($value)/eg;
   }
   pos = 0; # reset to start of $_
@@ -1802,6 +1802,8 @@ sub expandmacros {
     } elsif ($prefix eq 'quote') {
       # quote a parametric macro argument
       s/$initvalue/$arg/g;
+    } elsif ($prefix eq 'verbose') {
+      0 < $verbosity ? s/$initvalue/$arg/g : s/$initvalue//g;
     }
   }
   pos = 0; # reset to start of $_
