@@ -169,9 +169,9 @@ package or when debugging this package.\
 #	Macros that are initialized as a side effect of rpmrc and/or spec
 #	file parsing.
 #
-#      The sub-directory (relative to %{_builddir}) where sources are compiled.
-#      This macro is set after processing %setup, either explicitly from the
-#      value given to -n or the default name-version.
+#	The sub-directory (relative to %{_builddir}) where sources are compiled.
+#	This macro is set after processing %setup, either explicitly from the
+#	value given to -n or the default name-version.
 #
 %buildsubdir %{name}-%{version}
 
@@ -243,7 +243,7 @@ package or when debugging this package.\
 %_docdir		%{_datadir}/doc
 %_sysconfdir		/etc
 %_sharedstatedir	%{_prefix}/com
-%_localstatedir		/var
+%_localstatedir		%{_prefix}/var
 %_lib			lib
 %_libdir		%{_exec_prefix}/%{_lib}
 %_includedir		%{_prefix}/include
@@ -286,6 +286,7 @@ package or when debugging this package.\
   FFLAGS="${FFLAGS:-%optflags}" ; export FFLAGS ; \
   %{_configure} --host=%{_host} --build=%{_build} \\\
 	--program-prefix=%{?_program_prefix} \\\
+	--disable-dependency-tracking \\\
 	--prefix=%{_prefix} \\\
 	--exec-prefix=%{_exec_prefix} \\\
 	--bindir=%{_bindir} \\\
