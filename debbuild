@@ -1172,8 +1172,7 @@ sub execute_script {
   sysopen(SCRIPT, $scriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW, 0777)
     or die "Can't open/create ".($what or $stage)."script file $scriptfile: $!\n";
   $specglobals{___build_body} = $script{$stage};
-  my $build_template = expandmacros('%{___build_template}');
-  print SCRIPT $build_template;
+  print SCRIPT expandmacros('%{___build_template}');
   close SCRIPT;
 
   # execute
