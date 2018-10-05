@@ -39,7 +39,6 @@ my $version = '@VERSION@';
 die "No .spec file to work with!  Exiting.\n" unless @ARGV;
 
 # Initialized globals
-my $verbosity;
 my $NoAutoReq = 0;
 my %cmdopts = (type => '',
 		stage => 'a',
@@ -107,7 +106,8 @@ print "This is debbuild, Version $version\n";
 
 # global shortcuts
 my $topdir = expandmacros('%{_topdir}');
-$verbosity //= expandmacros('%{?_default_verbosity}%{!?_default_verbosity:0}');
+$specglobals{verbose} //= expandmacros('%{?_default_verbosity}%{!?_default_verbosity:0}');
+$specglobals{verbose} = undef unless 0 < $specglobals{verbose};
 
 if ($cmdopts{type} eq 's') {
   install_sdeb($specglobals{srcpkg});
@@ -305,8 +305,8 @@ sub parse_cmd {
     'nobuild'       => \$cmdopts{nobuild},
     'nocheck'       => \$cmdopts{nocheck},
     'noclean'       => \$cmdopts{noclean},
-    'v+'            => \$verbosity, # bump verbosity.
-    'q'             => sub { $verbosity = 0 }, # dump verbosity.
+    'v+'            => \$specglobals{verbose}, # bump verbosity.
+    'q'             => sub { $specglobals{verbose} = undef }, # dump verbosity.
     'rebuild=s'     => \&srcpkg_handler,
     'recompile=s'   => \&srcpkg_handler,
     'install|i=s'   => \&srcpkg_handler,
@@ -1178,8 +1178,10 @@ sub execute_script {
 
   # execute
   my $cmdline = expandmacros('%{___build_cmd}').' '. $scriptfile;
-  print 'Executing('.($what or "%$stage").'): '.$cmdline.($for or '')."\n" if $verbosity;
-  system($cmdline . ($verbosity > 1 ? '' : ' >/dev/null 2>&1'))
+  print 'Executing('.($what or "%$stage").'): '.$cmdline.($for or '')."\n"
+    if defined $specglobals{verbose};
+  system($cmdline . ((defined $specglobals{verbose} and
+      $specglobals{verbose} > 1) ? '' : ' >/dev/null 2>&1'))
     and die "Exec of $scriptfile failed (%$stage): $?\n";
 
   # and clean up
@@ -1610,7 +1612,7 @@ sub checkbuildreq {
 sub getreqs {
   my ($pkgtree) = @_;
 
-  print "Checking library requirements...\n" if $verbosity;
+  print "Checking library requirements...\n" if defined $specglobals{verbose};
   return () if 'all' eq $pkgdata{main}{arch}; # noarch package
   chomp( my @binlist = qx ( $specglobals{__find} $pkgtree -type f -perm /ugo=x ) );
   return () unless @binlist;
@@ -1717,7 +1719,7 @@ sub expandmacros {
       =~ s/([?!{*}(+)])/\\$1/g; # neutralize quantifiers
     $value //= ($specglobals{$macro} or '');
     $value = '' unless $specglobals{$macro} xor $qex =~ /!/; # equivalence
-    $value = '' if $macro eq 'verbose' and 0 < $verbosity; # shut up!
+    $value = '' if $macro eq 'verbose' and defined $specglobals{$macro}; # shut up!
     s/$initvalue/expandmacros($value)/eg;
   }
   pos = 0; # reset to start of $_
@@ -1732,7 +1734,7 @@ sub expandmacros {
   # Print the active macro table
   s/^\s*%dump/dump_macros()/e;
   # Is debbuild in verbose mode?
-  s/%verbose/$verbosity/g;
+  s/%verbose/defined $specglobals{verbose} ? $specglobals{verbose} : ''/eg;
 
   # Replace global macros
   while (m/%(\w+)/g) {
@@ -1803,7 +1805,7 @@ sub expandmacros {
       # quote a parametric macro argument
       s/$initvalue/$arg/g;
     } elsif ($prefix eq 'verbose') {
-      0 < $verbosity ? s/$initvalue/$arg/g : s/$initvalue//g;
+      defined $specglobals{$prefix} ? s/$initvalue/$arg/g : s/$initvalue//g;
     }
   }
   pos = 0; # reset to start of $_
