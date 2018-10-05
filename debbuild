@@ -100,14 +100,15 @@ my %optflags = (all => '');
 load_config();
 config_debrc();
 lsb_detection();
-parse_cmd();
-
-print "This is debbuild, Version $version\n";
 
 # global shortcuts
 my $topdir = expandmacros('%{_topdir}');
 $specglobals{verbose} //= expandmacros('%{?_default_verbosity}%{!?_default_verbosity:0}');
 $specglobals{verbose} = undef unless 0 < $specglobals{verbose};
+
+parse_cmd(); # possible executive override
+
+print "This is debbuild, Version $version\n";
 
 if ($cmdopts{type} eq 's') {
   install_sdeb($specglobals{srcpkg});

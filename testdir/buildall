@@ -23,7 +23,7 @@ do
 			verbose=-vv
 			;;
 		q) # dump verbosity
-			verbose=
+			verbose=-q
 			;;
 		r) # use alternative package builder
 			builder=$OPTARG
