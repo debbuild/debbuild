@@ -1793,17 +1793,15 @@ sub expandmacros {
     } elsif ($prefix eq 'getenv') {
       # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
       s/$initvalue/$ENV{$arg}/g;
-    } elsif ($prefix eq 'expand') {
-      # helper for parametrized macros
+    } elsif (grep { $prefix eq $_ } qw(expand quote)) {
+      # helper for parametrized macros and quoted macro arguments
       s/$initvalue/$arg/g;
     } elsif ($prefix eq 'shrink') {
       # trim leading, trailing, and intermediate whitespace
       $arg =~ s/^\s+|\s+//g; $arg =~ s/\s+/ /g;
       s/$initvalue/$arg/g;
-    } elsif ($prefix eq 'quote') {
-      # quote a parametric macro argument
-      s/$initvalue/$arg/g;
     } elsif ($prefix eq 'verbose') {
+      # 'positive verbosity'
       defined $specglobals{$prefix} ? s/$initvalue/$arg/g : s/$initvalue//g;
     }
   }
@@ -1824,7 +1822,6 @@ sub expandmacros {
   s/\\"/"/g;
   s/\\\\/\\/g;
   s/(\S)\\+\n/$1\n/g;
-
   return $_;
 } # end expandmacros()
 
