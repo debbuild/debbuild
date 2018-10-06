@@ -19,11 +19,8 @@ do
 		S) # choose SCM
 			scm=$OPTARG
 			;;
-		v) # bump verbosity
-			verbose=-v
-			;;
-		q) # dump verbosity
-			verbose=
+		[qv]) # dump or bump verbosity
+			verbose=-$opt
 			;;
 		r) # use alternative package builder
 			builder=$OPTARG
