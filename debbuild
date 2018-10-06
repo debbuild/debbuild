@@ -165,7 +165,7 @@ if ($cmdopts{type} eq 'b') {
   parse_spec($specglobals{specfile});
   die "Can't build $pkgdata{main}{name}:  build requirements not met.\n"
     unless checkbuildreq();
-  exit 0 if $specglobals{NOBUILD};
+  exit 0 if $cmdopts{nobuild};
 
   # Expand macros as necessary.
   $specglobals{buildroot} = $cmdopts{buildroot} if defined $cmdopts{buildroot};
