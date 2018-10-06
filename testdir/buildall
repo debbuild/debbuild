@@ -20,7 +20,7 @@ do
 			scm=$OPTARG
 			;;
 		v) # bump verbosity
-			verbose=-vv
+			verbose=-v
 			;;
 		q) # dump verbosity
 			verbose=-q

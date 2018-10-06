@@ -100,13 +100,10 @@ my %optflags = (all => '');
 load_config();
 config_debrc();
 lsb_detection();
+parse_cmd();
 
-# global shortcuts
+# global shortcut
 my $topdir = expandmacros('%{_topdir}');
-$specglobals{verbose} //= expandmacros('%{?_default_verbosity}%{!?_default_verbosity:0}');
-$specglobals{verbose} = undef unless 0 < $specglobals{verbose};
-
-parse_cmd(); # possible executive override
 
 print "This is debbuild, Version $version\n";
 
@@ -294,6 +291,11 @@ sub lsb_detection {
 # Parses command line into global hash %cmdopts, other globals
 # Options based on rpmbuild's options
 sub parse_cmd {
+  # Set default verbosity; may be overridden with -q and -v(v).
+  $specglobals{verbose} //= expandmacros('%{?_default_verbosity}'.
+    '%{!?_default_verbosity:0}');
+  $specglobals{verbose} = undef unless 0 < $specglobals{verbose};
+
   # Don't feel like coding my own option parser...
   Getopt::Long::GetOptions(
     'buildroot=s'   => \$cmdopts{buildroot},
