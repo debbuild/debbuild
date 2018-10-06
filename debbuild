@@ -61,6 +61,9 @@ my $finalmessages = ''; # A place to stuff messages that I want printed at the *
 # For %define's in specfile, among many other things.
 my %specglobals = (vendor => 'debbuild'); # this can be changed by the Vendor: header in the spec file
 my %macroopts; # For macro options
+# Ah, the joys of multiple architectures.  :(  Feh.
+# Compiler options will be loaded from 'debrc' file(s).
+my %optflags = (all => '');
 
 # Package data
 # This is the form of $pkgdata{pkgname}{meta}
@@ -84,10 +87,6 @@ my %targets = (p => 'Prep',
 		a => 'Build binary and source',
 		b => 'Build binary',
 		s => 'Build source');
-
-# Ah, the joys of multiple architectures.  :(  Feh.
-# Compiler options will be loaded from 'debrc' file(s).
-my %optflags = (all => '');
 
 
 #### main ####
@@ -345,14 +344,13 @@ sub parse_cmd {
   ## srcpkg_handler()
   # prepare $specglobals{srcpkg} in dependence of the calling option
   sub srcpkg_handler {
-    my ($opt_name,$opt_value) = @_;
-    $specglobals{srcpkg} = $opt_value;
+    (my $opt_name,$specglobals{srcpkg}) = @_;
     $cmdopts{type} = 'r';
     if ($opt_name eq 'rebuild') {
       $cmdopts{stage} = 'b';
     } elsif ($opt_name eq 'recompile') {
       $cmdopts{stage} = 'i';
-    } else { # $opt_name eq 'install'
+    } else { # $opt_name eq 'install'?!
       $cmdopts{type} = 's';
     }
   }
@@ -368,8 +366,7 @@ sub parse_cmd {
       # Mutually exclusive options.
       die "Can't use -$opt_name$opt_value with --rebuild\n";
     } else {
-      $cmdopts{type} = $opt_name;
-      $cmdopts{stage} = $opt_value;
+      ($cmdopts{type},$cmdopts{stage}) = ($opt_name,$opt_value);
     }
   }
   ## define_handler()
@@ -391,7 +388,8 @@ sub parse_cmd {
   ## help_handler()
   # Factor-out the 'help' text. Could as well be SYNOPSIS in pod.
   sub help_handler {
-    my $help_msg = <<HELP_MSG;
+    open(my $pipe, '|-', $ENV{PAGER} || 'less -e') or exit 1;
+    print $pipe <<HELP_MSG;
 debbuild v$version
 Copyright © 2005-2015 Kris Deugau <kdeugau\@deepnet.cx>
 Copyright © 2015-2018 Andreas Scherer <https://ascherer.github.io/>
@@ -425,8 +423,6 @@ debbuild-specific options:
       --showpkgs                 Show package names that would be built.
       --nobuild                  Parse <specfile>, but do no processing
 HELP_MSG
-    open(my $pipe, '|-', $ENV{PAGER} || 'less -e') or exit 1;
-    print $pipe $help_msg;
     close $pipe;
     exit 0;
   }
@@ -458,11 +454,10 @@ sub parse_spec {
   my ($specfile, $stage, $subname, $scriptlet) = @_;
   $stage //= 'preamble';
   $subname //= 'main';
+  $pkgdata{main}{arch} //= expandmacros('%{_arch}');
 
   die "No .spec file specified!  Exiting.\n" unless $specfile;
   open my $fh, $specfile or die "specfile ($specfile) barfed: $!\n";
-
-  $pkgdata{main}{arch} //= expandmacros('%{_arch}');
 
   my @ifexpr = (); # Nested %if..%else..%endif conditionals
 
@@ -601,7 +596,7 @@ ENDIF: if (/^\s*%endif/) {
 
     # %{perl:interpreter}
     elsif (/^\s*%\{perl:(.+)}/) {
-      my $perl = expandmacros('%{_tmppath}')."/deb-tmp.perl.".int(rand(99998)+1);
+      my $perl = expandmacros('%{_tmppath}/deb-tmp.perl.').int(rand(99998)+1);
       do {
         local *STDOUT;
         if (open(STDOUT, '>', $perl)) {
@@ -621,9 +616,8 @@ ENDIF: if (/^\s*%endif/) {
 # Now we pick out the sections and set "state" to parse that section.
 # Fugly but I can't see a better way.  >:(
     elsif (/^%(description|copyrightdata|files)(?:\s+(?:-n\s+)?(.+))?/) {
-      $stage = $1;
-      $subname = 'main';
-      if ($2) {       # Magic to add entries to the right package
+      ($stage,$subname) = ($1,'main');
+      if ($2) { # Magic to add entries to the right package
         my $tmp = expandmacros($2);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
@@ -655,9 +649,8 @@ ENDIF: if (/^\s*%endif/) {
     } # %build,install,check,clean
 
     elsif (s/^%((?:pre|post)(?:un)?)//i) {
-      $stage = 'prepost';
       $scriptlet = lc $1;
-      $subname = 'main';
+      ($stage,$subname) = ('prepost','main');
       Getopt::Long::GetOptionsFromString($_,
         # Rudimentary support for '-p <command>'
         'p=s' => sub { $pkgdata{$subname}{$scriptlet} .= $_[1] },
@@ -815,8 +808,7 @@ ENDIF: if (/^\s*%endif/) {
 ## splitreqs()
 # Split string at 'comma' and return list of trimmed entries
 sub splitreqs {
-  my ($reqs) = @_;
-  return map { /^\s*(.+)\s*$/ } split /,/, expandmacros($reqs);
+  return map { /^\s*(.+)\s*$/ } split /,/, expandmacros(shift);
 } # end splitreqs()
 
 
@@ -825,17 +817,16 @@ sub splitreqs {
 # 'process_setup()', then create an '%autopatch' line and invoke
 # 'process_autopatch()'.
 sub process_autosetup {
-  chomp( $_ = expandmacros($_) ); # permit '%{!?with_patches:-N}'
   my $plevel = $1 if s/\s+-p\s*(\d+)//;
   my $verbose = s/\s+-v//; $_ .= ($verbose ? '': ' -q');
   my $noautopatch = s/\s+-N//; # Eat '-N', which is unknown to %setup
   $specglobals{__scm} = $1 if s/\s+\-S\s+(\w+)//; # dito '-S'
-  # Generic %setup invocation
-  my $script = process_setup(); # hmm, how to fall to '%setup'?
-  # Do SCM stuff
   my $scm = $specglobals{__scm};
   die "%autosetup: option '-S $scm' currently not supported at line $..\n"
     unless $specglobals{"__scm_setup_$scm"};
+  # Generic %setup invocation
+  my $script = process_setup(); # hmm, how to fall to '%setup'?
+  # Do SCM stuff
   $script .= "%{__scm_setup_$scm".($verbose ? '' : ' -q')."}\n";
   unless ($noautopatch) {
     $_ = ($plevel ? " -p $plevel" : '').($verbose ? ' -v' : '');
@@ -867,15 +858,15 @@ sub sources {
 ## patches()
 sub patches {
   my @patches = grep {/^patch/} keys %{$pkgdata{main}};
-  my @res;
+  my @result;
   if (1 == @patches) { # won't enter 'sort BLOCK' and strip 'patch' prefix
-    push @res, "%{_sourcedir}/$pkgdata{main}{$patches[0]}";
+    push @result, "%{_sourcedir}/$pkgdata{main}{$patches[0]}";
   } else { # now you're talkin', brother!
     for (sort {$a =~ s/patch//; $b =~ s/patch//; $a <=> $b} @patches) {
-      push @res, qq(%{_sourcedir}/$pkgdata{main}{"patch$_"});
+      push @result, qq(%{_sourcedir}/$pkgdata{main}{"patch$_"});
     }
   }
-  return @res;
+  return @result;
 } # patches()
 
 
@@ -1194,7 +1185,6 @@ sub execute_script {
 ## install()
 # Writes and executes the %install script (mostly) built while reading the spec file.
 sub install {
-
   # munge %doc entries into place
   # rpm handles this with a separate executed %doc script, we're not going to bother.
   foreach my $docpkg (keys %doclist) {
@@ -1239,7 +1229,6 @@ sub install {
 # Creates miscellaneous files required by dpkg-deb to actually build the package file.
 # Should handle simple subpackages
 sub binpackage {
-
   foreach my $pkg (@pkglist) {
 
     # Just In Case.
@@ -1670,7 +1659,6 @@ sub getreqs {
 
   return unless $reqliblist; # possibly empty
   return map { m/^([\w+-.]+?):/ } qx($specglobals{__dpkg_query} -S$reqliblist);
-
 } # end getreqs()
 
 
