@@ -318,7 +318,7 @@ sub parse_cmd {
     'with=s'        => \&define_handler, # dito for 'with|without=s'
     'without=s'     => \&define_handler,
     'define|D=s'    => \&define_handler,
-    'S=s'           => sub { store_value('define','__scm',$_[1]) },
+    'S=s'           => sub { define_handler('define',"__scm $_[1]") },
     'help|?'        => \&help_handler,
     'version'       => sub { print "debbuild v$version\n" },
     '<>'            => \&catchall # process non-option arguments
@@ -380,7 +380,7 @@ sub parse_cmd {
     }
     my ($macro,$value) = $opt_value =~ m/(\S+)(?:\s+(.+))?/i;
     if (defined $value) {
-      store_value('define',$macro,$value);
+      store_value($opt_name,$macro,$value);
     } else {
       warn "WARNING: missing value for macro $macro in --$opt_name! Ignoring.\n";
     }
