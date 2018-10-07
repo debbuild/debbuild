@@ -31,9 +31,8 @@ use File::Basename;
 use Getopt::Long qw(:config no_ignore_case bundling);
 use Getopt::Std;
 use IPC::Open2;
+use Pod::Usage;
 use Text::Balanced qw(extract_bracketed extract_multiple);
-
-my $version = '@VERSION@';
 
 # Behavioural compatibility FTW!  Yes, rpmbuild does this too.
 die "No .spec file to work with!  Exiting.\n" unless @ARGV;
@@ -104,7 +103,7 @@ parse_cmd();
 # global shortcut
 my $topdir = expandmacros('%{_topdir}');
 
-print "This is debbuild, Version $version\n";
+print version();
 
 if ($cmdopts{type} eq 's') {
   install_sdeb($specglobals{srcpkg});
@@ -320,7 +319,7 @@ sub parse_cmd {
     'define|D=s'    => \&define_handler,
     'S=s'           => sub { define_handler('define',"__scm $_[1]") },
     'help|?'        => \&help_handler,
-    'version'       => sub { print "debbuild v$version\n" },
+    'version'       => sub { print version() },
     '<>'            => \&catchall # process non-option arguments
   ); # Getopt::Long::Getoptions()
   ## catchall()
@@ -386,45 +385,16 @@ sub parse_cmd {
     }
   }
   ## help_handler()
-  # Factor-out the 'help' text. Could as well be SYNOPSIS in pod.
   sub help_handler {
     open(my $pipe, '|-', $ENV{PAGER} || 'less -e') or exit 1;
-    print $pipe <<HELP_MSG;
-debbuild v$version
-Copyright © 2005-2015 Kris Deugau <kdeugau\@deepnet.cx>
-Copyright © 2015-2018 Andreas Scherer <https://ascherer.github.io/>
-
-Build .deb packages from RPM-style .spec files
-debbuild supports most package-building options rpmbuild does.
-
-Build options with [ <specfile> | <tarball> | <source package> ]:
-      -b.                        build from <specfile> ...
-      -t.                        build from <tarball> ...
-      -r.                        build from <source package> ...
-            -.p      ... through %prep (unpack sources and apply patches)
-            -.c      ... through %build (%prep, then compile)
-            -.i      ... through %install (%prep, %build, then install)
-            -.l      verify %files section
-            -.a      ... source and binary packages
-            -.b      ... binary package only
-            -.s      ... source package only
-      --rebuild (-rb)            build binary package from <source package>
-      --recompile (-ri)          build through %install from <source package>
-      --buildroot=DIRECTORY      override build root
-      --short-circuit            skip straight to specified stage (only for c,i)
-
-Common options:
-  -D, --define='MACRO EXPR'      define MACRO with value EXPR
-      --with/--without FLAG      define build conditionals from FLAG
-      -S SCM                     short for '--define "__scm SCM"'
-
-debbuild-specific options:
-      -i, --install              Unpack a .sdeb in the %_topdir tree
-      --showpkgs                 Show package names that would be built.
-      --nobuild                  Parse <specfile>, but do no processing
-HELP_MSG
+    pod2usage(-message => version(), -output => $pipe,
+      -verbose => 99, -sections => "COPYRIGHT|SHORT DESCRIPTION|OPTIONS");
     close $pipe;
     exit 0;
+  }
+  ## version()
+  sub version {
+    return 'This is debbuild, version @VERSION@'."\n";
   }
   ## dump_macros()
   sub dump_macros {
@@ -1877,21 +1847,48 @@ __END__
 
 debbuild — Build Debian-compatible .deb packages from RPM .spec files
 
-=head1 SYNOPSIS
+=head1 COPYRIGHT
 
- debbuild {-ba|-bb|-bp|-bc|-bi|-bl|-bs} [build-options] file.spec
+=item 2005-2015 © Kris Deugau <L<kdeugau@deepnet.cx>>
 
- debbuild {-ta|-tb|-tp|-tc|-ti|-tl|-ts} [build-options] file.{t{bz|gz}|zip|tar.{gz|bz2|xz|zst|Z}}
+=item 2015-2018 © Andreas Scherer L<https://ascherer.github.io/>
 
- debbuild {-ra|-rb|-rp|-rc|-ri|-rl|-rs} [build-options] file.{.src.rpm|sdeb}
+=head1 SHORT DESCRIPTION
 
- debbuild {--rebuild|--recompile} file.{src.rpm|sdeb}
+=item Build .deb packages from RPM-style .spec files.
 
- debbuild --showpkgs
+=item debbuild supports most package-building options rpmbuild does.
 
- debbuild --nobuild file.spec
+=head1 OPTIONS
 
- debbuild {--install|-i} foo.sdeb
+Build options with [ <specfile> | <tarball> | <source package> ]:
+
+      -b.                        build from <specfile> ...
+      -t.                        build from <tarball> ...
+      -r.                        build from <source package> ...
+            -.p      ... through %prep (unpack sources and apply patches)
+            -.c      ... through %build (%prep, then compile)
+            -.i      ... through %install (%prep, %build, then install)
+            -.l      verify %files section
+            -.a      ... source and binary packages
+            -.b      ... binary package only
+            -.s      ... source package only
+      --rebuild (-rb)            build binary package from <source package>
+      --recompile (-ri)          build through %install from <source package>
+      --buildroot=DIRECTORY      override build root
+      --short-circuit            skip straight to specified stage (only for c,i)
+
+Common options:
+
+  -D, --define='MACRO EXPR'      define MACRO with value EXPR
+      --with/--without FLAG      define build conditionals from FLAG
+      -S SCM                     short for '--define "__scm SCM"'
+
+debbuild-specific options:
+
+      -i, --install              Unpack a .sdeb in the %_topdir tree
+      --showpkgs                 Show package names that would be built.
+      --nobuild                  Parse <specfile>, but do no processing
 
 =head1 DESCRIPTION
 
