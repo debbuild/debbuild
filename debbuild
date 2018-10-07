@@ -994,8 +994,7 @@ sub extract_specfile {
      $tarball =~ /\.tar$/ ? # plain .tar files don't need to be uncompressed
         q(%{__tar} -xOf %{tarball} --wildcards '*.spec') :
      decompress($tarball).q( | %{__tar} -xOf - --wildcards '*.spec') ).
-     " > %{specfile}\n%{__cp} -f %{tarball} %{_sourcedir}".
-     $check_status;
+     " > %{specfile}$check_status%{__cp} -f %{tarball} %{_sourcedir}";
 } # end extract_specfile()
 
 
