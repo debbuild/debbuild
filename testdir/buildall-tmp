@@ -59,9 +59,13 @@ printf "\n\nbuilding hello project\n\n"
 $builder --define="_default_patch_flags $flags" \
 	-b$stage SPECS/hello.spec $verbose
 
-printf "\n\nbuilding Pod::Simple project\n\n"
-$builder --define="_default_patch_flags $flags" \
-	-b$stage SPECS/perl-Pod-Simple.spec $verbose
+{ dpkg -l libperl-dev >/dev/null 2>&1; rc=$?; } || true
+if [ 0 = $rc ]
+then
+	printf "\n\nbuilding Pod::Simple project\n\n"
+	$builder --define="_default_patch_flags $flags" \
+		-b$stage SPECS/perl-Pod-Simple.spec $verbose
+fi
 
 printf "\n\nbuilding HW project\n\n"
 $builder --define="__scm $scm" --define="_default_patch_flags $flags" \
