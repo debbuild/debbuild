@@ -202,7 +202,7 @@
   \
   %{verbose:set -x}%{!verbose:exec > /dev/null}\
   umask 022\
-  cd $RPM_BUILD_DIR\
+  cd \"$RPM_BUILD_DIR\"\
 
 %___build_body		%{nil}
 %___build_post		exit $?
