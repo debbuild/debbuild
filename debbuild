@@ -111,10 +111,10 @@ if ($cmdopts{type} eq 's') {
 if ($cmdopts{type} eq 'd') {
   parse_spec($specglobals{specfile});
   foreach my $pkg (@pkglist) {
-    print format_debfile($pkg)."\n" if $filelist{$pkg};
+    $finalmessages .= format_debfile($pkg)."\n" if $filelist{$pkg};
   }
   # Source package
-  print format_sdebfile()."\n";
+  $finalmessages .= format_sdebfile()."\n";
   goto FINAL;
 }
 
