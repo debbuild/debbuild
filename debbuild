@@ -100,14 +100,11 @@ config_debrc();
 lsb_detection();
 parse_cmd();
 
-# global shortcut
-my $topdir = expandmacros('%{_topdir}');
-
 print version();
 
 if ($cmdopts{type} eq 's') {
   install_sdeb($specglobals{srcpkg});
-  exit 0;
+  goto FINAL;
 }
 
 # output stage of --showpkgs
@@ -118,7 +115,7 @@ if ($cmdopts{type} eq 'd') {
   }
   # Source package
   print format_sdebfile()."\n";
-  exit 0;
+  goto FINAL;
 }
 
 # Stick --rebuild handling in here - basically install_sdeb()
@@ -135,7 +132,7 @@ if ($cmdopts{type} eq 'r') {
   } else {
     die "Can't --rebuild with $specglobals{srcpkg}\n";
   }
-  chomp( $specglobals{specfile} = "$topdir/SPECS/$specfile" );
+  chomp( $specglobals{specfile} = expandmacros("%{_specdir}/$specfile") );
   $cmdopts{type} = 'b'; # fall through
 }
 
@@ -146,7 +143,8 @@ if ($cmdopts{type} eq 't') {
   die "No tarfile specified!  Exiting.\n" unless defined $specglobals{tarball};
   my $tarball = $specglobals{tarball};
   my $cmdline = expandmacros(lookup_specfile($tarball));
-  chomp( $specglobals{specfile} = "$topdir/SPECS/".basename( qx { $cmdline } ) );
+  chomp( $specglobals{specfile} = expandmacros("%{_specdir}/").
+    basename( qx { $cmdline } ) );
 
   $tarball = abs_path($tarball);
   system expandmacros(extract_specfile($tarball));
@@ -186,7 +184,7 @@ if ($cmdopts{stage} =~ /[ab]/) {
 }
 
 # Spit out any closing remarks
-print $finalmessages;
+FINAL: print expandmacros($finalmessages);
 
 # Just in case.
 exit 0;
@@ -1206,7 +1204,8 @@ sub binpackage {
     }
 
     # Make sure we have somewhere to write the .deb file
-    mkdir "$topdir/DEBS/$pkgdata{$pkg}{arch}" unless -e "$topdir/DEBS/$pkgdata{$pkg}{arch}";
+    my $debdir = expandmacros('%{_debdir}');
+    mkdir "$debdir/$pkgdata{$pkg}{arch}" unless -e "$debdir/$pkgdata{$pkg}{arch}";
 
     # Skip building a package that doesn't have any files or dependencies.  True
     # metapackages don't have any files, but they depend on a bunch of things.
@@ -1374,7 +1373,7 @@ sub binpackage {
     execute_script('pkg', 'package-creation', " for $pkgdata{$pkg}{name}");
 
     $finalmessages .= 'Wrote binary package '.format_debfile($pkg).
-	" in $topdir/DEBS/$pkgdata{$pkg}{arch}\n";
+	" in %{_debdir}/$pkgdata{$pkg}{arch}\n";
 
     if ($cmdopts{sign}) {
       my $signkey = '';
@@ -1394,7 +1393,7 @@ sub binpackage {
       execute_script('pkg', 'package-signature', " for $pkgdata{$pkg}{name}");
 
       $finalmessages .= 'Signed binary package '.format_debfile($pkg).
-	" in $topdir/DEBS/$pkgdata{$pkg}{arch}\n";
+	" in %{_debdir}/$pkgdata{$pkg}{arch}\n";
     }
 
   } # subpackage loop
@@ -1462,7 +1461,8 @@ sub srcpackage {
   my $paxcmd;
 
   # Copy the specfile to the build tree, but only if it's not there already.
-  if (abs_path($specglobals{specfile}) ne abs_path("$topdir/SPECS/$barespec")) {
+  if (abs_path($specglobals{specfile}) ne abs_path(
+      expandmacros("%{_specdir}/$barespec"))) {
     $paxcmd .= "%{__cp} %{specfile} %{_specdir};\n"
   }
 
@@ -1477,7 +1477,7 @@ sub srcpackage {
   $paxcmd .= "SPECS/$barespec -f %{_srcdebdir}/$pkgsrcname)";
 
   system(expandmacros($paxcmd)) == 0 and
-  $finalmessages .= "Wrote source package $pkgsrcname in $topdir/SDEBS.\n";
+  $finalmessages .= "Wrote source package $pkgsrcname in %{_srcdebdir}.\n";
 } # end srcpackage()
 
 
@@ -1638,7 +1638,7 @@ sub install_sdeb {
   die "Can't install $srcpkg\n" unless $srcpkg =~ /\.sdeb$/;
   $srcpkg = abs_path($srcpkg);
   system(expandmacros("cd %{_topdir}; %{__pax} -r -f $srcpkg)")) == 0 and
-  print "Extracted source package $srcpkg to $topdir.\n";
+  $finalmessages .= "Extracted source package $srcpkg to %{_topdir}.\n";
 } # end install_sdeb()
 
 
