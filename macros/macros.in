@@ -121,23 +121,6 @@
 #	The directory where sources/patches will be unpacked and built.
 %_builddir		%{_topdir}/BUILD
 
-#	Template for debug information sub-package.
-%debug_package \
-%ifnarch noarch\
-%global __debug_package 1\
-%package debug\
-Summary: Debug information for package %{name}\
-Group: Development/Debug\
-AutoReqProv: 0\
-%description debug\
-This package provides debug information for package %{name}.\
-Debug information is useful when developing applications that use this\
-package or when debugging this package.\
-%files debug -f debugfiles.list\
-%defattr(-,root,root)\
-%endif\
-%{nil}
-
 #	The directory where newly built binary packages will be written.
 %_debdir		%{_topdir}/DEBS
 
