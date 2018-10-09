@@ -7,6 +7,8 @@ MANIFEST = \
 PKGNAME=debbuild
 VERSION=@VERSION@
 
+BINDIR=/usr/bin
+LIBDIR=/usr/lib
 MANDIR=/usr/share/man
 CONFDIR=/etc
 
@@ -14,8 +16,17 @@ all:
 	# nothing to do
 
 install:
-	mkdir -p $(DESTDIR)/usr/bin
-	cp debbuild $(DESTDIR)/usr/bin
+	mkdir -p $(DESTDIR)$(BINDIR)
+	cp debbuild $(DESTDIR)$(BINDIR)
+
+	mkdir -p $(DESTDIR)$(LIBDIR)/$(PKGNAME)/macros.d
+	cp macros/macros.in $(DESTDIR)$(LIBDIR)/$(PKGNAME)/macros
+	cp macros/macros.perl $(DESTDIR)$(LIBDIR)/$(PKGNAME)/macros.d
+	cp config/debrc $(DESTDIR)$(LIBDIR)/$(PKGNAME)
+
+	mkdir -p $(DESTDIR)$(CONFDIR)/$(PKGNAME)
+	cp macros/macros.sysutils $(DESTDIR)$(CONFDIR)/$(PKGNAME)
+	cp macros/macros.texlive $(DESTDIR)$(CONFDIR)/$(PKGNAME)
 
 	mkdir -p $(DESTDIR)$(MANDIR)/man8
 	pod2man --utf8 --center="DeepNet Dev Tools" --section 8 \
