@@ -1171,7 +1171,7 @@ sub install {
     if (-f $manpage) {
       if (my ($newpage) = $manpage =~ /^(.+)\.(?:Z|gz|bz2?|xz|zst)\n?$/) {
        my $cmdline = expandmacros("%{uncompress:$manpage} > $newpage");
-       qx($cmdline); $manpage = $newpage;
+       qx($cmdline); unlink $manpage; $manpage = $newpage;
       }
       qx($specglobals{__gzip} -f9n $manpage);
     } elsif (-l $manpage) {
