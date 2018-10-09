@@ -1866,32 +1866,32 @@ debbuild — Build Debian-compatible .deb packages from RPM .spec files
 
 Build options with [ <specfile> | <tarball> | <source package> ]:
 
-      -b.                        build from <specfile> ...
-      -t.                        build from <tarball> ...
-      -r.                        build from <source package> ...
-            -.p      ... through %prep (unpack sources and apply patches)
-            -.c      ... through %build (%prep, then compile)
-            -.i      ... through %install (%prep, %build, then install)
-            -.l      verify %files section
-            -.a      ... source and binary packages
-            -.b      ... binary package only
-            -.s      ... source package only
-      --rebuild (-rb)            build binary package from <source package>
-      --recompile (-ri)          build through %install from <source package>
-      --buildroot=DIRECTORY      override build root
-      --short-circuit            skip straight to specified stage (only for c,i)
+  -b.                        build from <specfile> ...
+  -t.                        build from <tarball> ...
+  -r.                        build from <source package> ...
+        -.p      ... through %prep (unpack sources and apply patches)
+        -.c      ... through %build (%prep, then compile)
+        -.i      ... through %install (%prep, %build, then install)
+        -.l      verify %files section
+        -.a      ... source and binary packages
+        -.b      ... binary package only
+        -.s      ... source package only
+  --rebuild (-rb)            build binary package from <source package>
+  --recompile (-ri)          build through %install from <source package>
+  --buildroot=DIRECTORY      override build root
+  --short-circuit            skip straight to specified stage (only for c,i)
 
 Common options:
 
-  -D, --define='MACRO EXPR'      define MACRO with value EXPR
-      --with/--without FLAG      define build conditionals from FLAG
-      -S SCM                     short for '--define "__scm SCM"'
+  -D, --define='MACRO EXPR'  define MACRO with value EXPR
+  --with/--without FLAG      define build conditionals from FLAG
+  -S SCM                     short for '--define "__scm SCM"'
 
 debbuild-specific options:
 
-      -i, --install              Unpack a .sdeb in the %_topdir tree
-      --showpkgs                 Show package names that would be built.
-      --nobuild                  Parse <specfile>, but do no processing
+  -i, --install              Unpack a .sdeb in the %_topdir tree
+  --showpkgs                 Show package names that would be built.
+  --nobuild                  Parse <specfile>, but do no processing
 
 =head1 DESCRIPTION
 
