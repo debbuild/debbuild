@@ -19,6 +19,7 @@ Group: devel
 Group: Development/Tools/Building
 %global dist ubuntu16.04
 %undefine with_signature
+%define __pod2man /usr/bin/pod2man
 %endif
 License: GPLv2+
 Packager: Andreas Scherer <https://ascherer.github.io/>
@@ -73,7 +74,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{__cp} macros/macros.texlive %{buildroot}%{_sysconfdir}/%{name}
 
 %{__mkdir_p} %{buildroot}%{_mandir}/man8
-pod2man --utf8 --center="DeepNet Dev Tools" --section 8 \
+%{__pod2man} --utf8 --center="DeepNet Dev Tools" --section 8 \
 	debbuild > %{buildroot}%{_mandir}/man8/debbuild.8
 
 %if %{with signature}
