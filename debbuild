@@ -1844,15 +1844,23 @@ debbuild — Build Debian-compatible .deb packages from RPM .spec files
 
 =head1 COPYRIGHT
 
+=over
+
 =item 2005-2015 © Kris Deugau <L<kdeugau@deepnet.cx>>
 
 =item 2015-2018 © Andreas Scherer L<https://ascherer.github.io/>
 
+=back
+
 =head1 SHORT DESCRIPTION
+
+=over
 
 =item Build .deb packages from RPM-style .spec files.
 
 =item debbuild supports most package-building options rpmbuild does.
+
+=back
 
 =head1 OPTIONS
 
