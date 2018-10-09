@@ -919,8 +919,7 @@ sub unpackcmd {
          '%{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f '.
          "'%{_sourcedir}/$sourcedrop'" :
       decompress("%{_sourcedir}/$sourcedrop").
-          ' | %{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f -' ).
-      $check_status;
+          ' | %{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f -' ).$check_status;
 } # end unpackcmd()
 
 
@@ -962,7 +961,7 @@ sub extract_specfile {
      $tarball =~ /\.tar$/ ? # plain .tar files don't need to be uncompressed
         q(%{__tar} -xOf %{tarball} --wildcards '*.spec') :
      decompress($tarball).q( | %{__tar} -xOf - --wildcards '*.spec') ).
-     " > %{specfile}$check_status%{__cp} -f %{tarball} %{_sourcedir}";
+     ' > %{specfile}'.$check_status.'%{__cp} -f %{tarball} %{_sourcedir}';
 } # end extract_specfile()
 
 
@@ -1132,7 +1131,7 @@ sub execute_script {
   my $scriptfile = expandmacros('%{_tmppath}')."/deb-tmp.$stage.".int(rand(99998)+1);
   sysopen(SCRIPT, $scriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW, 0777)
     or die "Can't open/create ".($what or $stage)."script file $scriptfile: $!\n";
-  $specglobals{___build_body} = $script{$stage};
+  $specglobals{___build_body} = $script{$stage}; # Inject stage script from specfile
   print SCRIPT expandmacros('%{___build_template}');
   close SCRIPT;
 
@@ -1169,7 +1168,7 @@ sub install {
   # done here cuz I don't grok shell well
   # should probably error-check all kinds of things.  <g>
   foreach my $manpage (glob("$specglobals{buildroot}/usr/share/man/man*/*")) {
-    if ( -f $manpage) {
+    if (-f $manpage) {
       if (my ($newpage) = $manpage =~ /^(.+)\.(?:Z|gz|bz2?|xz|zst)\n?$/) {
        qx($specglobals{__gzip} -d $manpage) if $manpage =~ /\.(?:Z|gz)$/;
        qx($specglobals{__bzip2} -d $manpage) if $manpage =~ /\.bz2?$/;
@@ -1178,7 +1177,7 @@ sub install {
        $manpage = $newpage;
       }
       qx($specglobals{__gzip} -f9n $manpage);
-    } elsif ( -l $manpage) {
+    } elsif (-l $manpage) {
       (my $linkdest = readlink $manpage) =~ s/\.(?:Z|gz|bz2)//;
       unlink $manpage;
       $manpage =~ s/\.(?:Z|gz|bz2)//;
@@ -1397,7 +1396,6 @@ sub binpackage {
     }
 
   } # subpackage loop
-
 } # end binpackage()
 
 
@@ -1738,7 +1736,6 @@ sub expandmacros {
   # handle '%{prefixed:macros}' with nested curly braces, all in one go!
   s/url2path/u2p/g;
   while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ } bracelet() ) {
-    no strict qw(refs); # we use strings as function refs
     (my $initvalue = "%{$prefix:$arg}") =~ s/([?!{+}])/\\$1/g; # neutralize specials
     $arg = expandmacros($arg);
     if ($prefix eq 'u2p') {
@@ -1746,6 +1743,7 @@ sub expandmacros {
       $arg =~ s|\w+://[\w.:-]+||;
       s/$initvalue/$arg/g;
     } elsif (grep {$prefix eq $_} qw(basename dirname uncompress)) {
+      no strict qw(refs); # we use strings as function refs
       s/$initvalue/&$prefix($arg)/eg;
     } elsif ($prefix eq 'suffix') {
       my (undef,undef,$suffix) = fileparse($arg,qr/\.[^.]*/);
