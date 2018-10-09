@@ -35,8 +35,8 @@ install:
 dist:
 	mkdir $(PKGNAME)-$(VERSION)
 	tar cf - $(MANIFEST) | (cd $(PKGNAME)-$(VERSION); tar xvf -)
-	#/usr/bin/perl -p -e 's/#VERSION#/$(VERSION)/' < $(PKGNAME).spec > $(PKGNAME)-$(VERSION)/$(PKGNAME).spec
-	#/usr/bin/perl -p -e 's/[\d.]+";	#VERSION#/$(VERSION)";/' < debbuild > $(PKGNAME)-$(VERSION)/debbuild
+	/usr/bin/perl -p -e 's/#VERSION#/$(VERSION)/' < $(PKGNAME).spec > $(PKGNAME)-$(VERSION)/$(PKGNAME).spec
+	/usr/bin/perl -p -e 's/[\d.]+";	#VERSION#/$(VERSION)";/' < debbuild > $(PKGNAME)-$(VERSION)/debbuild
 	tar cvf $(PKGNAME)-$(VERSION).tar $(PKGNAME)-$(VERSION)
 	gzip -v -f -9 $(PKGNAME)-$(VERSION).tar
 	rm -rf $(PKGNAME)-$(VERSION)
