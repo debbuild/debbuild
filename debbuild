@@ -1170,11 +1170,8 @@ sub install {
   foreach my $manpage (glob("$specglobals{buildroot}/usr/share/man/man*/*")) {
     if (-f $manpage) {
       if (my ($newpage) = $manpage =~ /^(.+)\.(?:Z|gz|bz2?|xz|zst)\n?$/) {
-       qx($specglobals{__gzip} -d $manpage) if $manpage =~ /\.(?:Z|gz)$/;
-       qx($specglobals{__bzip2} -d $manpage) if $manpage =~ /\.bz2?$/;
-       qx($specglobals{__xz} -d $manpage) if $manpage =~ /\.xz$/;
-       qx($specglobals{__zstd} -d $manpage) if $manpage =~ /\.zst$/;
-       $manpage = $newpage;
+       my $cmdline = expandmacros("%{uncompress:$manpage} > $newpage");
+       qx($cmdline); $manpage = $newpage;
       }
       qx($specglobals{__gzip} -f9n $manpage);
     } elsif (-l $manpage) {
