@@ -54,13 +54,27 @@ rebuild .src.rpm source packages as .deb binary packages.
 
 %build
 # Transfer $VERSION into the live system
-for i in debbuild Makefile; do %{__sed} "s/\@VERSION\@/%{version}/" -i $i; done
+%{__sed} "s/\@VERSION\@/%{version}/" -i debbuild
 
 %install
 # Steps to install to a temporary location for packaging
 %{__rm} -rf %{buildroot}
 
-%make_install
+%{__mkdir_p} %{buildroot}%{_bindir}
+%{__cp} debbuild %{buildroot}%{_bindir}
+
+%{__mkdir_p} %{buildroot}%{_libdir}/%{name}/macros.d
+%{__cp} macros/macros.in %{buildroot}%{_libdir}/%{name}/macros
+%{__cp} macros/macros.perl %{buildroot}%{_libdir}/%{name}/macros.d
+%{__cp} config/debrc %{buildroot}%{_libdir}/%{name}
+
+%{__mkdir_p} %{buildroot}%{_sysconfdir}/%{name}
+%{__cp} macros/macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
+%{__cp} macros/macros.texlive %{buildroot}%{_sysconfdir}/%{name}
+
+%{__mkdir_p} %{buildroot}%{_mandir}/man8
+pod2man --utf8 --center="DeepNet Dev Tools" --section 8 \
+	debbuild > %{buildroot}%{_mandir}/man8/debbuild.8
 
 %if %{with signature}
 %{__mkdir_p} %{buildroot}%{_datadir}/debsig/keyrings/DDB6787D850B1239/

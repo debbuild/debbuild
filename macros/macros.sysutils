@@ -7,6 +7,7 @@
 #==============================================================================
 # ---- System utilities
 #
+%__pod2man %{_bindir}/pod2man
 %__ps2pdf %{_bindir}/ps2pdf
 %__recode %{_bindir}/recode
 %__touch %{_bindir}/touch
