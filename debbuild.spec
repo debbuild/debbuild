@@ -55,7 +55,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 
 %build
 # Transfer $VERSION into the live system
-%{__sed} "s/\@VERSION\@/%{version}/" -i debbuild
+%{__perl} -pe "s/\@VERSION\@/%{version}/" -i debbuild
 
 %install
 # Steps to install to a temporary location for packaging
