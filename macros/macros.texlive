@@ -9,6 +9,8 @@
 #
 # /path/to/your/texlive/installation; adapt in .debmacros
 %__texlive_base /opt/texlive/current
+# /path/to/your/local/texlive/stuff; adapt in .debmacros
+%__texlive_local /opt/texlive/texmf-local
 #
 %__texlive_bin %{__texlive_base}/bin/%{_build_cpu}-%{_os}
 #
