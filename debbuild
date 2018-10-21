@@ -87,6 +87,8 @@ my %targets = (p => 'Prep',
 		b => 'Build binary',
 		s => 'Build source');
 
+# Global file handle for multiline macro definitions
+my $fh;
 
 #### main ####
 
@@ -425,7 +427,7 @@ sub parse_spec {
   $pkgdata{main}{arch} //= expandmacros('%{_arch}');
 
   die "No .spec file specified!  Exiting.\n" unless $specfile;
-  open my $fh, $specfile or die "specfile ($specfile) barfed: $!\n";
+  open $fh, $specfile or die "specfile ($specfile) barfed: $!\n";
 
   my @ifexpr = (); # Nested %if..%else..%endif conditionals
 
@@ -1641,6 +1643,14 @@ sub install_sdeb {
 # Helper function for writing to the %macro storage(s)
 sub store_value {
   my ($caller,$key,$value) = @_;
+  # Handle multiline macro definitions
+  if ($value =~ s/\\$//) {
+    $value .= "\\\n" if $value ne '';
+    while (<$fh>) {
+      $value .= $_;
+      last unless /\\$/;
+    }
+  }
   # Strip and store '%macro(options)'
   $macroopts{$key} = $1 if $key =~ s/\((.*)\)//;
   my $recipient = ( grep { lc $key eq $_ } qw(summary name version
