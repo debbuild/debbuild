@@ -79,7 +79,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 
 %if %{with signature}
 %{__mkdir_p} %{buildroot}%{_datadir}/debsig/keyrings/DDB6787D850B1239/
-%{__gpg} --keyserver pgp.mit.edu --no-default-keyring --keyring \
+%{__gpg}2 --keyserver hkp://keys.gnupg.net --no-default-keyring --keyring \
   %{buildroot}%{_datadir}/debsig/keyrings/DDB6787D850B1239/debsig.gpg \
   --recv-keys 0x850B1239
 %{__mkdir_p} %{buildroot}%{_sysconfdir}/debsig/policies/DDB6787D850B1239/
