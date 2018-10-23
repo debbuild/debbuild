@@ -61,29 +61,29 @@ rebuild .src.rpm source packages as .deb binary packages.
 # Steps to install to a temporary location for packaging
 %{__rm} -rf %{buildroot}
 
-%{__mkdir_p} %{buildroot}%{_bindir}
-%{__cp} debbuild %{buildroot}%{_bindir}
+%{__install} -d %{buildroot}%{_bindir}
+%{__install} debbuild %{buildroot}%{_bindir}
 
-%{__mkdir_p} %{buildroot}%{_libdir}/%{name}/macros.d
-%{__cp} macros/macros.in %{buildroot}%{_libdir}/%{name}/macros
-%{__cp} macros/macros.perl %{buildroot}%{_libdir}/%{name}/macros.d
-%{__cp} config/debrc %{buildroot}%{_libdir}/%{name}
+%{__install} -d %{buildroot}%{_libdir}/%{name}/macros.d
+%{__install} -m 644 macros/macros.in %{buildroot}%{_libdir}/%{name}/macros
+%{__install} -m 644 macros/macros.perl %{buildroot}%{_libdir}/%{name}/macros.d
+%{__install} -m 644 config/debrc %{buildroot}%{_libdir}/%{name}
 
-%{__mkdir_p} %{buildroot}%{_sysconfdir}/%{name}
-%{__cp} macros/macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
-%{__cp} macros/macros.texlive %{buildroot}%{_sysconfdir}/%{name}
+%{__install} -d %{buildroot}%{_sysconfdir}/%{name}
+%{__install} -m 644 macros/macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
+%{__install} -m 644 macros/macros.texlive %{buildroot}%{_sysconfdir}/%{name}
 
-%{__mkdir_p} %{buildroot}%{_mandir}/man8
+%{__install} -d %{buildroot}%{_mandir}/man8
 %{__pod2man} --utf8 --center="DeepNet Dev Tools" --section 8 \
 	debbuild > %{buildroot}%{_mandir}/man8/debbuild.8
 
 %if %{with signature}
-%{__mkdir_p} %{buildroot}%{_datadir}/debsig/keyrings/DDB6787D850B1239/
+%{__install} -d %{buildroot}%{_datadir}/debsig/keyrings/DDB6787D850B1239
 %{__gpg}2 --keyserver hkp://keys.gnupg.net --no-default-keyring --keyring \
   %{buildroot}%{_datadir}/debsig/keyrings/DDB6787D850B1239/debsig.gpg \
   --recv-keys 0x850B1239
-%{__mkdir_p} %{buildroot}%{_sysconfdir}/debsig/policies/DDB6787D850B1239/
-%{__cp} gpg/debsig.pol %{buildroot}%{_sysconfdir}/debsig/policies/DDB6787D850B1239/
+%{__install} -d %{buildroot}%{_sysconfdir}/debsig/policies/DDB6787D850B1239
+%{__install} -m 644 gpg/debsig.pol %{buildroot}%{_sysconfdir}/debsig/policies/DDB6787D850B1239/
 %endif
 
 %files
