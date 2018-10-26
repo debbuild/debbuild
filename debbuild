@@ -1375,8 +1375,8 @@ sub binpackage {
     if ($cmdopts{sign}) {
       my $signkey = '';
       if (defined $specglobals{_gpg_name} and
-          open GPGKEYS, '-|', "$specglobals{__gpg}%{?__gpg_version}",
-            '-k', '--with-colons', $specglobals{_gpg_name}) {
+          open GPGKEYS, '-|', $specglobals{__gpg}, '-k', '--with-colons',
+            $specglobals{_gpg_name}) {
         chomp(my @keys = <GPGKEYS>); # catch all keys of "%_gpg_name"
         close GPGKEYS;
         @keys = grep { /^pub:[^idren]:/ } @keys; # select only valid keys

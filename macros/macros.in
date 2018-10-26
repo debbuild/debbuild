@@ -35,7 +35,7 @@
 %__echo			/bin/echo
 %__fakeroot		/usr/bin/fakeroot
 %__find			/usr/bin/find
-%__gpg			/usr/bin/gpg
+%__gpg			/usr/bin/gpg2
 %__gzip			/bin/gzip
 %__id			/usr/bin/id
 %__id_u			/usr/bin/id -u
@@ -179,8 +179,7 @@
 #	Macro(s) to hold the arguments passed to GPG/PGP for package
 #	signing and verification.
 #
-%__gpg_version		2
-%__gpg_sign_cmd		%{__gpg}%{?__gpg_version} \
+%__gpg_sign_cmd		%{__gpg} \
   --keyserver %{__hkp_keyserver} --no-default-keyring --keyring \
   %{buildroot}%{_keyringpath}/%{_gpg_key_full}/debsig.gpg \
   --recv-keys %{_gpg_key_short}
