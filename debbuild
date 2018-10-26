@@ -1007,8 +1007,8 @@ sub process_patch {
   );
 
   my $patchopts = $specglobals{_default_patch_flags};
-  $patchopts .= " --fuzz=$fuzz -p$plev";
-  $patchopts .= " -b --suffix=$psuff" if $psuff;
+  $patchopts .= " -F $fuzz -p$plev";
+  $patchopts .= " -b -z $psuff" if $psuff;
   $patchopts .= " -d $altdir" if $altdir;
   $patchopts .= " -o $output" if $output;
   $patchopts .= ' -E' if $noempty;
