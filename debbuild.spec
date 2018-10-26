@@ -81,7 +81,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{__install} -d %{buildroot}%{_keyringpath}/%{_gpg_key_full} \
 	%{buildroot}%{_policiespath}/%{_gpg_key_full}
 %{__gpg_sign_cmd}
-%{__install} -m 644 gpg/debsig.pol %{buildroot}%{_policies}/%{_gpg_key_full}/
+%{__install} -m 644 gpg/debsig.pol %{buildroot}%{_policiespath}/%{_gpg_key_full}
 %endif
 
 %files
