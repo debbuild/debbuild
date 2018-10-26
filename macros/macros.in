@@ -186,7 +186,7 @@
 
 # Horowitz Key Protocol server configuration
 #
-%_hkp_keyserver		hkp://keys.gnupg.net
+%_hkp_keyserver		http://pgp.mit.edu
 
 %_keyringpath		%{_datadir}/debsig/keyrings
 %_policiespath		%{_sysconfdir}/debsig/policies

@@ -1,9 +1,13 @@
 %_topdir %(pwd)
-%_default_patch_flags --verbose
+
 %_default_verbosity 1
+
+%_default_patch_flags --verbose
+%_default_tar_flags --skip-old-files
+
 %_signature gpg
 %_gpg_name Andreas Scherer
 %_gpg_key_full DDB6787D850B1239
 %_gpg_key_short 0x850B1239
 
-%_default_tar_flags --skip-old-files
+%_hkp_keyserver hkp://keys.gnupg.net
