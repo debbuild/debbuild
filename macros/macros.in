@@ -180,7 +180,7 @@
 #	signing and verification.
 #
 %__gpg_sign_cmd		%{__gpg} \
-  --keyserver %{__hkp_keyserver} --no-default-keyring --keyring \
+  --keyserver %{_hkp_keyserver} --no-default-keyring --keyring \
   %{buildroot}%{_keyringpath}/%{_gpg_key_full}/debsig.gpg \
   --recv-keys %{_gpg_key_short}
 
