@@ -175,6 +175,24 @@
 %_os			%(%{__dpkg_architecture} -qDEB_HOST_ARCH_OS)
 
 #==============================================================================
+# ---- GPG/PGP/PGP5 signature macros.
+#	Macro(s) to hold the arguments passed to GPG/PGP for package
+#	signing and verification.
+#
+%__gpg_version		2
+%__gpg_sign_cmd		%{__gpg}%{?__gpg_version} \
+  --keyserver %{__hkp_keyserver} --no-default-keyring --keyring \
+  %{buildroot}%{_keyringpath}/%{_gpg_key_full}/debsig.gpg \
+  --recv-keys %{_gpg_key_short}
+
+# Horowitz Key Protocol server configuration
+#
+%_hkp_keyserver		hkp://keys.gnupg.net
+
+%_keyringpath		%{_datadir}/debsig/keyrings
+%_policiespath		%{_sysconfdir}/debsig/policies
+
+#==============================================================================
 # ---- Scriptlet template templates.
 #	Global defaults used for building scriptlet templates.
 #

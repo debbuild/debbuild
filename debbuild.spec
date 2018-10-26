@@ -78,12 +78,10 @@ rebuild .src.rpm source packages as .deb binary packages.
 	debbuild > %{buildroot}%{_mandir}/man8/debbuild.8
 
 %if %{with signature}
-%{__install} -d %{buildroot}%{_datadir}/debsig/keyrings/DDB6787D850B1239
-%{__gpg}2 --keyserver hkp://keys.gnupg.net --no-default-keyring --keyring \
-  %{buildroot}%{_datadir}/debsig/keyrings/DDB6787D850B1239/debsig.gpg \
-  --recv-keys 0x850B1239
-%{__install} -d %{buildroot}%{_sysconfdir}/debsig/policies/DDB6787D850B1239
-%{__install} -m 644 gpg/debsig.pol %{buildroot}%{_sysconfdir}/debsig/policies/DDB6787D850B1239/
+%{__install} -d %{buildroot}%{_keyringpath}/%{_gpg_key_full} \
+	%{buildroot}%{_policiespath}/%{_gpg_key_full}
+%{__gpg_sign_cmd}
+%{__install} -m 644 gpg/debsig.pol %{buildroot}%{_policies}/%{_gpg_key_full}/
 %endif
 
 %files
@@ -96,8 +94,8 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{_libdir}/%{name}/debrc
 
 %if %{with signature}
-%attr(664,root,root) %{_datadir}/debsig/keyrings/DDB6787D850B1239/debsig.gpg
-%{_sysconfdir}/debsig/policies/DDB6787D850B1239/debsig.pol
+%attr(664,root,root) %{_keyringpath}/%{_gpg_key_full}/debsig.gpg
+%{_policiespath}/%{_gpg_key_full}/debsig.pol
 %endif
 
 %changelog

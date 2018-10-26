@@ -3,5 +3,7 @@
 %_default_verbosity 1
 %_signature gpg
 %_gpg_name Andreas Scherer
+%_gpg_key_full DDB6787D850B1239
+%_gpg_key_short 0x850B1239
 
 %_default_tar_flags --skip-old-files
