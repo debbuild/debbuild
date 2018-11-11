@@ -1,0 +1,307 @@
+# International version of DEBBUILD.
+# Copyright (C) 2018 Andreas Scherer
+# This file is distributed under the same license as the DEBBUILD package.
+# Andreas Scherer <andreas_github@freenet.de> 2018.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: DEBBUILD I18N 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-11-11 15:08+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: debbuild:1522
+msgid "  Continuing anyway.\n"
+msgstr ""
+
+#: debbuild:1521
+msgid "  Required for sucessful build:\n"
+msgstr ""
+
+#: debbuild:1580
+msgid " * Conflicting build-dependency "
+msgstr ""
+
+#. whatever state it's in, it's not completely installed, therefore it's missing.
+#: debbuild:1538 debbuild:1565
+msgid " * Missing build-dependency "
+msgstr ""
+
+#: debbuild:1559
+msgid " * Required build-dependency "
+msgstr ""
+
+#. this seems to be a virtual package.
+#: debbuild:1554
+msgid " * Warning: "
+msgstr ""
+
+#: debbuild:1171
+msgid " failed (%"
+msgstr ""
+
+#: debbuild:373
+msgid " for option '-"
+msgstr ""
+
+#: debbuild:1560
+msgid " is installed, but wrong version ("
+msgstr ""
+
+#: debbuild:1520
+msgid " not found.  Can't check build-deps.\n"
+msgstr ""
+
+#: debbuild:492
+msgid " of "
+msgstr ""
+
+#: debbuild:423
+msgid " stage.  Ignoring.\n"
+msgstr ""
+
+#: debbuild:1669
+#, perl-brace-format
+msgid " to %{_topdir}."
+msgstr ""
+
+#: debbuild:378
+msgid " with --rebuild\n"
+msgstr ""
+
+#: debbuild:397
+msgid "! Ignoring.\n"
+msgstr ""
+
+#: debbuild:817
+msgid "%autosetup: option '-S "
+msgstr ""
+
+#: debbuild:491
+msgid "' at line "
+msgstr ""
+
+#: debbuild:818
+msgid "' currently not supported at line "
+msgstr ""
+
+#: debbuild:733
+#, perl-format
+msgid "'%exclude' keyword found, ignoring input line\n"
+msgstr ""
+
+#: debbuild:885
+msgid "', continuing\n"
+msgstr ""
+
+#: debbuild:1726
+msgid "'. Aborting!"
+msgstr ""
+
+#: debbuild:445
+msgid ") barfed: "
+msgstr ""
+
+#: debbuild:1561
+msgid "):  Need "
+msgstr ""
+
+#: debbuild:1519
+msgid "**WARNING**  "
+msgstr ""
+
+#: debbuild:549
+#, perl-format
+msgid ". Missing %if.\n"
+msgstr ""
+
+#: debbuild:566
+#, perl-format
+msgid ". Missing %if/%else.\n"
+msgstr ""
+
+#: debbuild:170
+msgid ":  build requirements not met.\n"
+msgstr ""
+
+#: debbuild:772 debbuild:776
+#, perl-format
+msgid ":' outside %if wrapper\n"
+msgstr ""
+
+#: debbuild:142
+msgid "Can't --rebuild with "
+msgstr ""
+
+#: debbuild:169
+msgid "Can't build "
+msgstr ""
+
+#: debbuild:961
+msgid "Can't handle unknown file type '"
+msgstr ""
+
+#: debbuild:1159
+msgid "Can't open/create "
+msgstr ""
+
+#. Mutually exclusive options.
+#: debbuild:377
+msgid "Can't use -"
+msgstr ""
+
+#: debbuild:422
+msgid "Can't use --short-circuit for "
+msgstr ""
+
+#: debbuild:1602
+msgid "Checking library requirements...\n"
+msgstr ""
+
+#: debbuild:781
+msgid "Downgrading relationship to Enhances:.\n"
+msgstr ""
+
+#: debbuild:1171
+msgid "Exec of "
+msgstr ""
+
+#: debbuild:1167
+msgid "Executing ("
+msgstr ""
+
+#: debbuild:1668
+msgid "Extracted source package "
+msgstr ""
+
+#: debbuild:1725
+msgid "Missing value for '%"
+msgstr ""
+
+#: debbuild:278
+msgid "No 'os-release' file or 'lsb_release' program found.\n"
+msgstr ""
+
+#: debbuild:443
+msgid "No .spec file specified!  Exiting.\n"
+msgstr ""
+
+#. Behavioural compatibility FTW!  Yes, rpmbuild does this too.
+#: debbuild:45
+msgid "No .spec file to work with!  Exiting.\n"
+msgstr ""
+
+#. Need to inspect the tarball to find the spec file.
+#. Note that rpmbuild doesn't seem to support this operation from a
+#. .zip file properly, but we try our best.
+#: debbuild:152
+msgid "No tarfile specified!  Exiting.\n"
+msgstr ""
+
+#: debbuild:1419
+msgid "Signed binary package "
+msgstr ""
+
+#: debbuild:279
+msgid "Sorry, I quit.\n"
+msgstr ""
+
+#: debbuild:780
+msgid "Supplements:' is not natively supported by .deb packages.\n"
+msgstr ""
+
+#: debbuild:884
+#, perl-format
+msgid "Suspect %setup tag '%setup"
+msgstr ""
+
+#: debbuild:410
+msgid "This is debbuild, version "
+msgstr ""
+
+#. end req loop
+#: debbuild:1571
+msgid "To install all missing dependencies, run 'apt install "
+msgstr ""
+
+#: debbuild:1585
+msgid "To remove all conflicting dependencies, run 'apt remove "
+msgstr ""
+
+#: debbuild:372
+msgid "Unknown stage "
+msgstr ""
+
+#: debbuild:491
+msgid "Unknown tag '%"
+msgstr ""
+
+#: debbuild:562
+#, perl-format
+msgid "Unmatched %else at end of file. Missing %endif.\n"
+msgstr ""
+
+#: debbuild:548
+#, perl-format
+msgid "Unmatched %else in line "
+msgstr ""
+
+#: debbuild:565
+#, perl-format
+msgid "Unmatched %endif in line "
+msgstr ""
+
+#: debbuild:545
+#, perl-format
+msgid "Unmatched %if at end of file. Missing %else/%endif.\n"
+msgstr ""
+
+#: debbuild:796
+#, perl-format
+msgid "Unmatched %if at end of file. Missing %endif.\n"
+msgstr ""
+
+#: debbuild:396
+msgid "WARNING: missing value for macro "
+msgstr ""
+
+#. As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
+#. along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
+#: debbuild:771 debbuild:779
+msgid "Warning:  '"
+msgstr ""
+
+#: debbuild:775
+msgid "Warning:  Debian-specific '"
+msgstr ""
+
+#: debbuild:1209
+msgid "Warning: symlinking manpage failed: "
+msgstr ""
+
+#: debbuild:1399
+msgid "Wrote binary package "
+msgstr ""
+
+#: debbuild:1503
+msgid "Wrote source package "
+msgstr ""
+
+#: debbuild:1555
+msgid " is probably installed but seems to be a virtual package.\n"
+msgstr ""
+
+#: debbuild:1160
+msgid "script file "
+msgstr ""
+
+#: debbuild:444
+msgid "specfile ("
+msgstr ""

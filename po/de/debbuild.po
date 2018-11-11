@@ -1,0 +1,307 @@
+# International version of DEBBUILD.
+# Copyright (C) 2018 Andreas Scherer
+# This file is distributed under the same license as the DEBBUILD package.
+# Andreas Scherer <andreas_github@freenet.de> 2018.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: DEBBUILD I18N 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-11-11 15:08+0100\n"
+"PO-Revision-Date: 2018-11-11 15:11+0100\n"
+"Last-Translator: Andreas Scherer <andreas_github@freenet.de>\n"
+"Language-Team: German\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: debbuild:1522
+msgid "  Continuing anyway.\n"
+msgstr " Fahre trotzdem fort.\n"
+
+#: debbuild:1521
+msgid "  Required for sucessful build:\n"
+msgstr " Erforderlich für erfolgreiches Bauen:\n"
+
+#: debbuild:1580
+msgid " * Conflicting build-dependency "
+msgstr " * Widersprechende Bau-Abhängigkeit "
+
+#. whatever state it's in, it's not completely installed, therefore it's missing.
+#: debbuild:1538 debbuild:1565
+msgid " * Missing build-dependency "
+msgstr " * Fehlende Bau-Abhängigkeit "
+
+#: debbuild:1559
+msgid " * Required build-dependency "
+msgstr " * Notwendige Bau-Abhängigkeit "
+
+#. this seems to be a virtual package.
+#: debbuild:1554
+msgid " * Warning: "
+msgstr " * Warnung: "
+
+#: debbuild:1171
+msgid " failed (%"
+msgstr " gescheitert (%"
+
+#: debbuild:373
+msgid " for option '-"
+msgstr " für Option '-"
+
+#: debbuild:1560
+msgid " is installed, but wrong version ("
+msgstr " ist installiert, hat aber falsche Version ("
+
+#: debbuild:1520
+msgid " not found.  Can't check build-deps.\n"
+msgstr " nicht gefunden. Kann Bau-Abhängigkeiten nicht prüfen.\n"
+
+#: debbuild:492
+msgid " of "
+msgstr " von "
+
+#: debbuild:423
+msgid " stage.  Ignoring.\n"
+msgstr " Stufe. Ignoeiert.\n"
+
+#: debbuild:1669
+#, perl-brace-format
+msgid " to %{_topdir}."
+msgstr " nach %{_topdir}."
+
+#: debbuild:378
+msgid " with --rebuild\n"
+msgstr " mit --rebuild\n"
+
+#: debbuild:397
+msgid "! Ignoring.\n"
+msgstr "! Ignoriert.\n"
+
+#: debbuild:817
+msgid "%autosetup: option '-S "
+msgstr "%autosetup: Option '-S "
+
+#: debbuild:491
+msgid "' at line "
+msgstr "' in Zeile "
+
+#: debbuild:818
+msgid "' currently not supported at line "
+msgstr "' aktuell nicht unterstützt in Zeile "
+
+#: debbuild:733
+#, perl-format
+msgid "'%exclude' keyword found, ignoring input line\n"
+msgstr "Schlüsselwort '%exclude' gefunden, Eingabezeile ignoriert\n"
+
+#: debbuild:885
+msgid "', continuing\n"
+msgstr "', setze fort\n"
+
+#: debbuild:1726
+msgid "'. Aborting!"
+msgstr "'. Abbruch!"
+
+#: debbuild:445
+msgid ") barfed: "
+msgstr ") schimpfte: "
+
+#: debbuild:1561
+msgid "):  Need "
+msgstr "): Benötige "
+
+#: debbuild:1519
+msgid "**WARNING**  "
+msgstr "**WARNUNG** "
+
+#: debbuild:549
+#, perl-format
+msgid ". Missing %if.\n"
+msgstr ". Fehlendes %if.\n"
+
+#: debbuild:566
+#, perl-format
+msgid ". Missing %if/%else.\n"
+msgstr ". Fehlendes %if/%else.\n"
+
+#: debbuild:170
+msgid ":  build requirements not met.\n"
+msgstr ": Bau-Abhängigkeit nicht erfüllt.\n"
+
+#: debbuild:772 debbuild:776
+#, perl-format
+msgid ":' outside %if wrapper\n"
+msgstr ":' außerhalb eines %if\n"
+
+#: debbuild:142
+msgid "Can't --rebuild with "
+msgstr "Kein --rebuild möglich mit "
+
+#: debbuild:169
+msgid "Can't build "
+msgstr "Kein Bau möglich von "
+
+#: debbuild:961
+msgid "Can't handle unknown file type '"
+msgstr "Nicht unterstützter Dateityp '"
+
+#: debbuild:1159
+msgid "Can't open/create "
+msgstr "Öffnen/Erzeugen nicht möglich: "
+
+#. Mutually exclusive options.
+#: debbuild:377
+msgid "Can't use -"
+msgstr "Nicht benutzbar: -"
+
+#: debbuild:422
+msgid "Can't use --short-circuit for "
+msgstr "--short-circuit nicht verwendbar für "
+
+#: debbuild:1602
+msgid "Checking library requirements...\n"
+msgstr "Prüfe Bibliotheksabhängigkeiten...\n"
+
+#: debbuild:781
+msgid "Downgrading relationship to Enhances:.\n"
+msgstr "Reduziere Abhängigkeit auf Enhances:.\n"
+
+#: debbuild:1171
+msgid "Exec of "
+msgstr "Ausführung von "
+
+#: debbuild:1167
+msgid "Executing ("
+msgstr "Ausführung von ("
+
+#: debbuild:1668
+msgid "Extracted source package "
+msgstr "Entpacke Quellpaket "
+
+#: debbuild:1725
+msgid "Missing value for '%"
+msgstr "Fehlender Wert für '%"
+
+#: debbuild:278
+msgid "No 'os-release' file or 'lsb_release' program found.\n"
+msgstr "Weder Datei 'os-release' noch Programm 'lsb_release' gefunden.\n"
+
+#: debbuild:443
+msgid "No .spec file specified!  Exiting.\n"
+msgstr "Keine .spec-Datei angegeben! Abbruch.\n"
+
+#. Behavioural compatibility FTW!  Yes, rpmbuild does this too.
+#: debbuild:45
+msgid "No .spec file to work with!  Exiting.\n"
+msgstr "Keine .spec-Datei zur Bearbeitung! Abbruch.\n"
+
+#. Need to inspect the tarball to find the spec file.
+#. Note that rpmbuild doesn't seem to support this operation from a
+#. .zip file properly, but we try our best.
+#: debbuild:152
+msgid "No tarfile specified!  Exiting.\n"
+msgstr "Keine Archivdatei angegeben! Abbruch.\n"
+
+#: debbuild:1419
+msgid "Signed binary package "
+msgstr "Signiere Binärpaket "
+
+#: debbuild:279
+msgid "Sorry, I quit.\n"
+msgstr "Tut mir leid, ich gebe auf.\n"
+
+#: debbuild:780
+msgid "Supplements:' is not natively supported by .deb packages.\n"
+msgstr "Supplements:' wird von .deb-Paketen nicht unterstützt.\n"
+
+#: debbuild:884
+#, perl-format
+msgid "Suspect %setup tag '%setup"
+msgstr "Verdächtige %setup-Zeile '%setup"
+
+#: debbuild:410
+msgid "This is debbuild, version "
+msgstr "Dies ist DEBBUILD, Version "
+
+#. end req loop
+#: debbuild:1571
+msgid "To install all missing dependencies, run 'apt install "
+msgstr "Installation aller fehlenden Abhängigkeiten mit 'apt install "
+
+#: debbuild:1585
+msgid "To remove all conflicting dependencies, run 'apt remove "
+msgstr "Entfernung aller störenden Pakete mit 'apt remove "
+
+#: debbuild:372
+msgid "Unknown stage "
+msgstr "Unbekannte Stufe "
+
+#: debbuild:491
+msgid "Unknown tag '%"
+msgstr "Unbekannter Marker '%"
+
+#: debbuild:562
+#, perl-format
+msgid "Unmatched %else at end of file. Missing %endif.\n"
+msgstr "Nicht geschlossenes %else am Dateiende. Fehlendes %endif.\n"
+
+#: debbuild:548
+#, perl-format
+msgid "Unmatched %else in line "
+msgstr "Einsames %else in Zeile "
+
+#: debbuild:565
+#, perl-format
+msgid "Unmatched %endif in line "
+msgstr "Einsames %endif in Zeile "
+
+#: debbuild:545
+#, perl-format
+msgid "Unmatched %if at end of file. Missing %else/%endif.\n"
+msgstr "Nicht geschlossenes %if am Dateiende. Fehlendes %else/%endif…\n"
+
+#: debbuild:796
+#, perl-format
+msgid "Unmatched %if at end of file. Missing %endif.\n"
+msgstr "Nicht geschlossenes %if am Dateiende. Fehlendes %endif.\n"
+
+#: debbuild:396
+msgid "WARNING: missing value for macro "
+msgstr "WARNUNG: Fehlender Wert für Makro "
+
+#. As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
+#. along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
+#: debbuild:771 debbuild:779
+msgid "Warning:  '"
+msgstr "Warnung: '"
+
+#: debbuild:775
+msgid "Warning:  Debian-specific '"
+msgstr "Warnung: Debian-eigenes '"
+
+#: debbuild:1209
+msgid "Warning: symlinking manpage failed: "
+msgstr "Warnung: Kann Symlink für Manpage nicht setzen: "
+
+#: debbuild:1399
+msgid "Wrote binary package "
+msgstr "Fertig mit Binärpaket "
+
+#: debbuild:1503
+msgid "Wrote source package "
+msgstr "Fertig mit Quellpaket "
+
+#: debbuild:1555
+msgid " is probably installed but seems to be a virtual package.\n"
+msgstr " ist wohl installiert, scheint aber ein virtuelles Paket zu sein.\n"
+
+#: debbuild:1160
+msgid "script file "
+msgstr "Script-Datei "
+
+#: debbuild:444
+msgid "specfile ("
+msgstr ".spec-Datei ("

@@ -31,11 +31,18 @@ use File::Basename;
 use Getopt::Long qw(:config no_ignore_case bundling);
 use Getopt::Std;
 use IPC::Open2;
+use Locale::gettext;
+use POSIX;		# for setlocale()
 use Pod::Usage;
 use Text::Balanced qw(extract_bracketed extract_multiple);
 
+# Switch on i18n and t10n.
+setlocale(LC_MESSAGES, "");
+bindtextdomain("debbuild", getenv("PWD"));
+textdomain("debbuild");
+
 # Behavioural compatibility FTW!  Yes, rpmbuild does this too.
-die "No .spec file to work with!  Exiting.\n" unless @ARGV;
+die gettext("No .spec file to work with!  Exiting.\n") unless @ARGV;
 
 # Initialized globals
 my $NoAutoReq = 0;
@@ -132,7 +139,7 @@ if ($cmdopts{type} eq 'r') {
     install_sdeb($specglobals{srcpkg});
     $specfile = basename( qx ( $specglobals{__pax} -f $specglobals{srcpkg} *.spec ) );
   } else {
-    die "Can't --rebuild with $specglobals{srcpkg}\n";
+    die gettext('Can\'t --rebuild with ').$specglobals{srcpkg}."\n";
   }
   chomp( $specglobals{specfile} = expandmacros("%{_specdir}/$specfile") );
   $cmdopts{type} = 'b'; # fall through
@@ -142,7 +149,8 @@ if ($cmdopts{type} eq 't') {
   # Need to inspect the tarball to find the spec file.
   # Note that rpmbuild doesn't seem to support this operation from a
   # .zip file properly, but we try our best.
-  die "No tarfile specified!  Exiting.\n" unless defined $specglobals{tarball};
+  die gettext("No tarfile specified!  Exiting.\n")
+    unless defined $specglobals{tarball};
   my $tarball = $specglobals{tarball};
   my $cmdline = expandmacros(lookup_specfile($tarball));
   chomp( $specglobals{specfile} = expandmacros("%{_specdir}/").
@@ -158,8 +166,8 @@ if ($cmdopts{type} eq 'b') {
   # Need to read the spec file to find the tarball.  Note that
   # this also generates most of the shell script required.
   parse_spec($specglobals{specfile});
-  die "Can't build $pkgdata{main}{name}:  build requirements not met.\n"
-    unless checkbuildreq();
+  die gettext('Can\'t build ').$pkgdata{main}{name}.
+      gettext(":  build requirements not met.\n") unless checkbuildreq();
   exit 0 if $cmdopts{nobuild};
 
   # Expand macros as necessary.
@@ -266,7 +274,10 @@ sub lsb_detection {
     chomp( $basecodename = <LSBREL> );
     close LSBREL
 
-  } else { die "No 'os-release' file or 'lsb_release' program found. Sorry, I quit.\n"; }
+  } else {
+    die gettext("No 'os-release' file or 'lsb_release' program found.\n").
+        gettext("Sorry, I quit.\n");
+  }
 
   # rpmbuild expects either integers or strings, and some distros (*cough*Ubuntu*cough*)
   # have versions that get interpreted as strings, which creates comparison problems.
@@ -358,11 +369,13 @@ sub parse_cmd {
   # own $opt_name.  We have to factor-out the handler and use _two_ options.
   sub build_handler {
     my ($opt_name,$opt_value) = @_;
-    die "Unknown stage '$opt_value' for option '-$opt_name'.\n"
+    die gettext('Unknown stage ').$opt_value.
+        gettext(' for option \'-').$opt_name."'.\n"
       unless grep { $opt_value eq $_ } keys %targets;
     if ($cmdopts{type} eq 'r') {
       # Mutually exclusive options.
-      die "Can't use -$opt_name$opt_value with --rebuild\n";
+      die gettext('Can\'t use -').$opt_name.$opt_value.
+          gettext(" with --rebuild\n");
     } else {
       ($cmdopts{type},$cmdopts{stage}) = ($opt_name,$opt_value);
     }
@@ -380,7 +393,8 @@ sub parse_cmd {
     if (defined $value) {
       store_value($opt_name,$macro,$value);
     } else {
-      warn "WARNING: missing value for macro $macro in --$opt_name! Ignoring.\n";
+      warn gettext('WARNING: missing value for macro ').
+        "$macro in --$opt_name".gettext("! Ignoring.\n");
     }
   }
   ## help_handler()
@@ -393,7 +407,7 @@ sub parse_cmd {
   }
   ## version()
   sub version {
-    return 'This is debbuild, version @VERSION@'."\n";
+    return gettext('This is debbuild, version ').'@VERSION@'."\n";
   }
   ## dump_macros()
   sub dump_macros {
@@ -405,7 +419,8 @@ sub parse_cmd {
   # Note that --short-circuit with -.p is not really an error, just redundant.
   # NB - this is NOT fatal, just ignored!
   if ($cmdopts{short} and $cmdopts{stage} =~ /[labs]/) {
-    warn "Can't use --short-circuit for $targets{$cmdopts{stage}} stage.  Ignoring.\n";
+    warn gettext("Can't use --short-circuit for ").$targets{$cmdopts{stage}}.
+         gettext(" stage.  Ignoring.\n");
     $cmdopts{short} = undef;
   }
 
@@ -425,8 +440,9 @@ sub parse_spec {
   $subname //= 'main';
   $pkgdata{main}{arch} //= expandmacros('%{_arch}');
 
-  die "No .spec file specified!  Exiting.\n" unless $specfile;
-  open $fh, $specfile or die "specfile ($specfile) barfed: $!\n";
+  die gettext("No .spec file specified!  Exiting.\n") unless $specfile;
+  open $fh, $specfile or die gettext('specfile (').$specfile.
+    gettext(') barfed: ')."$!\n";
 
   my @ifexpr = (); # Nested %if..%else..%endif conditionals
 
@@ -472,7 +488,8 @@ LINE: while (<$fh>) {
         # Wrap the whole thing in curly braces for easier processing.
         s/^\s*%(.+)\s*$/%{$1}/ if defined $macroopts{$1};
       } else {
-        die "Unknown tag '%$1' at line $. of $specfile\n";
+        die gettext('Unknown tag \'%').$1.gettext('\' at line ').$..
+            gettext(' of ').$specfile."\n";
       }
     }
 
@@ -525,10 +542,11 @@ LINE: while (<$fh>) {
           $iflevel--;
         }
       }
-      die "Unmatched %if at end of file. Missing %else/%endif.\n";
+      die gettext("Unmatched %if at end of file. Missing %else/%endif.\n");
     }
 ELSE: if (/^\s*%else/) {
-      die "Unmatched %else in line $.. Missing %if.\n" unless @ifexpr;
+      die gettext('Unmatched %else in line ').$..
+          gettext(". Missing %if.\n") unless @ifexpr;
       next LINE unless $ifexpr[-1];
       my $iflevel = @ifexpr;
       while (<$fh>) { # Skip %else-block, inluding nested %if..%else..%endif
@@ -541,10 +559,11 @@ ELSE: if (/^\s*%else/) {
           $iflevel--;
         }
       }
-      die "Unmatched %else at end of file. Missing %endif.\n";
+      die gettext("Unmatched %else at end of file. Missing %endif.\n");
     }
 ENDIF: if (/^\s*%endif/) {
-      die "Unmatched %endif in line $.. Missing %if/%else.\n" unless @ifexpr;
+      die gettext('Unmatched %endif in line ').$..
+          gettext(". Missing %if/%else.\n") unless @ifexpr;
       pop @ifexpr;
     } # %if..%else..%endif
 
@@ -711,7 +730,7 @@ ENDIF: if (/^\s*%endif/) {
         ($defattr{filemode}, $defattr{owner}, $defattr{group}) = ($1, $2, $4);
          $defattr{dirmode} = ($6 or $defattr{filemode}); # default directory setting is optional
       } elsif (/^\s*%exclude/) {
-        warn "'%exclude' keyword found, ignoring input line\n";
+        warn gettext("'%exclude' keyword found, ignoring input line\n");
       } else {
         process_filesline($subname);
       }
@@ -749,13 +768,17 @@ ENDIF: if (/^\s*%endif/) {
         push @{$pkgdata{main}{lc $1}}, splitreqs($2);
 # As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
 # along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
-        warn "Warning:  '$1:' outside %if wrapper\n" unless @ifexpr;
+        warn gettext('Warning:  \'').$1.
+             gettext(":' outside %if wrapper\n") unless @ifexpr;
       } elsif (/^(breaks|replaces|pre-depends):\s*(.+)/i) {
         push @{$pkgdata{main}{lc $1}}, splitreqs($2);
-        warn "Warning:  Debian-specific '$1:' outside %if wrapper\n" unless @ifexpr;
+        warn gettext('Warning:  Debian-specific \'').$1.
+             gettext(":' outside %if wrapper\n") unless @ifexpr;
       } elsif (/^supplements:\s*(.+)/i) {
         push @{$pkgdata{main}{enhances}}, splitreqs($1);
-        warn "Warning:  'Supplements:' is not natively supported by .deb packages.  Downgrading relationship to Enhances:.\n";
+        warn gettext('Warning:  \'').
+             gettext("Supplements:' is not natively supported by .deb packages.\n").
+             gettext("Downgrading relationship to Enhances:.\n");
       } elsif (/^obsoletes:\s*(.+)/i) {
         push @{$pkgdata{main}{replaces}}, splitreqs($1);
       } elsif (/^autoreq(?:prov)?:\s*(.+)/i) {
@@ -770,7 +793,7 @@ ENDIF: if (/^\s*%endif/) {
 
   close $fh;
 
-  die "Unmatched %if at end of file. Missing %endif.\n" if @ifexpr;
+  die gettext("Unmatched %if at end of file. Missing %endif.\n") if @ifexpr;
 } # end parse_spec()
 
 
@@ -791,7 +814,8 @@ sub process_autosetup {
   my $noautopatch = s/\s+-N//; # Eat '-N', which is unknown to %setup
   $specglobals{__scm} = $1 if s/\s+\-S\s+(\w+)//; # dito '-S'
   my $scm = $specglobals{__scm};
-  die "%autosetup: option '-S $scm' currently not supported at line $..\n"
+  die gettext('%autosetup: option \'-S ').$scm.
+      gettext('\' currently not supported at line ').$..".\n"
     unless $specglobals{"__scm_setup_$scm"};
   # Generic %setup invocation
   my $script = process_setup(); # hmm, how to fall to '%setup'?
@@ -857,7 +881,8 @@ sub process_setup {
   # gibberish immediately following %setup, but we will
   unless (/^(?:\s|$)/) {
     chomp;
-    warn "Suspect %setup tag '%setup$_', continuing\n";
+    warn gettext('Suspect %setup tag \'%setup').$_.
+         gettext("', continuing\n");
     s/^\S+//;
   }
 
@@ -933,7 +958,7 @@ sub decompress {
       $filename =~ /\.(?:t?bz?2?)$/ ? '%{__bzip2}' :
       $filename =~ /\.xz$/          ? '%{__xz}'    :
       $filename =~ /\.zst$/         ? '%{__zstd}'  :
-      die "Can't handle unknown file type '$filename'.\n" ).
+      die gettext('Can\'t handle unknown file type \'').$filename."'.\n" ).
       " -dc '$filename'";
 } # end decompress()
 
@@ -1131,18 +1156,19 @@ sub execute_script {
   # create script filename
   my $scriptfile = expandmacros('%{_tmppath}')."/deb-tmp.$stage.".int(rand(99998)+1);
   sysopen(SCRIPT, $scriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW, 0777)
-    or die "Can't open/create ".($what or $stage)."script file $scriptfile: $!\n";
+    or die gettext('Can\'t open/create ').($what or $stage).
+           gettext('script file ')."$scriptfile: $!\n";
   $specglobals{___build_body} = $script{$stage}; # Inject stage script from specfile
   print SCRIPT expandmacros('%{___build_template}');
   close SCRIPT;
 
   # execute
   my $cmdline = expandmacros('%{___build_cmd}').' '. $scriptfile;
-  print 'Executing('.($what or "%$stage").'): '.$cmdline.($for or '')."\n"
+  print gettext('Executing (').($what or "%$stage").'): '.$cmdline.($for or '')."\n"
     if defined $specglobals{verbose};
   system($cmdline . ((defined $specglobals{verbose} and
       $specglobals{verbose} > 1) ? '' : ' >/dev/null 2>&1'))
-    and die "Exec of $scriptfile failed (%$stage): $?\n";
+    and die gettext('Exec of ').$scriptfile.gettext(' failed (%')."$stage): $?\n";
 
   # and clean up
   unlink $scriptfile;
@@ -1179,7 +1205,8 @@ sub install {
       (my $linkdest = readlink $manpage) =~ s/\.(?:Z|gz|bz2)//;
       unlink $manpage;
       $manpage =~ s/\.(?:Z|gz|bz2)//;
-      symlink "$linkdest.gz", "$manpage.gz" or warn "Warning: symlinking manpage failed: $!\n";
+      symlink "$linkdest.gz", "$manpage.gz" or
+        warn gettext('Warning: symlinking manpage failed: ')."$!\n";
     }
   }
 
@@ -1369,7 +1396,7 @@ sub binpackage {
 
     execute_script('pkg', 'package-creation', " for $pkgdata{$pkg}{name}");
 
-    $finalmessages .= 'Wrote binary package '.format_debfile($pkg).
+    $finalmessages .= gettext('Wrote binary package ').format_debfile($pkg).
 	" in %{_debdir}/$pkgdata{$pkg}{arch}\n";
 
     if ($cmdopts{sign}) {
@@ -1389,7 +1416,7 @@ sub binpackage {
 
       execute_script('pkg', 'package-signature', " for $pkgdata{$pkg}{name}");
 
-      $finalmessages .= 'Signed binary package '.format_debfile($pkg).
+      $finalmessages .= gettext('Signed binary package ').format_debfile($pkg).
 	" in %{_debdir}/$pkgdata{$pkg}{arch}\n";
     }
 
@@ -1473,7 +1500,7 @@ sub srcpackage {
   $paxcmd .= "SPECS/$barespec -f %{_srcdebdir}/$pkgsrcname)";
 
   system(expandmacros($paxcmd)) == 0 and
-  $finalmessages .= "Wrote source package $pkgsrcname in %{_srcdebdir}.\n";
+  $finalmessages .= gettext('Wrote source package ')."$pkgsrcname in %{_srcdebdir}.\n";
 } # end srcpackage()
 
 
@@ -1489,9 +1516,10 @@ sub checkbuildreq {
   my @cnflist = map { expandmacros($_) } @buildconflicts;
 
   unless ( -e $specglobals{__dpkg_query} ) {
-    warn "**WARNING**  $specglobals{__dpkg_query} not found.  Can't check build-deps.\n".
-	"  Required for sucessful build:\n".join(', ', @reqlist)."\n".
-	"  Continuing anyway.\n";
+    warn gettext('**WARNING**  ').$specglobals{__dpkg_query}.
+      gettext(" not found.  Can't check build-deps.\n").
+      gettext("  Required for sucessful build:\n").join(', ', @reqlist)."\n".
+      gettext("  Continuing anyway.\n");
     return 1;
   }
 
@@ -1507,7 +1535,7 @@ sub checkbuildreq {
 ## packages as installed.
     my ($pkgdep) = qx ( $specglobals{__dpkg_query} --showformat '\${status}\t\${version}\n' -W $pkg );
     unless ($pkgdep) {
-      warn " * Missing build-dependency $pkg!\n";
+      warn gettext(' * Missing build-dependency ')."$pkg!\n";
       push @missinglist, $pkg;
     } else {
 # real package, installed
@@ -1523,21 +1551,24 @@ sub checkbuildreq {
       my ($reqstat,undef,undef,$reqver) = split ' ', $pkgdep;
       if ($reqstat =~ /^unknown/) {
 	# this seems to be a virtual package.
-	warn " * Warning: $pkg is probably installed but seems to be a virtual package.\n";
+	warn gettext(' * Warning: ').$pkg.
+          gettext(" is probably installed but seems to be a virtual package.\n");
       } elsif ($reqstat =~ /^install/) {
 	my ($resp) = qx ( $specglobals{__dpkg} --compare-versions $reqver '$rel' $ver && $specglobals{__echo} "ok" );
 	if ($resp !~ /^ok/) {
-	  warn " * Required build-dependency $pkg is installed, but wrong version ($reqver):  Need $ver\n"
+	  warn gettext(' * Required build-dependency ').$pkg.
+            gettext(' is installed, but wrong version (').$reqver.
+            gettext('):  Need ')."$ver\n"
         }
       } else {
 	# whatever state it's in, it's not completely installed, therefore it's missing.
-	warn " * Missing build-dependency $pkg!\n  $pkgdep";
+	warn gettext(' * Missing build-dependency ').$pkg."!\n  $pkgdep";
         push @missinglist, $pkg;
       } # end not installed/installed check
     }
   } # end req loop
 
-  print q(To install all missing dependencies, run 'apt install ).
+  print gettext(q(To install all missing dependencies, run 'apt install )).
     join(' ', @missinglist)."'.\n" if @missinglist;
 
   my @conflicting;
@@ -1546,12 +1577,12 @@ sub checkbuildreq {
 
     my ($pkgdep) = qx ( $specglobals{__dpkg_query} --showformat '\${status}\t\${version}\n' -W $pkg );
     if ($pkgdep) {
-      warn " * Conflicting build-dependency $pkg!\n";
+      warn gettext(' * Conflicting build-dependency ')."$pkg!\n";
       push @conflicting, $pkg;
     }
   }
 
-  print q(To remove all conflicting dependencies, run 'apt remove ).
+  print gettext(q(To remove all conflicting dependencies, run 'apt remove )).
     join(' ', @conflicting)."'.\n" if @conflicting;
 
   return 0 == @missinglist + @conflicting;
@@ -1568,7 +1599,7 @@ sub checkbuildreq {
 sub getreqs {
   my ($pkgtree) = @_;
 
-  print "Checking library requirements...\n" if defined $specglobals{verbose};
+  print gettext("Checking library requirements...\n") if defined $specglobals{verbose};
   return () if 'all' eq $pkgdata{main}{arch}; # noarch package
   chomp( my @binlist = qx ( $specglobals{__find} $pkgtree -type f -perm /ugo=x ) );
   return () unless @binlist;
@@ -1634,7 +1665,8 @@ sub install_sdeb {
   die "Can't install $srcpkg\n" unless $srcpkg =~ /\.sdeb$/;
   $srcpkg = abs_path($srcpkg);
   system(expandmacros("cd %{_topdir}; %{__pax} -r -f $srcpkg)")) == 0 and
-  $finalmessages .= "Extracted source package $srcpkg to %{_topdir}.\n";
+  $finalmessages .= gettext('Extracted source package ').$srcpkg.
+    gettext(' to %{_topdir}.')."\n";
 } # end install_sdeb()
 
 
@@ -1690,7 +1722,8 @@ sub expandmacros {
   s/%(bcond_with(?:out)?)\s+(\S+)/%{$1 $2}/g;
   # Store %globals (from '%bcond_with[out]()' in 'macros[.in]')
   s/%(define|global)\s+(\S+)\s+(.+)/store_value($1,$2,$3)/eg;
-  die "Missing value for '%$1 $2'. Aborting!" if m/%(define|global)\s+(.+)/;
+  die gettext('Missing value for \'%')."$1 $2".
+      gettext('\'. Aborting!') if m/%(define|global)\s+(.+)/;
   # Permit unsetting/deleting of stored values
   { no warnings; s/%(undefine)\s+(\S+)/store_value($1,$2)/eg; }
   # Print the active macro table
