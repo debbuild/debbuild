@@ -77,6 +77,9 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{__pod2man} --utf8 --center="DeepNet Dev Tools" --section 8 \
 	debbuild > %{buildroot}%{_mandir}/man8/debbuild.8
 
+%{__install} -d %{buildroot}%{_datadir}/locale/de/LC_MESSAGES
+%{__install} -m 644 po/de/debbuild.mo %{buildroot}%{_datadir}/locale/de/LC_MESSAGES
+
 %if %{with signature}
 %{__install} -d %{buildroot}%{_keyringpath}/%{_gpg_key_full} \
 	%{buildroot}%{_policiespath}/%{_gpg_key_full}
@@ -92,6 +95,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{_libdir}/%{name}/macros.d/*
 %{_sysconfdir}/%{name}/macros.*
 %{_libdir}/%{name}/debrc
+%{_datadir}/locale/de/LC_MESSAGES/debbuild.mo
 
 %if %{with signature}
 %attr(664,root,root) %{_keyringpath}/%{_gpg_key_full}/debsig.gpg
@@ -99,6 +103,9 @@ rebuild .src.rpm source packages as .deb binary packages.
 %endif
 
 %changelog
+* Sun Nov 11 2018  Andreas Scherer <https://ascherer.github.io/>
+- Install German language pack
+
 * Sun Feb 19 2017  Andreas Scherer <https://ascherer.github.io/>
 - Set up infrastructure for signing packages
 

@@ -38,7 +38,7 @@ use Text::Balanced qw(extract_bracketed extract_multiple);
 
 # Switch on i18n and t10n.
 setlocale(LC_MESSAGES, "");
-bindtextdomain("debbuild", getenv("PWD"));
+bindtextdomain("debbuild", '/usr/share/locale');
 textdomain("debbuild");
 
 # Behavioural compatibility FTW!  Yes, rpmbuild does this too.
