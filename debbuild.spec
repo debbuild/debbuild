@@ -21,6 +21,7 @@ Group: Development/Tools/Building
 %undefine with_signature
 %define __pod2man /usr/bin/pod2man
 %endif
+%define __msgfmt /usr/bin/msgfmt
 License: GPLv2+
 Packager: Andreas Scherer <https://ascherer.github.io/>
 Release: ascherer.%{dist}
@@ -78,7 +79,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 	debbuild > %{buildroot}%{_mandir}/man8/debbuild.8
 
 %{__install} -d %{buildroot}%{_datadir}/locale/de/LC_MESSAGES
-%{__install} -m 644 po/de/debbuild.mo %{buildroot}%{_datadir}/locale/de/LC_MESSAGES
+%{__msgfmt} po/de/debbuild.po -o %{buildroot}%{_datadir}/locale/de/LC_MESSAGES/debbuild.mo
 
 %if %{with signature}
 %{__install} -d %{buildroot}%{_keyringpath}/%{_gpg_key_full} \
