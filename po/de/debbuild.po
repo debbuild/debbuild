@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-11-11 15:08+0100\n"
-"PO-Revision-Date: 2018-11-11 15:11+0100\n"
+"PO-Revision-Date: 2018-11-12 08:38+0100\n"
 "Last-Translator: Andreas Scherer <andreas_github@freenet.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -65,7 +65,7 @@ msgstr " von "
 
 #: debbuild:423
 msgid " stage.  Ignoring.\n"
-msgstr " Stufe. Ignoeiert.\n"
+msgstr " Stufe. Ignoriert.\n"
 
 #: debbuild:1669
 #, perl-brace-format
@@ -134,7 +134,7 @@ msgstr ": Bau-Abhängigkeit nicht erfüllt.\n"
 #: debbuild:772 debbuild:776
 #, perl-format
 msgid ":' outside %if wrapper\n"
-msgstr ":' außerhalb eines %if\n"
+msgstr ":' außerhalb eines %if-Blocks\n"
 
 #: debbuild:142
 msgid "Can't --rebuild with "
@@ -261,7 +261,7 @@ msgstr "Einsames %endif in Zeile "
 #: debbuild:545
 #, perl-format
 msgid "Unmatched %if at end of file. Missing %else/%endif.\n"
-msgstr "Nicht geschlossenes %if am Dateiende. Fehlendes %else/%endif…\n"
+msgstr "Nicht geschlossenes %if am Dateiende. Fehlendes %else/%endif.\n"
 
 #: debbuild:796
 #, perl-format
