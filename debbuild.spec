@@ -19,9 +19,9 @@ Group: devel
 Group: Development/Tools/Building
 %global dist ubuntu16.04
 %undefine with_signature
+%define __msgfmt /usr/bin/msgfmt
 %define __pod2man /usr/bin/pod2man
 %endif
-%define __msgfmt /usr/bin/msgfmt
 License: GPLv2+
 Packager: Andreas Scherer <https://ascherer.github.io/>
 Release: ascherer.%{dist}
