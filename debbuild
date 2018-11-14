@@ -329,7 +329,7 @@ sub parse_cmd {
     'with=s'        => \&define_handler, # dito for 'with|without=s'
     'without=s'     => \&define_handler,
     'define|D=s'    => \&define_handler,
-    'S=s'           => sub { define_handler('define',"__scm $_[1]") },
+    'scm|S=s'       => sub { define_handler('define',"__scm $_[1]") },
     'help|?'        => \&help_handler,
     'version'       => sub { print version() },
     '<>'            => \&catchall # process non-option arguments
@@ -1928,7 +1928,7 @@ Common options:
 
   -D, --define='MACRO EXPR'  define MACRO with value EXPR
   --with/--without FLAG      define build conditionals from FLAG
-  -S SCM                     short for '--define "__scm SCM"'
+  -S, --scm=SCM              short for '--define "__scm SCM"'
 
 debbuild-specific options:
 
