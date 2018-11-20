@@ -3,7 +3,7 @@
 stage=p # prepare only by default
 flags=--verbose # default flag for 'patch' et al.
 scm=patch # default SCM; use '-S git' et al.
-verbose= # default verbosity; switch with -v and -q
+verbose= # default verbosity; switch with --verbose and --quiet
 builder=debbuild # override with '-r rpmbuild' or append path
 
 while getopts pcilabsS:vqr: opt
@@ -19,8 +19,11 @@ do
 		S) # choose SCM
 			scm=$OPTARG
 			;;
-		[qv]) # dump or bump verbosity
-			verbose=-$opt
+		[q]) # dump verbosity
+			verbose=--quiet
+			;;
+		[v]) # bump verbosity
+			verbose=--verbose
 			;;
 		r) # use alternative package builder
 			builder=$OPTARG
