@@ -313,6 +313,7 @@ sub parse_cmd {
     'short-circuit' => \$cmdopts{short},
     'showpkgs'      => sub { $cmdopts{type} = 'd' },
     'showrc'        => \&dump_macros,
+    'debug'         => \$cmdopts{debug},
     'sign'          => \$cmdopts{sign},
     'noprep'        => \$cmdopts{noprep},
     'nobuild'       => \$cmdopts{nobuild},
@@ -1173,7 +1174,7 @@ sub execute_script {
     and die _('Exec of ').$scriptfile._(' failed (%')."$stage): $?\n";
 
   # and clean up
-  unlink $scriptfile;
+  unlink $scriptfile unless $cmdopts{debug};
 } # end execute_script()
 
 
