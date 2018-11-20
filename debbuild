@@ -1819,7 +1819,7 @@ sub expandmacros {
 
   # unescape multi-line macros
   s/\\"/"/g;
-  s/\\\\/\\/g;
+  s/\\\\$/\\/g;
   s/(\S)\\+\n/$1\n/g;
   return $_;
 } # end expandmacros()
