@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: DEBBUILD I18N 1.0\n"
+"Project-Id-Version: CEBBUILD I18N 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-11 15:08+0100\n"
+"POT-Creation-Date: 2018-11-25 10:27+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,291 +17,281 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: debbuild:1522
+#: debbuild:1525
 msgid "  Continuing anyway.\n"
 msgstr ""
 
-#: debbuild:1521
+#: debbuild:1524
 msgid "  Required for sucessful build:\n"
 msgstr ""
 
-#: debbuild:1580
+#: debbuild:1583
 msgid " * Conflicting build-dependency "
 msgstr ""
 
-#. whatever state it's in, it's not completely installed, therefore it's missing.
-#: debbuild:1538 debbuild:1565
+#: debbuild:1541 debbuild:1568
 msgid " * Missing build-dependency "
 msgstr ""
 
-#: debbuild:1559
+#: debbuild:1562
 msgid " * Required build-dependency "
 msgstr ""
 
-#. this seems to be a virtual package.
-#: debbuild:1554
+#: debbuild:1557
 msgid " * Warning: "
 msgstr ""
 
-#: debbuild:1171
+#: debbuild:1174
 msgid " failed (%"
 msgstr ""
 
-#: debbuild:373
+#: debbuild:376
 msgid " for option '-"
 msgstr ""
 
-#: debbuild:1560
+#: debbuild:1563
 msgid " is installed, but wrong version ("
 msgstr ""
 
-#: debbuild:1520
+#: debbuild:1558
+msgid " is probably installed but seems to be a virtual package.\n"
+msgstr ""
+
+#: debbuild:1523
 msgid " not found.  Can't check build-deps.\n"
 msgstr ""
 
-#: debbuild:492
+#: debbuild:495
 msgid " of "
 msgstr ""
 
-#: debbuild:423
+#: debbuild:426
 msgid " stage.  Ignoring.\n"
 msgstr ""
 
-#: debbuild:1669
+#: debbuild:1672
 #, perl-brace-format
 msgid " to %{_topdir}."
 msgstr ""
 
-#: debbuild:378
+#: debbuild:381
 msgid " with --rebuild\n"
 msgstr ""
 
-#: debbuild:397
+#: debbuild:400
 msgid "! Ignoring.\n"
 msgstr ""
 
-#: debbuild:817
+#: debbuild:820
 msgid "%autosetup: option '-S "
 msgstr ""
 
-#: debbuild:491
+#: debbuild:494
 msgid "' at line "
 msgstr ""
 
-#: debbuild:818
+#: debbuild:821
 msgid "' currently not supported at line "
 msgstr ""
 
-#: debbuild:733
+#: debbuild:736
 #, perl-format
 msgid "'%exclude' keyword found, ignoring input line\n"
 msgstr ""
 
-#: debbuild:885
+#: debbuild:888
 msgid "', continuing\n"
 msgstr ""
 
-#: debbuild:1726
+#: debbuild:1729
 msgid "'. Aborting!"
 msgstr ""
 
-#: debbuild:445
+#: debbuild:448
 msgid ") barfed: "
 msgstr ""
 
-#: debbuild:1561
+#: debbuild:1564
 msgid "):  Need "
 msgstr ""
 
-#: debbuild:1519
+#: debbuild:1522
 msgid "**WARNING**  "
 msgstr ""
 
-#: debbuild:549
+#: debbuild:552
 #, perl-format
 msgid ". Missing %if.\n"
 msgstr ""
 
-#: debbuild:566
+#: debbuild:569
 #, perl-format
 msgid ". Missing %if/%else.\n"
 msgstr ""
 
-#: debbuild:170
+#: debbuild:172
 msgid ":  build requirements not met.\n"
 msgstr ""
 
-#: debbuild:772 debbuild:776
+#: debbuild:775 debbuild:779
 #, perl-format
 msgid ":' outside %if wrapper\n"
 msgstr ""
 
-#: debbuild:142
+#: debbuild:144
 msgid "Can't --rebuild with "
 msgstr ""
 
-#: debbuild:169
+#: debbuild:171
 msgid "Can't build "
 msgstr ""
 
-#: debbuild:961
+#: debbuild:964
 msgid "Can't handle unknown file type '"
 msgstr ""
 
-#: debbuild:1159
+#: debbuild:1162
 msgid "Can't open/create "
 msgstr ""
 
-#. Mutually exclusive options.
-#: debbuild:377
+#: debbuild:380
 msgid "Can't use -"
 msgstr ""
 
-#: debbuild:422
+#: debbuild:425
 msgid "Can't use --short-circuit for "
 msgstr ""
 
-#: debbuild:1602
+#: debbuild:1605
 msgid "Checking library requirements...\n"
 msgstr ""
 
-#: debbuild:781
+#: debbuild:784
 msgid "Downgrading relationship to Enhances:.\n"
 msgstr ""
 
-#: debbuild:1171
+#: debbuild:1174
 msgid "Exec of "
 msgstr ""
 
-#: debbuild:1167
+#: debbuild:1170
 msgid "Executing ("
 msgstr ""
 
-#: debbuild:1668
+#: debbuild:1671
 msgid "Extracted source package "
 msgstr ""
 
-#: debbuild:1725
+#: debbuild:1728
 msgid "Missing value for '%"
 msgstr ""
 
-#: debbuild:278
+#: debbuild:280
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
 msgstr ""
 
-#: debbuild:443
+#: debbuild:446
 msgid "No .spec file specified!  Exiting.\n"
 msgstr ""
 
-#. Behavioural compatibility FTW!  Yes, rpmbuild does this too.
-#: debbuild:45
+#: debbuild:47
 msgid "No .spec file to work with!  Exiting.\n"
 msgstr ""
 
-#. Need to inspect the tarball to find the spec file.
-#. Note that rpmbuild doesn't seem to support this operation from a
-#. .zip file properly, but we try our best.
-#: debbuild:152
+#: debbuild:154
 msgid "No tarfile specified!  Exiting.\n"
 msgstr ""
 
-#: debbuild:1419
+#: debbuild:1422
 msgid "Signed binary package "
 msgstr ""
 
-#: debbuild:279
+#: debbuild:281
 msgid "Sorry, I quit.\n"
 msgstr ""
 
-#: debbuild:780
+#: debbuild:783
 msgid "Supplements:' is not natively supported by .deb packages.\n"
 msgstr ""
 
-#: debbuild:884
+#: debbuild:887
 #, perl-format
 msgid "Suspect %setup tag '%setup"
 msgstr ""
 
-#: debbuild:410
+#: debbuild:413
 msgid "This is debbuild, version "
 msgstr ""
 
-#. end req loop
-#: debbuild:1571
+#: debbuild:1574
 msgid "To install all missing dependencies, run 'apt install "
 msgstr ""
 
-#: debbuild:1585
+#: debbuild:1588
 msgid "To remove all conflicting dependencies, run 'apt remove "
 msgstr ""
 
-#: debbuild:372
+#: debbuild:375
 msgid "Unknown stage "
 msgstr ""
 
-#: debbuild:491
+#: debbuild:494
 msgid "Unknown tag '%"
-msgstr ""
-
-#: debbuild:562
-#, perl-format
-msgid "Unmatched %else at end of file. Missing %endif.\n"
-msgstr ""
-
-#: debbuild:548
-#, perl-format
-msgid "Unmatched %else in line "
 msgstr ""
 
 #: debbuild:565
 #, perl-format
+msgid "Unmatched %else at end of file. Missing %endif.\n"
+msgstr ""
+
+#: debbuild:551
+#, perl-format
+msgid "Unmatched %else in line "
+msgstr ""
+
+#: debbuild:568
+#, perl-format
 msgid "Unmatched %endif in line "
 msgstr ""
 
-#: debbuild:545
+#: debbuild:548
 #, perl-format
 msgid "Unmatched %if at end of file. Missing %else/%endif.\n"
 msgstr ""
 
-#: debbuild:796
+#: debbuild:799
 #, perl-format
 msgid "Unmatched %if at end of file. Missing %endif.\n"
 msgstr ""
 
-#: debbuild:396
+#: debbuild:399
 msgid "WARNING: missing value for macro "
 msgstr ""
 
-#. As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
-#. along with shiny new tag Supplements:.  We'll continue to warn about them for a while.
-#: debbuild:771 debbuild:779
+#: debbuild:774 debbuild:782
 msgid "Warning:  '"
 msgstr ""
 
-#: debbuild:775
+#: debbuild:778
 msgid "Warning:  Debian-specific '"
 msgstr ""
 
-#: debbuild:1209
+#: debbuild:1212
 msgid "Warning: symlinking manpage failed: "
 msgstr ""
 
-#: debbuild:1399
+#: debbuild:1402
 msgid "Wrote binary package "
 msgstr ""
 
-#: debbuild:1503
+#: debbuild:1506
 msgid "Wrote source package "
 msgstr ""
 
-#: debbuild:1555
-msgid " is probably installed but seems to be a virtual package.\n"
-msgstr ""
-
-#: debbuild:1160
+#: debbuild:1163
 msgid "script file "
 msgstr ""
 
-#: debbuild:444
+#: debbuild:447
 msgid "specfile ("
 msgstr ""
