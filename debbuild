@@ -319,8 +319,8 @@ sub parse_cmd {
     'nobuild'       => \$cmdopts{nobuild},
     'nocheck'       => \$cmdopts{nocheck},
     'noclean'       => \$cmdopts{noclean},
-    'verbose+'      => \$specglobals{verbose}, # bump verbosity.
-    'quiet'         => sub { $specglobals{verbose} = undef }, # dump verbosity.
+    'verbose|v+'    => \$specglobals{verbose}, # bump verbosity.
+    'quiet|q'       => sub { $specglobals{verbose} = undef }, # dump verbosity.
     'rebuild=s'     => \&srcpkg_handler,
     'recompile=s'   => \&srcpkg_handler,
     'install|i=s'   => \&srcpkg_handler,
