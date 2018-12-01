@@ -111,7 +111,7 @@ config_debrc();
 lsb_detection();
 parse_cmd();
 
-print version();
+print version() if defined $specglobals{verbose};
 
 if ($cmdopts{type} eq 's') {
   install_sdeb($specglobals{srcpkg});
@@ -196,7 +196,7 @@ if ($cmdopts{stage} =~ /[ab]/) {
 }
 
 # Spit out any closing remarks
-FINAL: print expandmacros($finalmessages);
+FINAL: print expandmacros($finalmessages) if defined $specglobals{verbose};
 
 # Just in case.
 exit 0;
