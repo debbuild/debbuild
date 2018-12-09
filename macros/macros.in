@@ -234,7 +234,7 @@
 # ---- configure macros.
 #	Macro(s) slavishly copied from autoconf's config.status.
 #
-%_prefix		/usr
+%_prefix		%{_usr}
 %_exec_prefix		%{_prefix}
 %_bindir		%{_exec_prefix}/bin
 %_sbindir		%{_exec_prefix}/sbin
@@ -242,7 +242,7 @@
 %_datadir		%{_prefix}/share
 %_docdir		%{_datadir}/doc
 %_sysconfdir		/etc
-%_sharedstatedir	%{_var}/lib
+%_sharedstatedir	%{_prefix}/com
 %_localstatedir		%{_var}
 %_lib			lib
 %_libdir		%{_exec_prefix}/%{_lib}
