@@ -242,8 +242,8 @@
 %_datadir		%{_prefix}/share
 %_docdir		%{_datadir}/doc
 %_sysconfdir		/etc
-%_sharedstatedir	%{_prefix}/com
-%_localstatedir		%{_prefix}/var
+%_sharedstatedir	%{_var}/lib
+%_localstatedir		%{_var}
 %_lib			lib
 %_libdir		%{_exec_prefix}/%{_lib}
 %_includedir		%{_prefix}/include
