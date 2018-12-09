@@ -169,7 +169,7 @@ if ($cmdopts{type} eq 'b') {
   # this also generates most of the shell script required.
   parse_spec($specglobals{specfile});
   die _('Can\'t build ').$pkgdata{main}{name}.
-      _(":  build requirements not met.\n") unless checkbuildreq();
+      _(":  build requirements not met.\n") unless ($cmdopts{nodeps} || checkbuildreq());
   exit 0 if $cmdopts{nobuild};
 
   # Expand macros as necessary.
@@ -315,6 +315,7 @@ sub parse_cmd {
     'showrc'        => \&dump_macros,
     'debug'         => \$cmdopts{debug},
     'sign'          => \$cmdopts{sign},
+    'nodeps'        => \$cmdopts{nodeps},
     'noprep'        => \$cmdopts{noprep},
     'nobuild'       => \$cmdopts{nobuild},
     'nocheck'       => \$cmdopts{nocheck},
