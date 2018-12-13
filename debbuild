@@ -479,11 +479,11 @@ LINE: while (<$fh>) {
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
     # First a set of %-tags that are required to be used flush-left:
-    if ((/^%([a-z_]+)/ and not grep { $1 eq $_ } qw(build changelog check
+    if ((/^%([a-z_]\w*)/ and not grep { $1 eq $_ } qw(build changelog check
         clean config copyrightdata description files ghost install package
         patch post postun pre prep preun setup verify))
         and # then a set of %-tags that are permitted in more liberal layouts:
-        (/^\s*%([a-z_]+)/ and not grep { $1 eq $_ } qw(attr autopatch
+        (/^\s*%([a-z_]\w*)/ and not grep { $1 eq $_ } qw(attr autopatch
         autosetup bcond_with bcond_without configure defattr define dir
         doc docdir dump else endif exclude global if ifarch ifnarch ifnos
         ifos include license make_build make_install makeinstall readme
@@ -1809,7 +1809,7 @@ sub expandmacros {
   pos = 0; # reset to start of $_
 
   # Expand 'simple' '%{macros}': %define's and %{all_the_rest}
-  while (/%\{([a-z_]\w+)}/ig) {
+  while (/%\{([a-z_]\w*)}/ig) {
     my $key = $1;
     if (defined $specglobals{$key}) {
       s/%\{$key}/expandmacros($specglobals{$key})/eg;
