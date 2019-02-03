@@ -5,7 +5,7 @@
 # unlikely to conform to "Debian Policy".
 #
 # Copyright (C) 2005-2015 Kris Deugau <kdeugau@deepnet.cx>
-# Copyright (C) 2015-2018 Andreas Scherer <https://ascherer.github.io/>
+# Copyright (C) 2015-2019 Andreas Scherer <https://ascherer.github.io/>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -1894,7 +1894,7 @@ debbuild — Build Debian-compatible .deb packages from RPM .spec files
 
 =item 2005-2015 © Kris Deugau <L<kdeugau@deepnet.cx>>
 
-=item 2015-2018 © Andreas Scherer L<https://ascherer.github.io/>
+=item 2015-2019 © Andreas Scherer L<https://ascherer.github.io/>
 
 =back
 
@@ -1925,7 +1925,7 @@ Build options with [ <specfile> | <tarball> | <source package> ]:
   --rebuild (-rb)            build binary package from <source package>
   --recompile (-ri)          build through %install from <source package>
   --buildroot=DIRECTORY      override build root
-  --short-circuit            skip straight to specified stage (only for c,i)
+  --short-circuit            skip straight to specified stage (only c,i)
 
 Common options:
 

@@ -76,7 +76,8 @@ rebuild .src.rpm source packages as .deb binary packages.
 
 %{__install} -d %{buildroot}%{_mandir}/man8
 %{__pod2man} --utf8 --center="DeepNet Dev Tools" --section 8 \
-	debbuild > %{buildroot}%{_mandir}/man8/debbuild.8
+	--release="Release %{version}" debbuild \
+	%{buildroot}%{_mandir}/man8/debbuild.8
 
 %{__install} -d %{buildroot}%{_datadir}/locale/de/LC_MESSAGES
 %{__msgfmt} po/de/debbuild.po -o %{buildroot}%{_datadir}/locale/de/LC_MESSAGES/debbuild.mo
