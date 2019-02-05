@@ -47,7 +47,7 @@ RPM spec files, RPM-friendly tarballs, and RPM source packages
 should be able to interpret most spec files usefully.
 
 Note that patch is not strictly required unless you have .spec files
-with %patch directives, and RPM is not required unless you wish to
+with %%patch directives, and RPM is not required unless you wish to
 rebuild .src.rpm source packages as .deb binary packages.
 
 %prep
