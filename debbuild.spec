@@ -17,7 +17,7 @@ URL: https://github.com/ascherer/debbuild
 Group: devel
 %else
 Group: Development/Tools/Building
-%global dist ubuntu16.04
+%global dist ubuntu18.04
 %undefine with_signature
 %define __msgfmt /usr/bin/msgfmt
 %define __pod2man /usr/bin/pod2man
