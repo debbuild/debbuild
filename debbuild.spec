@@ -65,9 +65,8 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{__install} -d %{buildroot}%{_bindir}
 %{__install} debbuild %{buildroot}%{_bindir}
 
-%{__install} -d %{buildroot}%{_libdir}/%{name}/macros.d
+%{__install} -d %{buildroot}%{_libdir}/%{name}
 %{__install} -m 644 macros/macros.in %{buildroot}%{_libdir}/%{name}/macros
-%{__install} -m 644 macros/macros.perl %{buildroot}%{_libdir}/%{name}/macros.d
 %{__install} -m 644 config/debrc %{buildroot}%{_libdir}/%{name}
 
 %{__install} -d %{buildroot}%{_sysconfdir}/%{name}
@@ -94,7 +93,6 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{_bindir}/*
 %{_mandir}/man8/*
 %{_libdir}/%{name}/macros
-%{_libdir}/%{name}/macros.d/*
 %{_sysconfdir}/%{name}/macros.*
 %{_libdir}/%{name}/debrc
 %{_datadir}/locale/de/LC_MESSAGES/debbuild.mo
