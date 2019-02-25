@@ -165,16 +165,6 @@
 %_default_patch_flags	--no-backup-if-mismatch
 
 #==============================================================================
-# ---- per-platform macros.
-#	Macros that are specific to an individual platform. The values here
-#	will be used if the per-platform macro file does not exist..
-#
-%_vendor		debbuild
-%_arch			%(%{__dpkg_architecture} -qDEB_HOST_ARCH)
-%_build_arch		%(%{__dpkg_architecture} -qDEB_BUILD_ARCH)
-%_os			%(%{__dpkg_architecture} -qDEB_HOST_ARCH_OS)
-
-#==============================================================================
 # ---- GPG/PGP/PGP5 signature macros.
 #	Macro(s) to hold the arguments passed to GPG/PGP for package
 #	signing and verification.

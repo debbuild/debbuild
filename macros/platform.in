@@ -1,0 +1,19 @@
+# Per-platform rpm configuration file.
+
+#==============================================================================
+# ---- per-platform macros.
+#	Macros that are specific to an individual platform.
+#
+%_vendor		debbuild
+%_arch			%(%{__dpkg_architecture} -qDEB_HOST_ARCH)
+%_build_arch		%(%{__dpkg_architecture} -qDEB_BUILD_ARCH)
+%_os			%(%{__dpkg_architecture} -qDEB_HOST_ARCH_OS)
+
+#==============================================================================
+# ---- configure macros.
+#	Override 'autoconf' defaults
+#	NOTE: %_sharedstatedir is differently defined by Ubuntu's RPM;
+#	you'll have to adapt in ~/.debmacros a/o in your specfile(s).
+#
+%_localstatedir		%{_var}
+%_sharedstatedir	%{_var}/lib
