@@ -72,6 +72,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{__install} -d %{buildroot}%{_sysconfdir}/%{name}
 %{__install} -m 644 macros/macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
 %{__install} -m 644 macros/macros.texlive %{buildroot}%{_sysconfdir}/%{name}
+%{__install} -m 644 macros/platform.in %{buildroot}%{_sysconfdir}/%{name}/macros
 
 %{__install} -d %{buildroot}%{_mandir}/man8
 %{__pod2man} --utf8 --center="DeepNet Dev Tools" --section 8 \
@@ -92,9 +93,10 @@ rebuild .src.rpm source packages as .deb binary packages.
 # Fill in the pathnames to be packaged here
 %{_bindir}/*
 %{_mandir}/man8/*
-%{_libdir}/%{name}/macros
-%{_sysconfdir}/%{name}/macros.*
 %{_libdir}/%{name}/debrc
+%{_libdir}/%{name}/macros
+%{_sysconfdir}/%{name}/macros
+%{_sysconfdir}/%{name}/macros.*
 %{_datadir}/locale/de/LC_MESSAGES/debbuild.mo
 
 %if %{with signature}
