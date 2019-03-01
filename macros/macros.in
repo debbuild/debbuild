@@ -31,6 +31,7 @@
 %__dpkg_architecture	/usr/bin/dpkg-architecture
 %__dpkg_deb		/usr/bin/dpkg-deb
 %__dpkg_query		/usr/bin/dpkg-query
+%__dpkg_sig		/usr/bin/dpkg-sig
 %__du			/usr/bin/du
 %__echo			/bin/echo
 %__fakeroot		/usr/bin/fakeroot

@@ -5,8 +5,6 @@
 #   http://docs.fedoraproject.org/drafts/rpm-guide-en/
 # More links may be available from http://www.rpm.org
 
-%bcond_without signature
-
 Name: debbuild
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 Version: 18.12.0
@@ -18,7 +16,6 @@ Group: devel
 %else
 Group: Development/Tools/Building
 %global dist ubuntu18.04
-%undefine with_signature
 %define __msgfmt /usr/bin/msgfmt
 %define __pod2man /usr/bin/pod2man
 %endif
@@ -31,10 +28,7 @@ Requires: dpkg-dev, perl, fakeroot
 Requires: lsb-release, gettext
 Recommends: bzip2, gzip, xz-utils, unzip, zip, zstd
 Recommends: git, patch, pax, quilt
-%if %{with signature}
-BuildRequires: gnupg
-Recommends: debsigs, debsig-verify
-%endif
+Recommends: dpkg-sig
 Suggests: rpm
 %endif
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
@@ -82,13 +76,6 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{__install} -d %{buildroot}%{_datadir}/locale/de/LC_MESSAGES
 %{__msgfmt} po/de/debbuild.po -o %{buildroot}%{_datadir}/locale/de/LC_MESSAGES/debbuild.mo
 
-%if %{with signature}
-%{__install} -d %{buildroot}%{_keyringpath}/%{_gpg_key_full} \
-	%{buildroot}%{_policiespath}/%{_gpg_key_full}
-%{__gpg_sign_cmd}
-%{__install} -m 644 gpg/debsig.pol %{buildroot}%{_policiespath}/%{_gpg_key_full}
-%endif
-
 %files
 # Fill in the pathnames to be packaged here
 %{_bindir}/*
@@ -99,12 +86,10 @@ rebuild .src.rpm source packages as .deb binary packages.
 %{_sysconfdir}/%{name}/macros.*
 %{_datadir}/locale/de/LC_MESSAGES/debbuild.mo
 
-%if %{with signature}
-%attr(664,root,root) %{_keyringpath}/%{_gpg_key_full}/debsig.gpg
-%{_policiespath}/%{_gpg_key_full}/debsig.pol
-%endif
-
 %changelog
+* Fri Feb 01 2019  Andreas Scherer <https://ascherer.github.io/>
+- Replace debsigs with dpkg-sig for package signing
+
 * Sun Nov 11 2018  Andreas Scherer <https://ascherer.github.io/>
 - Install German language pack
 

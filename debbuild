@@ -1405,18 +1405,8 @@ sub binpackage {
 	" in %{_debdir}/$pkgdata{$pkg}{arch}\n";
 
     if ($cmdopts{sign}) {
-      my $signkey = '';
-      if (defined $specglobals{_gpg_name} and
-          open GPGKEYS, '-|', $specglobals{__gpg}, '-k', '--with-colons',
-            $specglobals{_gpg_name}) {
-        chomp(my @keys = <GPGKEYS>); # catch all keys of "%_gpg_name"
-        close GPGKEYS;
-        @keys = grep { /^pub:[^idren]:/ } @keys; # select only valid keys
-        ($signkey) = $keys[-1] =~ m/(?:.+?:){4}(.+?):/ if @keys;
-          # use the most recent key
-      }
-      $script{pkg} = "%{__fakeroot} -- %{__debsigs} --sign=origin ".
-        ($signkey ? "--default-key=$signkey " : '').
+      $script{pkg} = "%{__fakeroot} -- %{__dpkg_sig} ".
+        "-s builder -k %{_gpg_key_full} ".
         "%{_debdir}/$pkgdata{$pkg}{arch}/".format_debfile($pkg)."\n";
 
       execute_script('pkg', 'package-signature', " for $pkgdata{$pkg}{name}");
