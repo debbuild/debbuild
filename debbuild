@@ -343,7 +343,7 @@ sub parse_cmd {
   # are the spec file or the tarball we're operating on - depending on which
   # one we meet.
   sub catchall {
-    my ($opt_arg) = @_;
+    my $opt_arg = shift;
     if ($cmdopts{type} eq 'b' or $cmdopts{type} eq 'd') {
       # Spec file
       $specglobals{specfile} = $opt_arg;
@@ -358,7 +358,7 @@ sub parse_cmd {
   ## srcpkg_handler()
   # prepare $specglobals{srcpkg} in dependence of the calling option
   sub srcpkg_handler {
-    (my $opt_name,$specglobals{srcpkg}) = @_;
+    (my $opt_name, $specglobals{srcpkg}) = @_;
     $cmdopts{type} = 'r';
     if ($opt_name eq 'rebuild') {
       $cmdopts{stage} = 'b';
@@ -373,7 +373,7 @@ sub parse_cmd {
   # treated as an 'alias' to the 'primary' option 'b' and will NOT receive its
   # own $opt_name.  We have to factor-out the handler and use _two_ options.
   sub build_handler {
-    my ($opt_name,$opt_value) = @_;
+    my ($opt_name, $opt_value) = @_;
     die _('Unknown stage ').$opt_value.
         _(' for option \'-').$opt_name."'.\n"
       unless grep { $opt_value eq $_ } keys %targets;
@@ -387,7 +387,7 @@ sub parse_cmd {
   }
   ## define_handler()
   sub define_handler {
-    my ($opt_name,$opt_value) = @_;
+    my ($opt_name, $opt_value) = @_;
     if ($opt_name =~ /with/) {
       # create 'configure' options from '--with <flag>' and '--without <flag>':
       # 'with/without <flag>' are 'aliases' for 'define _with_<flag>'.
@@ -871,7 +871,7 @@ sub patches {
 ## apply_patch()
 # Hard-coded variant of RPM's macro of the same name.
 sub apply_patch {
-  my ($verbose,$plevel,$patchfile,$ordinal) = @_;
+  my ($verbose, $plevel, $patchfile, $ordinal) = @_;
   return "%{__test} -r $patchfile || { %{__echo} 'Cannot read $patchfile'; exit 1; }\n".
     "%{uncompress:$patchfile} | %{__scm_apply_$specglobals{__scm}".
       ($verbose ? '' : ' -q').($plevel ? " -p$plevel" : '').
@@ -941,7 +941,7 @@ sub process_setup {
 # Prepare the necessary commands for uncompressing and extracting the content
 # of the source drop according to the file extension.
 sub unpackcmd {
-   my ($sourcedrop,$quietunpack) = @_;
+   my ($sourcedrop, $quietunpack) = @_;
    return (
       $sourcedrop =~ /\.zip$/ ? # .zip files are not really tarballs
          '%{__unzip}'.( $quietunpack ? ' -qq ' : ' ' ).
@@ -957,7 +957,7 @@ sub unpackcmd {
 ## decompress()
 # Determine the suitable decompressor according to the file extension.
 sub decompress {
-   my ($filename) = @_;
+   my $filename = shift;
    return (
       $filename =~ /\.(?:t?gz|Z)$/  ? '%{__gzip}'  :
       $filename =~ /\.(?:t?bz?2?)$/ ? '%{__bzip2}' :
@@ -971,7 +971,7 @@ sub decompress {
 ## lookup_specfile()
 # Used for '-t[pcilabs]'.
 sub lookup_specfile {
-  my ($tarball) = @_;
+  my $tarball = shift;
   return (
      $tarball =~ /\.zip$/ ? # .zip files are not really tarballs
         q(%{__unzip} -Z1 %{tarball} '*.spec') :
@@ -985,7 +985,7 @@ sub lookup_specfile {
 ## extract_specfile()
 # Used for '-t[pcilabs]'.
 sub extract_specfile {
-  my ($tarball) = @_;
+  my $tarball = shift;
   return (
      $tarball =~ /\.zip$/ ? # .zip files are not really tarballs
         q(%{__unzip} -p %{tarball} '*.spec') :
@@ -1059,7 +1059,7 @@ sub process_patch {
 # Prepare the necessary commands for uncompressing the content of a patch file
 # for piping to 'patch' in the next step according to the file extension.
 sub uncompress {
-  my ($patchfile) = @_;
+  my $patchfile = shift;
   return (
     # Compressed patch.  You weirdo.
     $patchfile =~ /\.(?:Z|gz|bz2?|xz|zst)$/ ? decompress($patchfile) :
@@ -1072,7 +1072,7 @@ sub uncompress {
 
 ## process_filesline()
 sub process_filesline {
-  my ($subname) = @_;
+  my $subname = shift;
 
   # create and initialize flags
   my ($perms, $owner, $group, $conf) =
@@ -1422,7 +1422,7 @@ sub binpackage {
 ## format_version()
 # Glue together epoch/version/release in a common format
 sub format_version {
-  my ($pkg) = @_;
+  my $pkg = shift;
   return (defined $pkgdata{main}{epoch} ? "$pkgdata{main}{epoch}:" : '').
     "$pkgdata{$pkg}{version}-$pkgdata{main}{release}";
 } # end format_version()
@@ -1431,7 +1431,7 @@ sub format_version {
 ## format_debfile()
 # %$&$%@#@@#%@@@ Debian and their horrible ugly package names.  >:(
 sub format_debfile {
-  my ($pkg) = @_;
+  my $pkg = shift;
   return "$pkgdata{$pkg}{name}_".format_version($pkg)."_$pkgdata{$pkg}{arch}.deb";
 } # format_debfile()
 
@@ -1445,7 +1445,7 @@ sub format_sdebfile {
 ## splitver()
 # Split un/versioned requirement
 sub splitver {
-  my ($req) = @_;
+  my $req = shift;
   # from rpmbuild error message
   # Dependency tokens must begin with alpha-numeric, '_' or '/'
 ##fixme:  check for suitable whitespace around $rel
@@ -1592,7 +1592,7 @@ sub checkbuildreq {
 # Doesn't work well on shell scripts. but those *should* be
 # fine anyway.  (Yeah, right...)
 sub getreqs {
-  my ($pkgtree) = @_;
+  my $pkgtree = shift;
 
   print _("Checking library requirements...\n") if defined $specglobals{verbose};
   return () if 'all' eq $pkgdata{main}{arch}; # noarch package
@@ -1656,7 +1656,7 @@ sub getreqs {
 ## install_sdeb()
 # Extracts .sdeb contents to %_topdir as appropriate
 sub install_sdeb {
-  my ($srcpkg) = @_;
+  my $srcpkg = shift;
   die "Can't install $srcpkg\n" unless $srcpkg =~ /\.sdeb$/;
   $srcpkg = abs_path($srcpkg);
   system(expandmacros("cd %{_topdir}; %{__pax} -r -f $srcpkg)")) == 0 and
@@ -1668,7 +1668,7 @@ sub install_sdeb {
 ## store_value()
 # Helper function for writing to the %macro storage(s)
 sub store_value {
-  my ($caller,$key,$value) = @_;
+  my ($caller, $key, $value) = @_;
   # Handle multiline macro definitions
   if ($value =~ s/\\$/\\\n/) {
     while (<$fh>) {
@@ -1697,7 +1697,7 @@ sub store_value {
 ## expandmacros()
 # Expands all %{blah} macros in the passed string
 sub expandmacros {
-  local ($_) = @_;
+  local $_ = shift;
   return $_ unless /%/; # nothing to substitute
 
   # support for **some** %if constructs: handle '%{?conditional:macros}'
@@ -1829,7 +1829,7 @@ sub bracelet {
 # Note that 'getopts()' normally works on '@ARGV', so we have to pull some
 # tricks to make it work with 'string input'.
 sub handle_macro_options {
-  my ($inline) = @_;
+  my $inline = shift;
   my ($macro,$argv) = $inline =~ /%(\w+)(?:\s+(.+))?/;
   local @ARGV = split ' ',$argv if $argv;
   my %options; # store result of 'getopts()'
