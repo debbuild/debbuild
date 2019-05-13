@@ -24,6 +24,8 @@ Packager: Andreas Scherer <https://ascherer.github.io/>
 Release: ascherer.%{dist}
 
 Requires: dpkg-dev, perl, fakeroot
+Requires: liblocale-gettext-perl
+
 %if %{_vendor} == "debbuild"
 Requires: lsb-release, gettext
 Recommends: bzip2, gzip, xz-utils, unzip, zip, zstd
