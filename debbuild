@@ -99,6 +99,9 @@ my %targets = (p => 'Prep',
 # Global file handle for multiline macro definitions
 my $fh;
 
+# Store filelist files from "%files -f <filename>"
+my %files_files=();
+
 #### main ####
 
 # Program flow:
@@ -610,9 +613,17 @@ ENDIF: if (/^\s*%endif/) {
 # Fugly but I can't see a better way.  >:(
     elsif (/^%(description|copyrightdata|files)(?:\s+(?:-n\s+)?(.+))?/) {
       ($stage,$subname) = ($1,'main');
-      if ($2) { # Magic to add entries to the right package
-        my $tmp = expandmacros($2);
+      my $f;
+      my $n = $2;
+      if ($n and $n =~ s/\s*-f\s+(.*)\s*//) {
+        $f = expandmacros("%{_builddir}/%{buildsubdir}/$1");
+      }
+      if ($n) {       # Magic to add entries to the right package
+        my $tmp = expandmacros($n);
         $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
+      }
+      if ($f) {
+        $files_files{$subname} = $f;
       }
     } # %description, %copyrightdata, %files
 
@@ -1240,12 +1251,28 @@ sub binpackage {
     # metapackages don't have any files, but they depend on a bunch of things.
     # Packages with neither have, essentially, no content.
     next if
-        (not $filelist{$pkg} or $filelist{$pkg} =~ /^\s*$/) and
-        (not $pkgdata{$pkg}{requires});
+        (
+            (not $filelist{$pkg} or $filelist{$pkg} =~ /^\s*$/)
+            and not $files_files{$pkg}
+        ) and (not $pkgdata{$pkg}{requires});
+
     $filelist{$pkg} //= '';
 
     # Gotta do this first, otherwise we don't have a place to move files from %files
     mkdir "$specglobals{buildroot}/$pkg";
+
+    if ($files_files{$pkg}) {
+        if (-e $files_files{$pkg}) {
+	     open(FILES, "<", $files_files{$pkg}) || die "Could not open: $files_files{$pkg}\n";
+             while(<FILES>) {
+		 chomp($_);
+                 process_filesline($pkg, $_);
+             }
+	     close FILES;
+	} else {
+             die "File not found: $files_files{$pkg}";
+	}
+    }
 
     foreach my $pkgfile (split ' ', expandmacros($filelist{$pkg})) {
       # Feh.  Manpages don't **NEED** to be gzipped, but rpmbuild does, and so shall we.
@@ -1813,6 +1840,8 @@ sub expandmacros {
   s/\\"/"/g;
   s/\\\\$/\\/g;
   s/(\S)\\+\n/$1\n/g;
+  # revert changes of dir macro because of spcial use in %files
+  s/%\{dir\}/%dir/g;
   return $_;
 } # end expandmacros()
 
