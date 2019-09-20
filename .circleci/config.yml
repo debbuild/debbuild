@@ -1,0 +1,18 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: centos:7 # We support centos 6, but 7 already has a cpanm package
+    steps:
+      - checkout
+      - run: 'yum install --setopt=skip_missing_names_on_install=False -y perl-App-cpanminus gettext gcc epel-release'
+      - run: 'yum install --setopt=skip_missing_names_on_install=False -y dpkg-dev fakeroot'
+      - run: 'perl -V'
+      - run: 'cpanm --notest --installdeps .'
+      - run: 'yath'
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
