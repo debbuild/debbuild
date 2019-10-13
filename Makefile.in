@@ -13,6 +13,11 @@ build: debbuild.out
 debbuild.out: debbuild debbuild.spec
 	# Transfer $VERSION into the live system
 	perl -pe "s/\@VERSION\@/$(VERSION)/" debbuild > debbuild.out
+	chmod +x debbuild.out
+
+.PHONY: check
+check:
+	yath
 
 .PHONY: install
 install:
