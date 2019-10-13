@@ -16,8 +16,6 @@ Group: devel
 %else
 Group: Development/Tools/Building
 %global dist ubuntu18.04
-%define __msgfmt /usr/bin/msgfmt
-%define __pod2man /usr/bin/pod2man
 %endif
 License: GPLv2+
 Packager: Andreas Scherer <https://ascherer.github.io/>
@@ -53,29 +51,10 @@ rebuild .src.rpm source packages as .deb binary packages.
 # Transfer $VERSION into the live system
 %{__perl} -pe "s/\@VERSION\@/%{version}/" -i debbuild
 
+%configure NAME=%{name} VERSION=%{version}
+
 %install
-# Steps to install to a temporary location for packaging
-%{__rm} -rf %{buildroot}
-
-%{__install} -d %{buildroot}%{_bindir}
-%{__install} debbuild %{buildroot}%{_bindir}
-
-%{__install} -d %{buildroot}%{_libdir}/%{name}
-%{__install} -m 644 macros/macros.in %{buildroot}%{_libdir}/%{name}/macros
-%{__install} -m 644 config/debrc %{buildroot}%{_libdir}/%{name}
-
-%{__install} -d %{buildroot}%{_sysconfdir}/%{name}
-%{__install} -m 644 macros/macros.sysutils %{buildroot}%{_sysconfdir}/%{name}
-%{__install} -m 644 macros/macros.texlive %{buildroot}%{_sysconfdir}/%{name}
-%{__install} -m 644 macros/platform.in %{buildroot}%{_sysconfdir}/%{name}/macros
-
-%{__install} -d %{buildroot}%{_mandir}/man8
-%{__pod2man} --utf8 --center="DeepNet Dev Tools" --section 8 \
-	--release="Release %{version}" debbuild \
-	%{buildroot}%{_mandir}/man8/debbuild.8
-
-%{__install} -d %{buildroot}%{_datadir}/locale/de/LC_MESSAGES
-%{__msgfmt} po/de/debbuild.po -o %{buildroot}%{_datadir}/locale/de/LC_MESSAGES/debbuild.mo
+%make_install
 
 %files
 # Fill in the pathnames to be packaged here

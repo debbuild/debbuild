@@ -1,0 +1,67 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+
+use Getopt::Long;
+use File::Spec::Functions qw(catdir); # Handles trailing/repeated slashes
+
+# A compatible subset of an autoconf-like configure script.
+# Used to substitute values from spec macros into the Makefile.
+# Behavior based upon
+#   https://www.gnu.org/prep/standards/html_node/Configuration.html
+#   https://www.gnu.org/prep/standards/html_node/Directory-Variables.html
+
+my %options;
+my %variables;
+
+Getopt::Long::Configure('pass_through');
+Getopt::Long::GetOptions(\%options,
+  'prefix:s',
+  'exec-prefix:s',
+  'bindir:s',
+  'sysconfdir:s',
+  'libdir:s',
+  'datarootdir:s',
+  'datadir:s',
+  'localedir:s',
+  'mandir:s',
+  '<>' => sub {
+    my ($arg) = @_;
+    if ($arg =~ m/VERSION=(.*)/) {
+      $variables{'version'}= $1;
+    } elsif ($arg =~ m/NAME=(.*)/) {
+      $variables{'name'}= $1;
+    } else {
+      warn "WARN: Skipping unrecognized arg: $arg\n";
+    }
+  },
+);
+
+$options{'prefix'} //= '';
+$options{'exec_prefix'} //= $options{'prefix'};
+$options{'bindir'} //= catdir($options{'exec_prefix'}, 'bin');
+$options{'sysconfdir'} //= catdir($options{'prefix'}, 'etc');
+$options{'libdir'} //= catdir($options{'exec_prefix'}, 'lib');
+$options{'datarootdir'} //= catdir($options{'prefix'}, 'share');
+$options{'datadir'} //= $options{'datarootdir'};
+$options{'localedir'} //= catdir($options{'datarootdir'}, 'locale');
+$options{'mandir'} //= catdir($options{'datarootdir'}, 'man');
+
+$variables{'version'} //= $ENV{'VERSION'};
+$variables{'version'} //= '0.0';
+$variables{'name'} //= $ENV{'NAME'};
+$variables{'name'} //= 'debbuild';
+
+open(my $in, '<', 'Makefile.in');
+my $template = do { local $/ = <$in> }; # Slurp entire file
+
+my %substitutions = (%variables, %options);
+while (my ($name, $value) = each %substitutions) {
+  warn "$name=$value\n";
+  my $macro = '@'.uc($name).'@';
+  $template =~ s/\Q$macro\E/$value/g;
+}
+
+open(my $makefile, '>', 'Makefile');
+print $makefile $template;

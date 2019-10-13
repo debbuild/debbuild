@@ -1,0 +1,33 @@
+BINDIR = @BINDIR@
+LIBDIR = @LIBDIR@
+SYSCONFDIR = @SYSCONFDIR@
+MANDIR = @MANDIR@
+DATADIR = @DATADIR@
+NAME = @NAME@
+VERSION = @VERSION@
+
+.PHONY: install
+install:
+	rm -rf $(DESTDIR)
+
+	install -d $(DESTDIR)$(BINDIR)
+	install debbuild $(DESTDIR)$(BINDIR)
+
+	install -d $(DESTDIR)$(LIBDIR)/$(NAME)
+	install -m 644 macros/macros.in $(DESTDIR)$(LIBDIR)/$(NAME)/macros
+	install -m 644 config/debrc $(DESTDIR)$(LIBDIR)/$(NAME)
+
+	install -d $(DESTDIR)$(SYSCONFDIR)/$(NAME)
+	install -m 644 macros/macros.sysutils $(DESTDIR)$(SYSCONFDIR)/$(NAME)
+	install -m 644 macros/macros.texlive $(DESTDIR)$(SYSCONFDIR)/$(NAME)
+	install -m 644 macros/platform.in $(DESTDIR)$(SYSCONFDIR)/$(NAME)/macros
+
+	install -d $(DESTDIR)$(MANDIR)/man8
+	pod2man --utf8 --center="DeepNet Dev Tools" --section 8 \
+		--release="Release $(VERSION)" debbuild \
+		$(DESTDIR)$(MANDIR)/man8/debbuild.8
+
+	install -d $(DESTDIR)$(DATADIR)/locale/de/LC_MESSAGES
+	msgfmt po/de/debbuild.po -o $(DESTDIR)$(DATADIR)/locale/de/LC_MESSAGES/debbuild.mo
+
+
