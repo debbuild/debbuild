@@ -6,12 +6,20 @@ DATADIR = @DATADIR@
 NAME = @NAME@
 VERSION = @VERSION@
 
+.DEFAULT_GOAL := build
+.PHONY: build
+build: debbuild.out
+
+debbuild.out: debbuild debbuild.spec
+	# Transfer $VERSION into the live system
+	perl -pe "s/\@VERSION\@/$(VERSION)/" debbuild > debbuild.out
+
 .PHONY: install
 install:
 	rm -rf $(DESTDIR)
 
 	install -d $(DESTDIR)$(BINDIR)
-	install debbuild $(DESTDIR)$(BINDIR)
+	install debbuild.out $(DESTDIR)$(BINDIR)/debbuild
 
 	install -d $(DESTDIR)$(LIBDIR)/$(NAME)
 	install -m 644 macros/macros.in $(DESTDIR)$(LIBDIR)/$(NAME)/macros

@@ -48,10 +48,8 @@ rebuild .src.rpm source packages as .deb binary packages.
 %setup -q
 
 %build
-# Transfer $VERSION into the live system
-%{__perl} -pe "s/\@VERSION\@/%{version}/" -i debbuild
-
 %configure NAME=%{name} VERSION=%{version}
+make
 
 %install
 %make_install
