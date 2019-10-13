@@ -9,7 +9,9 @@ jobs:
       - run: 'yum install --setopt=skip_missing_names_on_install=False -y dpkg-dev fakeroot'
       - run: 'perl -V'
       - run: 'cpanm --notest --installdeps .'
-      - run: 'yath'
+      - run: './configure NAME=debbuild VERSION=version'
+      - run: 'make'
+      - run: 'make check'
 
 workflows:
   version: 2
