@@ -53,15 +53,21 @@ $variables{'version'} //= '0.0';
 $variables{'name'} //= $ENV{'NAME'};
 $variables{'name'} //= 'debbuild';
 
-open(my $in, '<', 'Makefile.in');
+my $in_filename = 'Makefile.in';
+print "Reading $in_filename...\n";
+open(my $in, '<', $in_filename);
 my $template = do { local $/ = <$in> }; # Slurp entire file
 
+print "Substituting the following values:\n";
 my %substitutions = (%variables, %options);
 while (my ($name, $value) = each %substitutions) {
-  warn "$name=$value\n";
+  print "  $name=$value\n";
   my $macro = '@'.uc($name).'@';
   $template =~ s/\Q$macro\E/$value/g;
 }
 
-open(my $makefile, '>', 'Makefile');
-print $makefile $template;
+my $out_filename = 'Makefile';
+print "Writing $out_filename...\n";
+open(my $out, '>', $out_filename);
+print $out $template;
+print "Done.\n";
