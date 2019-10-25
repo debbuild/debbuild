@@ -27,14 +27,7 @@ Getopt::Long::GetOptions(\%options,
   'localedir:s',
   'mandir:s',
   '<>' => sub {
-    my ($arg) = @_;
-    if ($arg =~ m/VERSION=(.*)/) {
-      $variables{'version'}= $1;
-    } elsif ($arg =~ m/NAME=(.*)/) {
-      $variables{'name'}= $1;
-    } else {
-      warn "WARN: Skipping unrecognized arg: $arg\n";
-    }
+    warn "WARN: Skipping unrecognized arg: $_[0]\n";
   },
 );
 
@@ -47,11 +40,6 @@ $options{'datarootdir'} //= catdir($options{'prefix'}, 'share');
 $options{'datadir'} //= $options{'datarootdir'};
 $options{'localedir'} //= catdir($options{'datarootdir'}, 'locale');
 $options{'mandir'} //= catdir($options{'datarootdir'}, 'man');
-
-$variables{'version'} //= $ENV{'VERSION'};
-$variables{'version'} //= '0.0';
-$variables{'name'} //= $ENV{'NAME'};
-$variables{'name'} //= 'debbuild';
 
 my $in_filename = 'Makefile.in';
 print "Reading $in_filename...\n";

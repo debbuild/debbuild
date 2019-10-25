@@ -415,7 +415,7 @@ sub parse_cmd {
   }
   ## version()
   sub version {
-    return _('This is debbuild, version ').'@VERSION@'."\n";
+    return _('This is debbuild, version ').'19.5.0'."\n";
   }
   ## dump_macros()
   sub dump_macros {
