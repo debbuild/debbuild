@@ -26,6 +26,8 @@ Getopt::Long::GetOptions(\%options,
   'datadir:s',
   'localedir:s',
   'mandir:s',
+  'pod2man:s',
+  'msgfmt:s',
   '<>' => sub {
     warn "WARN: Skipping unrecognized arg: $_[0]\n";
   },
@@ -42,6 +44,9 @@ $options{'datadir'} //= $options{'datarootdir'};
 $options{'localedir'} //= catdir($options{'datarootdir'}, 'locale');
 $options{'mandir'} //= catdir($options{'datarootdir'}, 'man');
 $options{'debconfigdir'} //= catdir($options{'prefix'}, 'lib', 'debbuild'); # Can't use libdir to define this on 64-bit or Debian systems
+
+$options{'pod2man'} //= check_for_program('pod2man', 'install manpages');
+$options{'msgfmt'} //= check_for_program('msgfmt', 'install locale files');
 
 my $in_filename = 'Makefile.in';
 print "Reading $in_filename...\n";
@@ -61,3 +66,19 @@ print "Writing $out_filename...\n";
 open(my $out, '>', $out_filename);
 print $out $template;
 print "Done.\n";
+
+sub check_for_program {
+  my ($name, $action) = @_;
+
+  print "checking for $name... ";
+
+  my $output = `$name --help`;
+  if ($? == 0) {
+    print "$name\n";
+    return $name;
+  } else {
+    print "no\n";
+    warn "WARN: Unable to find $name, will not $action\n";
+    return ':'; # Will result in a no-op when make executes this
+  }
+}
