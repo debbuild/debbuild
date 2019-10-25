@@ -7,6 +7,8 @@
 
 Name: debbuild
 Summary: Build Debian-compatible .deb packages from RPM .spec files
+
+# When bumping the version, change it in the debbuild script and the Makefile.in as well
 Version: 19.5.0
 
 Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
@@ -34,7 +36,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 
 %description
-%{name} attempts to build Debian-friendly semi-native packages from
+debbuild attempts to build Debian-friendly semi-native packages from
 RPM spec files, RPM-friendly tarballs, and RPM source packages
 (.src.rpm files).  It accepts most of the options rpmbuild does, and
 should be able to interpret most spec files usefully.
@@ -48,7 +50,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 %setup -q
 
 %build
-%configure NAME=%{name} VERSION=%{version}
+%configure
 make
 
 %install
@@ -58,10 +60,10 @@ make
 # Fill in the pathnames to be packaged here
 %{_bindir}/*
 %{_mandir}/man8/*
-%{_libdir}/%{name}/debrc
-%{_libdir}/%{name}/macros
-%{_sysconfdir}/%{name}/macros
-%{_sysconfdir}/%{name}/macros.*
+%{_libdir}/debbuild/debrc
+%{_libdir}/debbuild/macros
+%{_sysconfdir}/debbuild/macros
+%{_sysconfdir}/debbuild/macros.*
 %{_datadir}/locale/de/LC_MESSAGES/debbuild.mo
 
 %changelog

@@ -9,7 +9,7 @@ jobs:
       - run: 'yum install --setopt=skip_missing_names_on_install=False -y dpkg-dev fakeroot'
       - run: 'perl -V'
       - run: 'cpanm --notest --installdeps .'
-      - run: './configure NAME=debbuild VERSION=version'
+      - run: './configure'
       - run: 'make'
       - run: 'make check'
 
