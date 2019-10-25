@@ -36,10 +36,12 @@ $options{'exec_prefix'} //= $options{'prefix'};
 $options{'bindir'} //= catdir($options{'exec_prefix'}, 'bin');
 $options{'sysconfdir'} //= catdir($options{'prefix'}, 'etc');
 $options{'libdir'} //= catdir($options{'exec_prefix'}, 'lib');
+$options{'libexecdir'} //= catdir($options{'exec_prefix'}, 'libexec');
 $options{'datarootdir'} //= catdir($options{'prefix'}, 'share');
 $options{'datadir'} //= $options{'datarootdir'};
 $options{'localedir'} //= catdir($options{'datarootdir'}, 'locale');
 $options{'mandir'} //= catdir($options{'datarootdir'}, 'man');
+$options{'debconfigdir'} //= catdir($options{'prefix'}, 'lib', 'debbuild'); # Can't use libdir to define this on 64-bit or Debian systems
 
 my $in_filename = 'Makefile.in';
 print "Reading $in_filename...\n";

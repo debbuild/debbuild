@@ -3,6 +3,7 @@ LIBDIR = @LIBDIR@
 SYSCONFDIR = @SYSCONFDIR@
 MANDIR = @MANDIR@
 DATADIR = @DATADIR@
+DEBCONFIGDIR = @DEBCONFIGDIR@
 
 .DEFAULT_GOAL := build
 .PHONY: build
@@ -19,9 +20,9 @@ install:
 	install -d $(DESTDIR)$(BINDIR)
 	install debbuild.out $(DESTDIR)$(BINDIR)/debbuild
 
-	install -d $(DESTDIR)$(LIBDIR)/debbuild
-	install -m 644 macros/macros.in $(DESTDIR)$(LIBDIR)/debbuild/macros
-	install -m 644 config/debrc $(DESTDIR)$(LIBDIR)/debbuild
+	install -d $(DESTDIR)$(DEBCONFIGDIR)
+	install -m 644 macros/macros.in $(DESTDIR)$(DEBCONFIGDIR)/macros
+	install -m 644 config/debrc $(DESTDIR)$(DEBCONFIGDIR)
 
 	install -d $(DESTDIR)$(SYSCONFDIR)/debbuild
 	install -m 644 macros/macros.sysutils $(DESTDIR)$(SYSCONFDIR)/debbuild
