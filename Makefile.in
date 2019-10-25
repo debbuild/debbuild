@@ -5,6 +5,9 @@ MANDIR = @MANDIR@
 DATADIR = @DATADIR@
 DEBCONFIGDIR = @DEBCONFIGDIR@
 
+POD2MAN = @POD2MAN@
+MSGFMT = @MSGFMT@
+
 .DEFAULT_GOAL := build
 .PHONY: build
 build: ;
@@ -30,11 +33,9 @@ install:
 	install -m 644 macros/platform.in $(DESTDIR)$(SYSCONFDIR)/debbuild/macros
 
 	install -d $(DESTDIR)$(MANDIR)/man8
-	pod2man --utf8 --center="DeepNet Dev Tools" --section 8 \
+	$(POD2MAN) --utf8 --center="DeepNet Dev Tools" --section 8 \
 		--release="Release 19.5.0" debbuild \
 		$(DESTDIR)$(MANDIR)/man8/debbuild.8
 
 	install -d $(DESTDIR)$(DATADIR)/locale/de/LC_MESSAGES
-	msgfmt po/de/debbuild.po -o $(DESTDIR)$(DATADIR)/locale/de/LC_MESSAGES/debbuild.mo
-
-
+	$(MSGFMT) po/de/debbuild.po -o $(DESTDIR)$(DATADIR)/locale/de/LC_MESSAGES/debbuild.mo
