@@ -48,6 +48,17 @@ $options{'debconfigdir'} //= catdir($options{'prefix'}, 'lib', 'debbuild'); # Ca
 $options{'pod2man'} //= check_for_program('pod2man', 'install manpages');
 $options{'msgfmt'} //= check_for_program('msgfmt', 'install locale files');
 
+# Die if runtime dependencies are missing
+print 'checking for /etc/os-release... ';
+if (-e '/etc/os-release') {
+  print "yes\n";
+} else {
+  print "no\n";
+  if (check_for_program('/usr/bin/lsb_release', 'be able to run debbulid') eq ':') {
+    die "ERROR: Unable to find os-release or lsb_release. $0 failed.\n";
+  }
+}
+
 my $in_filename = 'Makefile.in';
 print "Reading $in_filename...\n";
 open(my $in, '<', $in_filename);
