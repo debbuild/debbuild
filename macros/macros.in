@@ -262,6 +262,34 @@
 %_target_os		%{_host_os}
 
 #==============================================================================
+# ---- compiler flags.
+
+# C compiler flags.  This is traditionally called CFLAGS in makefiles.
+# Historically also available as %%{optflags}, and %%build sets the
+# environment variable RPM_OPT_FLAGS to this value.
+%build_cflags %{optflags}
+
+# C++ compiler flags.  This is traditionally called CXXFLAGS in makefiles.
+%build_cxxflags %{optflags}
+
+# Fortran compiler flags.  Makefiles use both FFLAGS and FCFLAGS as
+# the corresponding variable names.
+%build_fflags %{optflags} %{?_fmoddir:-I%{_fmoddir}}
+
+# Link editor flags.  This is usually called LDFLAGS in makefiles.
+#%build_ldflags -Wl,-z,relro
+
+# Expands to shell code to seot the compiler/linker environment
+# variables CFLAGS, CXXFLAGS, FFLAGS, FCFLAGS, LDFLAGS if they have
+# not been set already.
+%set_build_flags \
+  CFLAGS="${CFLAGS:-%{?build_cflags}}" ; export CFLAGS ; \
+  CXXFLAGS="${CXXFLAGS:-%{?build_cxxflags}}" ; export CXXFLAGS ; \
+  FFLAGS="${FFLAGS:-%{?build_fflags}}" ; export FFLAGS ; \
+  FCFLAGS="${FCFLAGS:-%{?build_fflags}}" ; export FCFLAGS ; \
+  LDFLAGS="${LDFLAGS:-%{?build_ldflags}}" ; export LDFLAGS
+
+#==============================================================================
 # ---- specfile macros.
 #	Macro(s) here can be used reliably for reproducible builds.
 #	(Note: Above is the goal, below are the macros under development)
@@ -272,9 +300,7 @@
 #
 %_configure ./configure
 %configure \
-  CFLAGS="${CFLAGS:-%optflags}" ; export CFLAGS ; \
-  CXXFLAGS="${CXXFLAGS:-%optflags}" ; export CXXFLAGS ; \
-  FFLAGS="${FFLAGS:-%optflags}" ; export FFLAGS ; \
+  %{set_build_flags}; \
   %{_configure} --host=%{_host} --build=%{_build} \\\
 	--program-prefix=%{?_program_prefix} \\\
 	--disable-dependency-tracking \\\
