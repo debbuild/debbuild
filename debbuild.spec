@@ -60,10 +60,10 @@ make
 # Fill in the pathnames to be packaged here
 %{_bindir}/*
 %{_mandir}/man8/*
-%{_libdir}/debbuild/debrc
-%{_libdir}/debbuild/macros
-%{_sysconfdir}/debbuild/macros
-%{_sysconfdir}/debbuild/macros.*
+%{_prefix}/lib/debbuild/debrc
+%{_prefix}/lib/debbuild/macros
+%{_prefix}/lib/debbuild/macros.d/
+%{_sysconfdir}/debbuild/
 %{_datadir}/locale/de/LC_MESSAGES/debbuild.mo
 
 %changelog
