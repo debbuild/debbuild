@@ -27,10 +27,12 @@ install:
 	install -m 644 macros/macros.in $(DESTDIR)$(DEBCONFIGDIR)/macros
 	install -m 644 config/debrc $(DESTDIR)$(DEBCONFIGDIR)
 
+	install -d $(DESTDIR)$(DEBCONFIGDIR)/macros.d
+	install -m 644 macros/macros.sysutils $(DESTDIR)$(DEBCONFIGDIR)/macros.d
+	install -m 644 macros/macros.texlive $(DESTDIR)$(DEBCONFIGDIR)/macros.d
+	install -m 644 macros/platform.in $(DESTDIR)$(DEBCONFIGDIR)/macros.d/macros.00platform
+
 	install -d $(DESTDIR)$(SYSCONFDIR)/debbuild
-	install -m 644 macros/macros.sysutils $(DESTDIR)$(SYSCONFDIR)/debbuild
-	install -m 644 macros/macros.texlive $(DESTDIR)$(SYSCONFDIR)/debbuild
-	install -m 644 macros/platform.in $(DESTDIR)$(SYSCONFDIR)/debbuild/macros
 
 	install -d $(DESTDIR)$(MANDIR)/man8
 	$(POD2MAN) --utf8 --center="DeepNet Dev Tools" --section 8 \
