@@ -1762,7 +1762,7 @@ sub expandmacros {
       or defined $pkgdata{main}{$macro};
   }
   s/%\{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
-  s|%\{getconfdir}|$specglobals{_libdir}/debbuild|g;
+  s|%\{getconfdir}|$specglobals{_prefix}/lib/debbuild|g;
   s|%\{sources}|expandmacros( join ' ', sources() )|eg;
   s|%\{patches}|expandmacros( join ' ', patches() )|eg;
 
