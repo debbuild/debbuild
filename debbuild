@@ -1899,7 +1899,7 @@ sub handle_macro_options {
 } # end handle_macro_options()
 
 
-__END__
+=pod
 
 =encoding utf8
 
