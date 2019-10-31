@@ -246,15 +246,39 @@ sub config_debrc {
   foreach my $macros ( ('/usr/lib/debbuild/debrc',
                         '/etc/debrc',
                         "$homedir/.debrc") ) {
-    open MACROS,$macros or next; # should we warn about missing macro files?
-    while (<MACROS>) {
-      next unless my ($flag,$value) = /^optflags:\s+(\w+)\s+(.+)$/;
+    open(my $macros_handle, $macros) or next; # should we warn about missing macro files?
+    my %entries = read_debrc_from_handle($macros_handle);
+
+    if (exists $entries{optflags}) {
+      next unless $entries{optflags} =~ /^\s+(\w+)\s+(.+)$/;
+      my ($flag,$value) = ($1,$2);
       $optflags{$flag} = $value;
     }
-    close MACROS;
+    close $macros_handle;
   }
 } # end config_debrc()
 
+## read_debrc_from_handle()
+# Take a filehandle of a debrc-format file and parse entries out of it
+# Returns a hash of entries, with keys lowercased to normalize them
+# Ignores lines it doesn't understand
+sub read_debrc_from_handle {
+  my ($debrc_fh) = shift;
+
+  my %entries;
+
+  while(my $line = <$debrc_fh>) {
+    chomp($line);
+    next unless $line =~ /^(\w+):(.+)$/;
+    my $name = lc($1); # Names are case-insensitive; normalize by lowercasing
+    my $value = $2;
+
+    $entries{$name} = $value
+  }
+
+  return %entries;
+}
+# end read_debrc_from_handle()
 
 ## lsb_detection()
 # Setup for OS detection
