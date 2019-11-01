@@ -8,9 +8,16 @@ DEBCONFIGDIR = @DEBCONFIGDIR@
 POD2MAN = @POD2MAN@
 MSGFMT = @MSGFMT@
 
+VERSION = @VERSION@
+
 .DEFAULT_GOAL := build
 .PHONY: build
-build: ;
+build: debbuild.out
+
+debbuild.out: debbuild debbuild.spec
+	cp debbuild debbuild.out
+	echo "version:$(VERSION)" >> debbuild.out
+	chmod +x debbuild.out
 
 .PHONY: check
 check:
@@ -36,7 +43,7 @@ install:
 
 	install -d $(DESTDIR)$(MANDIR)/man8
 	$(POD2MAN) --utf8 --center="DeepNet Dev Tools" --section 8 \
-		--release="Release 19.5.0" debbuild \
+		--release="Release $(VERSION)" debbuild \
 		$(DESTDIR)$(MANDIR)/man8/debbuild.8
 
 	install -d $(DESTDIR)$(DATADIR)/locale/de/LC_MESSAGES

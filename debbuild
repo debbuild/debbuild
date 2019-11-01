@@ -56,6 +56,8 @@ my %defattr = (filemode => '-',
 		group => '-',
 		dirmode => '-');
 
+my %static_config = load_static_config();
+
 # Scriptlets
 my %script = (prep => '',
 		build => '',
@@ -206,6 +208,22 @@ FINAL: print expandmacros($finalmessages) if defined $specglobals{verbose};
 exit 0;
 
 #### end main ####
+
+## load_static_config()
+# Load build-time configuration for debbuild itself.
+# The Makefile stores this configuration as a debrc-format
+# file in the __DATA__ section of this file to avoid relying
+# on external file paths.
+#
+# Values are given defaults so that debbuild still runs without
+# having to be passed through the Makefile.
+sub load_static_config {
+  my %static_config = read_debrc_from_handle(*DATA);
+
+  $static_config{version} //= '0.0';
+
+  return %static_config;
+}
 
 
 ## load_config()
@@ -439,7 +457,7 @@ sub parse_cmd {
   }
   ## version()
   sub version {
-    return _('This is debbuild, version ').'19.5.0'."\n";
+    return _('This is debbuild, version ').$static_config{version}."\n";
   }
   ## dump_macros()
   sub dump_macros {
@@ -2056,3 +2074,5 @@ Documentation, such as it is, will likely remain perpetually out of date (in whi
 rpm(8), rpmbuild(8), and pretty much any document describing how to write a .spec file.
 
 =cut
+__DATA__
+# Build-time configuration added by the Makefile:
