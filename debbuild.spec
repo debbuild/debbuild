@@ -8,7 +8,6 @@
 Name: debbuild
 Summary: Build Debian-compatible .deb packages from RPM .spec files
 
-# When bumping the version, change it in the debbuild script and the Makefile.in as well
 Version: 19.5.0
 
 Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
@@ -50,7 +49,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 %setup -q
 
 %build
-%configure
+%configure VERSION=%{version}
 make
 
 %install

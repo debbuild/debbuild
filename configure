@@ -29,7 +29,12 @@ Getopt::Long::GetOptions(\%options,
   'pod2man:s',
   'msgfmt:s',
   '<>' => sub {
-    warn "WARN: Skipping unrecognized arg: $_[0]\n";
+    my ($arg) = shift;
+    if ($arg =~ m/VERSION=(.*)/) {
+      $variables{'version'} = $1;
+    } else {
+      warn "WARN: Skipping unrecognized arg: $arg\n";
+    }
   },
 );
 
@@ -44,6 +49,9 @@ $options{'datadir'} //= $options{'datarootdir'};
 $options{'localedir'} //= catdir($options{'datarootdir'}, 'locale');
 $options{'mandir'} //= catdir($options{'datarootdir'}, 'man');
 $options{'debconfigdir'} //= catdir($options{'prefix'}, 'lib', 'debbuild'); # Can't use libdir to define this on 64-bit or Debian systems
+
+$variables{'version'} //= $ENV{'VERSION'};
+$variables{'version'} //= '0.0';
 
 $options{'pod2man'} //= check_for_program('pod2man', 'install manpages');
 $options{'msgfmt'} //= check_for_program('msgfmt', 'install locale files');
