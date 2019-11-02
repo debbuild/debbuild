@@ -10,7 +10,7 @@
 %__texlive_base %(kpsewhich --var-value=SELFAUTOPARENT)
 %__texlive_local %(kpsewhich --var-value=TEXMFLOCAL)
 #
-%__texlive_bin %{__texlive_base}/bin/%{_build_cpu}-%{_os}
+%__texlive_bin %(kpsewhich --var-value=SELFAUTOLOC)
 #
 %__latex %{__texlive_bin}/latex
 %__pdftex %{__texlive_bin}/pdftex
