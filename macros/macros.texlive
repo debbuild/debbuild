@@ -1,0 +1,21 @@
+#/*! \page config_macros Default configuration: /etc/debbuild/macros.texlive
+# \verbatim
+#
+# This is a per-system DEBBUILD configuration file.
+# Per-user configuration should be added to ~/.debmacros.
+#
+#==============================================================================
+# ---- TeX Live utilities
+#
+%__texlive_base %(kpsewhich --var-value=SELFAUTOPARENT)
+%__texlive_local %(kpsewhich --var-value=TEXMFLOCAL)
+#
+%__texlive_bin %{__texlive_base}/bin/%{_build_cpu}-%{_os}
+#
+%__latex %{__texlive_bin}/latex
+%__pdftex %{__texlive_bin}/pdftex
+%__texhash %{__texlive_bin}/texhash
+%__updmap_sys %{__texlive_bin}/updmap-sys
+
+# \endverbatim
+#*/
