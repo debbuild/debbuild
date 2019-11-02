@@ -29,6 +29,7 @@ install:
 
 	install -d $(DESTDIR)$(DEBCONFIGDIR)/macros.d
 	install -m 644 macros/macros.sysutils $(DESTDIR)$(DEBCONFIGDIR)/macros.d
+	install -m 644 macros/macros.texlive $(DESTDIR)$(DEBCONFIGDIR)/macros.d
 	install -m 644 macros/platform.in $(DESTDIR)$(DEBCONFIGDIR)/macros.d/macros.00platform
 
 	install -d $(DESTDIR)$(SYSCONFDIR)/debbuild
