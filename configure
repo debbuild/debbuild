@@ -26,6 +26,7 @@ Getopt::Long::GetOptions(\%options,
   'datadir:s',
   'localedir:s',
   'mandir:s',
+  'debconfigdir:s',
   'pod2man:s',
   'msgfmt:s',
   '<>' => sub {

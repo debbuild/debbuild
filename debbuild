@@ -221,6 +221,7 @@ sub load_static_config {
   my %static_config = read_debrc_from_handle(*DATA);
 
   $static_config{version} //= '0.0';
+  $static_config{debconfigdir} //= '/usr/lib/debbuild';
 
   return %static_config;
 }
@@ -233,8 +234,8 @@ sub load_static_config {
 sub load_config {
   # Load user configuration, permitting local override
   my $homedir = $ENV{HOME} // $ENV{LOGDIR} // (getpwuid($<))[7];
-  foreach my $macros ( ('/usr/lib/debbuild/macros',
-                        </usr/lib/debbuild/macros.d/macros.*>,
+  foreach my $macros ( ("$static_config{debconfigdir}/macros",
+                        glob("$static_config{debconfigdir}/macros.d/macros.*"),
                         '/etc/debbuild/macros',
                         </etc/debbuild/macros.*>,
                         "$homedir/.debmacros") ) {
@@ -261,7 +262,7 @@ sub load_config {
 sub config_debrc {
   # Load default configuration, permitting local override
   my $homedir = $ENV{HOME} // $ENV{LOGDIR} // (getpwuid($<))[7];
-  foreach my $macros ( ('/usr/lib/debbuild/debrc',
+  foreach my $macros ( ("$static_config{debconfigdir}/debrc",
                         '/etc/debrc',
                         "$homedir/.debrc") ) {
     open(my $macros_handle, $macros) or next; # should we warn about missing macro files?
