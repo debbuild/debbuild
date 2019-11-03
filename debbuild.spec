@@ -34,6 +34,8 @@ Suggests: rpm
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 
+%define debconfigdir %{_prefix}/lib/debbuild
+
 %description
 debbuild attempts to build Debian-friendly semi-native packages from
 RPM spec files, RPM-friendly tarballs, and RPM source packages
@@ -49,7 +51,7 @@ rebuild .src.rpm source packages as .deb binary packages.
 %setup -q
 
 %build
-%configure VERSION=%{version}
+%configure --debconfigdir=%{debconfigdir} VERSION=%{version}
 make
 
 %install
@@ -59,9 +61,9 @@ make
 # Fill in the pathnames to be packaged here
 %{_bindir}/*
 %{_mandir}/man8/*
-%{_prefix}/lib/debbuild/debrc
-%{_prefix}/lib/debbuild/macros
-%{_prefix}/lib/debbuild/macros.d/
+%{debconfigdir}/debrc
+%{debconfigdir}/macros
+%{debconfigdir}/macros.d/
 %{_sysconfdir}/debbuild/
 %{_datadir}/locale/de/LC_MESSAGES/debbuild.mo
 
