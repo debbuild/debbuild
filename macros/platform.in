@@ -12,8 +12,9 @@
 #==============================================================================
 # ---- configure macros.
 #	Override 'autoconf' defaults
-#	NOTE: %_sharedstatedir is differently defined by Ubuntu's RPM;
-#	you'll have to adapt in ~/.debmacros a/o in your specfile(s).
 #
 %_localstatedir		%{_var}
 %_sharedstatedir	%{_var}/lib
+%_lib			lib/%(%{__dpkg_architecture} -qDEB_HOST_MULTIARCH)
+%_initddir		%{_sysconfdir}/init.d
+%_rundir		/run
