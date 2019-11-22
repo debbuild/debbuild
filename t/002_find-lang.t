@@ -18,12 +18,12 @@
 
 use strict;
 use warnings;
+use File::Basename;
 
 use Test::More qw(no_plan);
 
-my $pwd = `pwd`;
-chomp($pwd);
-my $testarbo = "$pwd/find-lang-root";
+my $scriptdir = dirname(__FILE__);
+my $testarbo = "/tmp/find-lang-root";
 
 
 my %files = (
@@ -41,7 +41,9 @@ my %files = (
     '/usr/share/locale/pt_BR/LC_MESSAGES/lang.mo' => [ 'pt_BR', 0 ],
 );
 
-system("/usr/bin/perl find-lang.pl $testarbo lang --with-man --with-gnome") and die "can't run find-lang $@";
+
+system("$scriptdir/findlang-prep.sh") and die "can't prepare for test";
+system("$scriptdir/../scripts/find-lang.pl $testarbo lang --with-man --with-gnome") and die "can't run find-lang $@";
 
 open(my $h, '<', 'lang.lang') or die "can't open lang.lang";
 

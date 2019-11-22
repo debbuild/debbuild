@@ -37,6 +37,8 @@ install:
 	install -m 644 macros/macros.in $(DESTDIR)$(DEBCONFIGDIR)/macros
 	install -m 644 config/debrc $(DESTDIR)$(DEBCONFIGDIR)
 
+	install -m 755 scripts/find-lang.pl $(DESTDIR)$(DEBCONFIGDIR)
+
 	install -d $(DESTDIR)$(DEBCONFIGDIR)/macros.d
 	install -m 644 macros/macros.sysutils $(DESTDIR)$(DEBCONFIGDIR)/macros.d
 	install -m 644 macros/macros.texlive $(DESTDIR)$(DEBCONFIGDIR)/macros.d

@@ -62,6 +62,7 @@ make
 %{_bindir}/*
 %{_mandir}/man8/*
 %{debconfigdir}/debrc
+%{debconfigdir}/find-lang.pl
 %{debconfigdir}/macros
 %{debconfigdir}/macros.d/
 %{_sysconfdir}/debbuild/

@@ -356,6 +356,17 @@
 	infodir=%{?buildroot:%{buildroot}}%{_infodir} \\\
   install
 
+#------------------------------------------------------------------------
+# Use in %install to generate locale specific file lists. For example,
+#
+# %install
+# ...
+# %find_lang %{name}
+# ...
+# %files -f %{name}.lang
+#
+%find_lang	%{_debconfigdir}/find-lang.pl %{buildroot}
+
 #------------------------------------------------------------------------------
 # Macros for further automated spec %setup and patch application
 #
