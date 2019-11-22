@@ -93,9 +93,7 @@ foreach my $f (sort keys %finallist) {
     my ($lang, @otherlang) = keys %{ $finallist{$f}{lang} || {} };
     my $l = sprintf("%s%s%s",
         $finallist{$f}{dir} ? '%dir ' : '',
-        @otherlang == 0 && $lang && $lang ne 'C'
-            ? "%lang($lang) "
-            : '', # skip if multiple lang, 'C' or dir
+        '', # debbuild does not support %lang() yet...
         $f
     );
     debug('OUT: %s', $l);
