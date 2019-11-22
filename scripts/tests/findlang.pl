@@ -48,13 +48,11 @@ open(my $h, '<', 'lang.lang') or die "can't open lang.lang";
 while (my $line = <$h>) {
     chomp($line);
     $line =~ /svn/ and next;
-    my ($file) = $line =~ / ([^ ]+)$/;
-    my ($lang) = $line =~ /%lang\(([^\)]+)\)/;
-    $lang ||= '';
+    my @parts = split(' ', $line);
+    my $file = $parts[-1];
     my $dir = $line =~ /%dir/;
     $dir ||= 0;
     print STDERR "$file\n";
-    is($lang, $files{$file}[0], "lang is find");
     is($dir, $files{$file}[1], "%dir is properly set if need");
 }
 
