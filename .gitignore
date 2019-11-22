@@ -1,2 +1,4 @@
 Makefile
 debbuild.out
+scripts/find-lang-root/
+scripts/lang.lang
