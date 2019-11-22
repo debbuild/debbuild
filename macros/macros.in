@@ -356,6 +356,42 @@
 	infodir=%{?buildroot:%{buildroot}}%{_infodir} \\\
   install
 
+#------------------------------------------------------------------------------
+# arch macro for all Intel i?86 compatible processors
+#  (Note: This macro (and it's analogues) will probably be obsoleted when
+#   rpm can use regular expressions against target platforms in macro
+#   conditionals.
+#
+%ix86   i386
+
+#------------------------------------------------------------------------------
+# arch macro for all supported ARM processors
+%arm	armel armhf
+
+#------------------------------------------------------------------------------
+# arch macro for 32-bit MIPS processors
+%mips32	mips mipsel
+
+#------------------------------------------------------------------------------
+# arch macro for 64-bit MIPS processors
+%mips64	mips64 mips64el
+
+#------------------------------------------------------------------------------
+# arch macro for big endian MIPS processors
+%mipseb	mips mips64
+
+#------------------------------------------------------------------------------
+# arch macro for little endian MIPS processors
+%mipsel	mipsel mips64el
+
+#------------------------------------------------------------------------------
+# arch macro for all supported MIPS processors
+%mips	%{mips32} %{mips64}
+
+#------------------------------------------------------------------------------
+# arch macro for all supported PowerPC 64 processors
+%power64	ppc64 ppc64el
+
 #------------------------------------------------------------------------
 # Use in %install to generate locale specific file lists. For example,
 #
