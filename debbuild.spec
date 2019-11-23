@@ -1,40 +1,62 @@
-# $Id: debbuild.spec 201 2015-08-03 21:36:21Z kdeugau $
 # Refer to the following for more info on .spec file syntax:
+#
 #   http://www.rpm.org/max-rpm/
 #   http://www.rpm.org/max-rpm-snapshot/	(Updated version of above)
-#   http://docs.fedoraproject.org/drafts/rpm-guide-en/
+#   https://docs.fedoraproject.org/en-US/Fedora_Draft_Documentation/0.1/html/RPM_Guide/
+#   https://rpm-packaging-guide.github.io/
+#
 # More links may be available from http://www.rpm.org
 
-Name: debbuild
-Summary: Build Debian-compatible .deb packages from RPM .spec files
+%global debconfigdir %{_prefix}/lib/debbuild
 
-Version: 19.5.0
-
-Source: https://github.com/ascherer/debbuild/archive/%{name}-%{version}.tar.gz
-URL: https://github.com/ascherer/debbuild
+Name:           debbuild
+Summary:        Build Debian-compatible .deb packages from RPM .spec files
+Version:        19.5.0
+Release:        0%{?dist}
 %if %{_vendor} == "debbuild"
-Group: devel
+Packager:       debbuild developers <https://github.com/debbuild/debbuild>
+Group:          devel
+License:        GPL-2.0+
 %else
-Group: Development/Tools/Building
-%global dist ubuntu18.04
+Group:          Development/Tools%{?suse_version:/Building}
+License:        GPLv2+
 %endif
-License: GPLv2+
-Packager: Andreas Scherer <https://ascherer.github.io/>
-Release: ascherer.%{dist}
-
-Requires: dpkg-dev, perl, fakeroot, lsb-release
-Requires: gettext, liblocale-gettext-perl
+URL:            https://github.com/debbuild/debbuild
+Source:         %{url}/archive/%{version}/%{name}-%{version}.tar.gz
+BuildArch:      noarch
 
 %if %{_vendor} == "debbuild"
-Recommends: bzip2, gzip, xz-utils, unzip, zip, zstd
-Recommends: git, patch, pax, quilt
-Recommends: dpkg-sig
-Suggests: rpm
+BuildRequires:  podlators-perl
+BuildRequires:  lsb-release
+Requires:       liblocale-gettext-perl
+Requires:       lsb-release
+Requires:       xz-utils
+Recommends:     dpkg-sig
+Suggests:       rpm
+%else
+BuildRequires:  perl-generators
+BuildRequires:  perl(Pod::Man)
+Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
+Requires:       xz
 %endif
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-BuildArch: noarch
 
-%define debconfigdir %{_prefix}/lib/debbuild
+BuildRequires:  gettext
+
+Requires:       bash
+Requires:       bzip2
+Requires:       dpkg
+Requires:       dpkg-dev
+Requires:       fakeroot
+Requires:       gzip
+Requires:       patch
+Requires:       pax
+Requires:       perl
+
+Recommends:     git-core
+Recommends:     quilt
+Recommends:     unzip
+Recommends:     zip
+Recommends:     zstd
 
 %description
 debbuild attempts to build Debian-friendly semi-native packages from
@@ -42,13 +64,9 @@ RPM spec files, RPM-friendly tarballs, and RPM source packages
 (.src.rpm files).  It accepts most of the options rpmbuild does, and
 should be able to interpret most spec files usefully.
 
-Note that patch is not strictly required unless you have .spec files
-with %%patch directives, and RPM is not required unless you wish to
-rebuild .src.rpm source packages as .deb binary packages.
-
 %prep
 # Steps to unpack and patch source as needed
-%setup -q
+%autosetup
 
 %build
 %configure --debconfigdir=%{debconfigdir} VERSION=%{version}
@@ -59,16 +77,18 @@ make
 
 %files
 # Fill in the pathnames to be packaged here
+%doc README.md
+%license COPYING
 %{_bindir}/*
 %{_mandir}/man8/*
-%{debconfigdir}/debrc
-%{debconfigdir}/find-lang.pl
-%{debconfigdir}/macros
-%{debconfigdir}/macros.d/
+%{debconfigdir}/
 %{_sysconfdir}/debbuild/
 %{_datadir}/locale/de/LC_MESSAGES/debbuild.mo
 
 %changelog
+* Fri Nov 22 2019 Neal Gompa <ngompa13@gmail.com>
+- Modernize and clean up the spec file
+
 * Fri Feb 01 2019  Andreas Scherer <https://ascherer.github.io/>
 - Replace debsigs with dpkg-sig for package signing
 

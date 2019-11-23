@@ -47,7 +47,7 @@ install:
 	install -d $(DESTDIR)$(SYSCONFDIR)/debbuild
 
 	install -d $(DESTDIR)$(MANDIR)/man8
-	$(POD2MAN) --utf8 --center="DeepNet Dev Tools" --section 8 \
+	$(POD2MAN) --utf8 --center="System Manager's Manual" --section 8 \
 		--release="Release $(VERSION)" debbuild \
 		$(DESTDIR)$(MANDIR)/man8/debbuild.8
 

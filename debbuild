@@ -6,6 +6,8 @@
 #
 # Copyright (C) 2005-2015 Kris Deugau <kdeugau@deepnet.cx>
 # Copyright (C) 2015-2019 Andreas Scherer <https://ascherer.github.io/>
+# Copyright (C) 2015-2019 Neal Gompa <ngompa13@gmail.com>
+# Copyright (C) 2017-2019 Datto, Inc. <https://datto.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -1959,6 +1961,10 @@ debbuild — Build Debian-compatible .deb packages from RPM .spec files
 
 =item 2015-2019 © Andreas Scherer L<https://ascherer.github.io/>
 
+=item 2015-2019 © Neal Gompa L<ngompa13@gmail.com>
+
+=item 2017-2019 © Datto, Inc. L<https://datto.com>
+
 =back
 
 =head1 SHORT DESCRIPTION
@@ -2057,7 +2063,7 @@ It requires the .spec file for the package, and produces a list of full package 
 
 =head1 AUTHOR
 
-B<debbuild> was written by Kris Deugau <kdeugau@deepnet.cx>.  The present version was developed by Andreas Scherer L<http://ascherer.github.io> and is available at L<http://github.com/ascherer/debbuild>.
+B<debbuild> was written by Kris Deugau.  The present version was developed by Andreas Scherer, Neal Gompa, and others. It is available at L<http://github.com/debbuild/debbuild>.
 
 =head1 BUGS
 
