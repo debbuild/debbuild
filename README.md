@@ -21,7 +21,7 @@ from [the original project page](https://secure.deepnet.cx/trac/debbuild):
 ### bug fixes ...
 
 starting from [version 0.11.3 of
-debbuild](https://github.com/ascherer/debbuild/releases/tag/0.11.3) the
+debbuild](https://github.com/debbuild/debbuild/releases/tag/0.11.3) the
 commits of this project deal with
 
 * handling tarballs compressed with various packers
@@ -37,9 +37,9 @@ tree](https://secure.deepnet.cx/svn/debbuild/trunk/debbuild).
 ### ... and extensions
 
 after version
-[svn@210](https://github.com/ascherer/debbuild/releases/tag/SVN%40210)
+[svn@210](https://github.com/debbuild/debbuild/releases/tag/SVN%40210)
 this project took
-[a life of its own](https://github.com/ascherer/debbuild/releases).
+[a life of its own](https://github.com/debbuild/debbuild/releases).
 
 * fully externalized `macros`
 * conditional build stuff
