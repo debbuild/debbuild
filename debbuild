@@ -219,12 +219,20 @@ exit 0;
 #
 # Values are given defaults so that debbuild still runs without
 # having to be passed through the Makefile.
+#
+# If multiple entries exist for a name, the last is used.
 sub load_static_config {
-  my %static_config = read_debrc_from_handle(*DATA);
+  my %static_config_arrays = read_debrc_from_handle(*DATA);
 
-  $static_config{version} //= '0.0';
-  $static_config{debconfigdir} //= '/usr/lib/debbuild';
-  $static_config{sysconfdir} //= '/etc';
+  my %static_config = (
+    version => '0.0',
+    debconfigdir => '/usr/lib/debbuild',
+    sysconfdir => '/etc'
+  );
+
+  while (my ($name, $values) = each(%static_config_arrays)) {
+    $static_config{$name} = $values->[-1] if defined($values);
+  }
 
   return %static_config;
 }
@@ -272,9 +280,11 @@ sub config_debrc {
     my %entries = read_debrc_from_handle($macros_handle);
 
     if (exists $entries{optflags}) {
-      next unless $entries{optflags} =~ /^\s+(\w+)\s+(.+)$/;
-      my ($flag,$value) = ($1,$2);
-      $optflags{$flag} = $value;
+      foreach my $optflags_entry (@{$entries{optflags}}) {
+        next unless $optflags_entry =~ /^\s+(\w+)\s+(.+)$/;
+        my ($flag,$value) = ($1,$2);
+        $optflags{$flag} = $value;
+      }
     }
     close $macros_handle;
   }
@@ -282,8 +292,10 @@ sub config_debrc {
 
 ## read_debrc_from_handle()
 # Take a filehandle of a debrc-format file and parse entries out of it
-# Returns a hash of entries, with keys lowercased to normalize them
-# Ignores lines it doesn't understand
+# Returns a hash of arrayrefs of entries. Keys are the lowercased names of
+# entries (to normalize them). Values are arrayrefs of entries since multiple
+# entries may have the same name. Order from the original lines of the file
+# is preserved. Ignores lines it doesn't understand
 sub read_debrc_from_handle {
   my ($debrc_fh) = shift;
 
@@ -295,7 +307,8 @@ sub read_debrc_from_handle {
     my $name = lc($1); # Names are case-insensitive; normalize by lowercasing
     my $value = $2;
 
-    $entries{$name} = $value
+    $entries{$name} = [] unless exists $entries{$name};
+    push(@{$entries{$name}}, $value);
   }
 
   return %entries;
