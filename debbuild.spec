@@ -11,7 +11,7 @@
 
 Name:           debbuild
 Summary:        Build Debian-compatible .deb packages from RPM .spec files
-Version:        19.5.0
+Version:        19.11.0
 Release:        0%{?dist}
 %if %{_vendor} == "debbuild"
 Packager:       debbuild developers <https://github.com/debbuild/debbuild>
