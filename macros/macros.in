@@ -54,6 +54,7 @@
 %__rm			/bin/rm
 %__rpm			/usr/bin/rpm
 %__sed			/bin/sed
+%__sed_i		/bin/sed -i
 %__tar			/bin/tar
 %__test			/usr/bin/test
 %__unzip		/usr/bin/unzip
