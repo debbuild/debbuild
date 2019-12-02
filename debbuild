@@ -161,12 +161,12 @@ if ($cmdopts{type} eq 't') {
   die _("No tarfile specified!  Exiting.\n")
     unless defined $specglobals{tarball};
   my $tarball = $specglobals{tarball};
-  my $cmdline = expandmacros(lookup_specfile($tarball));
+  my $cmdline = lookup_specfile($tarball);
   chomp( $specglobals{specfile} = expandmacros("%{_specdir}/").
     basename( qx { $cmdline } ) );
 
   $tarball = abs_path($tarball);
-  system expandmacros(extract_specfile($tarball));
+  system extract_specfile($tarball);
 
   $cmdopts{type} = 'b'; # fall through
 }
@@ -1042,13 +1042,13 @@ sub decompress {
 # Used for '-t[pcilabs]'.
 sub lookup_specfile {
   my $tarball = shift;
-  return (
+  return expandmacros((
      $tarball =~ /\.zip$/ ? # .zip files are not really tarballs
         q(%{__unzip} -Z1 %{tarball} '*.spec') :
      $tarball =~ /\.tar$/ ? # plain .tar files don't need to be uncompressed
         q(%{__tar} -tf %{tarball} --wildcards '*.spec') :
      decompress($tarball).q( | %{__tar} -tf - --wildcards '*.spec') ).
-     $check_status;
+     $check_status);
 } # end lookup_specfile()
 
 
@@ -1056,13 +1056,13 @@ sub lookup_specfile {
 # Used for '-t[pcilabs]'.
 sub extract_specfile {
   my $tarball = shift;
-  return (
+  return expandmacros((
      $tarball =~ /\.zip$/ ? # .zip files are not really tarballs
         q(%{__unzip} -p %{tarball} '*.spec') :
      $tarball =~ /\.tar$/ ? # plain .tar files don't need to be uncompressed
         q(%{__tar} -xOf %{tarball} --wildcards '*.spec') :
      decompress($tarball).q( | %{__tar} -xOf - --wildcards '*.spec') ).
-     ' > %{specfile}'.$check_status.'%{__cp} -f %{tarball} %{_sourcedir}';
+     ' > %{specfile}'.$check_status.'%{__cp} -f %{tarball} %{_sourcedir}');
 } # end extract_specfile()
 
 
