@@ -1783,7 +1783,7 @@ sub store_value {
 ## expandmacros()
 # Expands all %{blah} macros in the passed string
 sub expandmacros {
-  local $_ = shift;
+  ( local $_, my $recurse ) = @_;
   return $_ unless /%/; # nothing to substitute
 
   # support for **some** %if constructs: handle '%{?conditional:macros}'
@@ -1795,7 +1795,7 @@ sub expandmacros {
     $value //= ($specglobals{$macro} or '');
     $value = '' unless $specglobals{$macro} xor $qex =~ /!/; # equivalence
     $value = '' if $macro eq 'verbose' and defined $specglobals{$macro}; # shut up!
-    s/$initvalue/expandmacros($value)/eg;
+    s/$initvalue/expandmacros($value, 1)/eg;
   }
   pos = 0; # reset to start of $_
 
@@ -1822,8 +1822,8 @@ sub expandmacros {
   }
   s/%\{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
   s|%\{getconfdir}|$specglobals{_prefix}/lib/debbuild|g;
-  s|%\{sources}|expandmacros( join ' ', sources() )|eg;
-  s|%\{patches}|expandmacros( join ' ', patches() )|eg;
+  s|%\{sources}|expandmacros( join ' ', sources(), 1 )|eg;
+  s|%\{patches}|expandmacros( join ' ', patches(), 1 )|eg;
 
   # Package data
   s|%\{source}|%{_sourcedir}/$pkgdata{main}{source}|gi;
@@ -1842,7 +1842,7 @@ sub expandmacros {
     # Oy vey this gets silly for the perl bits.  Executing a shell to
     # call Perl to get the vendorlib/sitelib/whatever "core" globals.
     # This can do more, but...  eww.
-  s/%\((.+)\)/my $in = expandmacros($1); chomp(my $res = qx($in)); $res/eg;
+  s/%\((.+)\)/my $in = expandmacros($1, 1); chomp(my $res = qx($in)); $res/eg;
     # Yay!  ' characters apparently get properly exscapededed.
 
   # handle '%{parametrized macros}' with nested curly braces, all in one go!
@@ -1856,7 +1856,7 @@ sub expandmacros {
   s/url2path/u2p/g;
   while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ } bracelet() ) {
     (my $initvalue = "%{$prefix:$arg}") =~ s/([?!{+}])/\\$1/g; # neutralize specials
-    $arg = expandmacros($arg);
+    $arg = expandmacros($arg, 1);
     if ($prefix eq 'u2p') {
       # curious form of 'basename'? - strip domain host (and port)
       $arg =~ s|\w+://[\w.:-]+||;
@@ -1888,19 +1888,21 @@ sub expandmacros {
   while (/%\{([a-z_]\w*)}/ig) {
     my $key = $1;
     if (defined $specglobals{$key}) {
-      s/%\{$key}/expandmacros($specglobals{$key})/eg;
+      s/%\{$key}/expandmacros($specglobals{$key}, 1)/eg;
     } elsif (defined $pkgdata{main}{$key}) {
-      s/%\{$key}/expandmacros($pkgdata{main}{$key})/eg;
+      s/%\{$key}/expandmacros($pkgdata{main}{$key}, 1)/eg;
     }
   }
   pos = 0; # reset to start of $_
 
-  # unescape multi-line macros
-  s/\\"/"/g;
-  s/\\\\/\\/g;
-  s/(\S)\\+\n/$1\n/g;
-  # revert changes of dir macro because of spcial use in %files
-  s/%\{dir\}/%dir/g;
+  unless ( defined $recurse) {
+    # unescape multi-line macros
+    s/\\"/"/g;
+    s/\\\\/\\/g;
+    s/(\S)\\+\n/$1\n/g;
+    # revert changes of dir macro because of spcial use in %files
+    s/%\{dir\}/%dir/g;
+  }
   return $_;
 } # end expandmacros()
 
