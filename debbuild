@@ -1897,7 +1897,7 @@ sub expandmacros {
 
   # unescape multi-line macros
   s/\\"/"/g;
-  s/\\\\/\\/g;
+  s/\\\\(\w)/\\$1/g;
   s/(\S)\\+\n/$1\n/g;
   # revert changes of dir macro because of spcial use in %files
   s/%\{dir\}/%dir/g;
