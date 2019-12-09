@@ -541,9 +541,9 @@ LINE: while (<$fh>) {
     # Extracted from the Maximum RPM online doc via:
     # grep -h %[a-z] *|perl -e 'while (<>) { /%([a-z0-9]+)\b/; print "$1|\n"; }'|sort -u
     # First a set of %-tags that are required to be used flush-left:
-    if ((/^%([a-z_]\w*)/ and not grep { $1 eq $_ } qw(build changelog check
+    if ((/^%([a-z_]\w*)/ and not (grep { $1 eq $_ } qw(build changelog check
         clean config copyrightdata description files ghost install package
-        patch post postun pre prep preun setup verify))
+        post postun pre prep preun setup verify) or /patch\d*/))
         and # then a set of %-tags that are permitted in more liberal layouts:
         (/^\s*%([a-z_]\w*)/ and not grep { $1 eq $_ } qw(attr autopatch
         autosetup bcond_with bcond_without configure defattr define dir
