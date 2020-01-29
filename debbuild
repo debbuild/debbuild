@@ -749,13 +749,18 @@ ENDIF: if (/^\s*%endif/) {
 # an rpmbuild-compatible .spec file
       if (my ($dname,$dvalue) = /^(Summary|Group|Version|Conflicts|Provides|
           BuildArch(?:itecture)?|BuildRequires|BuildConflicts|
-          Recommends|Suggests|Enhances|Obsoletes|Breaks|Replaces|
+          Recommends|Supplements|Suggests|Enhances|Obsoletes|Breaks|Replaces|
           PreReq|Requires(?:\(pre(?:un)?\))?|Pre-Depends):\s+(.+)$/ix) {
         $dname =~ tr/[A-Z]/[a-z]/;
         $dvalue =~ s/^noarch/all/i if $dname =~ s/^BuildArch(?:itecture)?/arch/i;
         if (grep { $dname eq $_ } qw(recommends suggests enhances breaks
             replaces requires conflicts provides pre-depends)) {
           push @{$pkgdata{$subname}{$dname}}, splitreqs($dvalue);
+        } elsif (grep { $dname eq $_ } qw(supplements)) {
+          push @{$pkgdata{$subname}{enhances}}, splitreqs($dvalue);
+          warn _('Warning:  \'').
+               _("Supplements:' is not natively supported by .deb packages.\n").
+               _("Downgrading relationship to Enhances:.\n");
         } elsif (grep { $dname eq $_ } qw{prereq requires(pre) requires(preun)}) {
           push @{$pkgdata{$subname}{'pre-depends'}}, splitreqs($dvalue);
         } elsif (grep { $dname eq $_ } qw(obsoletes)) {
