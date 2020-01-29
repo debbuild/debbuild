@@ -750,7 +750,8 @@ ENDIF: if (/^\s*%endif/) {
       if (my ($dname,$dvalue) = /^(Summary|Group|Version|Conflicts|Provides|
           BuildArch(?:itecture)?|BuildRequires|BuildConflicts|
           Recommends|Supplements|Suggests|Enhances|Obsoletes|Breaks|Replaces|
-          PreReq|Requires(?:\(pre(?:un)?\))?|Pre-Depends):\s+(.+)$/ix) {
+          PreReq|Requires(?:\((?:pre|post)(?:un)?\))?|Pre-Depends):\s+(.+)$/ix) {
+        my $dname_orig = $dname;
         $dname =~ tr/[A-Z]/[a-z]/;
         $dvalue =~ s/^noarch/all/i if $dname =~ s/^BuildArch(?:itecture)?/arch/i;
         if (grep { $dname eq $_ } qw(recommends suggests enhances breaks
@@ -763,6 +764,11 @@ ENDIF: if (/^\s*%endif/) {
                _("Downgrading relationship to Enhances:.\n");
         } elsif (grep { $dname eq $_ } qw{prereq requires(pre) requires(preun)}) {
           push @{$pkgdata{$subname}{'pre-depends'}}, splitreqs($dvalue);
+        } elsif (grep { $dname eq $_ } qw{requires(post) requires(postun)}) {
+          push @{$pkgdata{$subname}{requires}}, splitreqs($dvalue);
+          warn _('Warning:  \'').$dname_orig.
+               _(":' is not natively supported by .deb packages.\n").
+               _("Upgrading relationship to Requires.\n");
         } elsif (grep { $dname eq $_ } qw(obsoletes)) {
           push @{$pkgdata{$subname}{replaces}}, splitreqs($dvalue);
         } elsif (grep { $dname eq $_ } qw(buildrequires)) {
@@ -843,6 +849,11 @@ ENDIF: if (/^\s*%endif/) {
         push @{$pkgdata{main}{lc $1}}, splitreqs($2);
       } elsif (/^(?:prereq|requires\((?:pre|preun)\)):\s*(.+)/i) {
         push @{$pkgdata{main}{'pre-depends'}}, splitreqs($1);
+      } elsif (/^(requires\((?:post|postun)\)):\s*(.+)/i) {
+        push @{$pkgdata{main}{requires}}, splitreqs($2);
+        warn _('Warning:  \'').$1.
+             _(":' is not natively supported by .deb packages.\n").
+             _("Upgrading relationship to Requires:.\n");
       } elsif (/^(suggests|enhances|recommends):\s*(.+)/i) {
         push @{$pkgdata{main}{lc $1}}, splitreqs($2);
 # As of sometime between RHEL 6 and RHEL 7 or so, support was added for Recommends: and Enhances:,
