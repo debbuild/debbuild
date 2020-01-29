@@ -752,7 +752,6 @@ ENDIF: if (/^\s*%endif/) {
           Recommends|Suggests|Enhances|Obsoletes|Breaks|Replaces|
           PreReq|Requires(?:\(pre(?:un)?\))?|Pre-Depends):\s+(.+)$/ix) {
         $dname =~ tr/[A-Z]/[a-z]/;
-        $dname =~ s/([()])/\\$1/g;
         $dvalue =~ s/^noarch/all/i if $dname =~ s/^BuildArch(?:itecture)?/arch/i;
         if (grep { $dname eq $_ } qw(recommends suggests enhances breaks
             replaces requires conflicts provides pre-depends)) {
