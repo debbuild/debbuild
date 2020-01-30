@@ -768,7 +768,7 @@ ENDIF: if (/^\s*%endif/) {
           push @{$pkgdata{$subname}{requires}}, splitreqs($dvalue);
           warn _('Warning:  \'').$dname_orig.
                _(":' is not natively supported by .deb packages.\n").
-               _("Upgrading relationship to Requires.\n");
+               _("Upgrading relationship to Requires:.\n");
         } elsif (grep { $dname eq $_ } qw(obsoletes)) {
           push @{$pkgdata{$subname}{replaces}}, splitreqs($dvalue);
         } elsif (grep { $dname eq $_ } qw(buildrequires)) {
