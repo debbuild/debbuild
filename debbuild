@@ -460,8 +460,8 @@ sub parse_cmd {
     if (defined $value) {
       store_value($opt_name,$macro,$value);
     } else {
-      warn _('WARNING: missing value for macro ').
-        "$macro in --$opt_name"._("! Ignoring.\n");
+      warn _('WARNING:  Missing value for macro ').
+        "$macro in --$opt_name"._("!  Ignoring.\n");
     }
   }
   ## help_handler()
@@ -509,7 +509,7 @@ sub parse_spec {
 
   die _("No .spec file specified!  Exiting.\n") unless $specfile;
   open $fh, $specfile or die _('specfile (').$specfile.
-    _(') barfed: ')."$!\n";
+    _(') barfed:  ')."$!\n";
 
   my @ifexpr = (); # Nested %if..%else..%endif conditionals
 
@@ -609,11 +609,11 @@ LINE: while (<$fh>) {
           $iflevel--;
         }
       }
-      die _("Unmatched %if at end of file. Missing %else/%endif.\n");
+      die _("Unmatched %if at end of file.  Missing %else/%endif.\n");
     }
 ELSE: if (/^\s*%else/) {
       die _('Unmatched %else in line ').$..
-          _(". Missing %if.\n") unless @ifexpr;
+          _(".  Missing %if.\n") unless @ifexpr;
       next LINE unless $ifexpr[-1];
       my $iflevel = @ifexpr;
       while (<$fh>) { # Skip %else-block, inluding nested %if..%else..%endif
@@ -626,11 +626,11 @@ ELSE: if (/^\s*%else/) {
           $iflevel--;
         }
       }
-      die _("Unmatched %else at end of file. Missing %endif.\n");
+      die _("Unmatched %else at end of file.  Missing %endif.\n");
     }
 ENDIF: if (/^\s*%endif/) {
       die _('Unmatched %endif in line ').$..
-          _(". Missing %if/%else.\n") unless @ifexpr;
+          _(".  Missing %if/%else.\n") unless @ifexpr;
       pop @ifexpr;
     } # %if..%else..%endif
 
@@ -904,7 +904,7 @@ sub process_autosetup {
   my $noautopatch = s/\s+-N//; # Eat '-N', which is unknown to %setup
   $specglobals{__scm} = $1 if s/\s+\-S\s+(\w+)//; # dito '-S'
   my $scm = $specglobals{__scm};
-  die _('%autosetup: option \'-S ').$scm.
+  die _('%autosetup:  option \'-S ').$scm.
       _('\' currently not supported at line ').$..".\n"
     unless $specglobals{"__scm_setup_$scm"};
   # Generic %setup invocation
@@ -1296,7 +1296,7 @@ sub install {
       unlink $manpage;
       $manpage =~ s/\.(?:Z|gz|bz2)//;
       symlink "$linkdest.gz", "$manpage.gz" or
-        warn _('Warning: symlinking manpage failed: ')."$!\n";
+        warn _('Warning:  symlinking manpage failed:  ')."$!\n";
     }
   }
 
@@ -1647,7 +1647,7 @@ sub checkbuildreq {
       my ($reqstat,undef,undef,$reqver) = split ' ', $pkgdep;
       if ($reqstat =~ /^unknown/) {
 	# this seems to be a virtual package.
-	warn _(' * Warning: ').$pkg.
+	warn _(' * Warning:  ').$pkg.
           _(" is probably installed but seems to be a virtual package.\n");
       } elsif ($reqstat =~ /^install/) {
 	my ($resp) = qx ( $specglobals{__dpkg} --compare-versions $reqver '$rel' $ver && $specglobals{__echo} "ok" );
@@ -1819,7 +1819,7 @@ sub expandmacros {
   # Store %globals (from '%bcond_with[out]()' in 'macros[.in]')
   s/%(define|global)\s+(\S+)\s+(.+)/store_value($1,$2,$3)/eg;
   die _('Missing value for \'%')."$1 $2".
-      _('\'. Aborting!') if m/%(define|global)\s+(.+)/;
+      _('\'.  Aborting!') if m/%(define|global)\s+(.+)/;
   # Permit unsetting/deleting of stored values
   { no warnings; s/%(undefine)\s+(\S+)/store_value($1,$2)/eg; }
   # Print the active macro table

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-30 09:40+0100\n"
+"POT-Creation-Date: 2020-02-06 09:46+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,7 +38,7 @@ msgid " * Required build-dependency "
 msgstr ""
 
 #: debbuild:1650
-msgid " * Warning: "
+msgid " * Warning:  "
 msgstr ""
 
 #: debbuild:1261
@@ -79,11 +79,11 @@ msgid " with --rebuild\n"
 msgstr ""
 
 #: debbuild:464
-msgid "! Ignoring.\n"
+msgid "!  Ignoring.\n"
 msgstr ""
 
 #: debbuild:907
-msgid "%autosetup: option '-S "
+msgid "%autosetup:  option '-S "
 msgstr ""
 
 #: debbuild:558
@@ -104,11 +104,11 @@ msgid "', continuing\n"
 msgstr ""
 
 #: debbuild:1822
-msgid "'. Aborting!"
+msgid "'.  Aborting!"
 msgstr ""
 
 #: debbuild:512
-msgid ") barfed: "
+msgid ") barfed:  "
 msgstr ""
 
 #: debbuild:1657
@@ -121,12 +121,12 @@ msgstr ""
 
 #: debbuild:616
 #, perl-format
-msgid ". Missing %if.\n"
+msgid ".  Missing %if.\n"
 msgstr ""
 
 #: debbuild:633
 #, perl-format
-msgid ". Missing %if/%else.\n"
+msgid ".  Missing %if/%else.\n"
 msgstr ""
 
 #: debbuild:179
@@ -245,7 +245,7 @@ msgstr ""
 
 #: debbuild:629
 #, perl-format
-msgid "Unmatched %else at end of file. Missing %endif.\n"
+msgid "Unmatched %else at end of file.  Missing %endif.\n"
 msgstr ""
 
 #: debbuild:615
@@ -260,12 +260,12 @@ msgstr ""
 
 #: debbuild:612
 #, perl-format
-msgid "Unmatched %if at end of file. Missing %else/%endif.\n"
+msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
 msgstr ""
 
 #: debbuild:886
 #, perl-format
-msgid "Unmatched %if at end of file. Missing %endif.\n"
+msgid "Unmatched %if at end of file.  Missing %endif.\n"
 msgstr ""
 
 #: debbuild:771 debbuild:856
@@ -273,7 +273,7 @@ msgid "Upgrading relationship to Requires:.\n"
 msgstr ""
 
 #: debbuild:463
-msgid "WARNING: missing value for macro "
+msgid "WARNING:  Missing value for macro "
 msgstr ""
 
 #: debbuild:762 debbuild:769 debbuild:854 debbuild:861 debbuild:869
@@ -285,7 +285,7 @@ msgid "Warning:  Debian-specific '"
 msgstr ""
 
 #: debbuild:1299
-msgid "Warning: symlinking manpage failed: "
+msgid "Warning:  symlinking manpage failed:  "
 msgstr ""
 
 #: debbuild:1505
