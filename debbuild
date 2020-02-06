@@ -883,7 +883,7 @@ ENDIF: if (/^\s*%endif/) {
 
   close $fh;
 
-  die _("Unmatched %if at end of file. Missing %endif.\n") if @ifexpr;
+  die _("Unmatched %if at end of file.  Missing %endif.\n") if @ifexpr;
 } # end parse_spec()
 
 
