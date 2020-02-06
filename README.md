@@ -1,6 +1,6 @@
 # debbuild
 
-[![CircleCI](https://circleci.com/gh/debbuild/debbuild.svg?style=svg)](https://circleci.com/gh/debbuild/debbuild)
+[![CircleCI](https://circleci.com/gh/debbuild/debbuild.svg?style=svg)](https://circleci.com/gh/debbuild/debbuild) | [![Translation status](https://translate.fedoraproject.org/widgets/debbuild/-/svg-badge.svg)](https://translate.fedoraproject.org/engage/debbuild/?utm_source=widget)
 
 ## purpose of the 'debbuild' program
 
