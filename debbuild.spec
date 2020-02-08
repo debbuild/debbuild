@@ -84,6 +84,7 @@ make
 %{debconfigdir}/
 %{_sysconfdir}/debbuild/
 %{_datadir}/locale/de/LC_MESSAGES/debbuild.mo
+%{_datadir}/locale/uk/LC_MESSAGES/debbuild.mo
 
 %changelog
 * Fri Nov 22 2019 Neal Gompa <ngompa13@gmail.com>
