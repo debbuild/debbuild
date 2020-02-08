@@ -8,33 +8,37 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-02-06 09:46+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2020-02-08 08:16+0000\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
+"Language-Team: Ukrainian <https://translate.fedoraproject.org/projects/"
+"debbuild/master/uk/>\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<="
+"4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 3.10.3\n"
 
 #: debbuild:1618
 msgid "  Continuing anyway.\n"
-msgstr ""
+msgstr "  Продовжуємо попри це.\n"
 
 #: debbuild:1617
 msgid "  Required for sucessful build:\n"
-msgstr ""
+msgstr "  Потрібні для успішного збирання:\n"
 
 #: debbuild:1676
 msgid " * Conflicting build-dependency "
-msgstr ""
+msgstr " * Конфліктна залежність для збирання "
 
 #: debbuild:1634 debbuild:1661
 msgid " * Missing build-dependency "
-msgstr ""
+msgstr " * Не вистачає залежності для збирання "
 
 #: debbuild:1655
 msgid " * Required build-dependency "
-msgstr ""
+msgstr " * Потрібна залежність для збирання "
 
 #: debbuild:1650
 msgid " * Warning:  "
@@ -42,40 +46,41 @@ msgstr ""
 
 #: debbuild:1261
 msgid " failed (%"
-msgstr ""
+msgstr " помилка (%"
 
 #: debbuild:440
 msgid " for option '-"
-msgstr ""
+msgstr " для параметра «-"
 
 #: debbuild:1656
 msgid " is installed, but wrong version ("
-msgstr ""
+msgstr " встановлено, але версія є помилковою ("
 
 #: debbuild:1651
 msgid " is probably installed but seems to be a virtual package.\n"
 msgstr ""
+" , можливо, встановлено, але, здається, це просто віртуальний пакунок.\n"
 
 #: debbuild:1616
 msgid " not found.  Can't check build-deps.\n"
-msgstr ""
+msgstr " не знайдено.  Неможливо перевірити залежності для збирання.\n"
 
 #: debbuild:559
 msgid " of "
-msgstr ""
+msgstr " з "
 
 #: debbuild:490
 msgid " stage.  Ignoring.\n"
-msgstr ""
+msgstr " етапі.  Ігноруємо.\n"
 
 #: debbuild:1765
 #, perl-brace-format
 msgid " to %{_topdir}."
-msgstr ""
+msgstr " до %{_topdir}."
 
 #: debbuild:445
 msgid " with --rebuild\n"
-msgstr ""
+msgstr " з --rebuild\n"
 
 #: debbuild:464
 msgid "!  Ignoring.\n"
@@ -87,20 +92,20 @@ msgstr ""
 
 #: debbuild:558
 msgid "' at line "
-msgstr ""
+msgstr "» у рядку "
 
 #: debbuild:908
 msgid "' currently not supported at line "
-msgstr ""
+msgstr "» у поточній версії підтримки не передбачено, рядок "
 
 #: debbuild:818
 #, perl-format
 msgid "'%exclude' keyword found, ignoring input line\n"
-msgstr ""
+msgstr "Виявлено ключове слово «%exclude», ігноруємо рядок вхідних даних\n"
 
 #: debbuild:975
 msgid "', continuing\n"
-msgstr ""
+msgstr "», продовжуємо\n"
 
 #: debbuild:1822
 msgid "'.  Aborting!"
@@ -112,11 +117,11 @@ msgstr ""
 
 #: debbuild:1657
 msgid "):  Need "
-msgstr ""
+msgstr "):  потрібне "
 
 #: debbuild:1615
 msgid "**WARNING**  "
-msgstr ""
+msgstr "**Попередження**  "
 
 #: debbuild:616
 #, perl-format
@@ -130,117 +135,118 @@ msgstr ""
 
 #: debbuild:179
 msgid ":  build requirements not met.\n"
-msgstr ""
+msgstr ":  вимоги до збирання не виконано.\n"
 
 #: debbuild:770 debbuild:855
 msgid ":' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr ":» не підтримується у природний спосіб у пакунках .deb.\n"
 
 #: debbuild:862 debbuild:866
 #, perl-format
 msgid ":' outside %if wrapper\n"
-msgstr ""
+msgstr ":» поза обгорткою %if\n"
 
 #: debbuild:151
 msgid "Can't --rebuild with "
-msgstr ""
+msgstr "Неможливо виконати --rebuild з "
 
 #: debbuild:178
 msgid "Can't build "
-msgstr ""
+msgstr "Не вдалося зібрати "
 
 #: debbuild:1051
 msgid "Can't handle unknown file type '"
-msgstr ""
+msgstr "Не вдалося обробити файл невідомого типу «"
 
 #: debbuild:1249
 msgid "Can't open/create "
-msgstr ""
+msgstr "Не вдалося відкрити або створити "
 
 #: debbuild:444
 msgid "Can't use -"
-msgstr ""
+msgstr "Неможливо скористатися -"
 
 #: debbuild:489
 msgid "Can't use --short-circuit for "
-msgstr ""
+msgstr "Неможливо скористатися --short-circuit для "
 
 #: debbuild:1698
 msgid "Checking library requirements...\n"
-msgstr ""
+msgstr "Перевіряємо залежності бібліотеки...\n"
 
 #: debbuild:764 debbuild:871
 msgid "Downgrading relationship to Enhances:.\n"
-msgstr ""
+msgstr "Знижуємо зв'язок до Enhances:.\n"
 
 #: debbuild:1261
 msgid "Exec of "
-msgstr ""
+msgstr "Виконуваний файл "
 
 #: debbuild:1257
 msgid "Executing ("
-msgstr ""
+msgstr "Виконуємо ("
 
 #: debbuild:1764
 msgid "Extracted source package "
-msgstr ""
+msgstr "Видобуто дані із пакунка коду "
 
 #: debbuild:1821
 msgid "Missing value for '%"
-msgstr ""
+msgstr "Пропущено значення «%"
 
 #: debbuild:343
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
-msgstr ""
+msgstr "Не знайдено файла «os-release» або програми «lsb_release».\n"
 
 #: debbuild:510
 msgid "No .spec file specified!  Exiting.\n"
-msgstr ""
+msgstr "Не вказано файла .spec!  Завершуємо обробку.\n"
 
 #: debbuild:49
 msgid "No .spec file to work with!  Exiting.\n"
-msgstr ""
+msgstr "Немає файла .spec для обробки!  Завершуємо обробку.\n"
 
 #: debbuild:161
 msgid "No tarfile specified!  Exiting.\n"
-msgstr ""
+msgstr "Не вказано архіву tar!  Завершуємо обробку.\n"
 
 #: debbuild:1515
 msgid "Signed binary package "
-msgstr ""
+msgstr "Підписаний бінарний пакунок "
 
 #: debbuild:344
 msgid "Sorry, I quit.\n"
-msgstr ""
+msgstr "Вибачте, завершуємо роботу.\n"
 
 #: debbuild:763 debbuild:870
 msgid "Supplements:' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr "Supplements:» не передбачено для обробки у пакунках .deb.\n"
 
 #: debbuild:974
 #, perl-format
 msgid "Suspect %setup tag '%setup"
-msgstr ""
+msgstr "Припускаємо мітку %setup «%setup"
 
 #: debbuild:477
 msgid "This is debbuild, version "
-msgstr ""
+msgstr "Це debbuild, версія "
 
 #: debbuild:1667
 msgid "To install all missing dependencies, run 'apt install "
 msgstr ""
+"Щоб встановити залежності, яких не вистачає, віддайте команду «apt install "
 
 #: debbuild:1681
 msgid "To remove all conflicting dependencies, run 'apt remove "
-msgstr ""
+msgstr "Щоб вилучити усі конфліктні залежності, віддайте команду «apt remove "
 
 #: debbuild:439
 msgid "Unknown stage "
-msgstr ""
+msgstr "Невідомий етап "
 
 #: debbuild:558
 msgid "Unknown tag '%"
-msgstr ""
+msgstr "Невідома мітка «%"
 
 #: debbuild:629
 #, perl-format
@@ -250,12 +256,12 @@ msgstr ""
 #: debbuild:615
 #, perl-format
 msgid "Unmatched %else in line "
-msgstr ""
+msgstr "%else без відповідника у рядку "
 
 #: debbuild:632
 #, perl-format
 msgid "Unmatched %endif in line "
-msgstr ""
+msgstr "%endif без відповідника у рядку "
 
 #: debbuild:612
 #, perl-format
@@ -269,7 +275,7 @@ msgstr ""
 
 #: debbuild:771 debbuild:856
 msgid "Upgrading relationship to Requires:.\n"
-msgstr ""
+msgstr "Підвищуємо зв'язок до Requires:.\n"
 
 #: debbuild:463
 msgid "WARNING:  Missing value for macro "
@@ -277,11 +283,11 @@ msgstr ""
 
 #: debbuild:762 debbuild:769 debbuild:854 debbuild:861 debbuild:869
 msgid "Warning:  '"
-msgstr ""
+msgstr "Попередження:  «"
 
 #: debbuild:865
 msgid "Warning:  Debian-specific '"
-msgstr ""
+msgstr "Попередження:  специфічне для Debian «"
 
 #: debbuild:1299
 msgid "Warning:  symlinking manpage failed:  "
@@ -289,16 +295,16 @@ msgstr ""
 
 #: debbuild:1505
 msgid "Wrote binary package "
-msgstr ""
+msgstr "Записано двійковий пакунок "
 
 #: debbuild:1599
 msgid "Wrote source package "
-msgstr ""
+msgstr "Записано пакунок із початковим кодом "
 
 #: debbuild:1250
 msgid "script file "
-msgstr ""
+msgstr "файл скрипту "
 
 #: debbuild:511
 msgid "specfile ("
-msgstr ""
+msgstr "файл spec ("
