@@ -344,6 +344,9 @@ sub lsb_detection {
         _("Sorry, I quit.\n");
   }
 
+  # if our OS does not have a version, set it to some "unreleased" value
+  $basever //= "9999";
+
   # rpmbuild expects either integers or strings, and some distros (*cough*Ubuntu*cough*)
   # have versions that get interpreted as strings, which creates comparison problems.
   # This will make sure it's an integer to remain compatible.
@@ -351,8 +354,11 @@ sub lsb_detection {
 
   # Set some legacy globals & the standard generic OS-class globals;
   $specglobals{debdist} = $basecodename;
-  $specglobals{debver} = $specglobals{$baseos}
-    = $specglobals{$baseos.'_version'} = $specbasever;
+  $specglobals{debver} = $specbasever;
+  # the OS-class globals shall be overridable from .debmacros, so only set them if they are not yet
+  $specglobals{$baseos} //= $specbasever;
+  # if the basever does not have a sub-version, it needs to be multiplied by 100
+  $specglobals{$baseos.'_version'} //= $basever =~ /\./ || $basever eq "9999" ? $specbasever : $basever * 100;
 
   # Default %{dist} to something marginally sane.  Note this should be overrideable by --define.
   # This has been chosen to most closely follow the usage in RHEL/CentOS and Fedora, ie "el5" or "fc20".
