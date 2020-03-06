@@ -75,7 +75,10 @@ make
 %install
 %make_install
 
-%files
+# Identify all installed translations
+%find_lang %{name}
+
+%files -f %{name}.lang
 # Fill in the pathnames to be packaged here
 %doc README.md
 %license COPYING
@@ -83,10 +86,11 @@ make
 %{_mandir}/man8/*
 %{debconfigdir}/
 %{_sysconfdir}/debbuild/
-%{_datadir}/locale/de/LC_MESSAGES/debbuild.mo
-%{_datadir}/locale/uk/LC_MESSAGES/debbuild.mo
 
 %changelog
+* Fri Mar 06 2020 Neal Gompa <ngompa13@gmail.com>
+- Use the find_lang macro to install translations
+
 * Fri Nov 22 2019 Neal Gompa <ngompa13@gmail.com>
 - Modernize and clean up the spec file
 
