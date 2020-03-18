@@ -1,0 +1,304 @@
+# International version of DEBBUILD.
+# Copyright (C) 2018, 2020 Andreas Scherer
+# This file is distributed under the same license as the DEBBUILD package.
+# Andreas Scherer <andreas_github@freenet.de>, 2020.
+# Oğuz Ersen <oguzersen@protonmail.com>, 2020.
+msgid ""
+msgstr ""
+"Project-Id-Version: DEBBUILD I18N 1.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-02-06 09:46+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Automatically generated\n"
+"Language-Team: none\n"
+"Language: tr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: debbuild:1618
+msgid "  Continuing anyway.\n"
+msgstr ""
+
+#: debbuild:1617
+msgid "  Required for sucessful build:\n"
+msgstr ""
+
+#: debbuild:1676
+msgid " * Conflicting build-dependency "
+msgstr ""
+
+#: debbuild:1634 debbuild:1661
+msgid " * Missing build-dependency "
+msgstr ""
+
+#: debbuild:1655
+msgid " * Required build-dependency "
+msgstr ""
+
+#: debbuild:1650
+msgid " * Warning:  "
+msgstr ""
+
+#: debbuild:1261
+msgid " failed (%"
+msgstr ""
+
+#: debbuild:440
+msgid " for option '-"
+msgstr ""
+
+#: debbuild:1656
+msgid " is installed, but wrong version ("
+msgstr ""
+
+#: debbuild:1651
+msgid " is probably installed but seems to be a virtual package.\n"
+msgstr ""
+
+#: debbuild:1616
+msgid " not found.  Can't check build-deps.\n"
+msgstr ""
+
+#: debbuild:559
+msgid " of "
+msgstr ""
+
+#: debbuild:490
+msgid " stage.  Ignoring.\n"
+msgstr ""
+
+#: debbuild:1765
+#, perl-brace-format
+msgid " to %{_topdir}."
+msgstr ""
+
+#: debbuild:445
+msgid " with --rebuild\n"
+msgstr ""
+
+#: debbuild:464
+msgid "!  Ignoring.\n"
+msgstr ""
+
+#: debbuild:907
+msgid "%autosetup:  option '-S "
+msgstr ""
+
+#: debbuild:558
+msgid "' at line "
+msgstr ""
+
+#: debbuild:908
+msgid "' currently not supported at line "
+msgstr ""
+
+#: debbuild:818
+#, perl-format
+msgid "'%exclude' keyword found, ignoring input line\n"
+msgstr ""
+
+#: debbuild:975
+msgid "', continuing\n"
+msgstr ""
+
+#: debbuild:1822
+msgid "'.  Aborting!"
+msgstr ""
+
+#: debbuild:512
+msgid ") barfed:  "
+msgstr ""
+
+#: debbuild:1657
+msgid "):  Need "
+msgstr ""
+
+#: debbuild:1615
+msgid "**WARNING**  "
+msgstr ""
+
+#: debbuild:616
+#, perl-format
+msgid ".  Missing %if.\n"
+msgstr ""
+
+#: debbuild:633
+#, perl-format
+msgid ".  Missing %if/%else.\n"
+msgstr ""
+
+#: debbuild:179
+msgid ":  build requirements not met.\n"
+msgstr ""
+
+#: debbuild:770 debbuild:855
+msgid ":' is not natively supported by .deb packages.\n"
+msgstr ""
+
+#: debbuild:862 debbuild:866
+#, perl-format
+msgid ":' outside %if wrapper\n"
+msgstr ""
+
+#: debbuild:151
+msgid "Can't --rebuild with "
+msgstr ""
+
+#: debbuild:178
+msgid "Can't build "
+msgstr ""
+
+#: debbuild:1051
+msgid "Can't handle unknown file type '"
+msgstr ""
+
+#: debbuild:1249
+msgid "Can't open/create "
+msgstr ""
+
+#: debbuild:444
+msgid "Can't use -"
+msgstr ""
+
+#: debbuild:489
+msgid "Can't use --short-circuit for "
+msgstr ""
+
+#: debbuild:1698
+msgid "Checking library requirements...\n"
+msgstr ""
+
+#: debbuild:764 debbuild:871
+msgid "Downgrading relationship to Enhances:.\n"
+msgstr ""
+
+#: debbuild:1261
+msgid "Exec of "
+msgstr ""
+
+#: debbuild:1257
+msgid "Executing ("
+msgstr ""
+
+#: debbuild:1764
+msgid "Extracted source package "
+msgstr ""
+
+#: debbuild:1821
+msgid "Missing value for '%"
+msgstr ""
+
+#: debbuild:343
+msgid "No 'os-release' file or 'lsb_release' program found.\n"
+msgstr ""
+
+#: debbuild:510
+msgid "No .spec file specified!  Exiting.\n"
+msgstr ""
+
+#: debbuild:49
+msgid "No .spec file to work with!  Exiting.\n"
+msgstr ""
+
+#: debbuild:161
+msgid "No tarfile specified!  Exiting.\n"
+msgstr ""
+
+#: debbuild:1515
+msgid "Signed binary package "
+msgstr ""
+
+#: debbuild:344
+msgid "Sorry, I quit.\n"
+msgstr ""
+
+#: debbuild:763 debbuild:870
+msgid "Supplements:' is not natively supported by .deb packages.\n"
+msgstr ""
+
+#: debbuild:974
+#, perl-format
+msgid "Suspect %setup tag '%setup"
+msgstr ""
+
+#: debbuild:477
+msgid "This is debbuild, version "
+msgstr ""
+
+#: debbuild:1667
+msgid "To install all missing dependencies, run 'apt install "
+msgstr ""
+
+#: debbuild:1681
+msgid "To remove all conflicting dependencies, run 'apt remove "
+msgstr ""
+
+#: debbuild:439
+msgid "Unknown stage "
+msgstr ""
+
+#: debbuild:558
+msgid "Unknown tag '%"
+msgstr ""
+
+#: debbuild:629
+#, perl-format
+msgid "Unmatched %else at end of file.  Missing %endif.\n"
+msgstr ""
+
+#: debbuild:615
+#, perl-format
+msgid "Unmatched %else in line "
+msgstr ""
+
+#: debbuild:632
+#, perl-format
+msgid "Unmatched %endif in line "
+msgstr ""
+
+#: debbuild:612
+#, perl-format
+msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
+msgstr ""
+
+#: debbuild:886
+#, perl-format
+msgid "Unmatched %if at end of file.  Missing %endif.\n"
+msgstr ""
+
+#: debbuild:771 debbuild:856
+msgid "Upgrading relationship to Requires:.\n"
+msgstr ""
+
+#: debbuild:463
+msgid "WARNING:  Missing value for macro "
+msgstr ""
+
+#: debbuild:762 debbuild:769 debbuild:854 debbuild:861 debbuild:869
+msgid "Warning:  '"
+msgstr ""
+
+#: debbuild:865
+msgid "Warning:  Debian-specific '"
+msgstr ""
+
+#: debbuild:1299
+msgid "Warning:  symlinking manpage failed:  "
+msgstr ""
+
+#: debbuild:1505
+msgid "Wrote binary package "
+msgstr ""
+
+#: debbuild:1599
+msgid "Wrote source package "
+msgstr ""
+
+#: debbuild:1250
+msgid "script file "
+msgstr ""
+
+#: debbuild:511
+msgid "specfile ("
+msgstr ""
