@@ -51,7 +51,7 @@ install:
 		--release="Release $(VERSION)" debbuild \
 		$(DESTDIR)$(MANDIR)/man8/debbuild.8
 
-	install -d $(DESTDIR)$(DATADIR)/locale/de/LC_MESSAGES
-	$(MSGFMT) po/de/debbuild.po -o $(DESTDIR)$(DATADIR)/locale/de/LC_MESSAGES/debbuild.mo
-	install -d $(DESTDIR)$(DATADIR)/locale/uk/LC_MESSAGES
-	$(MSGFMT) po/uk/debbuild.po -o $(DESTDIR)$(DATADIR)/locale/uk/LC_MESSAGES/debbuild.mo
+	for lang in de it tr uk ; do \
+		install -d $(DESTDIR)$(DATADIR)/locale/$$lang/LC_MESSAGES ; \
+		$(MSGFMT) po/$$lang/debbuild.po -o $(DESTDIR)$(DATADIR)/locale/$$lang/LC_MESSAGES/debbuild.mo ; \
+	done
