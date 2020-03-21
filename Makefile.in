@@ -10,7 +10,7 @@ MSGFMT = @MSGFMT@
 
 VERSION = @VERSION@
 
-LANGUAGES = $(shell ls po --hide=*.pot)
+LANGUAGES = @LANGUAGES@
 
 .DEFAULT_GOAL := build
 .PHONY: build
