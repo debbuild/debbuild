@@ -10,6 +10,8 @@ MSGFMT = @MSGFMT@
 
 VERSION = @VERSION@
 
+LANGUAGES = $(shell ls po --hide=*.pot)
+
 .DEFAULT_GOAL := build
 .PHONY: build
 build: debbuild.out
@@ -51,7 +53,7 @@ install:
 		--release="Release $(VERSION)" debbuild \
 		$(DESTDIR)$(MANDIR)/man8/debbuild.8
 
-	for lang in de it tr uk ; do \
+	for lang in $(LANGUAGES) ; do \
 		install -d $(DESTDIR)$(DATADIR)/locale/$$lang/LC_MESSAGES ; \
 		$(MSGFMT) po/$$lang/debbuild.po -o $(DESTDIR)$(DATADIR)/locale/$$lang/LC_MESSAGES/debbuild.mo ; \
 	done
