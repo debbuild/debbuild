@@ -24,6 +24,7 @@ Getopt::Long::GetOptions(\%options,
   'libdir:s',
   'datarootdir:s',
   'datadir:s',
+  'languages:s',
   'localedir:s',
   'mandir:s',
   'debconfigdir:s',
@@ -67,6 +68,12 @@ if (-e '/etc/os-release') {
     die "ERROR: Unable to find os-release or lsb_release. $0 failed.\n";
   }
 }
+
+print "Checking installable translations...";
+chomp(my $languages = qx(ls po --hide=*.pot));
+$languages =~ s/\s+/ /g;
+print "$languages\n";
+$options{'languages'} //= $languages;
 
 my $in_filename = 'Makefile.in';
 print "Reading $in_filename...\n";
