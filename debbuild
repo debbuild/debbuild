@@ -1343,14 +1343,14 @@ sub binpackage {
 
     if ($files_files{$pkg}) {
         if (-e $files_files{$pkg}) {
-	     open(FILES, "<", $files_files{$pkg}) || die "Could not open: $files_files{$pkg}\n";
+	     open(FILES, "<", $files_files{$pkg}) || die _('Could not open: ').$files_files{$pkg}."\n";
              while(<FILES>) {
 		 chomp($_);
                  process_filesline($pkg, $_);
              }
 	     close FILES;
 	} else {
-             die "File not found: $files_files{$pkg}";
+             die _('File not found: ').$files_files{$pkg}."\n";
 	}
     }
 
@@ -1764,7 +1764,7 @@ sub getreqs {
 # Extracts .sdeb contents to %_topdir as appropriate
 sub install_sdeb {
   my $srcpkg = shift;
-  die "Can't install $srcpkg\n" unless $srcpkg =~ /\.sdeb$/;
+  die _('Can\'t install ').$srcpkg."\n" unless $srcpkg =~ /\.sdeb$/;
   $srcpkg = abs_path($srcpkg);
   system(expandmacros("cd %{_topdir}; %{__pax} -r -f $srcpkg)")) == 0 and
   $finalmessages .= _('Extracted source package ').$srcpkg.
