@@ -466,8 +466,8 @@ sub parse_cmd {
     if (defined $value) {
       store_value($opt_name,$macro,$value);
     } else {
-      warn _('WARNING:  Missing value for macro ').
-        "$macro in --$opt_name"._("!  Ignoring.\n");
+      warn _('WARNING:  Missing value for macro ').$macro.
+           _(' in ')."--$opt_name"._("!  Ignoring.\n");
     }
   }
   ## help_handler()
@@ -1506,20 +1506,20 @@ sub binpackage {
     $script{pkg} = "%{__fakeroot} -- %{__dpkg_deb} -b %{buildroot}/$pkg ".
         "%{_debdir}/$pkgdata{$pkg}{arch}/".format_debfile($pkg)."\n";
 
-    execute_script('pkg', 'package-creation', " for $pkgdata{$pkg}{name}");
+    execute_script('pkg', 'package-creation', _(' for ')."$pkgdata{$pkg}{name}");
 
     $finalmessages .= _('Wrote binary package ').format_debfile($pkg).
-	" in %{_debdir}/$pkgdata{$pkg}{arch}\n";
+	              _(' in ')."%{_debdir}/$pkgdata{$pkg}{arch}\n";
 
     if ($cmdopts{sign}) {
       $script{pkg} = "%{__fakeroot} -- %{__dpkg_sig} ".
         "-s builder -k %{_gpg_key_full} ".
         "%{_debdir}/$pkgdata{$pkg}{arch}/".format_debfile($pkg)."\n";
 
-      execute_script('pkg', 'package-signature', " for $pkgdata{$pkg}{name}");
+      execute_script('pkg', 'package-signature', _(' for ')."$pkgdata{$pkg}{name}");
 
       $finalmessages .= _('Signed binary package ').format_debfile($pkg).
-	" in %{_debdir}/$pkgdata{$pkg}{arch}\n";
+	                _(' in ')."%{_debdir}/$pkgdata{$pkg}{arch}\n";
     }
 
   } # subpackage loop
@@ -1602,7 +1602,7 @@ sub srcpackage {
   $paxcmd .= "SPECS/$barespec -f %{_srcdebdir}/$pkgsrcname)";
 
   system(expandmacros($paxcmd)) == 0 and
-  $finalmessages .= _('Wrote source package ')."$pkgsrcname in %{_srcdebdir}.\n";
+  $finalmessages .= _('Wrote source package ').$pkgsrcname._(' in ')."%{_srcdebdir}.\n";
 } # end srcpackage()
 
 
