@@ -5,10 +5,10 @@
 # Yuri Chornoivan <yurchor@ukr.net>, 2020.
 msgid ""
 msgstr ""
-"Project-Id-Version: DEBBUILD I18N 1.2\n"
+"Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-22 11:37+0100\n"
-"PO-Revision-Date: 2020-03-22 11:37+0100\n"
+"POT-Creation-Date: 2020-03-22 13:12+0100\n"
+"PO-Revision-Date: 2020-03-22 13:12+0100\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://translate.fedoraproject.org/projects/"
 "debbuild/master/uk/>\n"
@@ -166,6 +166,10 @@ msgstr "Не вдалося зібрати "
 msgid "Can't handle unknown file type '"
 msgstr "Не вдалося обробити файл невідомого типу «"
 
+#: debbuild:1767
+msgid "Can't install "
+msgstr ""
+
 #: debbuild:1255
 msgid "Can't open/create "
 msgstr "Не вдалося відкрити або створити "
@@ -182,6 +186,10 @@ msgstr "Неможливо скористатися --short-circuit для "
 msgid "Checking library requirements...\n"
 msgstr "Перевіряємо залежності бібліотеки...\n"
 
+#: debbuild:1346
+msgid "Could not open: "
+msgstr ""
+
 #: debbuild:770 debbuild:877
 msgid "Downgrading relationship to Enhances:.\n"
 msgstr "Знижуємо зв'язок до Enhances:.\n"
@@ -197,6 +205,10 @@ msgstr "Виконуємо ("
 #: debbuild:1770
 msgid "Extracted source package "
 msgstr "Видобуто дані із пакунка коду "
+
+#: debbuild:1353
+msgid "File not found: "
+msgstr ""
 
 #: debbuild:1827
 msgid "Missing value for '%"

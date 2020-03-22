@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: DEBBUILD I18N 1.2\n"
+"Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-22 11:37+0100\n"
-"PO-Revision-Date: 2020-03-22 11:37+0100\n"
+"POT-Creation-Date: 2020-03-22 13:12+0100\n"
+"PO-Revision-Date: 2020-03-22 13:12+0100\n"
 "Last-Translator: Andreas Scherer <andreas_github@freenet.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -162,6 +162,10 @@ msgstr "Kein Bau möglich von "
 msgid "Can't handle unknown file type '"
 msgstr "Nicht unterstützter Dateityp '"
 
+#: debbuild:1767
+msgid "Can't install "
+msgstr "Nicht installierbar: "
+
 #: debbuild:1255
 msgid "Can't open/create "
 msgstr "Öffnen/Erzeugen nicht möglich: "
@@ -178,6 +182,10 @@ msgstr "--short-circuit nicht verwendbar für "
 msgid "Checking library requirements...\n"
 msgstr "Prüfe Bibliotheksabhängigkeiten...\n"
 
+#: debbuild:1346
+msgid "Could not open: "
+msgstr "Nicht zu öffnen: "
+
 #: debbuild:770 debbuild:877
 msgid "Downgrading relationship to Enhances:.\n"
 msgstr "Reduziere Abhängigkeit auf Enhances:.\n"
@@ -193,6 +201,10 @@ msgstr "Ausführung von ("
 #: debbuild:1770
 msgid "Extracted source package "
 msgstr "Entpacke Quellpaket "
+
+#: debbuild:1353
+msgid "File not found: "
+msgstr "Datei nicht gefunden: "
 
 #: debbuild:1827
 msgid "Missing value for '%"

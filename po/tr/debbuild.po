@@ -5,10 +5,10 @@
 # Oğuz Ersen <oguzersen@protonmail.com>, 2020.
 msgid ""
 msgstr ""
-"Project-Id-Version: DEBBUILD I18N 1.2\n"
+"Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-22 11:37+0100\n"
-"PO-Revision-Date: 2020-03-22 11:37+0100\n"
+"POT-Creation-Date: 2020-03-22 13:12+0100\n"
+"PO-Revision-Date: 2020-03-22 13:12+0100\n"
 "Last-Translator: Oğuz Ersen <oguzersen@protonmail.com>\n"
 "Language-Team: Turkish <https://translate.fedoraproject.org/projects/"
 "debbuild/master/tr/>\n"
@@ -164,6 +164,10 @@ msgstr "Oluşturulamıyor: "
 msgid "Can't handle unknown file type '"
 msgstr "Bilinmeyen dosya türü işlenemiyor: '"
 
+#: debbuild:1767
+msgid "Can't install "
+msgstr ""
+
 #: debbuild:1255
 msgid "Can't open/create "
 msgstr "Açılamıyor/oluşturulamıyor: "
@@ -180,6 +184,10 @@ msgstr "--short-circuit kullanılamaz: "
 msgid "Checking library requirements...\n"
 msgstr "Kütüphane gereksinimleri kontrol ediliyor...\n"
 
+#: debbuild:1346
+msgid "Could not open: "
+msgstr ""
+
 #: debbuild:770 debbuild:877
 msgid "Downgrading relationship to Enhances:.\n"
 msgstr "İlişki, 'Enhances' olarak düşürülüyor:.\n"
@@ -195,6 +203,10 @@ msgstr "Yürütülüyor ("
 #: debbuild:1770
 msgid "Extracted source package "
 msgstr "Kaynak paketi çıkarıldı: "
+
+#: debbuild:1353
+msgid "File not found: "
+msgstr ""
 
 #: debbuild:1827
 msgid "Missing value for '%"
