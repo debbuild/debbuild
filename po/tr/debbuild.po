@@ -5,10 +5,10 @@
 # Oğuz Ersen <oguzersen@protonmail.com>, 2020.
 msgid ""
 msgstr ""
-"Project-Id-Version: DEBBUILD I18N 1.1\n"
+"Project-Id-Version: DEBBUILD I18N 1.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-06 09:46+0100\n"
-"PO-Revision-Date: 2020-03-19 18:38+0000\n"
+"POT-Creation-Date: 2020-03-22 11:37+0100\n"
+"PO-Revision-Date: 2020-03-22 11:37+0100\n"
 "Last-Translator: Oğuz Ersen <oguzersen@protonmail.com>\n"
 "Language-Team: Turkish <https://translate.fedoraproject.org/projects/"
 "debbuild/master/tr/>\n"
@@ -19,114 +19,122 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 3.11.3\n"
 
-#: debbuild:1618
+#: debbuild:1624
 msgid "  Continuing anyway.\n"
 msgstr "  Yine de devam ediliyor.\n"
 
-#: debbuild:1617
+#: debbuild:1623
 msgid "  Required for sucessful build:\n"
 msgstr "  Başarılı bir oluşturma için gerekli:\n"
 
-#: debbuild:1676
+#: debbuild:1682
 msgid " * Conflicting build-dependency "
 msgstr " * Çakışan oluşturma bağımlılığı "
 
-#: debbuild:1634 debbuild:1661
+#: debbuild:1640 debbuild:1667
 msgid " * Missing build-dependency "
 msgstr " * Eksik oluşturma bağımlılığı "
 
-#: debbuild:1655
+#: debbuild:1661
 msgid " * Required build-dependency "
 msgstr " * Gerekli oluşturma bağımlılığı "
 
-#: debbuild:1650
+#: debbuild:1656
 msgid " * Warning:  "
 msgstr " * Uyarı:  "
 
-#: debbuild:1261
+#: debbuild:1267
 msgid " failed (%"
 msgstr " başarısız (%"
 
-#: debbuild:440
+#: debbuild:1509 debbuild:1519
+msgid " for "
+msgstr ""
+
+#: debbuild:446
 msgid " for option '-"
 msgstr " , seçenek: '-"
 
-#: debbuild:1656
+#: debbuild:470 debbuild:1512 debbuild:1522 debbuild:1605
+msgid " in "
+msgstr ""
+
+#: debbuild:1662
 msgid " is installed, but wrong version ("
 msgstr " kurulu, ancak yanlış sürüm ("
 
-#: debbuild:1651
+#: debbuild:1657
 msgid " is probably installed but seems to be a virtual package.\n"
 msgstr " muhtemelen kurulu ama sanal bir paket gibi görünüyor.\n"
 
-#: debbuild:1616
+#: debbuild:1622
 msgid " not found.  Can't check build-deps.\n"
 msgstr " bulunamadı.  Oluşturma bağımlılıkları kontrol edilemiyor.\n"
 
-#: debbuild:559
+#: debbuild:565
 msgid " of "
 msgstr " , dosya: "
 
-#: debbuild:490
+#: debbuild:496
 msgid " stage.  Ignoring.\n"
 msgstr " aşaması için.  Yok sayılıyor.\n"
 
-#: debbuild:1765
+#: debbuild:1771
 #, perl-brace-format
 msgid " to %{_topdir}."
 msgstr " , hedef dizin: %{_topdir}."
 
-#: debbuild:445
+#: debbuild:451
 msgid " with --rebuild\n"
 msgstr " --rebuild ile\n"
 
-#: debbuild:464
+#: debbuild:470
 msgid "!  Ignoring.\n"
 msgstr "!  Yok sayılıyor.\n"
 
-#: debbuild:907
+#: debbuild:913
 msgid "%autosetup:  option '-S "
 msgstr "%autosetup:  seçenek '-S "
 
-#: debbuild:558
+#: debbuild:564
 msgid "' at line "
 msgstr "', satır no: "
 
-#: debbuild:908
+#: debbuild:914
 msgid "' currently not supported at line "
 msgstr "' şu anda desteklenmemektedir, satır no: "
 
-#: debbuild:818
+#: debbuild:824
 #, perl-format
 msgid "'%exclude' keyword found, ignoring input line\n"
 msgstr "'%exclude' anahtar kelimesi bulundu, giriş satırı yok sayılıyor\n"
 
-#: debbuild:975
+#: debbuild:981
 msgid "', continuing\n"
 msgstr "', devam ediliyor\n"
 
-#: debbuild:1822
+#: debbuild:1828
 msgid "'.  Aborting!"
 msgstr "'.  Vazgeçiliyor!"
 
-#: debbuild:512
+#: debbuild:518
 msgid ") barfed:  "
 msgstr ") açılamadı:  "
 
-#: debbuild:1657
+#: debbuild:1663
 msgid "):  Need "
 msgstr "):  Gerekli olan "
 
-#: debbuild:1615
+#: debbuild:1621
 msgid "**WARNING**  "
 msgstr "**UYARI**  "
 
-#: debbuild:616
+#: debbuild:622
 #, perl-format
 msgid ".  Missing %if.\n"
 msgstr ".  %if eksik.\n"
 
-#: debbuild:633
+#: debbuild:639
 #, perl-format
 msgid ".  Missing %if/%else.\n"
 msgstr ".  %if/%else eksik.\n"
@@ -135,11 +143,11 @@ msgstr ".  %if/%else eksik.\n"
 msgid ":  build requirements not met.\n"
 msgstr ":  oluşturma gereksinimleri karşılanmadı.\n"
 
-#: debbuild:770 debbuild:855
+#: debbuild:776 debbuild:861
 msgid ":' is not natively supported by .deb packages.\n"
 msgstr ":' .deb paketleri tarafından desteklenmiyor.\n"
 
-#: debbuild:862 debbuild:866
+#: debbuild:868 debbuild:872
 #, perl-format
 msgid ":' outside %if wrapper\n"
 msgstr ":' %if bloğunun dışında\n"
@@ -152,43 +160,43 @@ msgstr "--rebuild yapılamıyor: "
 msgid "Can't build "
 msgstr "Oluşturulamıyor: "
 
-#: debbuild:1051
+#: debbuild:1057
 msgid "Can't handle unknown file type '"
 msgstr "Bilinmeyen dosya türü işlenemiyor: '"
 
-#: debbuild:1249
+#: debbuild:1255
 msgid "Can't open/create "
 msgstr "Açılamıyor/oluşturulamıyor: "
 
-#: debbuild:444
+#: debbuild:450
 msgid "Can't use -"
 msgstr "Kullanılamaz: -"
 
-#: debbuild:489
+#: debbuild:495
 msgid "Can't use --short-circuit for "
 msgstr "--short-circuit kullanılamaz: "
 
-#: debbuild:1698
+#: debbuild:1704
 msgid "Checking library requirements...\n"
 msgstr "Kütüphane gereksinimleri kontrol ediliyor...\n"
 
-#: debbuild:764 debbuild:871
+#: debbuild:770 debbuild:877
 msgid "Downgrading relationship to Enhances:.\n"
 msgstr "İlişki, 'Enhances' olarak düşürülüyor:.\n"
 
-#: debbuild:1261
+#: debbuild:1267
 msgid "Exec of "
 msgstr "Dosya yürütme: "
 
-#: debbuild:1257
+#: debbuild:1263
 msgid "Executing ("
 msgstr "Yürütülüyor ("
 
-#: debbuild:1764
+#: debbuild:1770
 msgid "Extracted source package "
 msgstr "Kaynak paketi çıkarıldı: "
 
-#: debbuild:1821
+#: debbuild:1827
 msgid "Missing value for '%"
 msgstr "Eksik değer: '%"
 
@@ -196,7 +204,7 @@ msgstr "Eksik değer: '%"
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
 msgstr "'os-release' dosyası veya 'lsb_release' programı bulunamadı.\n"
 
-#: debbuild:510
+#: debbuild:516
 msgid "No .spec file specified!  Exiting.\n"
 msgstr ".spec dosyası belirtilmedi!  Sonlandırılıyor.\n"
 
@@ -208,7 +216,7 @@ msgstr "Çalışmak için .spec dosyası yok!  Sonlandırılıyor.\n"
 msgid "No tarfile specified!  Exiting.\n"
 msgstr "'tar' dosyası belirtilmedi!  Sonlandırılıyor.\n"
 
-#: debbuild:1515
+#: debbuild:1521
 msgid "Signed binary package "
 msgstr "İkili (binary) paket imzalandı: "
 
@@ -216,94 +224,94 @@ msgstr "İkili (binary) paket imzalandı: "
 msgid "Sorry, I quit.\n"
 msgstr "Üzgünüm, bırakıyorum.\n"
 
-#: debbuild:763 debbuild:870
+#: debbuild:769 debbuild:876
 msgid "Supplements:' is not natively supported by .deb packages.\n"
 msgstr "Supplements:' .deb paketleri tarafından desteklenmiyor.\n"
 
-#: debbuild:974
+#: debbuild:980
 #, perl-format
 msgid "Suspect %setup tag '%setup"
 msgstr "Şüpheli %setup etiketi '%setup"
 
-#: debbuild:477
+#: debbuild:483
 msgid "This is debbuild, version "
 msgstr "Bu debbuild, sürüm "
 
-#: debbuild:1667
+#: debbuild:1673
 msgid "To install all missing dependencies, run 'apt install "
 msgstr ""
 "Tüm eksik bağımlılıkları yüklemek için şu komutu çalıştırın: 'apt install "
 
-#: debbuild:1681
+#: debbuild:1687
 msgid "To remove all conflicting dependencies, run 'apt remove "
 msgstr ""
 "Tüm çakışan bağımlılıkları kaldırmak için şu komutu çalıştırın: 'apt remove "
 
-#: debbuild:439
+#: debbuild:445
 msgid "Unknown stage "
 msgstr "Bilinmeyen aşama: "
 
-#: debbuild:558
+#: debbuild:564
 msgid "Unknown tag '%"
 msgstr "Bilinmeyen etiket '%"
 
-#: debbuild:629
+#: debbuild:635
 #, perl-format
 msgid "Unmatched %else at end of file.  Missing %endif.\n"
 msgstr "Dosyanın sonunda eşleştirilmemiş %else.  %endif eksik.\n"
 
-#: debbuild:615
+#: debbuild:621
 #, perl-format
 msgid "Unmatched %else in line "
 msgstr "Eşleştirilmemiş %else, satır no: "
 
-#: debbuild:632
+#: debbuild:638
 #, perl-format
 msgid "Unmatched %endif in line "
 msgstr "Eşleştirilmemiş %endif, satır no: "
 
-#: debbuild:612
+#: debbuild:618
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
 msgstr "Dosyanın sonunda eşleştirilmemiş %if.  %else/%endif eksik.\n"
 
-#: debbuild:886
+#: debbuild:892
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %endif.\n"
 msgstr "Dosyanın sonunda eşleştirilmemiş %if.  %endif eksik.\n"
 
-#: debbuild:771 debbuild:856
+#: debbuild:777 debbuild:862
 msgid "Upgrading relationship to Requires:.\n"
 msgstr "İlişki, 'Requires' olarak yükseltiliyor:.\n"
 
-#: debbuild:463
+#: debbuild:469
 msgid "WARNING:  Missing value for macro "
 msgstr "UYARI:  Makro için eksik değer: "
 
-#: debbuild:762 debbuild:769 debbuild:854 debbuild:861 debbuild:869
+#: debbuild:768 debbuild:775 debbuild:860 debbuild:867 debbuild:875
 msgid "Warning:  '"
 msgstr "Uyarı:  '"
 
-#: debbuild:865
+#: debbuild:871
 msgid "Warning:  Debian-specific '"
 msgstr "Uyarı:  Debian'a özgü '"
 
-#: debbuild:1299
+#: debbuild:1305
 msgid "Warning:  symlinking manpage failed:  "
 msgstr "Uyarı:  man sayfası sembolik bağlantısını oluşturma başarısız:  "
 
-#: debbuild:1505
+#: debbuild:1511
 msgid "Wrote binary package "
 msgstr "İkili (binary) paket yazıldı: "
 
-#: debbuild:1599
+#: debbuild:1605
 msgid "Wrote source package "
 msgstr "Kaynak paketi yazıldı: "
 
-#: debbuild:1250
+#: debbuild:1256
 msgid "script file "
 msgstr "komut dosyası: "
 
-#: debbuild:511
+#: debbuild:517
 msgid "specfile ("
 msgstr "spec dosyası ("
