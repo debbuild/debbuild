@@ -24,7 +24,7 @@ msgid "  Continuing anyway.\n"
 msgstr "  Yine de devam ediliyor.\n"
 
 #: debbuild:1623
-msgid "  Required for sucessful build:\n"
+msgid "  Required for successful build:\n"
 msgstr "  Başarılı bir oluşturma için gerekli:\n"
 
 #: debbuild:1682
