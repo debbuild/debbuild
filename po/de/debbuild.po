@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: DEBBUILD I18N 1.1\n"
+"Project-Id-Version: DEBBUILD I18N 1.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-06 09:46+0100\n"
-"PO-Revision-Date: 2020-02-06 09:52+0100\n"
+"POT-Creation-Date: 2020-03-22 11:37+0100\n"
+"PO-Revision-Date: 2020-03-22 11:37+0100\n"
 "Last-Translator: Andreas Scherer <andreas_github@freenet.de>\n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -17,114 +17,122 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: debbuild:1618
+#: debbuild:1624
 msgid "  Continuing anyway.\n"
 msgstr " Fahre trotzdem fort.\n"
 
-#: debbuild:1617
+#: debbuild:1623
 msgid "  Required for sucessful build:\n"
 msgstr " Erforderlich für erfolgreiches Bauen:\n"
 
-#: debbuild:1676
+#: debbuild:1682
 msgid " * Conflicting build-dependency "
 msgstr " * Widersprechende Bau-Abhängigkeit "
 
-#: debbuild:1634 debbuild:1661
+#: debbuild:1640 debbuild:1667
 msgid " * Missing build-dependency "
 msgstr " * Fehlende Bau-Abhängigkeit "
 
-#: debbuild:1655
+#: debbuild:1661
 msgid " * Required build-dependency "
 msgstr " * Notwendige Bau-Abhängigkeit "
 
-#: debbuild:1650
+#: debbuild:1656
 msgid " * Warning:  "
 msgstr " * Warnung: "
 
-#: debbuild:1261
+#: debbuild:1267
 msgid " failed (%"
 msgstr " gescheitert (%"
 
-#: debbuild:440
+#: debbuild:1509 debbuild:1519
+msgid " for "
+msgstr " für "
+
+#: debbuild:446
 msgid " for option '-"
 msgstr " für Option '-"
 
-#: debbuild:1656
+#: debbuild:470 debbuild:1512 debbuild:1522 debbuild:1605
+msgid " in "
+msgstr " in "
+
+#: debbuild:1662
 msgid " is installed, but wrong version ("
 msgstr " ist installiert, hat aber falsche Version ("
 
-#: debbuild:1651
+#: debbuild:1657
 msgid " is probably installed but seems to be a virtual package.\n"
 msgstr " ist wohl installiert, scheint aber ein virtuelles Paket zu sein.\n"
 
-#: debbuild:1616
+#: debbuild:1622
 msgid " not found.  Can't check build-deps.\n"
 msgstr " nicht gefunden. Kann Bau-Abhängigkeiten nicht prüfen.\n"
 
-#: debbuild:559
+#: debbuild:565
 msgid " of "
 msgstr " von "
 
-#: debbuild:490
+#: debbuild:496
 msgid " stage.  Ignoring.\n"
 msgstr " Stufe. Ignoriert.\n"
 
-#: debbuild:1765
+#: debbuild:1771
 #, perl-brace-format
 msgid " to %{_topdir}."
 msgstr " nach %{_topdir}."
 
-#: debbuild:445
+#: debbuild:451
 msgid " with --rebuild\n"
 msgstr " mit --rebuild\n"
 
-#: debbuild:464
+#: debbuild:470
 msgid "!  Ignoring.\n"
 msgstr "! Ignoriert.\n"
 
-#: debbuild:907
+#: debbuild:913
 msgid "%autosetup:  option '-S "
 msgstr "%autosetup: Option '-S "
 
-#: debbuild:558
+#: debbuild:564
 msgid "' at line "
 msgstr "' in Zeile "
 
-#: debbuild:908
+#: debbuild:914
 msgid "' currently not supported at line "
 msgstr "' aktuell nicht unterstützt in Zeile "
 
-#: debbuild:818
+#: debbuild:824
 #, perl-format
 msgid "'%exclude' keyword found, ignoring input line\n"
 msgstr "Schlüsselwort '%exclude' gefunden, Eingabezeile ignoriert\n"
 
-#: debbuild:975
+#: debbuild:981
 msgid "', continuing\n"
 msgstr "', setze fort\n"
 
-#: debbuild:1822
+#: debbuild:1828
 msgid "'.  Aborting!"
 msgstr "'. Abbruch!"
 
-#: debbuild:512
+#: debbuild:518
 msgid ") barfed:  "
 msgstr ") schimpfte: "
 
-#: debbuild:1657
+#: debbuild:1663
 msgid "):  Need "
 msgstr "): Benötige "
 
-#: debbuild:1615
+#: debbuild:1621
 msgid "**WARNING**  "
 msgstr "**WARNUNG** "
 
-#: debbuild:616
+#: debbuild:622
 #, perl-format
 msgid ".  Missing %if.\n"
 msgstr ". Fehlendes %if.\n"
 
-#: debbuild:633
+#: debbuild:639
 #, perl-format
 msgid ".  Missing %if/%else.\n"
 msgstr ". Fehlendes %if/%else.\n"
@@ -133,11 +141,11 @@ msgstr ". Fehlendes %if/%else.\n"
 msgid ":  build requirements not met.\n"
 msgstr ": Bau-Abhängigkeit nicht erfüllt.\n"
 
-#: debbuild:770 debbuild:855
+#: debbuild:776 debbuild:861
 msgid ":' is not natively supported by .deb packages.\n"
 msgstr ":' wird von .deb-Paketen nicht unterstützt.\n"
 
-#: debbuild:862 debbuild:866
+#: debbuild:868 debbuild:872
 #, perl-format
 msgid ":' outside %if wrapper\n"
 msgstr ":' außerhalb eines %if-Blocks\n"
@@ -150,43 +158,43 @@ msgstr "Kein --rebuild möglich mit "
 msgid "Can't build "
 msgstr "Kein Bau möglich von "
 
-#: debbuild:1051
+#: debbuild:1057
 msgid "Can't handle unknown file type '"
 msgstr "Nicht unterstützter Dateityp '"
 
-#: debbuild:1249
+#: debbuild:1255
 msgid "Can't open/create "
 msgstr "Öffnen/Erzeugen nicht möglich: "
 
-#: debbuild:444
+#: debbuild:450
 msgid "Can't use -"
 msgstr "Nicht benutzbar: -"
 
-#: debbuild:489
+#: debbuild:495
 msgid "Can't use --short-circuit for "
 msgstr "--short-circuit nicht verwendbar für "
 
-#: debbuild:1698
+#: debbuild:1704
 msgid "Checking library requirements...\n"
 msgstr "Prüfe Bibliotheksabhängigkeiten...\n"
 
-#: debbuild:764 debbuild:871
+#: debbuild:770 debbuild:877
 msgid "Downgrading relationship to Enhances:.\n"
 msgstr "Reduziere Abhängigkeit auf Enhances:.\n"
 
-#: debbuild:1261
+#: debbuild:1267
 msgid "Exec of "
 msgstr "Ausführung von "
 
-#: debbuild:1257
+#: debbuild:1263
 msgid "Executing ("
 msgstr "Ausführung von ("
 
-#: debbuild:1764
+#: debbuild:1770
 msgid "Extracted source package "
 msgstr "Entpacke Quellpaket "
 
-#: debbuild:1821
+#: debbuild:1827
 msgid "Missing value for '%"
 msgstr "Fehlender Wert für '%"
 
@@ -194,7 +202,7 @@ msgstr "Fehlender Wert für '%"
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
 msgstr "Weder Datei 'os-release' noch Programm 'lsb_release' gefunden.\n"
 
-#: debbuild:510
+#: debbuild:516
 msgid "No .spec file specified!  Exiting.\n"
 msgstr "Keine .spec-Datei angegeben! Abbruch.\n"
 
@@ -206,7 +214,7 @@ msgstr "Keine .spec-Datei zur Bearbeitung! Abbruch.\n"
 msgid "No tarfile specified!  Exiting.\n"
 msgstr "Keine Archivdatei angegeben! Abbruch.\n"
 
-#: debbuild:1515
+#: debbuild:1521
 msgid "Signed binary package "
 msgstr "Signiere Binärpaket "
 
@@ -214,92 +222,92 @@ msgstr "Signiere Binärpaket "
 msgid "Sorry, I quit.\n"
 msgstr "Tut mir leid, ich gebe auf.\n"
 
-#: debbuild:763 debbuild:870
+#: debbuild:769 debbuild:876
 msgid "Supplements:' is not natively supported by .deb packages.\n"
 msgstr "Supplements:' wird von .deb-Paketen nicht unterstützt.\n"
 
-#: debbuild:974
+#: debbuild:980
 #, perl-format
 msgid "Suspect %setup tag '%setup"
 msgstr "Verdächtige %setup-Zeile '%setup"
 
-#: debbuild:477
+#: debbuild:483
 msgid "This is debbuild, version "
 msgstr "Dies ist DEBBUILD, Version "
 
-#: debbuild:1667
+#: debbuild:1673
 msgid "To install all missing dependencies, run 'apt install "
 msgstr "Installation aller fehlenden Abhängigkeiten mit 'apt install "
 
-#: debbuild:1681
+#: debbuild:1687
 msgid "To remove all conflicting dependencies, run 'apt remove "
 msgstr "Entfernung aller störenden Pakete mit 'apt remove "
 
-#: debbuild:439
+#: debbuild:445
 msgid "Unknown stage "
 msgstr "Unbekannte Stufe "
 
-#: debbuild:558
+#: debbuild:564
 msgid "Unknown tag '%"
 msgstr "Unbekannter Marker '%"
 
-#: debbuild:629
+#: debbuild:635
 #, perl-format
 msgid "Unmatched %else at end of file.  Missing %endif.\n"
 msgstr "Nicht geschlossenes %else am Dateiende. Fehlendes %endif.\n"
 
-#: debbuild:615
+#: debbuild:621
 #, perl-format
 msgid "Unmatched %else in line "
 msgstr "Einsames %else in Zeile "
 
-#: debbuild:632
+#: debbuild:638
 #, perl-format
 msgid "Unmatched %endif in line "
 msgstr "Einsames %endif in Zeile "
 
-#: debbuild:612
+#: debbuild:618
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
 msgstr "Nicht geschlossenes %if am Dateiende. Fehlendes %else/%endif.\n"
 
-#: debbuild:886
+#: debbuild:892
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %endif.\n"
 msgstr "Nicht geschlossenes %if am Dateiende. Fehlendes %endif.\n"
 
-#: debbuild:771 debbuild:856
+#: debbuild:777 debbuild:862
 msgid "Upgrading relationship to Requires:.\n"
 msgstr "Setze Abhängigkeit auf Requires:.\n"
 
-#: debbuild:463
+#: debbuild:469
 msgid "WARNING:  Missing value for macro "
 msgstr "WARNUNG: Fehlender Wert für Makro "
 
-#: debbuild:762 debbuild:769 debbuild:854 debbuild:861 debbuild:869
+#: debbuild:768 debbuild:775 debbuild:860 debbuild:867 debbuild:875
 msgid "Warning:  '"
 msgstr "Warnung: '"
 
-#: debbuild:865
+#: debbuild:871
 msgid "Warning:  Debian-specific '"
 msgstr "Warnung: Debian-eigenes '"
 
-#: debbuild:1299
+#: debbuild:1305
 msgid "Warning:  symlinking manpage failed:  "
 msgstr "Warnung: Kann Symlink für Manpage nicht setzen: "
 
-#: debbuild:1505
+#: debbuild:1511
 msgid "Wrote binary package "
 msgstr "Fertig mit Binärpaket "
 
-#: debbuild:1599
+#: debbuild:1605
 msgid "Wrote source package "
 msgstr "Fertig mit Quellpaket "
 
-#: debbuild:1250
+#: debbuild:1256
 msgid "script file "
 msgstr "Script-Datei "
 
-#: debbuild:511
+#: debbuild:517
 msgid "specfile ("
 msgstr ".spec-Datei ("
