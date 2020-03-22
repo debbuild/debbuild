@@ -25,7 +25,7 @@ msgid "  Continuing anyway.\n"
 msgstr "  Продовжуємо попри це.\n"
 
 #: debbuild:1623
-msgid "  Required for sucessful build:\n"
+msgid "  Required for successful build:\n"
 msgstr "  Потрібні для успішного збирання:\n"
 
 #: debbuild:1682

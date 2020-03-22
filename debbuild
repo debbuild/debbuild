@@ -1620,7 +1620,7 @@ sub checkbuildreq {
   unless ( -e $specglobals{__dpkg_query} ) {
     warn _('**WARNING**  ').$specglobals{__dpkg_query}.
       _(" not found.  Can't check build-deps.\n").
-      _("  Required for sucessful build:\n").join(', ', @reqlist)."\n".
+      _("  Required for successful build:\n").join(', ', @reqlist)."\n".
       _("  Continuing anyway.\n");
     return 1;
   }
