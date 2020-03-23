@@ -81,7 +81,7 @@ msgstr ""
 
 #: debbuild:1771
 #, perl-brace-format
-msgid " to %{_topdir}."
+msgid " to %{_topdir}.\n"
 msgstr ""
 
 #: debbuild:451

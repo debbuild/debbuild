@@ -79,8 +79,8 @@ msgstr " Stufe. Ignoriert.\n"
 
 #: debbuild:1771
 #, perl-brace-format
-msgid " to %{_topdir}."
-msgstr " nach %{_topdir}."
+msgid " to %{_topdir}.\n"
+msgstr " nach %{_topdir}.\n"
 
 #: debbuild:451
 msgid " with --rebuild\n"
