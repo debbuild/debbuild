@@ -317,8 +317,8 @@ msgid "Wrote source package "
 msgstr "Fertig mit Quellpaket "
 
 #: debbuild:1256
-msgid "script file "
-msgstr "Script-Datei "
+msgid " script file "
+msgstr " Script-Datei "
 
 #: debbuild:517
 msgid "specfile ("

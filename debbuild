@@ -1253,7 +1253,7 @@ sub execute_script {
   my $scriptfile = expandmacros('%{_tmppath}')."/deb-tmp.$stage.".int(rand(99998)+1);
   sysopen(SCRIPT, $scriptfile, O_RDWR | O_CREAT | O_EXCL | O_NOFOLLOW, 0777)
     or die _('Can\'t open/create ').($what or $stage).
-           _('script file ')."$scriptfile: $!\n";
+           _(' script file ')."$scriptfile: $!\n";
   $specglobals{___build_body} = $script{$stage}; # Inject stage script from specfile
   print SCRIPT expandmacros('%{___build_template}');
   close SCRIPT;

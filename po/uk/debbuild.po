@@ -322,8 +322,8 @@ msgid "Wrote source package "
 msgstr "Записано пакунок із початковим кодом "
 
 #: debbuild:1256
-msgid "script file "
-msgstr "файл скрипту "
+msgid " script file "
+msgstr " файл скрипту "
 
 #: debbuild:517
 msgid "specfile ("
