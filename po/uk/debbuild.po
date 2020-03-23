@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: 2020-03-22 13:12+0100\n"
+"PO-Revision-Date: 2020-03-23 15:38+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://translate.fedoraproject.org/projects/"
 "debbuild/master/uk/>\n"
@@ -16,9 +16,9 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.10.3\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<="
+"4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 3.11.3\n"
 
 #: debbuild:1624
 msgid "  Continuing anyway.\n"
@@ -42,7 +42,7 @@ msgstr " * Потрібна залежність для збирання "
 
 #: debbuild:1656
 msgid " * Warning:  "
-msgstr ""
+msgstr " * Попередження:  "
 
 #: debbuild:1267
 msgid " failed (%"
@@ -50,7 +50,7 @@ msgstr " помилка (%"
 
 #: debbuild:1509 debbuild:1519
 msgid " for "
-msgstr ""
+msgstr " для "
 
 #: debbuild:446
 msgid " for option '-"
@@ -58,7 +58,7 @@ msgstr " для параметра «-"
 
 #: debbuild:470 debbuild:1512 debbuild:1522 debbuild:1605
 msgid " in "
-msgstr ""
+msgstr " у "
 
 #: debbuild:1662
 msgid " is installed, but wrong version ("
@@ -92,11 +92,11 @@ msgstr " з --rebuild\n"
 
 #: debbuild:470
 msgid "!  Ignoring.\n"
-msgstr ""
+msgstr "! Ігноруємо.\n"
 
 #: debbuild:913
 msgid "%autosetup:  option '-S "
-msgstr ""
+msgstr "%autosetup:  параметр «-S "
 
 #: debbuild:564
 msgid "' at line "
@@ -117,11 +117,11 @@ msgstr "», продовжуємо\n"
 
 #: debbuild:1828
 msgid "'.  Aborting!"
-msgstr ""
+msgstr "». Перериваємо обробку!"
 
 #: debbuild:518
 msgid ") barfed:  "
-msgstr ""
+msgstr ") повідомлено:  "
 
 #: debbuild:1663
 msgid "):  Need "
@@ -134,12 +134,12 @@ msgstr "**Попередження**  "
 #: debbuild:622
 #, perl-format
 msgid ".  Missing %if.\n"
-msgstr ""
+msgstr ". Не вистачає %if.\n"
 
 #: debbuild:639
 #, perl-format
 msgid ".  Missing %if/%else.\n"
-msgstr ""
+msgstr ". Пропущено %if/%else.\n"
 
 #: debbuild:179
 msgid ":  build requirements not met.\n"
@@ -168,7 +168,7 @@ msgstr "Не вдалося обробити файл невідомого ти�
 
 #: debbuild:1767
 msgid "Can't install "
-msgstr ""
+msgstr "Не вдалося встановити "
 
 #: debbuild:1255
 msgid "Can't open/create "
@@ -188,7 +188,7 @@ msgstr "Перевіряємо залежності бібліотеки...\n"
 
 #: debbuild:1346
 msgid "Could not open: "
-msgstr ""
+msgstr "Не вдалося відкрити: "
 
 #: debbuild:770 debbuild:877
 msgid "Downgrading relationship to Enhances:.\n"
@@ -208,7 +208,7 @@ msgstr "Видобуто дані із пакунка коду "
 
 #: debbuild:1353
 msgid "File not found: "
-msgstr ""
+msgstr "Файл не знайдено: "
 
 #: debbuild:1827
 msgid "Missing value for '%"
@@ -271,7 +271,7 @@ msgstr "Невідома мітка «%"
 #: debbuild:635
 #, perl-format
 msgid "Unmatched %else at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "%else без завершення наприкінці файла. Пропущено %endif.\n"
 
 #: debbuild:621
 #, perl-format
@@ -286,12 +286,12 @@ msgstr "%endif без відповідника у рядку "
 #: debbuild:618
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
-msgstr ""
+msgstr "%if без завершення наприкінці файла. Пропущено %else/%endif.\n"
 
 #: debbuild:892
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "%if без завершення наприкінці файла. Пропущено %endif.\n"
 
 #: debbuild:777 debbuild:862
 msgid "Upgrading relationship to Requires:.\n"
@@ -299,7 +299,7 @@ msgstr "Підвищуємо зв'язок до Requires:.\n"
 
 #: debbuild:469
 msgid "WARNING:  Missing value for macro "
-msgstr ""
+msgstr "УВАГА: пропущено значення для макросу "
 
 #: debbuild:768 debbuild:775 debbuild:860 debbuild:867 debbuild:875
 msgid "Warning:  '"
@@ -312,6 +312,8 @@ msgstr "Попередження:  специфічне для Debian «"
 #: debbuild:1305
 msgid "Warning:  symlinking manpage failed:  "
 msgstr ""
+"Попередження: не вдалося створити символічне посилання для сторінки "
+"підручника (man):  "
 
 #: debbuild:1511
 msgid "Wrote binary package "
