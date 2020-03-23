@@ -83,8 +83,8 @@ msgstr " етапі.  Ігноруємо.\n"
 
 #: debbuild:1771
 #, perl-brace-format
-msgid " to %{_topdir}."
-msgstr " до %{_topdir}."
+msgid " to %{_topdir}.\n"
+msgstr " до %{_topdir}.\n"
 
 #: debbuild:451
 msgid " with --rebuild\n"

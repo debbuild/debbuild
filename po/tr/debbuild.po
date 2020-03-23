@@ -81,8 +81,8 @@ msgstr " aşaması için.  Yok sayılıyor.\n"
 
 #: debbuild:1771
 #, perl-brace-format
-msgid " to %{_topdir}."
-msgstr " , hedef dizin: %{_topdir}."
+msgid " to %{_topdir}.\n"
+msgstr " , hedef dizin: %{_topdir}.\n"
 
 #: debbuild:451
 msgid " with --rebuild\n"
