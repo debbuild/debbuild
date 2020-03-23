@@ -321,8 +321,8 @@ msgid "Wrote source package "
 msgstr "Kaynak paketi yazıldı: "
 
 #: debbuild:1256
-msgid "script file "
-msgstr "komut dosyası: "
+msgid " script file "
+msgstr " komut dosyası: "
 
 #: debbuild:517
 msgid "specfile ("

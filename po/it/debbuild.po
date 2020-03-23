@@ -319,7 +319,7 @@ msgid "Wrote source package "
 msgstr ""
 
 #: debbuild:1256
-msgid "script file "
+msgid " script file "
 msgstr ""
 
 #: debbuild:517
