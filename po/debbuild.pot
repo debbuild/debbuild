@@ -141,7 +141,7 @@ msgstr ""
 msgid ":  build requirements not met.\n"
 msgstr ""
 
-#: debbuild:776 debbuild:861
+#: debbuild:769 debbuild:776 debbuild:861 debbuild:876
 msgid ":' is not natively supported by .deb packages.\n"
 msgstr ""
 
@@ -232,10 +232,6 @@ msgstr ""
 
 #: debbuild:344
 msgid "Sorry, I quit.\n"
-msgstr ""
-
-#: debbuild:769 debbuild:876
-msgid "Supplements:' is not natively supported by .deb packages.\n"
 msgstr ""
 
 #: debbuild:980
