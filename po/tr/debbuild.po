@@ -143,7 +143,7 @@ msgstr ".  %if/%else eksik.\n"
 msgid ":  build requirements not met.\n"
 msgstr ":  oluşturma gereksinimleri karşılanmadı.\n"
 
-#: debbuild:776 debbuild:861
+#: debbuild:769 debbuild:776 debbuild:861 debbuild:876
 msgid ":' is not natively supported by .deb packages.\n"
 msgstr ":' .deb paketleri tarafından desteklenmiyor.\n"
 
@@ -235,10 +235,6 @@ msgstr "İkili (binary) paket imzalandı: "
 #: debbuild:344
 msgid "Sorry, I quit.\n"
 msgstr "Üzgünüm, bırakıyorum.\n"
-
-#: debbuild:769 debbuild:876
-msgid "Supplements:' is not natively supported by .deb packages.\n"
-msgstr "Supplements:' .deb paketleri tarafından desteklenmiyor.\n"
 
 #: debbuild:980
 #, perl-format
