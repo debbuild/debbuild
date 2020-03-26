@@ -141,7 +141,7 @@ msgstr ". Fehlendes %if/%else.\n"
 msgid ":  build requirements not met.\n"
 msgstr ": Bau-Abhängigkeit nicht erfüllt.\n"
 
-#: debbuild:776 debbuild:861
+#: debbuild:769 debbuild:776 debbuild:861 debbuild:876
 msgid ":' is not natively supported by .deb packages.\n"
 msgstr ":' wird von .deb-Paketen nicht unterstützt.\n"
 
@@ -233,10 +233,6 @@ msgstr "Signiere Binärpaket "
 #: debbuild:344
 msgid "Sorry, I quit.\n"
 msgstr "Tut mir leid, ich gebe auf.\n"
-
-#: debbuild:769 debbuild:876
-msgid "Supplements:' is not natively supported by .deb packages.\n"
-msgstr "Supplements:' wird von .deb-Paketen nicht unterstützt.\n"
 
 #: debbuild:980
 #, perl-format

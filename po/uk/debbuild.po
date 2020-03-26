@@ -145,7 +145,7 @@ msgstr ". Пропущено %if/%else.\n"
 msgid ":  build requirements not met.\n"
 msgstr ":  вимоги до збирання не виконано.\n"
 
-#: debbuild:776 debbuild:861
+#: debbuild:769 debbuild:776 debbuild:861 debbuild:876
 msgid ":' is not natively supported by .deb packages.\n"
 msgstr ":» не підтримується у природний спосіб у пакунках .deb.\n"
 
@@ -237,10 +237,6 @@ msgstr "Підписаний бінарний пакунок "
 #: debbuild:344
 msgid "Sorry, I quit.\n"
 msgstr "Вибачте, завершуємо роботу.\n"
-
-#: debbuild:769 debbuild:876
-msgid "Supplements:' is not natively supported by .deb packages.\n"
-msgstr "Supplements:» не передбачено для обробки у пакунках .deb.\n"
 
 #: debbuild:980
 #, perl-format
