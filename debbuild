@@ -765,8 +765,8 @@ ENDIF: if (/^\s*%endif/) {
           push @{$pkgdata{$subname}{$dname}}, splitreqs($dvalue);
         } elsif (grep { $dname eq $_ } qw(supplements)) {
           push @{$pkgdata{$subname}{enhances}}, splitreqs($dvalue);
-          warn _('Warning:  \'').
-               _("Supplements:' is not natively supported by .deb packages.\n").
+          warn _('Warning:  \'').'Supplements'.
+               _(":' is not natively supported by .deb packages.\n").
                _("Downgrading relationship to Enhances:.\n");
         } elsif (grep { $dname eq $_ } qw{prereq requires(pre) requires(preun)}) {
           push @{$pkgdata{$subname}{'pre-depends'}}, splitreqs($dvalue);
@@ -872,8 +872,8 @@ ENDIF: if (/^\s*%endif/) {
              _(":' outside %if wrapper\n") unless @ifexpr;
       } elsif (/^supplements:\s*(.+)/i) {
         push @{$pkgdata{main}{enhances}}, splitreqs($1);
-        warn _('Warning:  \'').
-             _("Supplements:' is not natively supported by .deb packages.\n").
+        warn _('Warning:  \'').'Supplemets'.
+             _(":' is not natively supported by .deb packages.\n").
              _("Downgrading relationship to Enhances:.\n");
       } elsif (/^obsoletes:\s*(.+)/i) {
         push @{$pkgdata{main}{replaces}}, splitreqs($1);
