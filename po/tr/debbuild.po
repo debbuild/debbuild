@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: 2020-03-23 15:38+0000\n"
+"PO-Revision-Date: 2020-04-11 16:40+0000\n"
 "Last-Translator: Oğuz Ersen <oguzersen@protonmail.com>\n"
 "Language-Team: Turkish <https://translate.fedoraproject.org/projects/"
 "debbuild/master/tr/>\n"
@@ -166,7 +166,7 @@ msgstr "Bilinmeyen dosya türü işlenemiyor: '"
 
 #: debbuild:1767
 msgid "Can't install "
-msgstr "Yüklenemiyor: "
+msgstr "Kurulamıyor: "
 
 #: debbuild:1255
 msgid "Can't open/create "
@@ -248,7 +248,7 @@ msgstr "Bu debbuild, sürüm "
 #: debbuild:1673
 msgid "To install all missing dependencies, run 'apt install "
 msgstr ""
-"Tüm eksik bağımlılıkları yüklemek için şu komutu çalıştırın: 'apt install "
+"Tüm eksik bağımlılıkları kurmak için şu komutu çalıştırın: 'apt install "
 
 #: debbuild:1687
 msgid "To remove all conflicting dependencies, run 'apt remove "
