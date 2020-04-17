@@ -1040,6 +1040,12 @@ sub unpackcmd {
       $sourcedrop =~ /\.tar$/ ? # plain .tar files don't need to be uncompressed
          '%{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f '.
          "'%{_sourcedir}/$sourcedrop'" :
+      # .gem files are unpacked with different flags and need a gemspec generated
+      $sourcedrop =~ /\.gem$/ ?
+         '%{__gem} unpack '.( $quietunpack ? '--quiet --silent ' : '-V ' ).
+         "'%{_sourcedir}/$sourcedrop'\n".
+         "%{__gem} spec '%{_sourcedir}/$sourcedrop' --ruby > ".
+         "'./${sourcedrop}spec'" :
       decompress("%{_sourcedir}/$sourcedrop").
           ' | %{__tar} -x'.( $quietunpack ? '' : 'vv' ).'f -' ).$check_status;
 } # end unpackcmd()

@@ -36,6 +36,7 @@
 %__echo			/bin/echo
 %__fakeroot		/usr/bin/fakeroot
 %__find			/usr/bin/find
+%__gem			/usr/bin/gem
 %__gpg			/usr/bin/gpg2
 %__gzip			/bin/gzip
 %__id			/usr/bin/id

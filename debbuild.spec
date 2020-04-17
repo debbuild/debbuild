@@ -33,11 +33,13 @@ Requires:       lsb-release
 Requires:       xz-utils
 Recommends:     dpkg-sig
 Suggests:       rpm
+Suggests:       ruby
 %else
 BuildRequires:  perl-generators
 BuildRequires:  perl(Pod::Man)
 Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 Requires:       xz
+Suggests:       rubygems
 %endif
 
 BuildRequires:  gettext
