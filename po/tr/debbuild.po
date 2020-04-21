@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: 2020-04-11 16:40+0000\n"
+"PO-Revision-Date: 2020-04-21 18:40+0000\n"
 "Last-Translator: Oğuz Ersen <oguzersen@protonmail.com>\n"
 "Language-Team: Turkish <https://translate.fedoraproject.org/projects/"
 "debbuild/master/tr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.11.3\n"
+"X-Generator: Weblate 4.0.1\n"
 
 #: debbuild:1624
 msgid "  Continuing anyway.\n"
@@ -69,7 +69,7 @@ msgstr " muhtemelen kurulu ama sanal bir paket gibi görünüyor.\n"
 
 #: debbuild:1622
 msgid " not found.  Can't check build-deps.\n"
-msgstr " bulunamadı.  Oluşturma bağımlılıkları kontrol edilemiyor.\n"
+msgstr " bulunamadı.  Oluşturma bağımlılıkları denetlenemiyor.\n"
 
 #: debbuild:565
 msgid " of "
@@ -182,7 +182,7 @@ msgstr "--short-circuit kullanılamaz: "
 
 #: debbuild:1704
 msgid "Checking library requirements...\n"
-msgstr "Kütüphane gereksinimleri kontrol ediliyor...\n"
+msgstr "Kütüphane gereksinimleri denetleniyor...\n"
 
 #: debbuild:1346
 msgid "Could not open: "
