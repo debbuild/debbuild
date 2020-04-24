@@ -1042,7 +1042,7 @@ sub unpackcmd {
          "'%{_sourcedir}/$sourcedrop'" :
       # .gem files are unpacked with different flags and need a gemspec generated
       $sourcedrop =~ /\.gem$/ ?
-         '%{__gem} unpack '.( $quietunpack ? '--quiet --silent ' : '-V ' ).
+         '%{__gem} unpack '.( $quietunpack ? '--quiet ' : '-V ' ).
          "'%{_sourcedir}/$sourcedrop'\n".
          "%{__gem} spec '%{_sourcedir}/$sourcedrop' --ruby > ".
          "'./${sourcedrop}spec'" :
