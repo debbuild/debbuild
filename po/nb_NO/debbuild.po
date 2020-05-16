@@ -8,313 +8,333 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2020-05-16 21:40+0000\n"
+"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
+"Language-Team: Norwegian Bokmål <https://translate.fedoraproject.org/"
+"projects/debbuild/master/nb_NO/>\n"
 "Language: nb_NO\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 4.0.4\n"
 
 #: debbuild:1624
 msgid "  Continuing anyway.\n"
-msgstr ""
+msgstr "  Fortsetter uansett.\n"
 
 #: debbuild:1623
 msgid "  Required for successful build:\n"
-msgstr ""
+msgstr "  Påkrevd for vellykket bygg:\n"
 
 #: debbuild:1682
+#, fuzzy
 msgid " * Conflicting build-dependency "
-msgstr ""
+msgstr " * Bygg-avhengighet i konflikt "
 
 #: debbuild:1640 debbuild:1667
 msgid " * Missing build-dependency "
-msgstr ""
+msgstr " * Manglende bygg-avhengighet "
 
 #: debbuild:1661
 msgid " * Required build-dependency "
-msgstr ""
+msgstr " * Påkrevd bygg-avhengighet "
 
 #: debbuild:1656
 msgid " * Warning:  "
-msgstr ""
+msgstr " * Advarsel:  "
 
 #: debbuild:1267
 msgid " failed (%"
-msgstr ""
+msgstr " mislyktes (%"
 
 #: debbuild:1509 debbuild:1519
 msgid " for "
-msgstr ""
+msgstr " for "
 
 #: debbuild:446
+#, fuzzy
 msgid " for option '-"
-msgstr ""
+msgstr " for alternativ '-"
 
 #: debbuild:470 debbuild:1512 debbuild:1522 debbuild:1605
+#, fuzzy
 msgid " in "
-msgstr ""
+msgstr " i "
 
 #: debbuild:1662
 msgid " is installed, but wrong version ("
-msgstr ""
+msgstr " er installert, men feil versjon ("
 
 #: debbuild:1657
 msgid " is probably installed but seems to be a virtual package.\n"
-msgstr ""
+msgstr " er installert, men ser ut til å være en virtuell pakke.\n"
 
 #: debbuild:1622
 msgid " not found.  Can't check build-deps.\n"
-msgstr ""
+msgstr " ble ikke funnet. Kan ikke sjekke bygg-avhengigheter.\n"
 
 #: debbuild:565
 msgid " of "
-msgstr ""
+msgstr " av "
 
 #: debbuild:496
+#, fuzzy
 msgid " stage.  Ignoring.\n"
-msgstr ""
+msgstr " nivå. Ignorerer.\n"
 
 #: debbuild:1771
 #, perl-brace-format
 msgid " to %{_topdir}.\n"
-msgstr ""
+msgstr " til %{_topdir}.\n"
 
 #: debbuild:451
 msgid " with --rebuild\n"
-msgstr ""
+msgstr " med --rebuild\n"
 
 #: debbuild:470
+#, fuzzy
 msgid "!  Ignoring.\n"
-msgstr ""
+msgstr "! Ignorerer.\n"
 
 #: debbuild:913
+#, fuzzy
 msgid "%autosetup:  option '-S "
-msgstr ""
+msgstr "%autosetup:  Alternativ '-S "
 
 #: debbuild:564
 msgid "' at line "
-msgstr ""
+msgstr "' på linje "
 
 #: debbuild:914
+#, fuzzy
 msgid "' currently not supported at line "
-msgstr ""
+msgstr "' støttes ikke for øyeblikket, på linje "
 
 #: debbuild:824
 #, perl-format
 msgid "'%exclude' keyword found, ignoring input line\n"
-msgstr ""
+msgstr "Mottok '%exclude'-nøkkelord, ser bort fra inndatalinje\n"
 
 #: debbuild:981
 msgid "', continuing\n"
-msgstr ""
+msgstr "', fortsetter\n"
 
 #: debbuild:1828
 msgid "'.  Aborting!"
-msgstr ""
+msgstr "'.  Avbryter!"
 
 #: debbuild:518
 msgid ") barfed:  "
-msgstr ""
+msgstr ") spydde:  "
 
 #: debbuild:1663
 msgid "):  Need "
-msgstr ""
+msgstr "): Trenger "
 
 #: debbuild:1621
 msgid "**WARNING**  "
-msgstr ""
+msgstr "**ADVARSEL**  "
 
 #: debbuild:622
 #, perl-format
 msgid ".  Missing %if.\n"
-msgstr ""
+msgstr ".  Manglende %if.\n"
 
 #: debbuild:639
 #, perl-format
 msgid ".  Missing %if/%else.\n"
-msgstr ""
+msgstr ".  Manglende %if/%else.\n"
 
 #: debbuild:179
 msgid ":  build requirements not met.\n"
-msgstr ""
+msgstr ":  bygg-avhengigheter ikke tilfredsstilt.\n"
 
 #: debbuild:769 debbuild:776 debbuild:861 debbuild:876
 msgid ":' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr ":' støttes ikke direkte av .deb-pakker.\n"
 
 #: debbuild:868 debbuild:872
 #, perl-format
 msgid ":' outside %if wrapper\n"
-msgstr ""
+msgstr ":' utenfor %if-innpakning\n"
 
 #: debbuild:151
 msgid "Can't --rebuild with "
-msgstr ""
+msgstr "Kan ikke utføre --rebuild med "
 
 #: debbuild:178
 msgid "Can't build "
-msgstr ""
+msgstr "Kan ikke bygge "
 
 #: debbuild:1057
 msgid "Can't handle unknown file type '"
-msgstr ""
+msgstr "Kan ikke håndtere ukjent filtype '"
 
 #: debbuild:1767
 msgid "Can't install "
-msgstr ""
+msgstr "Kan ikke installere "
 
 #: debbuild:1255
 msgid "Can't open/create "
-msgstr ""
+msgstr "Kan ikke åpne/opprette "
 
 #: debbuild:450
 msgid "Can't use -"
-msgstr ""
+msgstr "Kan ikke bruke -"
 
 #: debbuild:495
+#, fuzzy
 msgid "Can't use --short-circuit for "
-msgstr ""
+msgstr "Kan ikke bruke --short-circuit for "
 
 #: debbuild:1704
+#, fuzzy
 msgid "Checking library requirements...\n"
-msgstr ""
+msgstr "Sjekker bibliotekskrav…\n"
 
 #: debbuild:1346
 msgid "Could not open: "
-msgstr ""
+msgstr "Kunne ikke åpne: "
 
 #: debbuild:770 debbuild:877
 msgid "Downgrading relationship to Enhances:.\n"
-msgstr ""
+msgstr "Nedgraderer forhold til Enhances:.\n"
 
 #: debbuild:1267
 msgid "Exec of "
-msgstr ""
+msgstr "Utførelse av "
 
 #: debbuild:1263
 msgid "Executing ("
-msgstr ""
+msgstr "Kjører ("
 
 #: debbuild:1770
 msgid "Extracted source package "
-msgstr ""
+msgstr "Utpakket kildepakke "
 
 #: debbuild:1353
 msgid "File not found: "
-msgstr ""
+msgstr "Fant ikke filen: "
 
 #: debbuild:1827
 msgid "Missing value for '%"
-msgstr ""
+msgstr "Manglende verdi for '%"
 
 #: debbuild:343
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
-msgstr ""
+msgstr "Fant ikke noen 'os-release'-fil, eller 'lsb_release'-program.\n"
 
 #: debbuild:516
 msgid "No .spec file specified!  Exiting.\n"
-msgstr ""
+msgstr "Ingen .spec-fil angitt! Avbryter.\n"
 
 #: debbuild:49
 msgid "No .spec file to work with!  Exiting.\n"
-msgstr ""
+msgstr "Ingen .spec-fil å arbeide med! Avbryter.\n"
 
 #: debbuild:161
+#, fuzzy
 msgid "No tarfile specified!  Exiting.\n"
-msgstr ""
+msgstr "Ingen TAR-fil angitt! Avbryter.\n"
 
 #: debbuild:1521
+#, fuzzy
 msgid "Signed binary package "
-msgstr ""
+msgstr "Signert kjørbar pakke "
 
 #: debbuild:344
 msgid "Sorry, I quit.\n"
-msgstr ""
+msgstr "Jeg gir meg.\n"
 
 #: debbuild:980
-#, perl-format
+#, fuzzy, perl-format
 msgid "Suspect %setup tag '%setup"
-msgstr ""
+msgstr "Anta %setup-tagg '%setup"
 
 #: debbuild:483
 msgid "This is debbuild, version "
-msgstr ""
+msgstr "Dette er DEBBUILD, versjon "
 
 #: debbuild:1673
+#, fuzzy
 msgid "To install all missing dependencies, run 'apt install "
-msgstr ""
+msgstr "For å installere alle manglende avhengigheter, kjør 'apt install "
 
 #: debbuild:1687
 msgid "To remove all conflicting dependencies, run 'apt remove "
-msgstr ""
+msgstr "For å fjerne alle manglende avhengigheter, kjør 'apt remove "
 
 #: debbuild:445
 msgid "Unknown stage "
-msgstr ""
+msgstr "Ukjent nivå "
 
 #: debbuild:564
 msgid "Unknown tag '%"
-msgstr ""
+msgstr "Ukjent tagg '%"
 
 #: debbuild:635
 #, perl-format
 msgid "Unmatched %else at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "Ubalansert %else på slutten av filen. Manglende %endif.\n"
 
 #: debbuild:621
 #, perl-format
 msgid "Unmatched %else in line "
-msgstr ""
+msgstr "Ubalansert %else på linje "
 
 #: debbuild:638
 #, perl-format
 msgid "Unmatched %endif in line "
-msgstr ""
+msgstr "Ubalansert %endif på linje "
 
 #: debbuild:618
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
-msgstr ""
+msgstr "Ubalansert %if på slutten av filen. Manglende %else/%endif.\n"
 
 #: debbuild:892
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "Ubalansert %if på slutten av filen. Manglende %endif.\n"
 
 #: debbuild:777 debbuild:862
 msgid "Upgrading relationship to Requires:.\n"
-msgstr ""
+msgstr "Oppgraderer forhold til Requires:.\n"
 
 #: debbuild:469
+#, fuzzy
 msgid "WARNING:  Missing value for macro "
-msgstr ""
+msgstr "ADVARSEL:  Manglende verdi for makro "
 
 #: debbuild:768 debbuild:775 debbuild:860 debbuild:867 debbuild:875
 msgid "Warning:  '"
-msgstr ""
+msgstr "Advarsel:  '"
 
 #: debbuild:871
+#, fuzzy
 msgid "Warning:  Debian-specific '"
-msgstr ""
+msgstr "Advarsel: Debian-spesifikk '"
 
 #: debbuild:1305
+#, fuzzy
 msgid "Warning:  symlinking manpage failed:  "
-msgstr ""
+msgstr "Advarsel: Symbols lenking av manpage mislyktes:  "
 
 #: debbuild:1511
+#, fuzzy
 msgid "Wrote binary package "
-msgstr ""
+msgstr "Ferdig med kjørbar pakke "
 
 #: debbuild:1605
 msgid "Wrote source package "
-msgstr ""
+msgstr "Ferdig med kildepakke "
 
 #: debbuild:1256
 msgid " script file "
-msgstr ""
+msgstr " skriptfil "
 
 #: debbuild:517
+#, fuzzy
 msgid "specfile ("
-msgstr ""
+msgstr "specfil ("
