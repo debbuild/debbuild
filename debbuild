@@ -685,7 +685,7 @@ ENDIF: if (/^\s*%endif/) {
       }
       if ($n) {       # Magic to add entries to the right package
         my $tmp = expandmacros($n);
-        $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
+        $subname = /\s-n\s/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       }
       if ($f) {
         $files_files{$subname} = $f;
@@ -696,7 +696,7 @@ ENDIF: if (/^\s*%endif/) {
       $stage = $1;
       # Magic to add entries to the right package
       my $tmp = expandmacros($2);
-      $subname = /-n/ ? $tmp : "$pkgdata{main}{name}-$tmp";
+      $subname = /\s-n\s/ ? $tmp : "$pkgdata{main}{name}-$tmp";
       push @pkglist, $subname;
       # Hack the filename for the package into a Debian-tool-compatible format.  GRRRRRR!!!!!
       # Have I mentioned I hate Debian Policy?
