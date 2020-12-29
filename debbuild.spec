@@ -13,7 +13,7 @@ Name:           debbuild
 Summary:        Build Debian-compatible .deb packages from RPM .spec files
 Version:        20.04.0
 Release:        0%{?dist}
-%if %{_vendor} == "debbuild"
+%if "%{_vendor}" == "debbuild"
 Packager:       debbuild developers <https://github.com/debbuild/debbuild>
 Group:          devel
 License:        GPL-2.0+
@@ -25,7 +25,7 @@ URL:            https://github.com/debbuild/debbuild
 Source:         %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 
-%if %{_vendor} == "debbuild"
+%if "%{_vendor}" == "debbuild"
 BuildRequires:  podlators-perl
 BuildRequires:  lsb-release
 Requires:       liblocale-gettext-perl
@@ -90,6 +90,9 @@ make
 %{_sysconfdir}/debbuild/
 
 %changelog
+* Mon Dec 28 2020 Neal Gompa <ngompa13@gmail.com>
+- Quote words on both sides of string comparisons for RPM 4.16+ compatibility
+
 * Fri Mar 06 2020 Neal Gompa <ngompa13@gmail.com>
 - Use the find_lang macro to install translations
 
