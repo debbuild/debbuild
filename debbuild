@@ -1842,7 +1842,7 @@ sub expandmacros {
   # Replace global macros
   while (m/%(\w+)/g) {
     my $macro = $1;
-    s/%$macro/%{$macro}/g if grep { $macro eq $_ }
+    s/%$macro(\W|$)/%{$macro}$1/g if grep { $macro eq $_ }
         qw(optflags getconfdir sources patches)
       or defined $specglobals{$macro}
       or defined $pkgdata{main}{$macro};
