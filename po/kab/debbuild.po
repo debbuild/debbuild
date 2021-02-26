@@ -8,13 +8,16 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2021-02-26 19:40+0000\n"
+"Last-Translator: Slimane Selyan Amiri <selyan.kab@gmail.com>\n"
+"Language-Team: Kabyle <https://translate.fedoraproject.org/projects/debbuild/"
+"master/kab/>\n"
 "Language: kab\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 4.4.2\n"
 
 #: debbuild:1624
 msgid "  Continuing anyway.\n"
@@ -46,7 +49,7 @@ msgstr ""
 
 #: debbuild:1509 debbuild:1519
 msgid " for "
-msgstr ""
+msgstr " i "
 
 #: debbuild:446
 msgid " for option '-"
@@ -54,7 +57,7 @@ msgstr ""
 
 #: debbuild:470 debbuild:1512 debbuild:1522 debbuild:1605
 msgid " in "
-msgstr ""
+msgstr " deg "
 
 #: debbuild:1662
 msgid " is installed, but wrong version ("
