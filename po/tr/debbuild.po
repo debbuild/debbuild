@@ -2,13 +2,13 @@
 # Copyright (C) 2018, 2020 Andreas Scherer
 # This file is distributed under the same license as the DEBBUILD package.
 # Andreas Scherer <andreas_github@freenet.de>, 2020.
-# Oğuz Ersen <oguzersen@protonmail.com>, 2020.
+# Oğuz Ersen <oguzersen@protonmail.com>, 2020, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: 2020-04-21 18:40+0000\n"
+"PO-Revision-Date: 2021-08-18 19:04+0000\n"
 "Last-Translator: Oğuz Ersen <oguzersen@protonmail.com>\n"
 "Language-Team: Turkish <https://translate.fedoraproject.org/projects/"
 "debbuild/master/tr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.0.1\n"
+"X-Generator: Weblate 4.7.2\n"
 
 #: debbuild:1624
 msgid "  Continuing anyway.\n"
@@ -102,12 +102,12 @@ msgstr "', satır no: "
 
 #: debbuild:914
 msgid "' currently not supported at line "
-msgstr "' şu anda desteklenmemektedir, satır no: "
+msgstr "' şu anda desteklenmiyor, satır: "
 
 #: debbuild:824
 #, perl-format
 msgid "'%exclude' keyword found, ignoring input line\n"
-msgstr "'%exclude' anahtar kelimesi bulundu, giriş satırı yok sayılıyor\n"
+msgstr "'%exclude' anahtar sözcüğü bulundu, giriş satırı yok sayılıyor\n"
 
 #: debbuild:981
 msgid "', continuing\n"
@@ -271,12 +271,12 @@ msgstr "Dosyanın sonunda eşleştirilmemiş %else.  %endif eksik.\n"
 #: debbuild:621
 #, perl-format
 msgid "Unmatched %else in line "
-msgstr "Eşleştirilmemiş %else, satır no: "
+msgstr "Eşleştirilmemiş %else, satır: "
 
 #: debbuild:638
 #, perl-format
 msgid "Unmatched %endif in line "
-msgstr "Eşleştirilmemiş %endif, satır no: "
+msgstr "Eşleştirilmemiş %endif, satır: "
 
 #: debbuild:618
 #, perl-format
