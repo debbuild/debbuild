@@ -8,13 +8,16 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2021-09-05 01:04+0000\n"
+"Last-Translator: Didik Supriadi <didiksupriadi41@gmail.com>\n"
+"Language-Team: Indonesian <https://translate.fedoraproject.org/projects/"
+"debbuild/master/id/>\n"
 "Language: id\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 4.8\n"
 
 #: debbuild:1624
 msgid "  Continuing anyway.\n"
@@ -22,35 +25,35 @@ msgstr ""
 
 #: debbuild:1623
 msgid "  Required for successful build:\n"
-msgstr ""
+msgstr "  Diperlukan untuk build yang sukses:\n"
 
 #: debbuild:1682
 msgid " * Conflicting build-dependency "
-msgstr ""
+msgstr " * Dependensi build yang konflik "
 
 #: debbuild:1640 debbuild:1667
 msgid " * Missing build-dependency "
-msgstr ""
+msgstr " * Dependensi build yang hilang "
 
 #: debbuild:1661
 msgid " * Required build-dependency "
-msgstr ""
+msgstr " * Dependensi build yang diperlukan "
 
 #: debbuild:1656
 msgid " * Warning:  "
-msgstr ""
+msgstr " * Peringatan:  "
 
 #: debbuild:1267
 msgid " failed (%"
-msgstr ""
+msgstr " gagal (%"
 
 #: debbuild:1509 debbuild:1519
 msgid " for "
-msgstr ""
+msgstr " untuk "
 
 #: debbuild:446
 msgid " for option '-"
-msgstr ""
+msgstr " untuk opsi '-"
 
 #: debbuild:470 debbuild:1512 debbuild:1522 debbuild:1605
 msgid " in "
@@ -58,7 +61,7 @@ msgstr ""
 
 #: debbuild:1662
 msgid " is installed, but wrong version ("
-msgstr ""
+msgstr " diinstal, tetapi versi salah ("
 
 #: debbuild:1657
 msgid " is probably installed but seems to be a virtual package.\n"
@@ -66,7 +69,7 @@ msgstr ""
 
 #: debbuild:1622
 msgid " not found.  Can't check build-deps.\n"
-msgstr ""
+msgstr " tidak ditemukan.  Tidak dapat memeriksa dependensi build.\n"
 
 #: debbuild:565
 msgid " of "
@@ -83,7 +86,7 @@ msgstr ""
 
 #: debbuild:451
 msgid " with --rebuild\n"
-msgstr ""
+msgstr " dengan --rebuild\n"
 
 #: debbuild:470
 msgid "!  Ignoring.\n"
@@ -95,16 +98,16 @@ msgstr ""
 
 #: debbuild:564
 msgid "' at line "
-msgstr ""
+msgstr "' di baris "
 
 #: debbuild:914
 msgid "' currently not supported at line "
-msgstr ""
+msgstr "' saat ini tidak didukung di baris "
 
 #: debbuild:824
 #, perl-format
 msgid "'%exclude' keyword found, ignoring input line\n"
-msgstr ""
+msgstr "Kata kunci '%exclude' ditemukan, mengabaikan baris input\n"
 
 #: debbuild:981
 msgid "', continuing\n"
@@ -124,25 +127,25 @@ msgstr ""
 
 #: debbuild:1621
 msgid "**WARNING**  "
-msgstr ""
+msgstr "**PERINGATAN**  "
 
 #: debbuild:622
 #, perl-format
 msgid ".  Missing %if.\n"
-msgstr ""
+msgstr ".  Tidak ada %if.\n"
 
 #: debbuild:639
 #, perl-format
 msgid ".  Missing %if/%else.\n"
-msgstr ""
+msgstr ".  Tidak ada %if/%else.\n"
 
 #: debbuild:179
 msgid ":  build requirements not met.\n"
-msgstr ""
+msgstr ":  persyaratan build tidak terpenuhi.\n"
 
 #: debbuild:769 debbuild:776 debbuild:861 debbuild:876
 msgid ":' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr ":' tidak didukung secara native oleh paket .deb.\n"
 
 #: debbuild:868 debbuild:872
 #, perl-format
@@ -151,39 +154,39 @@ msgstr ""
 
 #: debbuild:151
 msgid "Can't --rebuild with "
-msgstr ""
+msgstr "Tidak bisa --rebuild dengan "
 
 #: debbuild:178
 msgid "Can't build "
-msgstr ""
+msgstr "Tidak bisa build "
 
 #: debbuild:1057
 msgid "Can't handle unknown file type '"
-msgstr ""
+msgstr "Tidak dapat menangani jenis file yang tidak diketahui '"
 
 #: debbuild:1767
 msgid "Can't install "
-msgstr ""
+msgstr "Tidak bisa menginstal "
 
 #: debbuild:1255
 msgid "Can't open/create "
-msgstr ""
+msgstr "Tidak bisa membuka/membuat "
 
 #: debbuild:450
 msgid "Can't use -"
-msgstr ""
+msgstr "Tidak bisa menggunakan -"
 
 #: debbuild:495
 msgid "Can't use --short-circuit for "
-msgstr ""
+msgstr "Tidak bisa menggunakan --short-circuit untuk "
 
 #: debbuild:1704
 msgid "Checking library requirements...\n"
-msgstr ""
+msgstr "Memeriksa persyaratan library...\n"
 
 #: debbuild:1346
 msgid "Could not open: "
-msgstr ""
+msgstr "Tidak bisa membuka: "
 
 #: debbuild:770 debbuild:877
 msgid "Downgrading relationship to Enhances:.\n"
@@ -203,27 +206,28 @@ msgstr ""
 
 #: debbuild:1353
 msgid "File not found: "
-msgstr ""
+msgstr "File tidak ditemukan: "
 
 #: debbuild:1827
 msgid "Missing value for '%"
-msgstr ""
+msgstr "Nilai tidak ada untuk '%"
 
 #: debbuild:343
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
 msgstr ""
+"Tidak ada file 'os-release' atau program 'lsb_release' yang ditemukan.\n"
 
 #: debbuild:516
 msgid "No .spec file specified!  Exiting.\n"
-msgstr ""
+msgstr "Tidak ada file .spec yang ditentukan!  Keluar.\n"
 
 #: debbuild:49
 msgid "No .spec file to work with!  Exiting.\n"
-msgstr ""
+msgstr "Tidak ada file .spec untuk digunakan!  Keluar.\n"
 
 #: debbuild:161
 msgid "No tarfile specified!  Exiting.\n"
-msgstr ""
+msgstr "Tidak ada tarfile yang ditentukan!  Keluar.\n"
 
 #: debbuild:1521
 msgid "Signed binary package "
@@ -231,7 +235,7 @@ msgstr ""
 
 #: debbuild:344
 msgid "Sorry, I quit.\n"
-msgstr ""
+msgstr "Maaf, Saya berhenti.\n"
 
 #: debbuild:980
 #, perl-format
@@ -240,15 +244,15 @@ msgstr ""
 
 #: debbuild:483
 msgid "This is debbuild, version "
-msgstr ""
+msgstr "Ini adalah debbuild, versi "
 
 #: debbuild:1673
 msgid "To install all missing dependencies, run 'apt install "
-msgstr ""
+msgstr "Untuk menginstal semua dependensi yang hilang, jalankan 'apt install "
 
 #: debbuild:1687
 msgid "To remove all conflicting dependencies, run 'apt remove "
-msgstr ""
+msgstr "Untuk menghapus semua dependensi yang konflik, jalankan 'apt remove "
 
 #: debbuild:445
 msgid "Unknown stage "
@@ -256,32 +260,32 @@ msgstr ""
 
 #: debbuild:564
 msgid "Unknown tag '%"
-msgstr ""
+msgstr "Tag tidak diketahui '%"
 
 #: debbuild:635
 #, perl-format
 msgid "Unmatched %else at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "%else yang tidak cocok di akhir file.  Tidak ada %endif.\n"
 
 #: debbuild:621
 #, perl-format
 msgid "Unmatched %else in line "
-msgstr ""
+msgstr "%else yang tidak cocok di baris "
 
 #: debbuild:638
 #, perl-format
 msgid "Unmatched %endif in line "
-msgstr ""
+msgstr "%endif yang tidak cocok di baris "
 
 #: debbuild:618
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
-msgstr ""
+msgstr "%if yang tidak cocok di akhir file.  Tidak ada %else/%endif.\n"
 
 #: debbuild:892
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "%if yang tidak cocok di akhir file.  Tidak ada %endif.\n"
 
 #: debbuild:777 debbuild:862
 msgid "Upgrading relationship to Requires:.\n"
@@ -289,19 +293,19 @@ msgstr ""
 
 #: debbuild:469
 msgid "WARNING:  Missing value for macro "
-msgstr ""
+msgstr "PERINGATAN:  Tidak ada nilai untuk makro "
 
 #: debbuild:768 debbuild:775 debbuild:860 debbuild:867 debbuild:875
 msgid "Warning:  '"
-msgstr ""
+msgstr "Peringatan:  '"
 
 #: debbuild:871
 msgid "Warning:  Debian-specific '"
-msgstr ""
+msgstr "Peringatan:  Khusus Debian '"
 
 #: debbuild:1305
 msgid "Warning:  symlinking manpage failed:  "
-msgstr ""
+msgstr "Peringatan:  symlink halaman manual gagal:  "
 
 #: debbuild:1511
 msgid "Wrote binary package "
@@ -313,7 +317,7 @@ msgstr ""
 
 #: debbuild:1256
 msgid " script file "
-msgstr ""
+msgstr " file script "
 
 #: debbuild:517
 msgid "specfile ("
