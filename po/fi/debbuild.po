@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: 2021-09-19 19:04+0000\n"
+"PO-Revision-Date: 2021-09-22 19:04+0000\n"
 "Last-Translator: Jan Kuparinen <copper_fin@hotmail.com>\n"
 "Language-Team: Finnish <https://translate.fedoraproject.org/projects/"
 "debbuild/master/fi/>\n"
@@ -29,19 +29,19 @@ msgstr "  Tarvitaan onnistuneeseen koostamiseen:\n"
 
 #: debbuild:1682
 msgid " * Conflicting build-dependency "
-msgstr ""
+msgstr " * Ristiriitainen koontiriippuvuus "
 
 #: debbuild:1640 debbuild:1667
 msgid " * Missing build-dependency "
-msgstr ""
+msgstr " * Puuttuva koontiriippuvuus "
 
 #: debbuild:1661
 msgid " * Required build-dependency "
-msgstr ""
+msgstr " * Vaadittu koontiriippuvuus "
 
 #: debbuild:1656
 msgid " * Warning:  "
-msgstr ""
+msgstr " * Varoitus:  "
 
 #: debbuild:1267
 msgid " failed (%"
@@ -49,140 +49,140 @@ msgstr " epäonnistui (%"
 
 #: debbuild:1509 debbuild:1519
 msgid " for "
-msgstr ""
+msgstr " kohteelle "
 
 #: debbuild:446
 msgid " for option '-"
-msgstr ""
+msgstr " vaihtoehtoa varten '-"
 
 #: debbuild:470 debbuild:1512 debbuild:1522 debbuild:1605
 msgid " in "
-msgstr ""
+msgstr " jossain "
 
 #: debbuild:1662
 msgid " is installed, but wrong version ("
-msgstr ""
+msgstr " on asennettu, mutta väärä versio ("
 
 #: debbuild:1657
 msgid " is probably installed but seems to be a virtual package.\n"
-msgstr ""
+msgstr " on todennäköisesti asennettu, mutta näyttää olevan virtuaalipaketti.\n"
 
 #: debbuild:1622
 msgid " not found.  Can't check build-deps.\n"
-msgstr ""
+msgstr " ei löydetty.  Ei voi tarkistaa koontiriippuvuuksia.\n"
 
 #: debbuild:565
 msgid " of "
-msgstr ""
+msgstr " jostain "
 
 #: debbuild:496
 msgid " stage.  Ignoring.\n"
-msgstr ""
+msgstr " vaihe. Ohitetaan.\n"
 
 #: debbuild:1771
 #, perl-brace-format
 msgid " to %{_topdir}.\n"
-msgstr ""
+msgstr " kohteeseen %{_topdir}.\n"
 
 #: debbuild:451
 msgid " with --rebuild\n"
-msgstr ""
+msgstr " käyttäen --rebuild\n"
 
 #: debbuild:470
 msgid "!  Ignoring.\n"
-msgstr ""
+msgstr "!  Ohitetaan.\n"
 
 #: debbuild:913
 msgid "%autosetup:  option '-S "
-msgstr ""
+msgstr "%autosetup:  vaihtoehto '-S "
 
 #: debbuild:564
 msgid "' at line "
-msgstr ""
+msgstr "' rivillä "
 
 #: debbuild:914
 msgid "' currently not supported at line "
-msgstr ""
+msgstr "' ei tällä hetkellä tuettu rivillä "
 
 #: debbuild:824
 #, perl-format
 msgid "'%exclude' keyword found, ignoring input line\n"
-msgstr ""
+msgstr "'%exclude' avainsana löydetty, ohitetaan syöterivi\n"
 
 #: debbuild:981
 msgid "', continuing\n"
-msgstr ""
+msgstr "', jatketaan\n"
 
 #: debbuild:1828
 msgid "'.  Aborting!"
-msgstr ""
+msgstr "'.  Keskeytetään!"
 
 #: debbuild:518
 msgid ") barfed:  "
-msgstr ""
+msgstr ") oksennettu:  "
 
 #: debbuild:1663
 msgid "):  Need "
-msgstr ""
+msgstr "):  Tarvitaan "
 
 #: debbuild:1621
 msgid "**WARNING**  "
-msgstr ""
+msgstr "**VAROITUS**  "
 
 #: debbuild:622
 #, perl-format
 msgid ".  Missing %if.\n"
-msgstr ""
+msgstr ".  %if puuttuu.\n"
 
 #: debbuild:639
 #, perl-format
 msgid ".  Missing %if/%else.\n"
-msgstr ""
+msgstr ".   %if/%else puuttuu.\n"
 
 #: debbuild:179
 msgid ":  build requirements not met.\n"
-msgstr ""
+msgstr ":  koontivaatimukset eivät täyty.\n"
 
 #: debbuild:769 debbuild:776 debbuild:861 debbuild:876
 msgid ":' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr ":' .deb paketit eivät tue tätä luontaisesti.\n"
 
 #: debbuild:868 debbuild:872
 #, perl-format
 msgid ":' outside %if wrapper\n"
-msgstr ""
+msgstr ":' %if kääreen ulkopuolella\n"
 
 #: debbuild:151
 msgid "Can't --rebuild with "
-msgstr ""
+msgstr "Ei voi käyttää --rebuild kohteessa "
 
 #: debbuild:178
 msgid "Can't build "
-msgstr ""
+msgstr "Ei voi koostaa "
 
 #: debbuild:1057
 msgid "Can't handle unknown file type '"
-msgstr ""
+msgstr "Tuntematonta tiedostotyyppiä ei voi käsitellä '"
 
 #: debbuild:1767
 msgid "Can't install "
-msgstr ""
+msgstr "Ei voi asentaa "
 
 #: debbuild:1255
 msgid "Can't open/create "
-msgstr ""
+msgstr "Ei voi avata/luoda "
 
 #: debbuild:450
 msgid "Can't use -"
-msgstr ""
+msgstr "Ei voi käyttää -"
 
 #: debbuild:495
 msgid "Can't use --short-circuit for "
-msgstr ""
+msgstr "Ei voi käyttää --short-circuit kohteelle "
 
 #: debbuild:1704
 msgid "Checking library requirements...\n"
-msgstr ""
+msgstr "Tarkistetaan arkiston vaatimuksia...\n"
 
 #: debbuild:1346
 msgid "Could not open: "
