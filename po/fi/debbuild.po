@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: 2021-09-22 19:04+0000\n"
+"PO-Revision-Date: 2021-09-25 11:04+0000\n"
 "Last-Translator: Jan Kuparinen <copper_fin@hotmail.com>\n"
 "Language-Team: Finnish <https://translate.fedoraproject.org/projects/"
 "debbuild/master/fi/>\n"
@@ -190,19 +190,19 @@ msgstr "Avaus ei onnistunut: "
 
 #: debbuild:770 debbuild:877
 msgid "Downgrading relationship to Enhances:.\n"
-msgstr ""
+msgstr "Suhteen alentaminen tehostaa :.\n"
 
 #: debbuild:1267
 msgid "Exec of "
-msgstr ""
+msgstr "Suorittaminen kohteesta "
 
 #: debbuild:1263
 msgid "Executing ("
-msgstr ""
+msgstr "Suoritetaan ("
 
 #: debbuild:1770
 msgid "Extracted source package "
-msgstr ""
+msgstr "Purettu lähdepaketti "
 
 #: debbuild:1353
 msgid "File not found: "
@@ -210,114 +210,115 @@ msgstr "Tiedostoa ei löytynyt: "
 
 #: debbuild:1827
 msgid "Missing value for '%"
-msgstr ""
+msgstr "Puuttuva arvo kohteesta '%"
 
 #: debbuild:343
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
-msgstr ""
+msgstr "Os-release-tiedostoa tai lsb_release-ohjelmaa ei löydy.\n"
 
 #: debbuild:516
 msgid "No .spec file specified!  Exiting.\n"
-msgstr ""
+msgstr "Yhtään .spec -tiedostoa ei ole määritetty! Poistutaan.\n"
 
 #: debbuild:49
 msgid "No .spec file to work with!  Exiting.\n"
-msgstr ""
+msgstr "Yhtään .spec -tiedostoa ei ole työstettäväksi! Poistutaan.\n"
 
 #: debbuild:161
 msgid "No tarfile specified!  Exiting.\n"
-msgstr ""
+msgstr "Yhtään tar-tiedostoa ei ole määritetty! Poistutaan.\n"
 
 #: debbuild:1521
 msgid "Signed binary package "
-msgstr ""
+msgstr "Allekirjoitettu binaaripaketti "
 
 #: debbuild:344
 msgid "Sorry, I quit.\n"
-msgstr ""
+msgstr "Pahoitteluni, lopetan.\n"
 
 #: debbuild:980
 #, perl-format
 msgid "Suspect %setup tag '%setup"
-msgstr ""
+msgstr "Epäilty %setup tunniste '%setup"
 
 #: debbuild:483
 msgid "This is debbuild, version "
-msgstr ""
+msgstr "Tämä on debbuild, versio "
 
 #: debbuild:1673
 msgid "To install all missing dependencies, run 'apt install "
-msgstr ""
+msgstr "Asenna kaikki puuttuvat riippuvuudet suorittamalla apt install "
 
 #: debbuild:1687
 msgid "To remove all conflicting dependencies, run 'apt remove "
 msgstr ""
+"Voit poistaa kaikki ristiriitaiset riippuvuudet suorittamalla 'apt remove "
 
 #: debbuild:445
 msgid "Unknown stage "
-msgstr ""
+msgstr "Tuntematon vaihe "
 
 #: debbuild:564
 msgid "Unknown tag '%"
-msgstr ""
+msgstr "Tuntematon tunniste '%"
 
 #: debbuild:635
 #, perl-format
 msgid "Unmatched %else at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "Täsmäämätön %else tiedoston lopussa. Puuttuva %endif.\n"
 
 #: debbuild:621
 #, perl-format
 msgid "Unmatched %else in line "
-msgstr ""
+msgstr "Täsmäämätön %else rivillä "
 
 #: debbuild:638
 #, perl-format
 msgid "Unmatched %endif in line "
-msgstr ""
+msgstr "Täsmäämätön %endif rivillä "
 
 #: debbuild:618
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
-msgstr ""
+msgstr "Täsmäämätön %if tiedoston lopussa. Puuttuva  %else/%endif.\n"
 
 #: debbuild:892
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "Täsmäämätön %if tiedoston lopussa. Puuttuva %endif.\n"
 
 #: debbuild:777 debbuild:862
 msgid "Upgrading relationship to Requires:.\n"
-msgstr ""
+msgstr "Suhteen päivittäminen Edellyttää :.\n"
 
 #: debbuild:469
 msgid "WARNING:  Missing value for macro "
-msgstr ""
+msgstr "VAROITUS: Makroista puuttuu arvo "
 
 #: debbuild:768 debbuild:775 debbuild:860 debbuild:867 debbuild:875
 msgid "Warning:  '"
-msgstr ""
+msgstr "Varoitus:   '"
 
 #: debbuild:871
 msgid "Warning:  Debian-specific '"
-msgstr ""
+msgstr "Varoitus: Debian-kohtainen '"
 
 #: debbuild:1305
 msgid "Warning:  symlinking manpage failed:  "
-msgstr ""
+msgstr "Varoitus: ohjesivun symbolinen linkittäminen epäonnistui:  "
 
 #: debbuild:1511
 msgid "Wrote binary package "
-msgstr ""
+msgstr "Kirjoitettu binaaripaketti "
 
 #: debbuild:1605
 msgid "Wrote source package "
-msgstr ""
+msgstr "Kirjoitettu lähdepaketti "
 
 #: debbuild:1256
 msgid " script file "
-msgstr ""
+msgstr " komentotiedosto "
 
 #: debbuild:517
 msgid "specfile ("
-msgstr ""
+msgstr "määritystiedosto ("
