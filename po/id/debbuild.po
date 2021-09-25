@@ -3,13 +3,14 @@
 # This file is distributed under the same license as the DEBBUILD package.
 # Andreas Scherer <andreas_github@freenet.de>, 2020.
 # Didik Supriadi <didiksupriadi41@gmail.com>, 2021.
+# Andika Triwidada <andika@gmail.com>, 2021.
 msgid ""
 msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: 2021-09-06 08:04+0000\n"
-"Last-Translator: Didik Supriadi <didiksupriadi41@gmail.com>\n"
+"PO-Revision-Date: 2021-09-25 11:04+0000\n"
+"Last-Translator: Andika Triwidada <andika@gmail.com>\n"
 "Language-Team: Indonesian <https://translate.fedoraproject.org/projects/"
 "debbuild/master/id/>\n"
 "Language: id\n"
@@ -21,7 +22,7 @@ msgstr ""
 
 #: debbuild:1624
 msgid "  Continuing anyway.\n"
-msgstr ""
+msgstr "  Melanjutkan saja.\n"
 
 #: debbuild:1623
 msgid "  Required for successful build:\n"
@@ -57,7 +58,7 @@ msgstr " untuk opsi '-"
 
 #: debbuild:470 debbuild:1512 debbuild:1522 debbuild:1605
 msgid " in "
-msgstr ""
+msgstr " dalam "
 
 #: debbuild:1662
 msgid " is installed, but wrong version ("
@@ -65,7 +66,7 @@ msgstr " diinstal, tetapi versi salah ("
 
 #: debbuild:1657
 msgid " is probably installed but seems to be a virtual package.\n"
-msgstr ""
+msgstr " mungkin terpasang tapi tampaknya berupa paket virtual.\n"
 
 #: debbuild:1622
 msgid " not found.  Can't check build-deps.\n"
@@ -73,16 +74,16 @@ msgstr " tidak ditemukan.  Tidak dapat memeriksa dependensi build.\n"
 
 #: debbuild:565
 msgid " of "
-msgstr ""
+msgstr " dari "
 
 #: debbuild:496
 msgid " stage.  Ignoring.\n"
-msgstr ""
+msgstr " tahap.  Mengabaikan.\n"
 
 #: debbuild:1771
 #, perl-brace-format
 msgid " to %{_topdir}.\n"
-msgstr ""
+msgstr " ke %{_topdir}.\n"
 
 #: debbuild:451
 msgid " with --rebuild\n"
@@ -90,11 +91,11 @@ msgstr " dengan --rebuild\n"
 
 #: debbuild:470
 msgid "!  Ignoring.\n"
-msgstr ""
+msgstr "!  Mengabaikan.\n"
 
 #: debbuild:913
 msgid "%autosetup:  option '-S "
-msgstr ""
+msgstr "%autosetup:  opsi '-S "
 
 #: debbuild:564
 msgid "' at line "
@@ -111,19 +112,19 @@ msgstr "Kata kunci '%exclude' ditemukan, mengabaikan baris input\n"
 
 #: debbuild:981
 msgid "', continuing\n"
-msgstr ""
+msgstr "', melanjutkan\n"
 
 #: debbuild:1828
 msgid "'.  Aborting!"
-msgstr ""
+msgstr "'.  Menggugurkan!"
 
 #: debbuild:518
 msgid ") barfed:  "
-msgstr ""
+msgstr ") muntah:  "
 
 #: debbuild:1663
 msgid "):  Need "
-msgstr ""
+msgstr "):  Perlu "
 
 #: debbuild:1621
 msgid "**WARNING**  "
@@ -150,7 +151,7 @@ msgstr ":' tidak didukung secara native oleh paket .deb.\n"
 #: debbuild:868 debbuild:872
 #, perl-format
 msgid ":' outside %if wrapper\n"
-msgstr ""
+msgstr ":' di luar %if pembungkus\n"
 
 #: debbuild:151
 msgid "Can't --rebuild with "
@@ -190,19 +191,19 @@ msgstr "Tidak bisa membuka: "
 
 #: debbuild:770 debbuild:877
 msgid "Downgrading relationship to Enhances:.\n"
-msgstr ""
+msgstr "Menurun-tingkatkan hubungan untuk Memajukan:.\n"
 
 #: debbuild:1267
 msgid "Exec of "
-msgstr ""
+msgstr "Eksekusi dari "
 
 #: debbuild:1263
 msgid "Executing ("
-msgstr ""
+msgstr "Menjalankan ("
 
 #: debbuild:1770
 msgid "Extracted source package "
-msgstr ""
+msgstr "Paket sumber yang diekstrak "
 
 #: debbuild:1353
 msgid "File not found: "
@@ -231,7 +232,7 @@ msgstr "Tidak ada tarfile yang ditentukan!  Keluar.\n"
 
 #: debbuild:1521
 msgid "Signed binary package "
-msgstr ""
+msgstr "Paket biner yang ditanda-tangani "
 
 #: debbuild:344
 msgid "Sorry, I quit.\n"
@@ -240,7 +241,7 @@ msgstr "Maaf, Saya berhenti.\n"
 #: debbuild:980
 #, perl-format
 msgid "Suspect %setup tag '%setup"
-msgstr ""
+msgstr "Tag %setup yang mencurigakan '%setup"
 
 #: debbuild:483
 msgid "This is debbuild, version "
@@ -256,7 +257,7 @@ msgstr "Untuk menghapus semua dependensi yang konflik, jalankan 'apt remove "
 
 #: debbuild:445
 msgid "Unknown stage "
-msgstr ""
+msgstr "Tahapan tak dikenal "
 
 #: debbuild:564
 msgid "Unknown tag '%"
@@ -289,7 +290,7 @@ msgstr "%if yang tidak cocok di akhir file.  Tidak ada %endif.\n"
 
 #: debbuild:777 debbuild:862
 msgid "Upgrading relationship to Requires:.\n"
-msgstr ""
+msgstr "Meningkatkan hubungan ke Memerlukan:.\n"
 
 #: debbuild:469
 msgid "WARNING:  Missing value for macro "
@@ -309,11 +310,11 @@ msgstr "Peringatan:  symlink halaman manual gagal:  "
 
 #: debbuild:1511
 msgid "Wrote binary package "
-msgstr ""
+msgstr "Menulis paket biner "
 
 #: debbuild:1605
 msgid "Wrote source package "
-msgstr ""
+msgstr "Menulis paket sumber "
 
 #: debbuild:1256
 msgid " script file "
