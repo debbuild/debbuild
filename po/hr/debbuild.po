@@ -1,0 +1,324 @@
+# International version of DEBBUILD.
+# Copyright (C) 2018, 2020 Andreas Scherer
+# This file is distributed under the same license as the DEBBUILD package.
+# Andreas Scherer <andreas_github@freenet.de>, 2020.
+# Gogo Gogsi <linux.hr@protonmail.com>, 2021.
+msgid ""
+msgstr ""
+"Project-Id-Version: DEBBUILD I18N 1.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-03-22 13:12+0100\n"
+"PO-Revision-Date: 2021-10-21 21:05+0000\n"
+"Last-Translator: Gogo Gogsi <linux.hr@protonmail.com>\n"
+"Language-Team: Croatian <https://translate.fedoraproject.org/projects/"
+"debbuild/master/hr/>\n"
+"Language: hr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 4.8\n"
+
+#: debbuild:1624
+msgid "  Continuing anyway.\n"
+msgstr "  Svejedno nastavi.\n"
+
+#: debbuild:1623
+msgid "  Required for successful build:\n"
+msgstr "  Potrebno za uspješnu izgradnju:\n"
+
+#: debbuild:1682
+msgid " * Conflicting build-dependency "
+msgstr " * Sukobljene zavisnosti izgradnje "
+
+#: debbuild:1640 debbuild:1667
+msgid " * Missing build-dependency "
+msgstr " * Nedostajuće zavisnosti izgradnje "
+
+#: debbuild:1661
+msgid " * Required build-dependency "
+msgstr " * Potrebne zavisnosti izgradnje "
+
+#: debbuild:1656
+msgid " * Warning:  "
+msgstr " * Upozorenje:  "
+
+#: debbuild:1267
+msgid " failed (%"
+msgstr " neuspjelo (%"
+
+#: debbuild:1509 debbuild:1519
+msgid " for "
+msgstr " za "
+
+#: debbuild:446
+msgid " for option '-"
+msgstr " za mogućnost '-"
+
+#: debbuild:470 debbuild:1512 debbuild:1522 debbuild:1605
+msgid " in "
+msgstr " u "
+
+#: debbuild:1662
+msgid " is installed, but wrong version ("
+msgstr " je instalirano, ali pogrešna inačica ("
+
+#: debbuild:1657
+msgid " is probably installed but seems to be a virtual package.\n"
+msgstr " je vjerojatno instaliran ali izgleda da je virtualni paket.\n"
+
+#: debbuild:1622
+msgid " not found.  Can't check build-deps.\n"
+msgstr " nije pronađen.  Nemoguća provjera zavisnosti izgradnje.\n"
+
+#: debbuild:565
+msgid " of "
+msgstr " od "
+
+#: debbuild:496
+msgid " stage.  Ignoring.\n"
+msgstr " faza.  Zanemarujem.\n"
+
+#: debbuild:1771
+#, perl-brace-format
+msgid " to %{_topdir}.\n"
+msgstr " u %{_topdir}.\n"
+
+#: debbuild:451
+msgid " with --rebuild\n"
+msgstr " s --rebuild\n"
+
+#: debbuild:470
+msgid "!  Ignoring.\n"
+msgstr "!  Zanemarujem.\n"
+
+#: debbuild:913
+msgid "%autosetup:  option '-S "
+msgstr "%automatsko postavljanje:  mogućnost '-S "
+
+#: debbuild:564
+msgid "' at line "
+msgstr "' u redku "
+
+#: debbuild:914
+msgid "' currently not supported at line "
+msgstr "' trenutno nije podržano u redku "
+
+#: debbuild:824
+#, perl-format
+msgid "'%exclude' keyword found, ignoring input line\n"
+msgstr "'%exclude' ključna riječ pronađena, zanemarujem redak unosa\n"
+
+#: debbuild:981
+msgid "', continuing\n"
+msgstr "', nastavak\n"
+
+#: debbuild:1828
+msgid "'.  Aborting!"
+msgstr "'.  Prekidanje!"
+
+#: debbuild:518
+msgid ") barfed:  "
+msgstr ") zbijen:  "
+
+#: debbuild:1663
+msgid "):  Need "
+msgstr "):  Potrebno "
+
+#: debbuild:1621
+msgid "**WARNING**  "
+msgstr "**UPOZORENJE**  "
+
+#: debbuild:622
+#, perl-format
+msgid ".  Missing %if.\n"
+msgstr ".  Nedostaje %if.\n"
+
+#: debbuild:639
+#, perl-format
+msgid ".  Missing %if/%else.\n"
+msgstr ".  Nedostaje %if/%else.\n"
+
+#: debbuild:179
+msgid ":  build requirements not met.\n"
+msgstr ":  zavisnosti izgradnje nisu udovoljene.\n"
+
+#: debbuild:769 debbuild:776 debbuild:861 debbuild:876
+msgid ":' is not natively supported by .deb packages.\n"
+msgstr ":' nije izvorno podržano od strane .deb paketa.\n"
+
+#: debbuild:868 debbuild:872
+#, perl-format
+msgid ":' outside %if wrapper\n"
+msgstr ":' izvan %if posrednog programa\n"
+
+#: debbuild:151
+msgid "Can't --rebuild with "
+msgstr "Nemoguć --rebuild sa "
+
+#: debbuild:178
+msgid "Can't build "
+msgstr "Nemoguća izgradnja "
+
+#: debbuild:1057
+msgid "Can't handle unknown file type '"
+msgstr "Nemoguće rukovanje nepoznatom vrstom datoteke '"
+
+#: debbuild:1767
+msgid "Can't install "
+msgstr "Nemoguća instalacija "
+
+#: debbuild:1255
+msgid "Can't open/create "
+msgstr "Nemoguće otvaranje/stvaranje "
+
+#: debbuild:450
+msgid "Can't use -"
+msgstr "Nemoguća instalacija -"
+
+#: debbuild:495
+msgid "Can't use --short-circuit for "
+msgstr "Nemoguća instalacija --short-circuit za "
+
+#: debbuild:1704
+msgid "Checking library requirements...\n"
+msgstr "Provjeravanje zahtjeva biblioteke...\n"
+
+#: debbuild:1346
+msgid "Could not open: "
+msgstr "Nemoguće otvaranje: "
+
+#: debbuild:770 debbuild:877
+msgid "Downgrading relationship to Enhances:.\n"
+msgstr "Vraćanje odnosa na poboljšano:.\n"
+
+#: debbuild:1267
+msgid "Exec of "
+msgstr "Izvršna datoteka od "
+
+#: debbuild:1263
+msgid "Executing ("
+msgstr "Pokretanje ("
+
+#: debbuild:1770
+msgid "Extracted source package "
+msgstr "Raspakirani paket izvora "
+
+#: debbuild:1353
+msgid "File not found: "
+msgstr "Datoteka nije pronađena: "
+
+#: debbuild:1827
+msgid "Missing value for '%"
+msgstr "Nedostaje vrijednost za '%"
+
+#: debbuild:343
+msgid "No 'os-release' file or 'lsb_release' program found.\n"
+msgstr "Nema 'os-release' datoteke ili 'lsb_release' programa pronađenog.\n"
+
+#: debbuild:516
+msgid "No .spec file specified!  Exiting.\n"
+msgstr "Nema određene.spec datotke!  Zatvaram.\n"
+
+#: debbuild:49
+msgid "No .spec file to work with!  Exiting.\n"
+msgstr "Nema .spec datoteke za rad!  Zatvaram.\n"
+
+#: debbuild:161
+msgid "No tarfile specified!  Exiting.\n"
+msgstr "Nema određene tar datoteke!  Zatvaram.\n"
+
+#: debbuild:1521
+msgid "Signed binary package "
+msgstr "Potpisani binarni paket "
+
+#: debbuild:344
+msgid "Sorry, I quit.\n"
+msgstr "Nažalost, odustajem.\n"
+
+#: debbuild:980
+#, perl-format
+msgid "Suspect %setup tag '%setup"
+msgstr "Sumnjiva %setup oznaka '%setup"
+
+#: debbuild:483
+msgid "This is debbuild, version "
+msgstr "Ovo je debbuild, inačica "
+
+#: debbuild:1673
+msgid "To install all missing dependencies, run 'apt install "
+msgstr "Za instalaciju svih nedostajućih zavisnosti, pokrenite 'apt install "
+
+#: debbuild:1687
+msgid "To remove all conflicting dependencies, run 'apt remove "
+msgstr "Za uklanjanje svih sukobljenih zavisnosti, pokrenite 'apt remove "
+
+#: debbuild:445
+msgid "Unknown stage "
+msgstr "Nepoznata faza "
+
+#: debbuild:564
+msgid "Unknown tag '%"
+msgstr "Nepoznata oznaka '%"
+
+#: debbuild:635
+#, perl-format
+msgid "Unmatched %else at end of file.  Missing %endif.\n"
+msgstr "Nepodudarajući %else na završetku datoteke.  Nedostaje %endif.\n"
+
+#: debbuild:621
+#, perl-format
+msgid "Unmatched %else in line "
+msgstr "Nepodudarajući %else u redku "
+
+#: debbuild:638
+#, perl-format
+msgid "Unmatched %endif in line "
+msgstr "Nepodudarajući %endif u redku "
+
+#: debbuild:618
+#, perl-format
+msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
+msgstr "Nepodudarajući %if na završetku datoteke.  Nedostaje %else/%endif.\n"
+
+#: debbuild:892
+#, perl-format
+msgid "Unmatched %if at end of file.  Missing %endif.\n"
+msgstr "Nepodudarajući %if na završetku datoteke.  Nedostaje %endif.\n"
+
+#: debbuild:777 debbuild:862
+msgid "Upgrading relationship to Requires:.\n"
+msgstr "Nadogradnja odnosa na zahtjevano:.\n"
+
+#: debbuild:469
+msgid "WARNING:  Missing value for macro "
+msgstr "UPOZORENJE:  Nedostaje vrijednost za makro "
+
+#: debbuild:768 debbuild:775 debbuild:860 debbuild:867 debbuild:875
+msgid "Warning:  '"
+msgstr "Upozorenje:  '"
+
+#: debbuild:871
+msgid "Warning:  Debian-specific '"
+msgstr "Upozorenje:  Debian-specifično '"
+
+#: debbuild:1305
+msgid "Warning:  symlinking manpage failed:  "
+msgstr "Upozorenje:  simboličko povezivanje manpage neuspjelo:  "
+
+#: debbuild:1511
+msgid "Wrote binary package "
+msgstr "Zapisan binarni paket "
+
+#: debbuild:1605
+msgid "Wrote source package "
+msgstr "Zapisan paket izvora "
+
+#: debbuild:1256
+msgid " script file "
+msgstr " datoteka skripte "
+
+#: debbuild:517
+msgid "specfile ("
+msgstr "spec datoteka ("
