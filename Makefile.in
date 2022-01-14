@@ -71,3 +71,18 @@ install_user_build_tree:
 	install -d $(HOME_DIR)/debbuild/SDEBS
 
 install_user_files: install_user_macros install_user_build_tree
+
+.PHONY: uninstall uninstall_user_macros uninstall_user_build_tree uninstall_user_files
+uninstall:
+	rm -vf $(DESTDIR)$(BINDIR)/debbuild
+	rm -vrf $(DESTDIR)$(DEBCONFIGDIR)/debbuild
+	find $(DESTDIR)$(MANDIR)/man8 -name "debbuild.8" -type f -delete
+	find $(DESTDIR)$(DATADIR)/locale -name "debbuild.mo" -type f -delete
+
+uninstall_user_macros:
+	rm -vf $(HOME_DIR)/.debmacros
+
+uninstall_user_build_tree:
+	rm -vrf $(HOME_DIR)/debbuild
+
+uninstall_user_files: uninstall_user_macros uninstall_user_build_tree
