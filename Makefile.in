@@ -12,17 +12,20 @@ VERSION = @VERSION@
 
 LANGUAGES = @LANGUAGES@
 
+HOME_DIR = /home/$(USER)
+OUT_SCRIPT = debbuild.out
+
 .DEFAULT_GOAL := build
 .PHONY: build
-build: debbuild.out
+build: $(OUT_SCRIPT)
 
-debbuild.out: debbuild debbuild.spec
-	cp debbuild debbuild.out
+$(OUT_SCRIPT): debbuild
+	cp debbuild $(OUT_SCRIPT)
 	echo "\
 version:$(VERSION)\n\
 debconfigdir:$(DEBCONFIGDIR)\n\
-sysconfdir:$(SYSCONFDIR)\n" >> debbuild.out
-	chmod +x debbuild.out
+sysconfdir:$(SYSCONFDIR)" >> $(OUT_SCRIPT)
+	chmod +x $(OUT_SCRIPT)
 
 .PHONY: check
 check:
@@ -33,7 +36,7 @@ install:
 	rm -rf $(DESTDIR)
 
 	install -d $(DESTDIR)$(BINDIR)
-	install debbuild.out $(DESTDIR)$(BINDIR)/debbuild
+	install $(OUT_SCRIPT) $(DESTDIR)$(BINDIR)/debbuild
 
 	install -d $(DESTDIR)$(DEBCONFIGDIR)
 	install -m 644 macros/macros.in $(DESTDIR)$(DEBCONFIGDIR)/macros
@@ -45,8 +48,6 @@ install:
 	install -m 644 macros/macros.sysutils $(DESTDIR)$(DEBCONFIGDIR)/macros.d
 	install -m 644 macros/macros.texlive $(DESTDIR)$(DEBCONFIGDIR)/macros.d
 	install -m 644 macros/platform.in $(DESTDIR)$(DEBCONFIGDIR)/macros.d/macros.00platform
-
-	install -d $(DESTDIR)$(SYSCONFDIR)/debbuild
 
 	install -d $(DESTDIR)$(MANDIR)/man8
 	$(POD2MAN) --utf8 --center="System Manager's Manual" --section 8 \

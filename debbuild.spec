@@ -87,7 +87,6 @@ make
 %{_bindir}/*
 %{_mandir}/man8/*
 %{debconfigdir}/
-%{_sysconfdir}/debbuild/
 
 %changelog
 * Mon Dec 28 2020 Neal Gompa <ngompa13@gmail.com>

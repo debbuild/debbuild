@@ -1,2 +1,6 @@
+# Files
 Makefile
 debbuild.out
+
+# Catalogs
+.vscode/
