@@ -31,7 +31,7 @@ sysconfdir:$(SYSCONFDIR)" >> $(OUT_SCRIPT)
 check:
 	yath
 
-.PHONY: install
+.PHONY: install install_user_macros install_user_build_tree install_user_files
 install:
 	rm -rf $(DESTDIR)
 
@@ -58,3 +58,16 @@ install:
 		install -d $(DESTDIR)$(DATADIR)/locale/$$lang/LC_MESSAGES ; \
 		$(MSGFMT) po/$$lang/debbuild.po -o $(DESTDIR)$(DATADIR)/locale/$$lang/LC_MESSAGES/debbuild.mo ; \
 	done
+
+install_user_macros:
+	install -m 644 macros/.debmacros $(HOME_DIR)/.debmacros
+
+install_user_build_tree:
+	install -d $(HOME_DIR)/debbuild
+	install -d $(HOME_DIR)/debbuild/BUILD
+	install -d $(HOME_DIR)/debbuild/DEBS
+	install -d $(HOME_DIR)/debbuild/SOURCES
+	install -d $(HOME_DIR)/debbuild/SPECS
+	install -d $(HOME_DIR)/debbuild/SDEBS
+
+install_user_files: install_user_macros install_user_build_tree
