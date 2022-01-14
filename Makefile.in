@@ -12,7 +12,6 @@ VERSION = @VERSION@
 
 LANGUAGES = @LANGUAGES@
 
-HOME_DIR = /home/$(USER)
 OUT_SCRIPT = debbuild.out
 
 .DEFAULT_GOAL := build
@@ -60,24 +59,24 @@ install:
 	done
 
 install_user_macros:
-	install -m 644 macros/.debmacros_default $(HOME_DIR)/.debmacros
+	install -m 644 macros/.debmacros_default $(HOME)/.debmacros
 
 install_user_build_tree:
-	install -d $(HOME_DIR)/debbuild
-	install -d $(HOME_DIR)/debbuild/BUILD
-	install -d $(HOME_DIR)/debbuild/DEBS
-	install -d $(HOME_DIR)/debbuild/SOURCES
-	install -d $(HOME_DIR)/debbuild/SPECS
-	install -d $(HOME_DIR)/debbuild/SDEBS
+	install -d $(HOME)/debbuild
+	install -d $(HOME)/debbuild/BUILD
+	install -d $(HOME)/debbuild/DEBS
+	install -d $(HOME)/debbuild/SOURCES
+	install -d $(HOME)/debbuild/SPECS
+	install -d $(HOME)/debbuild/SDEBS
 
 install_user_files: install_user_macros install_user_build_tree
 
 .PHONY: clean_config clean_bin clean
 clean_config:
-	rm -vrf Makefile
+	rm -vf Makefile
 
 clean_bin:
-	rm -vrf $(OUT_SCRIPT)
+	rm -vf $(OUT_SCRIPT)
 
 clean: clean_config clean_bin
 
@@ -89,9 +88,9 @@ uninstall:
 	find $(DESTDIR)$(DATADIR)/locale -name "debbuild.mo" -type f -delete
 
 uninstall_user_macros:
-	rm -vf $(HOME_DIR)/.debmacros
+	rm -vf $(HOME)/.debmacros
 
 uninstall_user_build_tree:
-	rm -vrf $(HOME_DIR)/debbuild
+	rm -vrf $(HOME)/debbuild
 
 uninstall_user_files: uninstall_user_macros uninstall_user_build_tree
