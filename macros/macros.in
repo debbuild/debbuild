@@ -279,7 +279,7 @@
 %build_fflags %{optflags} %{?_fmoddir:-I%{_fmoddir}}
 
 # Link editor flags.  This is usually called LDFLAGS in makefiles.
-#%build_ldflags -Wl,-z,relro
+%build_ldflags -Wl,-z,relro
 
 # Expands to shell code to seot the compiler/linker environment
 # variables CFLAGS, CXXFLAGS, FFLAGS, FCFLAGS, LDFLAGS if they have
