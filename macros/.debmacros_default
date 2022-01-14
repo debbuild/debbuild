@@ -1,0 +1,4 @@
+%_default_verbosity 2
+
+%_default_patch_flags --verbose
+%_default_tar_flags --skip-old-files

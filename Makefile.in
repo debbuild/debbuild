@@ -60,7 +60,7 @@ install:
 	done
 
 install_user_macros:
-	install -m 644 macros/.debmacros $(HOME_DIR)/.debmacros
+	install -m 644 macros/.debmacros_default $(HOME_DIR)/.debmacros
 
 install_user_build_tree:
 	install -d $(HOME_DIR)/debbuild
