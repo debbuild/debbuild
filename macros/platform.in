@@ -1,20 +1,30 @@
+#/*! \page config_macros Default configuration: /usr/lib/debbuild/macros.d/macros.00platform
+# \verbatim
+#
 # Per-platform rpm configuration file.
-
+# Per-system configuration should be added to /usr/lib/debbuild/macros.d/macros.<tool_name>
+# Per-user configuration should be added to ~/.debmacros
+#
 #==============================================================================
 # ---- per-platform macros.
-#	Macros that are specific to an individual platform.
+# Macros that are specific to an individual platform.
 #
-%_vendor		debbuild
-%_arch			%(%{__dpkg_architecture} -qDEB_HOST_ARCH)
-%_build_arch		%(%{__dpkg_architecture} -qDEB_BUILD_ARCH)
-%_os			%(%{__dpkg_architecture} -qDEB_HOST_ARCH_OS)
+
+%_vendor debbuild
+%_arch %(%{__dpkg_architecture} -qDEB_HOST_ARCH)
+%_build_arch %(%{__dpkg_architecture} -qDEB_BUILD_ARCH)
+%_os %(%{__dpkg_architecture} -qDEB_HOST_ARCH_OS)
 
 #==============================================================================
 # ---- configure macros.
-#	Override 'autoconf' defaults
+# Override 'autoconf' defaults
 #
-%_localstatedir		%{_var}
-%_sharedstatedir	%{_var}/lib
-%_lib			lib/%(%{__dpkg_architecture} -qDEB_HOST_MULTIARCH)
-%_initddir		%{_sysconfdir}/init.d
-%_rundir		/run
+
+%_localstatedir %{_var}
+%_sharedstatedir %{_var}/lib
+%_lib lib/%(%{__dpkg_architecture} -qDEB_HOST_MULTIARCH)
+%_initddir %{_sysconfdir}/init.d
+%_rundir /run
+
+# \endverbatim
+#*/

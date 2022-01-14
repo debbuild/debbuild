@@ -3,8 +3,8 @@
 #
 # This is a global DEBBUILD configuration file. All changes made here will be
 # lost when the debbuild package is upgraded. Any per-system configuration
-# should be added to /etc/debbuild/macros, while per-user configuration should
-# be added to ~/.debmacros.
+# should be added to /usr/lib/debbuild/macros.d/macros.<tool_name>
+# while per-user configuration should be added to ~/.debmacros
 #
 #==============================================================================
 # ---- A macro that expands to nothing.

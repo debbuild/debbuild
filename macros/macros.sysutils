@@ -1,12 +1,13 @@
-#/*! \page config_macros Default configuration: /etc/debbuild/macros.sysutils
+#/*! \page config_macros Default configuration: /usr/lib/debbuild/macros.d/macros.sysutils
 # \verbatim
 #
 # This is a per-system DEBBUILD configuration file.
-# Per-user configuration should be added to ~/.debmacros.
+# Per-user configuration should be added to ~/.debmacros
 #
 #==============================================================================
 # ---- System utilities
 #
+
 %__msgfmt %{_bindir}/msgfmt
 %__pod2man %{_bindir}/pod2man
 %__ps2pdf %{_bindir}/ps2pdf

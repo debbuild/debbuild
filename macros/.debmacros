@@ -1,3 +1,13 @@
+#/*! \page config_macros Default configuration: ~/.debmacros
+# \verbatim
+#
+# This is a per-user DEBBUILD configuration file.
+# Per-system configuration should be added to /usr/lib/debbuild/macros.d/macros.<tool_name>
+#
+#==============================================================================
+# ---- General macros
+#
+
 %_topdir %(pwd)
 
 %_default_verbosity 1
@@ -11,3 +21,6 @@
 %_gpg_key_short 0x850B1239
 
 %_hkp_keyserver hkp://keys.gnupg.net
+
+# \endverbatim
+#*/

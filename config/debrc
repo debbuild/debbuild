@@ -3,10 +3,12 @@
 #
 # This is a global DEBBUILD configuration file. All changes made here will be
 # lost when the debbuild package is upgraded. Any per-system configuration
-# should be added to /etc/debrc, while per-user configuration should be added
-# to ~/.debrc.
+# should be added to /usr/lib/debbuild/macros.d/macros.<tool_name>
+# while per-user configuration should be added to ~/.debmacros
 #
 #############################################################
+# ---- Architecture compilation flags
+#
 
 optflags: i386 -O2 -g -march=i386 -mcpu=i686
 optflags: amd64 -O2 -g
