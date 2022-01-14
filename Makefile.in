@@ -72,6 +72,15 @@ install_user_build_tree:
 
 install_user_files: install_user_macros install_user_build_tree
 
+.PHONY: clean_config clean_bin clean
+clean_config:
+	rm -vrf Makefile
+
+clean_bin:
+	rm -vrf $(OUT_SCRIPT)
+
+clean: clean_config clean_bin
+
 .PHONY: uninstall uninstall_user_macros uninstall_user_build_tree uninstall_user_files
 uninstall:
 	rm -vf $(DESTDIR)$(BINDIR)/debbuild
