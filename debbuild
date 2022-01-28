@@ -1991,6 +1991,10 @@ sub store_value {
 ## expandmacros()
 # Expands all %{blah} macros in the passed string
 sub expandmacros {
+  # $s    : initial string with the macro to be expanded
+  #         it will be modified during the processing holding the rest part to expand
+  # $r    : resulting string after expanding the maco
+  # $orig : holding the original value of $, for debug purposes only
   my $s = shift;
   my $r = '';
   my $orig = $s;
@@ -2006,6 +2010,8 @@ sub expandmacros {
   $s =~ s/(\A|\R[ \t]*)%([a-zA-Z_]\w+)[ \t]+(.*)/$1.expd_tocomplex($2, $3)/eg;
   my $l = length $s;
   sub expd_simple {
+    # $m      : initial string with the macro to be expanded
+    # $orig_m : original value of $m. used for debugging and some special cases
     my $m = shift;
     my $orig_m = $m;
     my $macroparms = {'#' => 0};
@@ -2066,8 +2072,11 @@ sub expandmacros {
     return ($m eq $orig_m or $m eq '%'.$orig_m) ? $m : expandmacros($m);
   }
   sub expd_complex {
+    # $m      : initial string with the macro to be expanded
+    # $orig_m : original value of $m. used for debugging and some special cases
     my $m = shift;
     my $orig_m = $m;
+    # $qex    : is used to store conditional extentions of the expanded macro, depending on type of the macro
     my ($qex, $macro, $value);
     my $macroparms = {'#' => 0};
     foreach my $ms ( @macro_param_stack ) {
