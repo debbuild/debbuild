@@ -8,6 +8,7 @@
 # Copyright (C) 2015-2019 Andreas Scherer <https://ascherer.github.io/>
 # Copyright (C) 2015-2019 Neal Gompa <ngompa13@gmail.com>
 # Copyright (C) 2017-2019 Datto, Inc. <https://datto.com>
+# Copyright (C) 2020-2021 Victor Zhestkov <vzhestkov@suse.com>
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -25,7 +26,6 @@
 
 use strict;
 use warnings;
-use threads;
 
 use Cwd qw(abs_path);	# for finding where files really are
 use Fcntl;		# for sysopen flags
@@ -73,6 +73,7 @@ my $finalmessages = ''; # A place to stuff messages that I want printed at the *
 # For %define's in specfile, among many other things.
 my %specglobals = (vendor => 'debbuild'); # this can be changed by the Vendor: header in the spec file
 my %macroopts; # For macro options
+my @macro_param_stack = ();
 # Ah, the joys of multiple architectures.  :(  Feh.
 # Compiler options will be loaded from 'debrc' file(s).
 my %optflags = (all => '');
@@ -86,7 +87,6 @@ my %optflags = (all => '');
 my %pkgdata = (main => {source => ''});
 my @pkglist = ('main');	#sigh
 # Files listing.  Embedding this in %pkgdata would be, um, messy.
-my %filelist;
 my %doclist;
 my @buildrequires;
 my @buildconflicts;
@@ -106,6 +106,21 @@ my $fh;
 # Store filelist files from "%files -f <filename>"
 my %files_files=();
 
+my $debug_level = 0;
+
+my $lua_present;
+my $lua_ver;
+
+$lua_present = eval {
+    require Lua::API;
+    $lua_ver = lua_get('Lua::API::RELEASE');
+    1;
+};
+$lua_present //= 0;
+
+my $gL;
+my @lstk = ();
+
 #### main ####
 
 # Program flow:
@@ -118,7 +133,13 @@ config_debrc();
 lsb_detection();
 parse_cmd();
 
+my $build_shell = expandmacros('%{___build_shell}');
+
 print version() if defined $specglobals{verbose};
+$specglobals{_debbuild} = $static_config{version};
+$specglobals{_debbuild_lua} = $lua_ver if defined($lua_ver);
+print "Lua: ".($lua_present ? $lua_ver : _('No Lua module loaded'))."\n"
+      if $specglobals{verbose};
 
 if ($cmdopts{type} eq 's') {
   install_sdeb($specglobals{srcpkg});
@@ -129,7 +150,7 @@ if ($cmdopts{type} eq 's') {
 if ($cmdopts{type} eq 'd') {
   parse_spec($specglobals{specfile});
   foreach my $pkg (@pkglist) {
-    $finalmessages .= format_debfile($pkg)."\n" if $filelist{$pkg};
+    $finalmessages .= format_debfile($pkg)."\n" if $pkgdata{$pkg}{files};
   }
   # Source package
   $finalmessages .= format_sdebfile()."\n";
@@ -150,7 +171,7 @@ if ($cmdopts{type} eq 'r') {
   } else {
     die _('Can\'t --rebuild with ').$specglobals{srcpkg}."\n";
   }
-  chomp( $specglobals{specfile} = expandmacros("%{_specdir}/$specfile") );
+  chomp( $specglobals{_specfile} = $specglobals{specfile} = expandmacros("%{_specdir}/$specfile") );
   $cmdopts{type} = 'b'; # fall through
 }
 
@@ -162,7 +183,7 @@ if ($cmdopts{type} eq 't') {
     unless defined $specglobals{tarball};
   my $tarball = $specglobals{tarball};
   my $cmdline = expandmacros(lookup_specfile($tarball));
-  chomp( $specglobals{specfile} = expandmacros("%{_specdir}/").
+  chomp( $specglobals{_specfile} = $specglobals{specfile} = expandmacros("%{_specdir}/").
     basename( qx { $cmdline } ) );
 
   $tarball = abs_path($tarball);
@@ -211,6 +232,12 @@ exit 0;
 
 #### end main ####
 
+sub vdebug {
+  my ($msg, $dl, $tag) = @_;
+  print(STDERR "DEBUG".(defined($tag) ? "[".$tag."]" : "").": ".$msg."\n")
+    if $debug_level && ((not defined($dl)) || $debug_level >= $dl);
+}
+
 ## load_static_config()
 # Load build-time configuration for debbuild itself.
 # The Makefile stores this configuration as a debrc-format
@@ -238,6 +265,40 @@ sub load_static_config {
 }
 
 
+# Wrapper around extract_bracketed to prevent modification of the argument passed to it
+sub find_bracketed {
+  my ($text, $brackets) = @_;
+  return extract_bracketed($text, $brackets);
+}
+
+
+sub read_multiline_macro {
+  my ($value, $fh) = @_;
+  my $is_sub = ref($fh) eq 'CODE';
+  if ($value =~ /\\\n\z/) { # multi-line macro
+    while (my $l = $is_sub ? &$fh() : <$fh>) {
+      $value .= $l;
+      last unless $l =~ /\\\n\z/s;
+    }
+    # multiline macros workaround.
+    $value =~ s/\s?\\\n/\n/g;
+    $value =~ s/\\\\\n/\\\n/g;
+    $value =~ s/\\"/"/g;
+    $value =~ s/\n\z//;
+  }
+  if ($value =~ s/%\{lua:\s*$/\{lua:\n/) { # multi-line LUA macro
+    while (my $l = $is_sub ? &$fh() : <$fh>) {
+      $value .= $l;
+      last if find_bracketed($value, '{}');
+    }
+    $value =~ s/\n\z//;
+    $value = '%'.$value;
+  }
+  $value =~ s/\\\\/\\/g if $value =~ /\A%\{lua:/;
+  return $value;
+}
+
+
 ## load_config()
 # Load system macros similar to RPM which digests
 # /usr/lib/rpm/macros /usr/lib/rpm/redhat/macros /etc/rpm/macros
@@ -250,18 +311,14 @@ sub load_config {
                         "$static_config{sysconfdir}/debbuild/macros",
                         glob("$static_config{sysconfdir}/debbuild/macros.*"),
                         "$homedir/.debmacros") ) {
-    open MACROS,$macros or next; # should we warn about missing macro files?
-    while (<MACROS>) {
-      next unless my ($macro,$eq,$value) = /^%(\w+(?:\([\w:]*\))?)(=|\s*)(.+)$/;
-      if ($value =~ s/\\$/\\\n/) { # multi-line macro
-        while (<MACROS>) {
-          $value .= $_;
-          last unless /\\$/;
-        }
-      }
+    open my $MACROS,$macros or next; # should we warn about missing macro files?
+    while (<$MACROS>) {
+      next unless my ($macro,$eq,$value) = /^%(\w+(?:\([^)]*\))?)(=|\s*)(.+)$/s;
+      $value = read_multiline_macro($value, $MACROS);
+      chomp($value);
       store_value('define', $macro, $eq eq '=' ? $specglobals{$value} : $value);
     }
-    close MACROS;
+    close $MACROS;
   }
 } # end load_config()
 
@@ -414,7 +471,7 @@ sub parse_cmd {
     my $opt_arg = shift;
     if ($cmdopts{type} eq 'b' or $cmdopts{type} eq 'd') {
       # Spec file
-      $specglobals{specfile} = $opt_arg;
+      $specglobals{_specfile} = $specglobals{specfile} = $opt_arg;
     } elsif ($cmdopts{type} eq 't') {
       # Tarball build.  Need to extract tarball to find spec file.  Whee.
       $specglobals{tarball} = $opt_arg;
@@ -503,6 +560,17 @@ sub parse_cmd {
 } # end parse_cmd()
 
 
+## unify_pkg_name
+# Package names are lower case only!
+# We need this workaround as _ is forbidden in the package name
+#  and probably was changed to - on building such packages.
+sub unify_pkg_name {
+  my $name = shift;
+  ($name = lc($name)) =~ tr/_/-/;;
+  return $name;
+}
+
+
 ## parse_spec()
 # Parse the .spec file. This is a single loop, where we scan for '%commands'
 # and '%{macros}'. The latter are usually treated in 'expandmacros()', with
@@ -530,15 +598,21 @@ sub parse_spec {
 #   Otherwise, parse the line according to which section we're supposedly
 #	parsing right now
 
-LINE: while (<$fh>) {
-    next if /^\s*#/ and $stage !~ /changelog|copyrightdata/; # Ignore comments...
-    next if /^\s*$/ and $stage !~ /changelog|copyrightdata|description/; # ... and blank lines.
+  our @rbuf = ();
+  sub spec_readline {
+    if ( @rbuf ) {
+      $_ = shift @rbuf;
+      $_ .= "\n";
+    } else {
+      $_ = <$fh>;
+    }
+  }
+LINE: while ( spec_readline() ) {
+    next if /^\s*#/ and $stage =~ /\A(preamble|files)\z/; # Ignore comments...
+    next if /^\s*$/ and $stage =~ /\A(preamble|files)\z/; # ... and blank lines.
 
     # need to deal with these someday
-    next if /^%(?:verify|ghost)/;
-
-    # Escape '%' -- rpmbuild seems to do this
-    s/%%/%/g;
+    next if /^%verify/;
 
 # no sense in continuing if we find something we don't grok
     # Yes, this is really horribly fugly.  But it's a cheap crosscheck against invalid
@@ -549,7 +623,7 @@ LINE: while (<$fh>) {
     # First a set of %-tags that are required to be used flush-left:
     if ((/^%([a-z_]\w*)/ and not (grep { $1 eq $_ } qw(build changelog check
         clean config copyrightdata description files ghost install package
-        post postun pre prep preun setup verify) or /patch\d*/))
+        post posttrans postun pre prep pretrans preun setup verify) or /patch\d*/))
         and # then a set of %-tags that are permitted in more liberal layouts:
         (/^\s*%([a-z_]\w*)/ and not grep { $1 eq $_ } qw(attr autopatch
         autosetup bcond_with bcond_without configure defattr define dir
@@ -559,7 +633,17 @@ LINE: while (<$fh>) {
       if (defined $specglobals{$1}) {
         # This looks like a user-defined macro, possibly with arguments.
         # Wrap the whole thing in curly braces for easier processing.
-        s/^\s*%(.+)\s*$/%{$1}/ if defined $macroopts{$1};
+        # And avoid removing trailing new line symbol.
+        s/^\s*%(.+)\s*?(\n?)$/%{$1}$2/ if defined $macroopts{$1};
+        my $e = expandmacros($_);
+        $e =~ s/\s+\z//;
+        my @a = split(/\n/, $e);
+        if ( scalar(@a) > 1 ) {
+          unshift(@rbuf, @a) if scalar(@a);
+          next LINE;
+        }
+        $_ = shift(@a) or next LINE;
+        $_ .= "\n";
       } else {
         die _('Unknown tag \'%').$1._('\' at line ').$..
             _(' of ').$specfile."\n";
@@ -567,30 +651,21 @@ LINE: while (<$fh>) {
     }
 
     # RPM conditionals - transform to generic form
-    if (s/^\s*%if(arch|os)\s+//) {
+    if (s/^\s*%if(n|)(arch|os)\s+//) {
       my $expanded_conditional = lc(expandmacros($_));
-      my @args = map { " '%{_$1}' == '$_'" } split(/[\s,]+/, $expanded_conditional);
-      $_ = '%if ' . join ' || ', @args;
-    }
-    if (s/^\s*%ifn(arch|os)\s+//) {
-      my $expanded_conditional = lc(expandmacros($_));
-      my @args = map { "'%{_$1}' != '$_'" } split(/[\s,]+/, $expanded_conditional);
-      $_ = '%if ' . join ' && ', @args;
+      my @args = map { "'%{_$2}' ".($1 eq 'n' ? '!=' : '==')." '$_'" } split(/[\s,]+/, $expanded_conditional);
+      $_ = '%if ' . join(($1 eq 'n' ? ' && ' : ' || '), @args);
     }
 
     # Generic %if..%else..%endif construct
     if (s/^\s*%if//) {
-      chomp( my $expr = lc expandmacros($_) );
+      s/\s+((?:%(?:\{[^\}]+\}|\([^\)]+\)|\w+))+)\s+/ "$1" /g;
+      chomp( my $expr = expandmacros($_) );
 
       if ($expr =~ /^[\d\s<=>&|\(\)+-]+$/) {
         # "plain" numeric expressions are evaluated as-is, except
         $expr =~ s/(\D)0(\d+)/$1$2/g; # shortcut 0%{?ubuntu} == 1204
       } else {
-        # got a logic statement we want to turn into a 1 or a 0.
-        # correctly "quote" the Boolean variables for Perl's eval below
-        $expr =~ s/"//g;
-        $expr =~ s/([\w\/]+)/"$1"/g;
-
         # Done in this order so we don't cascade incorrectly.
         # Yes, those spaces ARE correct in the replacements!
         $expr =~ s/==/ eq /g;
@@ -607,7 +682,7 @@ LINE: while (<$fh>) {
 
       next LINE if $ifexpr[-1]; # This appears to be the only case we call false.
       my $iflevel = @ifexpr;
-      while (<$fh>) { # Skip %if-block, inluding nested %if..%else..%endif
+      while ( spec_readline() ) { # Skip %if-block, inluding nested %if..%else..%endif
         if (/^\s*%if/) {
           $iflevel++;
         } elsif (/^\s*%else/) {
@@ -620,11 +695,12 @@ LINE: while (<$fh>) {
       die _("Unmatched %if at end of file.  Missing %else/%endif.\n");
     }
 ELSE: if (/^\s*%else/) {
-      die _('Unmatched %else in line ').$..
+      chomp;
+      die _('Unmatched %else in line ').$_.
           _(".  Missing %if.\n") unless @ifexpr;
       next LINE unless $ifexpr[-1];
       my $iflevel = @ifexpr;
-      while (<$fh>) { # Skip %else-block, inluding nested %if..%else..%endif
+      while ( spec_readline() ) { # Skip %else-block, inluding nested %if..%else..%endif
         if (/^\s*%if/) {
           $iflevel++;
         } elsif (/^\s*%else/) {
@@ -637,7 +713,8 @@ ELSE: if (/^\s*%else/) {
       die _("Unmatched %else at end of file.  Missing %endif.\n");
     }
 ENDIF: if (/^\s*%endif/) {
-      die _('Unmatched %endif in line ').$..
+      chomp;
+      die _('Unmatched %endif in line ').$_.
           _(".  Missing %if/%else.\n") unless @ifexpr;
       pop @ifexpr;
     } # %if..%else..%endif
@@ -672,6 +749,7 @@ ENDIF: if (/^\s*%endif/) {
 
     # Preprocess %define's and Conditional Build Stuff
     elsif (/^\s*%(?:(?:un)?define|dump|global|bcond_with(?:out)?)\s/) {
+      $_ = read_multiline_macro($_, \&spec_readline);
       expandmacros($_);
     }
 
@@ -682,16 +760,31 @@ ENDIF: if (/^\s*%endif/) {
       ($stage,$subname) = ($1,'main');
       my $f;
       my $n = $2;
+      if ( $stage eq 'files' ) {
+        vdebug($_, 5, 'parse_spec/files/'.$subname);
+      }
       if ($n and $n =~ s/\s*-f\s+(.*)\s*//) {
         $f = expandmacros("%{_builddir}/%{buildsubdir}/$1");
       }
       if ($n) {       # Magic to add entries to the right package
         my $tmp = expandmacros($n);
-        $subname = /\s-n\s/ ? $tmp : "$pkgdata{main}{name}-$tmp";
+        if ( $stage eq 'files' ) {
+          vdebug($subname." / ".$tmp, 5, 'parse_spec/files/tmp');
+        }
+        if ( $tmp =~ /\A\s*-n\s+/ ) {
+          $subname = $';
+        } else {
+          $subname = /\s-n\s/ ? $tmp : "$pkgdata{main}{name}-$tmp";
+        }
+        $subname = 'main' if $pkgdata{main}{name} eq $subname;
+        if ( $stage eq 'files' ) {
+          vdebug($subname, 5, 'parse_spec/files/new');
+        }
       }
       if ($f) {
         $files_files{$subname} = $f;
       }
+      $pkgdata{$subname}{files} //= [] if $stage eq 'files';
     } # %description, %copyrightdata, %files
 
     elsif (/^%(package)\s+(?:-n\s+)?(.+)/) {
@@ -702,7 +795,7 @@ ENDIF: if (/^\s*%endif/) {
       push @pkglist, $subname;
       # Hack the filename for the package into a Debian-tool-compatible format.  GRRRRRR!!!!!
       # Have I mentioned I hate Debian Policy?
-      ($pkgdata{$subname}{name} = $subname) =~ tr/_/-/;
+      $pkgdata{$subname}{name} = unify_pkg_name($subname);
       $pkgdata{$subname}{version} = $pkgdata{main}{version};
   # Build "same arch as previous package found" by default.  Where rpm just picks the
   # *very* last one, we want to allow arch<native>+arch-all
@@ -719,12 +812,12 @@ ENDIF: if (/^\s*%endif/) {
       $script{$stage} .= "cd '%{buildsubdir}'\n" if $pkgdata{main}{hassetup};
     } # %build,install,check,clean
 
-    elsif (s/^%((?:pre|post)(?:un)?)//i) {
+    elsif (s/^%((?:pre|post)(?:un|trans)?)//i) {
       $scriptlet = lc $1;
       ($stage,$subname) = ('prepost','main');
       Getopt::Long::GetOptionsFromString($_,
         # Rudimentary support for '-p <command>'
-        'p=s' => sub { $pkgdata{$subname}{$scriptlet} .= $_[1] },
+        'p=s' => sub { $pkgdata{$subname}{$scriptlet} .= $_[1]."\n" },
         # Magic to add entries to the right package
         'n=s' => sub { $subname = expandmacros($_[1]) },
         '<>'  => sub { $subname =
@@ -822,10 +915,24 @@ ENDIF: if (/^\s*%endif/) {
           \s*\)/x) {
         ($defattr{filemode}, $defattr{owner}, $defattr{group}) = ($1, $2, $4);
          $defattr{dirmode} = ($6 or $defattr{filemode}); # default directory setting is optional
-      } elsif (/^\s*%exclude/) {
-        warn _("'%exclude' keyword found, ignoring input line\n");
+      } elsif (/^\s*%exclude\s+(.*)/) {
+        my $efl = $1;
+        $efl =~ s/\s+$//;
+        vdebug($efl, 5, "parse_spec/exclude/$subname");
+        $pkgdata{$subname}{files} //= [];
+        push @{$pkgdata{$subname}{files}}, { f => $efl, ex => 1 };
       } else {
-        process_filesline($subname);
+        my $p = $_;
+        my $e = expandmacros($p);
+        $e =~ s/\\(\n|\z)/$1/g;
+        $e =~ s/\s+\z//;
+        my @a = split(/\n/, $e);
+        if ( scalar @a > 1 ) {
+          unshift @rbuf, @a;
+          next LINE;
+        } else {
+          process_filesline($subname, $p);
+        }
       }
     } # files
 
@@ -836,9 +943,10 @@ ENDIF: if (/^\s*%endif/) {
 
     elsif ($stage eq 'preamble') {
       if (/^(summary|name|epoch|version|release|
-             group|copyright|url|packager):\s*(.+)/ix) {
-        $pkgdata{main}{lc $1} //= expandmacros($2);
-        $pkgdata{main}{lc $1} =~ tr/_/-/ if 'name' eq $1;
+             group|copyright|url|packager|license):\s*(.+)/ix) {
+        my $_v = lc($1);
+        $pkgdata{main}{$_v} //= expandmacros($2);
+        $pkgdata{main}{$_v} = unify_pkg_name($pkgdata{main}{$_v}) if ( $_v eq 'name' );
       } elsif (/^(vendor|buildroot):\s*(.+)\s*/i) {
         $specglobals{lc $1} = $2;
       } elsif (my ($srcnum, $src) = /^source(\d*):\s*(.+)\s*$/i) {
@@ -883,7 +991,12 @@ ENDIF: if (/^\s*%endif/) {
         # we don't handle auto-provides (yet)
         $NoAutoReq = 1 if $1 =~ /(?:no|0)/i;
       } else { # Other lines may contain '%{?!conditional:macros}' as well
-        expandmacros($_);
+        my $pp = $_;
+        $_ = expandmacros($_);
+        next LINE if $pp eq $_;
+        s/\s+\z//;
+        my @a = split /\n/;
+        unshift(@rbuf, @a) if scalar(@a);
       }
     } # preamble
 
@@ -1148,7 +1261,7 @@ sub process_patch {
     $patchscript .= q(%{__echo} "Patch ).($pnum eq '' ? '' : "#$pnum ");
     $pnum = expandmacros("%{patch$pnum}");
     $patchscript .= q|(|.basename($pnum).qq|):"\n|.
-      "%{uncompress:$pnum} | %{__patch} $patchopts".$check_status;
+      "test -f $pnum && %{uncompress:$pnum} | %{__patch} $patchopts".$check_status;
   }
   return $patchscript;
 } # end process_patch()
@@ -1171,23 +1284,38 @@ sub uncompress {
 
 ## process_filesline()
 sub process_filesline {
-  my $subname = shift;
+  my ($subname, $line) = @_;
 
   # create and initialize flags
   my ($perms, $owner, $group, $conf) =
     ($defattr{filemode}, $defattr{owner}, $defattr{group}, '-');
 
-  # Debian dpkg doesn't speak "%docdir".  Meh.
-  my $dir_only = s/^\s*%(?:dir|docdir)\s*//;
+  vdebug("$subname: $line", 3, "process_filesline/in");
+  return if $line =~ /%ghost\s+/;
+
+  my $dir_only = $line =~ s/^\s*%dir\s*//;
+  $line =~ s/^\s*%docdir\s*//;
 
   # strip and flag %attr constructs ... and wipe it when we're done.
-  if (s/^\s*%attr        # lot of formatting whitespace permitted
-      \s*\(\s*           # opening and closing parentheses; required
-        (-|\d+)          # (1) file mode, numeric (octal) or '-'
-      [\s,]+             # field separator, comma or space
-        (-|(['"]?)\w+\3) # (2) default owner, (3) quotes permitted, or '-'
-      [\s,]+             # field separator, comma or space
-        (-|(['"]?)\w+\5) # (4) default group, (5) quotes permitted, or '-'
+  if ($line =~ /\s*%attr\s*(\(.*)/) {
+    my $rl = $1;
+    my $br = "";
+    while ( $rl =~ /([^\)]+\))/ ) {
+      $br .= $1;
+      $rl = $';
+      if (defined(find_bracketed($br, '()'))) {
+         $line = '%attr'.expandmacros($br).$rl;
+         last;
+      }
+    }
+  }
+  if ($line =~ s/\s*%attr          # lot of formatting whitespace permitted
+      \s*\(\s*                     # opening and closing parentheses; required
+        (-|\d+)                    # (1) file mode, numeric (octal) or '-'
+      [\s,]+                       # field separator, comma or space
+        (-|(['"]?)[\w\-]+\3)       # (2) default owner, (3) quotes permitted, or '-'
+      [\s,]+                       # field separator, comma or space
+        (-|(['"]?)[\w\-]+\5)       # (4) default group, (5) quotes permitted, or '-'
       \s*\)\s*//x) {
     ($perms,$owner,$group) = ($1,$2,$4);
   }
@@ -1199,7 +1327,7 @@ sub process_filesline {
 ##fixme
 # also need to handle missingok (file that doesn't exist, but should be removed on uninstall)
 # hmm.  not sure if such is **POSSIBLE** with Debian...  maybe an addition to %post?
-  if (s/%config\b(?:\s*\(\s*noreplace\s*\)\s*)?//) {
+  if ($line =~ s/%config\b(?:\s*\(\s*noreplace\s*\)\s*)?//) {
     $pkgdata{$subname}{conffiles} = 1;  # Flag it for later
     $conf = 'y';
   }
@@ -1214,38 +1342,33 @@ sub process_filesline {
   # /usr/share/licenses/<packagename>. Debian has no concept of this, so we just
   # reuse the %doc handling and put it there. That's where these things used to go
   # anyway...
-  if (s/(%doc|%license)\s+//) {
+  if ($line =~ s/(%doc|%license)\s+//) {
     # have to extract the partial pathnames that %doc installs automagically
-    foreach my $pp (split) {
+    foreach my $pp (split(/\s+/, $line)) {
       if (not $pp =~ m|^[%/]|) {
         $doclist{$subname} .= " $pp";
         my ($element) = $pp =~ m|([^/\s]+/?)$|;
-        s|$pp|%{_docdir}/$pkgdata{$subname}{name}/$element|;
+        $pp =~ s/\*/\\*/g;
+        $pp =~ s/\./\\./g;
+        $line =~ s|$pp|%{_docdir}/$pkgdata{$subname}{name}/$element|;
       }
     }
   } # $filesline =~ /%doc\b/
 
-  s/^\s*//; chomp;	# Just In Case.  For, uh, neatness.
-
-# due to Debian's total lack of real permissions-processing in its actual package
-# handling component (dpkg-deb), this can't really be done "properly".  We'll have
-# to add chown/chmod commands to the postinst instead.  Feh.
-  $pkgdata{$subname}{post} .= "%{__chown} -Rh $owner $_\n" if $owner ne '-';
-  $pkgdata{$subname}{post} .= "%{__chgrp} -Rh $group $_\n" if $group ne '-';
-  if (/\*/) { # will be 'globbed' later; will assume type 'file'
-    $pkgdata{$subname}{post} .= "%{__chmod} $perms $_\n" if $perms ne '-';
-  } else { # single entry; either 'directory' or 'file'
-    $pkgdata{$subname}{post} .= "if [ -d $_ ]; then %{__chmod} $defattr{dirmode} $_; fi\n" if $defattr{dirmode} ne '-';
-    $pkgdata{$subname}{post} .= "if [ -f $_ ]; then %{__chmod} $perms $_; fi\n" if $perms ne '-';
-  }
+  $line =~ s/^\s*//; chomp $line;  # Just In Case.  For, uh, neatness.
 
 ##fixme
 # need hackery to assure only one filespec per %config.  NB:  "*" is one filespec.  <g>
-  push @{$pkgdata{$subname}{conflist}}, $_ if $conf ne '-';
+  push @{$pkgdata{$subname}{conflist}}, $line if $conf ne '-';
 
   # now that we've got the specials out of the way, we can add things to the appropriate list of files.
   # ... and finally everything else
-  $filelist{$subname} .= " $_" unless $dir_only;
+
+  # Save file and permissions to process in binpackage
+  $pkgdata{$subname}{files} //= [];
+  push @{$pkgdata{$subname}{files}}, { f => $line, u => $owner, g => $group,
+                                       fm => $perms, dm => $defattr{dirmode},
+                                       od => $dir_only };
 } # end process_filesline()
 
 
@@ -1263,6 +1386,7 @@ sub execute_script {
     or die _('Can\'t open/create ').($what or $stage).
            _(' script file ')."$scriptfile: $!\n";
   $specglobals{___build_body} = $script{$stage}; # Inject stage script from specfile
+  vdebug($specglobals{___build_body}, 5, "execute_script/$stage");
   print SCRIPT expandmacros('%{___build_template}');
   close SCRIPT;
 
@@ -1335,68 +1459,112 @@ sub binpackage {
     my $debdir = expandmacros('%{_debdir}');
     mkdir "$debdir/$pkgdata{$pkg}{arch}" unless -e "$debdir/$pkgdata{$pkg}{arch}";
 
+    vdebug("$pkg(".$pkgdata{$pkg}{name}.") - [".(defined($pkgdata{$pkg}{files}) ? 1 : 0)."]", 3, "binpackage");
     # Skip building a package that doesn't have any files or dependencies.  True
     # metapackages don't have any files, but they depend on a bunch of things.
     # Packages with neither have, essentially, no content.
     next if
+        (not defined($pkgdata{$pkg}{files})) or (
         (
-            (not $filelist{$pkg} or $filelist{$pkg} =~ /^\s*$/)
+            not scalar @{$pkgdata{$pkg}{files}}
             and not $files_files{$pkg}
-        ) and (not $pkgdata{$pkg}{requires});
+        ) and (not $pkgdata{$pkg}{requires}));
 
-    $filelist{$pkg} //= '';
+    $pkgdata{$pkg}{files} //= [];
+    vdebug("$pkg(".$pkgdata{$pkg}{name}.") - building...", 3, "binpackage/build");
 
     # Gotta do this first, otherwise we don't have a place to move files from %files
     mkdir "$specglobals{buildroot}/$pkg";
 
     if ($files_files{$pkg}) {
-        if (-e $files_files{$pkg}) {
-	     open(FILES, "<", $files_files{$pkg}) || die _('Could not open: ').$files_files{$pkg}."\n";
-             while(<FILES>) {
-		 chomp($_);
-                 process_filesline($pkg, $_);
-             }
-	     close FILES;
-	} else {
-             die _('File not found: ').$files_files{$pkg}."\n";
-	}
+      if (-e $files_files{$pkg}) {
+        open(FILES, "<", $files_files{$pkg}) || die _('Could not open: ').$files_files{$pkg}."\n";
+        while(<FILES>) {
+          chomp($_);
+          process_filesline($pkg, $_);
+        }
+        close FILES;
+      } else {
+        die _('File not found: ').$files_files{$pkg}."\n";
+      }
     }
 
-    foreach my $pkgfile (split ' ', expandmacros($filelist{$pkg})) {
-      # Feh.  Manpages don't **NEED** to be gzipped, but rpmbuild does, and so shall we.
-      # ... and your little info page too!
-      if ($pkgfile =~ m{/usr/share/(?:man/man|info)}) {
-	# need to check to see if manpage is gzipped
-	if (-e "$specglobals{buildroot}$pkgfile") {
-	  # if we've just been pointed to a manpage section with "many" pages,
-	  # we need to gzip them all.
-	  # fortunately, we do NOT need to explicitly track each file for the
-	  # purpose of stuffing them in the package...  the original %files
-	  # entry will do just fine.
-	  if ( -d "$specglobals{buildroot}$pkgfile") {
-	    foreach my $globfile (glob("$specglobals{buildroot}$pkgfile/*")) {
-	      qx ( $specglobals{__gzip} $globfile ) if $globfile !~ m|\.gz$|;
-	    }
-	  } else {
-	    if ($pkgfile !~ m|\.gz$|) {
-	      qx ( $specglobals{__gzip} $specglobals{buildroot}$pkgfile );
-	      $pkgfile .= '.gz';
-	    }
-	  }
-	} else {
-	  if ($pkgfile !~ m|\.gz$|) {
-	    $pkgfile .= '.gz' unless $pkgfile =~ /\*$/;
-	  } else {
-	    $pkgfile =~ s/\.gz$//;
-	    qx ( $specglobals{__gzip} $specglobals{buildroot}$pkgfile );
-	    $pkgfile .= '.gz';
-	  }
-	}
-      }
+    my $file_mod_owner = '';
+    foreach my $file ( @{$pkgdata{$pkg}{files}} ) {
+      vdebug($file->{f}, 5, "binpackage/files/pre/$pkg");
+      my $file_items = expandmacros($file->{f});
+      $file_items =~ s/\\(\n|\z)/\n/g;
+      # Not sure what should we do with %ghost
+      $file_items =~ s/(?:\A|\s+)%ghost\s+.*(\n|\z)//mg;
+      $file_items =~ s/\n+/\n/g;
+      $file_items =~ s/\A\s+//;
+      $file_items =~ s/\s+\z//;
+      vdebug($file_items, 5, "binpackage/files/post/$pkg");
+      foreach my $file_item ( split /\s+/, $file_items ) {
+        if ( $file->{ex} ) {
+          # Perform %exclude from binpackage
+          vdebug($file_item, 5, "binpackage/exclude/$pkg");
+          qx ( $specglobals{__rm} -rf $specglobals{buildroot}/$pkg$file_item );
+          next;
+        }
+        vdebug($file_item, 5, "binpackage/include/$pkg");
+        my $brl = length($specglobals{buildroot});
+        foreach my $pkgfile ( glob $specglobals{buildroot}.$file_item ) {
+          $pkgfile = substr($pkgfile, $brl);
+          # Feh.  Manpages don't **NEED** to be gzipped, but rpmbuild does, and so shall we.
+          # ... and your little info page too!
+          if ($pkgfile =~ m{/usr/share/(?:man/man|info)}) {
+            # need to check to see if manpage is gzipped
+            if (-e "$specglobals{buildroot}$pkgfile") {
+              # if we've just been pointed to a manpage section with "many" pages,
+              # we need to gzip them all.
+              # fortunately, we do NOT need to explicitly track each file for the
+              # purpose of stuffing them in the package...  the original %files
+              # entry will do just fine.
+              if ( -d "$specglobals{buildroot}$pkgfile") {
+                foreach my $globfile (glob("$specglobals{buildroot}$pkgfile/*")) {
+                  qx ( $specglobals{__gzip} $globfile ) if $globfile !~ m|\.gz$|;
+                }
+              } else {
+                if ($pkgfile !~ m|\.gz$|) {
+                  qx ( $specglobals{__gzip} $specglobals{buildroot}$pkgfile );
+                  $pkgfile .= '.gz';
+                }
+              }
+            } else {
+              if ($pkgfile !~ m|\.gz$|) {
+                $pkgfile .= '.gz' unless $pkgfile =~ /\*$/;
+              } else {
+                $pkgfile =~ s/\.gz$//;
+                qx ( $specglobals{__gzip} $specglobals{buildroot}$pkgfile );
+                $pkgfile .= '.gz';
+              }
+            }
+          }
 
-      my ($fpath,$fname) = $pkgfile =~ m|(.+?/?)?([^/]+/?)$|;	# We don't need $fname now, but we might.
-      qx ( $specglobals{__mkdir_p} $specglobals{buildroot}/$pkg$fpath ) if $fpath;
-      qx ( $specglobals{__cp} -ar $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath );
+          my ($fpath,$fname) = $pkgfile =~ m|(.+?/?)?([^/]+/?)$|;	# We don't need $fname now, but we might.
+          if ( -d "$specglobals{buildroot}$pkgfile" ) {
+            vdebug($pkgfile, 5, "binpackage/add/dir/$pkg");
+            qx ( $specglobals{__mkdir_p} $specglobals{buildroot}/$pkg$pkgfile );
+            qx ( $specglobals{__cp} -ar $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath ) unless $file->{od};
+          } else {
+            vdebug($pkgfile, 5, "binpackage/add/file/$pkg");
+            qx ( $specglobals{__mkdir_p} $specglobals{buildroot}/$pkg$fpath ) if $fpath;
+            qx ( $specglobals{__cp} -a $specglobals{buildroot}$pkgfile $specglobals{buildroot}/$pkg$fpath );
+          }
+
+          # due to Debian's total lack of real permissions-processing in its actual package
+          # handling component (dpkg-deb), this can't really be done "properly".  We'll have
+          # to add chown/chmod commands to the postinst instead.  Feh.
+          $file_mod_owner .= $specglobals{__chown}." -Rh ".$file->{u}." $pkgfile\n" if $file->{u} ne '-';
+          $file_mod_owner .= $specglobals{__chgrp}." -Rh ".$file->{g}." $pkgfile\n" if $file->{g} ne '-';
+          if ( -d "$specglobals{buildroot}$pkgfile" ) {
+            $file_mod_owner .= $specglobals{__chmod}." ".$file->{dm}." $pkgfile\n" if $file->{dm} ne '-';
+          } else {
+            $file_mod_owner .= $specglobals{__chmod}." ".$file->{fm}." $pkgfile\n" if $file->{fm} ne '-';
+          }
+        }
+      }
     }
 
     # Add 'changelog' and 'copyrightdata' sections as 'doc' files.
@@ -1428,7 +1596,7 @@ sub binpackage {
 
     # Munge things so that Debian tools don't choke on errant blank lines
     $pkgdata{$pkg}{description} =~ s/\s+$//g;	# Trim trailing blanks
-    $pkgdata{$pkg}{description} =~ s/^ $/ ./mg;	# Replace lines consisting of " \n" with " .\n"
+    $pkgdata{$pkg}{description} =~ s/^\s+$/ ./mg;	# Replace lines consisting of " \n" with " .\n"
 
     # Give an estimate of the installation size
     my ($installedsize) =
@@ -1436,17 +1604,17 @@ sub binpackage {
         /(\d+)/;
 
     my $control = "Package: $pkgdata{$pkg}{name}\n".
-	'Version: '.format_version($pkg)."\n".
-	( defined $pkgdata{$pkg}{group} ?
-	  "Section: $pkgdata{$pkg}{group}\n" : '' ).
-	"Priority: optional\n".
-	"Architecture: $pkgdata{$pkg}{arch}\n".
-	"Installed-Size: $installedsize\n".
-	( defined $pkgdata{main}{packager} ?
-	  "Maintainer: $pkgdata{main}{packager}\n" : '' ).
-	"Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{description}\n".
-	( defined $pkgdata{main}{url} ?
-	  "Homepage: $pkgdata{main}{url}\n" : '' );
+                  'Version: '.format_version($pkg)."\n".
+                ( defined $pkgdata{$pkg}{group} ?
+                  "Section: $pkgdata{$pkg}{group}\n" : '' ).
+                  "Priority: optional\n".
+                  "Architecture: $pkgdata{$pkg}{arch}\n".
+                  "Installed-Size: $installedsize\n".
+               ( defined $pkgdata{main}{packager} ?
+                 "Maintainer: $pkgdata{main}{packager}\n" : '' ).
+                  "Description: $pkgdata{$pkg}{summary}\n$pkgdata{$pkg}{description}\n".
+                ( defined $pkgdata{main}{url} ?
+                  "Homepage: $pkgdata{main}{url}\n" : '' );
     foreach my $deplist (qw(recommends suggests enhances breaks replaces
                             requires conflicts provides pre-depends)) {
       if (defined $pkgdata{$pkg}{$deplist} and @{$pkgdata{$pkg}{$deplist}}) {
@@ -1455,6 +1623,7 @@ sub binpackage {
         $control .= "\u$tag: ".join(',', do {
           my %seen; grep { !$seen{$_}++ } # uniq
           map { my ($name,$rel,$ver) = splitver($_);
+            $name = unify_pkg_name($name);
             # magic needed to properly version dependencies...
             $ver eq '0' ? $name : "$name ($rel $ver)" }
               @{$pkgdata{$pkg}{$deplist}} })."\n";
@@ -1470,13 +1639,13 @@ sub binpackage {
     if ($pkgdata{$pkg}{conffiles}) {
       open CONFLIST, ">$specglobals{buildroot}/$pkg/DEBIAN/conffiles" or die;
       foreach my $conffile (@{$pkgdata{$pkg}{conflist}}) {
-	$conffile = expandmacros($conffile);
-	foreach (glob "$specglobals{buildroot}/$pkg/$conffile") {
-	  (my $buildroot = $specglobals{buildroot}) =~ s/([+])/\\$1/g;
-	  s|$buildroot/$pkg/||g;	# nrgl.  gotta be a better way to do this...
-	  s/\s+/\n/g;	# Not gonna support spaces in filenames.  Ewww.
-	  print CONFLIST "$_\n";
-	}
+        $conffile = expandmacros($conffile);
+        foreach (glob "$specglobals{buildroot}/$pkg/$conffile") {
+          (my $buildroot = $specglobals{buildroot}) =~ s/([+])/\\$1/g;
+          s|$buildroot/$pkg/||g;	# nrgl.  gotta be a better way to do this...
+          s/\s+/\n/g;	# Not gonna support spaces in filenames.  Ewww.
+          print CONFLIST "$_\n";
+        }
       }
       close CONFLIST;
     }
@@ -1485,8 +1654,23 @@ sub binpackage {
     foreach my $scr (qw(pre post preun postun)) {
       my $scrfile = $scr;
       $scrfile .= 'inst' unless $scrfile =~ s/un/rm/;
-      if ($pkgdata{$pkg}{$scr}) {
-        (my $content = expandmacros($pkgdata{$pkg}{$scr})) =~ s/^[\s]*$//mg;
+      if ($pkgdata{$pkg}{$scr} || (($scr eq 'pre') && defined($pkgdata{$pkg}{pretrans})) ||
+                                  (($scr eq 'post') && defined($pkgdata{$pkg}{posttrans}))) {
+        my $content = defined($pkgdata{$pkg}{$scr}) ? expandmacros($pkgdata{$pkg}{$scr}) : '';
+        if ($scr eq 'pre' and defined($pkgdata{$pkg}{pretrans})) {
+          $content = expandmacros($pkgdata{$pkg}{pretrans})."\n".$content;
+          warn _('Warning:  \'').'pretrans'.
+               _("' is not natively supported by .deb packages.\n").
+               _("Merging with 'pre' script.\n");
+        }
+        if ($scr eq 'post' and defined($pkgdata{$pkg}{posttrans})) {
+          $content .= "\n".expandmacros($pkgdata{$pkg}{posttrans});
+          warn _('Warning:  \'').'posttrans'.
+               _("' is not natively supported by .deb packages.\n").
+               _("Merging with 'post' script.\n");
+        }
+        $content =~ s/^[\s]*$//mg;
+        $content = $file_mod_owner.($content ? $content : '') if $scr eq 'post' and $file_mod_owner ne '';
         next unless $content;
 
         # glob all %files lines if necessary
@@ -1517,7 +1701,7 @@ sub binpackage {
     execute_script('pkg', 'package-creation', _(' for ').$pkgdata{$pkg}{name});
 
     $finalmessages .= _('Wrote binary package ').format_debfile($pkg).
-	              _(' in ')."%{_debdir}/$pkgdata{$pkg}{arch}\n";
+                      _(' in ')."%{_debdir}/$pkgdata{$pkg}{arch}\n";
 
     if ($cmdopts{sign}) {
       $script{pkg} = "%{__fakeroot} -- %{__dpkg_sig} ".
@@ -1527,7 +1711,7 @@ sub binpackage {
       execute_script('pkg', 'package-signature', _(' for ').$pkgdata{$pkg}{name});
 
       $finalmessages .= _('Signed binary package ').format_debfile($pkg).
-	                _(' in ')."%{_debdir}/$pkgdata{$pkg}{arch}\n";
+                        _(' in ')."%{_debdir}/$pkgdata{$pkg}{arch}\n";
     }
 
   } # subpackage loop
@@ -1574,8 +1758,12 @@ sub splitver {
      $req .= $ver if $ver;
   }
   # Pick up the details of versioned build requirements
-  my ($pkg,$rel,$ver) = $req =~ /([\w.+-]+)\s*([><=]+)\s*([\w:.~+-]+)/;
+  my ($pkg,$rel,$ver) = $req =~ /([\w.+\-()]+)\s*([><=]+)\s*([\w:.~+-]+)/;
+  $pkg =~ s/\(([^\)]+)\)/-$1/g;
   $rel =~ s/^([><])$/$1$1/;
+
+  $pkg = unify_pkg_name($pkg);
+
   return ($pkg,$rel,$ver);
 } # end splitver()
 
@@ -1716,17 +1904,10 @@ sub getreqs {
 
   my @reqlist;
   my $pid = open2(\*IN,\*OUT,"LANG=C $specglobals{__xargs} $specglobals{__ldd}");
-  my $thread = async {
-    close IN;
-    print OUT join ' ', @binlist;
-    close OUT;
-  };
-  {
-    close OUT;
-    @reqlist = grep { not m|^/| } <IN>;
-    close IN;
-  }
-  $thread->join();
+  print OUT join ' ', @binlist;
+  close OUT;
+  @reqlist = grep { not m|^/| } <IN>;
+  close IN;
   waitpid($pid,0);
 
   # Get the list of libs provided by this package.  Still doesn't
@@ -1736,6 +1917,7 @@ sub getreqs {
   my $reqliblist;
   foreach (@reqlist) {
     next if /not a dynamic executable/;
+    next if /statically linked/;
     next if m|/lib(?:64)?/ld-linux|;	# Hack! Hack!  PTHBTT!  (libc suxx0rz)
     next if /linux-(gate|vdso).so/;	# Kernel hackery for teh W1n!!1!1eleventy-one!1  (Don't ask.  Feh.)
 
@@ -1747,8 +1929,8 @@ sub getreqs {
     }
 
     my ($req) = m|=\>\s+([\w./+-]+)|; # dig out the actual library (so)name.
-	# And feh, we need the *path*, since I've discovered a new edge case where
-	# the same libnnn.1.2.3 *file*name is found across *several* lib dirs.  >:(
+    # And feh, we need the *path*, since I've discovered a new edge case where
+    # the same libnnn.1.2.3 *file*name is found across *several* lib dirs.  >:(
 
     # Ignore libs provided by this package.  Note that we don't match
     # on word-boundary at the *end* of the lib we're looking for, as the
@@ -1784,13 +1966,10 @@ sub install_sdeb {
 # Helper function for writing to the %macro storage(s)
 sub store_value {
   my ($caller, $key, $value) = @_;
-  # Handle multiline macro definitions
-  if ($value =~ s/\\$/\\\n/) {
-    while (<$fh>) {
-      $value .= $_;
-      last unless /\\$/;
-    }
-  }
+
+  $debug_level = $value if $key eq "_debbuild_debug_level";
+  vdebug("$caller: $key = $value", 5, "store_value");
+
   # Strip and store '%macro(options)'
   $macroopts{$key} = $1 if $key =~ s/\((.*)\)//;
   my $recipient = ( grep { lc $key eq $_ } qw(summary name version
@@ -1812,133 +1991,246 @@ sub store_value {
 ## expandmacros()
 # Expands all %{blah} macros in the passed string
 sub expandmacros {
-  local $_ = shift;
-  return $_ unless /%/; # nothing to substitute
-
-  # support for **some** %if constructs: handle '%{?conditional:macros}'
-  # with nested curly braces, all in one go!
-  while (my ($qex,$macro,$value) = map { /{([?!]+)(\w+)(?::(.+))?}/ }
-      bracelet() ) {
-    (my $initvalue = "%{$qex$macro".(defined $value ? ":$value" : '').'}')
-      =~ s/([?!{*}(+)])/\\$1/g; # neutralize quantifiers
-    $value //= ($specglobals{$macro} or '');
-    $value = '' unless $specglobals{$macro} xor $qex =~ /!/; # equivalence
-    $value = '' if $macro eq 'verbose' and defined $specglobals{$macro}; # shut up!
-    s/$initvalue/expandmacros($value)/eg;
+  # $s    : initial string with the macro to be expanded
+  #         it will be modified during the processing holding the rest part to expand
+  # $r    : resulting string after expanding the maco
+  # $orig : holding the original value of $, for debug purposes only
+  my $s = shift;
+  my $r = '';
+  my $orig = $s;
+  vdebug($s, 1, "expandmacros/input");
+  return '' unless defined($s);
+  sub expd_tocomplex {
+    my ($macro, $params) = @_;
+    return "%$macro $params" if $macro =~ /\A(description|dir|doc|exclude|ghost|package|if(?:n?arch|)|else|endif|post(?:un)?|pre(?:un)?)\z/
+                                          or not defined($macroopts{$macro});
+    return "%{$macro $params}";
   }
-  pos = 0; # reset to start of $_
-
-  # Process %define's and Conditional Build Stuff
-  s/%(bcond_with(?:out)?)\s+(\S+)/%{$1 $2}/g;
-  # Store %globals (from '%bcond_with[out]()' in 'macros[.in]')
-  s/%(define|global)\s+(\S+)\s+(.+)/store_value($1,$2,$3)/eg;
-  die _('Missing value for \'%')."$1 $2".
-      _('\'.  Aborting!') if m/%(define|global)\s+(.+)/;
-  # Permit unsetting/deleting of stored values
-  { no warnings; s/%(undefine)\s+(\S+)/store_value($1,$2)/eg; }
-  # Print the active macro table
-  s/^\s*%dump/dump_macros()/e;
-  # Is debbuild in verbose mode?
-  s/%verbose/defined $specglobals{verbose} ? $specglobals{verbose} : ''/eg;
-
-  # Replace global macros
-  while (m/%(\w+)/g) {
-    my $macro = $1;
-    s/%$macro(\W|$)/%{$macro}$1/g if grep { $macro eq $_ }
-        qw(optflags getconfdir sources patches)
-      or defined $specglobals{$macro}
-      or defined $pkgdata{main}{$macro};
+  $s =~ s/(?:\A|\R)\s*?%(define|undefine|global)\s+(\S+)\s*((?:.*\\\n)*.*|.*)/store_value($1,$2,$3);''/eg;
+  $s =~ s/(\A|\R[ \t]*)%([a-zA-Z_]\w+)[ \t]+(.*)/$1.expd_tocomplex($2, $3)/eg;
+  my $l = length $s;
+  sub expd_simple {
+    # $m      : initial string with the macro to be expanded
+    # $orig_m : original value of $m. used for debugging and some special cases
+    my $m = shift;
+    my $orig_m = $m;
+    my $macroparms = {'#' => 0};
+    foreach my $ms ( @macro_param_stack ) {
+      $macroparms = $ms;
+      last if $macroparms->{'#'};
+    }
+    if ( $m =~ /\A(\d+|#|\*{1,2})\z/ ) {
+      $m = defined($macroparms->{$1}) ? $macroparms->{$1} : '';
+    } elsif ( $m eq 'dump' ) {
+      $m = dump_macros();
+    } elsif ( $m eq 'optflags' ) {
+      $m = ($pkgdata{main}{arch} and $optflags{$pkgdata{main}{arch}}) ?
+           $optflags{$pkgdata{main}{arch}} : '';
+    } elsif ( $m eq 'getconfdir' ) {
+      $m = $specglobals{_prefix}."/lib/debbuild";
+    } elsif ( $m eq 'sources' ) {
+      $m = join ' ', sources();
+    } elsif ( $m eq 'patches' ) {
+      $m = join ' ', sources();
+    } elsif ( $m eq 'source' ) {
+      $m = "%{_sourcedir}/".$pkgdata{main}{source};
+    } elsif ( $m =~ /^source(\d+)/i ) {
+      $m = defined($pkgdata{sources}{$1}) ? "%{_sourcedir}/".$pkgdata{sources}{$1} : '';
+    } elsif ( $m =~ /^(patch\d+)/i ) {
+      $m = defined($pkgdata{main}{$1}) ? "%{_sourcedir}/".$pkgdata{main}{$1} : '';
+    } elsif ( defined($specglobals{$m}) ) {
+      my $macro = $m;
+      $m = $specglobals{$m};
+      if ( $m =~ /\A%\{lua:/ ) {
+        my $tst = $m;
+        $tst =~ s/\A%//;
+        if ( defined(find_bracketed($tst, '{}')) ) {
+          $m =~ s/\A%\{lua:\s+//;
+          $m =~ s/\}\s*\z//;
+          my %macroparms = ();
+          $macroparms{0} = $macro;
+          $macroparms{'#'} = 0;
+          $macroparms{'**'} = $macroparms{'*'} = '';
+          unshift @macro_param_stack, \%macroparms;
+          $m = lua_macro($m);
+          shift @macro_param_stack;
+        }
+      }
+    } elsif ( defined($pkgdata{main}{$m}) ) {
+      $m = $pkgdata{main}{$m};
+    } else {
+      $m = '%'.$m;
+    }
+    vdebug($orig_m, 5, "expandmacros/simple/in");
+    my $i = scalar @macro_param_stack;
+    vdebug("Parameterized macro stack: [".($i)."]", 7, "expandmacros/simple/stack");
+    foreach my $ms ( @macro_param_stack ) {
+      vdebug("[$i] ".$ms->{'0'}." / ".$ms->{'#'}.": ".$ms->{'**'}, 7, "expandmacros/simple/stack");
+      $i--;
+    }
+    vdebug($m, 5, "expandmacros/simple/out");
+    return ($m eq $orig_m or $m eq '%'.$orig_m) ? $m : expandmacros($m);
   }
-  s/%\{optflags}/$optflags{$pkgdata{main}{arch}}/g if $pkgdata{main}{arch};
-  s|%\{getconfdir}|$specglobals{_prefix}/lib/debbuild|g;
-  s|%\{sources}|expandmacros( join ' ', sources() )|eg;
-  s|%\{patches}|expandmacros( join ' ', patches() )|eg;
-
-  # Package data
-  s|%\{source}|%{_sourcedir}/$pkgdata{main}{source}|gi;
-  foreach my $source (keys %{$pkgdata{sources}}) {
-    s/%\{S:$source}/%{source$source}/g;
-    s|%\{source$source}|%{_sourcedir}/$pkgdata{sources}{$source}|gi;
+  sub expd_complex {
+    # $m      : initial string with the macro to be expanded
+    # $orig_m : original value of $m. used for debugging and some special cases
+    my $m = shift;
+    my $orig_m = $m;
+    # $qex    : is used to store conditional extentions of the expanded macro, depending on type of the macro
+    my ($qex, $macro, $value);
+    my $macroparms = {'#' => 0};
+    foreach my $ms ( @macro_param_stack ) {
+      $macroparms = $ms;
+      last if $macroparms->{'#'};
+    }
+    if ( ($macro,$qex) = $m =~ /\A\{\??(\d+|#|\*{1,2}|\-\w)(\*?)\}\z/ ) {
+      $m = defined($macroparms->{$macro}) ? (($macro =~ /\A\-/ and $qex ne '*') ? $macro : $macroparms->{$macro}) : '';
+    } elsif ( ($qex,$macro,$value) = $m =~ /\A\{([?!]*)(\d+|#|\*{1,2}|\-\w\*?)(?::(.+))\}\z/ ) {
+      $value //= (defined($macroparms->{$macro}) ? $macroparms->{$macro} : '');
+      $value = '' unless defined($macroparms->{$macro}) xor $qex =~ /!/; # equivalence
+      $m = expandmacros($value);
+    } elsif ( ($qex,$macro,$value) = $m =~ /\A\{([?!]+)(\w+)(?::(.+))?\}\z/m ) {
+      $value //= ($specglobals{$macro} or '');
+      $value = '' unless $specglobals{$macro} xor $qex =~ /!/; # equivalence
+      $value = '' if $macro eq 'verbose' and defined $specglobals{$macro}; # shut up!
+      $m = expandmacros($value);
+    } elsif ( my ($prefix,$arg) = $m =~ /\A\{(\w+):(.*)\}\z/s ) {
+      if ( $prefix eq 'lua' ) {
+        my %macroparms = ();
+        $macroparms{0} = '_ANONYMOUS_MACRO_';
+        $macroparms{'#'} = 0;
+        $macroparms{'**'} = $macroparms{'*'} = '';
+        unshift @macro_param_stack, \%macroparms;
+        $m = lua_macro($arg);
+        shift @macro_param_stack;
+      } elsif ( $prefix eq 'url2path' or $prefix eq 'u2p' ) {
+        $arg = expandmacros($arg);
+        $arg =~ s|\w+://[\w.:-]+||;
+        $m = $arg;
+      } elsif (grep {$prefix eq $_} qw(basename dirname uncompress)) {
+        no strict qw(refs); # we use strings as function refs
+        $m =  expandmacros(&$prefix($arg));
+      } elsif ($prefix eq 'suffix') {
+        my (undef,undef,$suffix) = fileparse($arg,qr/\.[^.]*/);
+        $m = $suffix;
+      } elsif ($prefix eq 'getenv') {
+        # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
+        $m = defined($ENV{$arg}) ? $ENV{$arg} : '';
+      } elsif (grep { $prefix eq $_ } qw(expand quote)) {
+        # helper for parametrized macros and quoted macro arguments
+        $m = expandmacros($arg);
+      } elsif ($prefix eq 'shrink') {
+        # trim leading, trailing, and intermediate whitespace
+        $arg =~ s/^\s+|\s+//g; $arg =~ s/\s+/ /g;
+        $m = $arg;
+      } elsif ($prefix eq 'verbose') {
+        # 'positive verbosity'
+        $m = defined $specglobals{$prefix} ? $arg : '';
+      } elsif ($prefix eq 'S') {
+        $m = expd_simple('source'.$arg);
+      } elsif ($prefix eq 'P') {
+        $m = expd_simple('patch'.$arg);
+      }
+    } elsif ( my ($macra,$spc,$args) = $m =~ /\A\{(\w+)(\s+)(.+)\}\z/s ) {
+      $m = expandmacros(handle_macro_options("%$macra $args"));
+    } elsif ( my ($smpl) = $m =~ /\A\{\$?([a-z_]\w*)\s*\}\z/i ) {
+      $m = expd_simple($smpl);
+    }
+    vdebug($orig_m, 5, "expandmacros/complex/in");
+    my $i = scalar @macro_param_stack;
+    vdebug("Parameterized macro stack: [".($i)."]", 7, "expandmacros/complex/stack");
+    foreach my $ms ( @macro_param_stack ) {
+      vdebug("[$i] ".$ms->{'0'}." / ".$ms->{'#'}.": ".$ms->{'**'}, 7, "expandmacros/complex/stack");
+      $i--;
+    }
+    vdebug($m, 5, "expandmacros/complex/out");
+    return ($m eq $orig_m) ? '%'.$m : $m;
   }
-  s/%\{P:(\d+)}/%{patch$1}/g;
-  s|%\{(patch\d*)}|%{_sourcedir}/$pkgdata{main}{$1}|gi;
-
-  # Globals, and not-so-globals
-  # special %define's.  Handle the general case where we eval anything.
-  # Even more general:  %(...) is a spec-parse-time shell code wrapper.
-  # Prime example from 'macros.perl':
-  # %define perl_vendorlib %(eval "`perl -V:installvendorlib`"; echo $installvendorlib)
-    # Oy vey this gets silly for the perl bits.  Executing a shell to
-    # call Perl to get the vendorlib/sitelib/whatever "core" globals.
-    # This can do more, but...  eww.
-  s/%\((.+)\)/my $in = expandmacros($1); chomp(my $res = qx($in)); $res/eg;
-    # Yay!  ' characters apparently get properly exscapededed.
-
-  # handle '%{parametrized macros}' with nested curly braces, all in one go!
-  while (my ($prefix,$spc,$arg) = map { /{(\w+)(\s+)(.+)}/ } bracelet() ) {
-    (my $initvalue = "%{$prefix$spc$arg}") =~ s/([{+}])/\\$1/g; # neutralize curlies
-    s/$initvalue/handle_macro_options("%$prefix $arg")/eg;
+  sub expd_exec {
+    my ($cmd) = @_;
+    my $out = '';
+    $cmd =~ s/\\\$/\$/g;
+    $cmd =~ s/\\\\n/\\n/g;
+    open(my $cmd_fh, '-|', $build_shell, '-c', $cmd) or return $r;
+    while ( <$cmd_fh> ) {
+      $out .= $_;
+    }
+    close($cmd_fh);
+    chomp($out);
+    return $out;
   }
-  pos = 0; # reset to start of $_
-
-  # handle '%{prefixed:macros}' with nested curly braces, all in one go!
-  s/url2path/u2p/g;
-  while (my ($prefix,$arg) = map { /{(\w+):(.+)}/ } bracelet() ) {
-    (my $initvalue = "%{$prefix:$arg}") =~ s/([?!{+}])/\\$1/g; # neutralize specials
-    $arg = expandmacros($arg);
-    if ($prefix eq 'u2p') {
-      # curious form of 'basename'? - strip domain host (and port)
-      $arg =~ s|\w+://[\w.:-]+||;
-      s/$initvalue/$arg/g;
-    } elsif (grep {$prefix eq $_} qw(basename dirname uncompress)) {
-      no strict qw(refs); # we use strings as function refs
-      s/$initvalue/&$prefix($arg)/eg;
-    } elsif ($prefix eq 'suffix') {
-      my (undef,undef,$suffix) = fileparse($arg,qr/\.[^.]*/);
-      s/$initvalue/$suffix/g;
-    } elsif ($prefix eq 'getenv') {
-      # support '%{getenv:HOME}' alongside '%(echo $HOME)'.
-      s/$initvalue/$ENV{$arg}/g;
-    } elsif (grep { $prefix eq $_ } qw(expand quote)) {
-      # helper for parametrized macros and quoted macro arguments
-      s/$initvalue/$arg/g;
-    } elsif ($prefix eq 'shrink') {
-      # trim leading, trailing, and intermediate whitespace
-      $arg =~ s/^\s+|\s+//g; $arg =~ s/\s+/ /g;
-      s/$initvalue/$arg/g;
-    } elsif ($prefix eq 'verbose') {
-      # 'positive verbosity'
-      defined $specglobals{$prefix} ? s/$initvalue/$arg/g : s/$initvalue//g;
+  while ( $l ) {
+    if ( $s =~ /%+/ ) {
+      $r .= $`;
+      $s = $';
+      my $qs = $&;
+      my $ql = length $qs;
+      $l -= length($`) + $ql;
+      $r .= '%' x ($ql-1);
+      next if $ql > 1;
+      if ( $s =~ /\A[\w\*\#]+/ ) {
+        my $m = $&;
+        $s = $';
+        $l -= length $m;
+        if ( $m =~ /\A(description|dir|doc|exclude|ghost|package|if(?:n?arch|)|else|endif|post(?:un)?|pre(?:un)?)\z/ ) {
+          $r .= "%".$m;
+        } else {
+          $r .= expd_simple($m);
+        }
+      } elsif ( $s =~ /\A\{/ ) {
+        my $m = '{';
+        $s = $';
+        my $tr;
+        do {
+          if ( $s =~ /\}/ ) {
+            $m .= $`.$&;
+            $s = $';
+            $tr = defined(find_bracketed($m, '{}'));
+            if ( $tr ) {
+              $r .= expd_complex($m);
+              $l -= length $m;
+            }
+          } else {
+            $r .= '%'.$m;
+            $l -= length $m;
+            $tr = 1;
+          }
+        } until $tr;
+      } elsif ( $s =~ /\A\(/ ) {
+        my $m = '(';
+        $s = $';
+        my $tr;
+        do {
+          if ( $s =~ /\)/ ) {
+            $m .= $`.$&;
+            $s = $';
+            $tr = defined(find_bracketed($m, '()'));
+            if ( $tr ) {
+              $m =~ s/\A\(//;
+              $m =~ s/\)\z//;
+              $r .= expd_exec(expandmacros($m));
+              $l -= length $m;
+            }
+          } else {
+            $r .= '%'.$m;
+            $l -= length $m;
+            $tr = 1;
+          }
+        } until $tr;
+      } else {
+        $r .= '%';
+      }
+    } else {
+      $r .= $s;
+      $l = 0;
+      $s = '';
     }
   }
-  pos = 0; # reset to start of $_
-
-  # Expand 'simple' '%{macros}': %define's and %{all_the_rest}
-  while (/%\{([a-z_]\w*)}/ig) {
-    my $key = $1;
-    if (defined $specglobals{$key}) {
-      s/%\{$key}/expandmacros($specglobals{$key})/eg;
-    } elsif (defined $pkgdata{main}{$key}) {
-      s/%\{$key}/expandmacros($pkgdata{main}{$key})/eg;
-    }
-  }
-  pos = 0; # reset to start of $_
-
-  # unescape multi-line macros
-  s/\\"/"/g;
-  s/\\\\(\w)/\\$1/g;
-  s/(\S)\\+\n/$1\n/g;
-  # revert changes of dir macro because of spcial use in %files
-  s/%\{dir\}/%dir/g;
-  return $_;
+  $r =~ s/\\\\(\w)/\\$1/g;
+  vdebug($orig, 5, "expandmacros/in");
+  vdebug($r, 5, "expandmacros/out");
+  return $r;
 } # end expandmacros()
-
-
-## bracelet()
-# Shortcut for extracting paired curly braces
-sub bracelet {
-  return extract_multiple($_, [ sub { extract_bracketed($_[0],'{}') } ]);
-} # end bracelet()
 
 
 ## handle_macro_options()
@@ -1947,44 +2239,275 @@ sub bracelet {
 # tricks to make it work with 'string input'.
 sub handle_macro_options {
   my $inline = shift;
-  my ($macro,$argv) = $inline =~ /%(\w+)(?:\s+(.+))?/;
+  my ($macro,$argv) = $inline =~ /%(\w+)(?:\s+(.+))?/s;
+  if ( not defined($macroopts{$macro}) ) {
+    return expandmacros("%{$macro} $argv");
+  }
+  $argv = expandmacros($argv);
+  vdebug("$macro | $argv / $inline", 5, "handle_macro_options/in");
+  if ( $macro eq 'if' ) {
+    chomp( my $expr = expandmacros($argv) );
+    if ($expr =~ /^[\d\s<=>&|\(\)+-]+$/) {
+      # "plain" numeric expressions are evaluated as-is, except
+      $expr =~ s/(\D)0(\d+)/$1$2/g; # shortcut 0%{?ubuntu} == 1204
+    } else {
+      # Done in this order so we don't cascade incorrectly.
+      # Yes, those spaces ARE correct in the replacements!
+      $expr =~ s/==/ eq /g;
+      $expr =~ s/!=/ ne /g;
+      $expr =~ s/<=>/ cmp /g;
+      $expr =~ s/<=/ le /g;
+      $expr =~ s/>=/ ge /g;
+      $expr =~ s/</ lt /g;
+      $expr =~ s/>/ gt /g;
+    }
+    return (eval $expr or 0);
+  }
   local @ARGV = split ' ',$argv if $argv;
-  my %options; # store result of 'getopts()'
-  my @nonoptions; # store all 'other' arguments
+  my $argc = scalar @ARGV;
+  my %options = (); # store result of 'getopts()'
+  my @nonoptions = (); # store all 'other' arguments
   while (@ARGV) { # separate options and non-options
     push @nonoptions, shift @ARGV while @ARGV and $ARGV[0] !~ m/^-/;
+    my $ac = scalar @ARGV;
     getopts($macroopts{$macro},\%options) if $macroopts{$macro};
+    push @nonoptions, shift @ARGV if $ac and $ac == scalar @ARGV;
   }
-  local $_ = $specglobals{$macro};
-  while (my ($qex,$arg,$value) = map { /{([?!]+)(\d+)(?::(.+))?}/ }
-      bracelet() ) { # handle '%{?2:%{2}}' et al.
-    (my $initvalue = "%{$qex$arg".(defined $value ? ":$value" : '').'}')
-      =~ s/([?!{+}])/\\$1/g; # neutralisation
-    $value //= "%{$arg}";
-    $value = '' unless defined $nonoptions[$arg-1] xor $qex =~ /!/; # equivalence
-    s/$initvalue/$value/g;
-  }
-  pos = 0; # reset to start of $_
-  while (my ($option,$repl) = map { /{-(\w):\s*(\S+)}/ } bracelet() ) {
-    (my $result = $options{$option} ? $repl : '') =~ s/%\{-(\w)\*}/$options{$1}/g;
-    $repl =~ s/([*{}])/\\$1/g; # mask Perlish special characters
-    s/%\{-$option:\s*$repl}/$result/g;
-  }
-  pos = 0; # reset to start of $_
-  while (my ($option) = map { /{-(\w)(?:\*)?}/ } bracelet() ) {
-    my $result = $options{$option} ? "-$option" : '';
-    s/%\{-$option}/$result/g;
-    s/%\{-($option)\*}/$options{$1}/g;
-  }
-  s/%%/%/g; # reduce level of macronization
-  s/\s+\\+\n/\n/g; # prepare for multi-line shipment
-  s/%\{?0\}?/$macro/g; # the name of the macro invoked
-  s/%\{\?\*\}/join(' ',@nonoptions)/eg; # replace 'all arguments'
+  my %macroparms = ();
+  $macroparms{0} = $macro;
   for my $i (1..@nonoptions) { # fill '%{i}' parameters
-    s/%\{?$i\}?/$nonoptions[$i-1]/g;
+    $macroparms{$i} = $nonoptions[$i-1];
   }
-  return $_;
+  $macroparms{'**'} = $argv;
+  $macroparms{'*'} = join(' ', @nonoptions);
+  $macroparms{'#'} = $argc;
+  foreach my $f ( keys %options ) {
+    vdebug("$f = ".$options{$f}, 5, "handle_macro_options/flag");
+    $macroparms{'-'.$f} = $options{$f};
+  }
+  unshift @macro_param_stack, \%macroparms;
+  vdebug($macro.": ".$argv, 5, "handle_macro_options/expanding/".(scalar @macro_param_stack));
+  my $m = $specglobals{$macro};
+  if ( $m =~ /\A%\{lua:/ ) {
+    my $tst = $m;
+    $tst =~ s/\A%//;
+    if ( defined(find_bracketed($tst, '{}')) ) {
+      $m =~ s/\A%\{lua:\s+//;
+      $m =~ s/\}\s*\z//;
+      $m = lua_macro($m);
+    } else {
+      $m = expandmacros($m);
+    }
+  } else {
+    $m = expandmacros($m);
+  }
+  shift @macro_param_stack;
+  vdebug($m, 5, "handle_macro_options/ret");
+  return $m;
 } # end handle_macro_options()
+
+
+sub lua_get {
+  my ($v, $d) = @_;
+  my $r;
+  eval('$r = '.$v);
+  return defined($r) ? $r : $d;
+}
+
+
+sub lua_traceback  {
+  my ($L) = @_;
+  return 1
+    if (! $L->isstring(1));  # 'message' not a string? keep it intact
+  $L->getfield(lua_get('Lua::API::GLOBALSINDEX'), "debug");
+  if (! $L->istable(-1)) {
+    $L->pop(1);
+    return 1;
+  }
+  $L->getfield(-1, "traceback");
+  if (! $L->isfunction(-1)) {
+    $L->pop(2);
+    return 1;
+  }
+  $L->pushvalue(1);          # pass error message
+  $L->pushinteger(2);        # skip this function and traceback
+  $L->call(2, 1);            # call debug.traceback
+  return 1;
+}
+
+
+sub lua_print {
+  my ($L) = @_;
+  my $n = $L->gettop();
+  my $dbg = 'UNDEF';
+  if ( @macro_param_stack and $debug_level >= 7 ) {
+    $dbg = $macro_param_stack[0]->{0};
+  }
+  for ( my $i = 1; $i <= $n; $i++ ) {
+    my $p = $L->tostring($i);
+    vdebug($p, 7, "lua_print/$n/$i/$dbg/$lstk[0]");
+    $lstk[0]->{stdout} .= ($i >1 ? "\t" : "").$p;
+  }
+}
+
+
+sub lua_vdebug {
+  my ($L) = @_;
+  my $n = $L->gettop();
+  if ( $n >= 3 ) {
+    my $msg = $L->tostring(1);
+    my $vbl = $L->tointeger(2);
+    my $tag = $L->tostring(3);
+    vdebug($msg, $vbl, "lua/".$tag);
+  } else {
+    vdebug("Not enough parameters", 3, "lua/vdebug");
+  }
+}
+
+
+sub lua_rpm_expand {
+  my ($L) = @_;
+  my $p = $L->checkstring(1);
+  my $r = expandmacros($p);
+  $r =~ s/\\n/\n/g;
+  $r =~ s/\n /\n/g;
+  $L->pushstring($r);
+  vdebug($p, 4, "lua_rpm_expand/in");
+  vdebug($r, 4, "lua_rpm_expand/out");
+  return 1;
+}
+
+
+sub lua_rpm_define {
+  my ($L) = @_;
+  my $p = $L->tostring(1);
+  vdebug($p, 4, "lua_rpm_define");
+  if ( my ($macro,$eq,$value) = $p =~ /^(\w+(?:\([^)]*\))?)(=|\s*)(.+)$/ ) {
+    store_value('define', $macro, $value);
+  }
+  return 0;
+}
+
+
+sub lua_posix_getcwd {
+  my ($L) = @_;
+  my $r = getcwd();
+  $L->pushstring($r);
+  vdebug($r, 4, "lua_posix_getcwd");
+  return 1;
+}
+
+
+sub lua_posix_stat {
+  my ($L) = @_;
+  my $n = $L->gettop();
+  if ( $n < 2 ) {
+    $L->pushnil();
+    return 1;
+  }
+  my $f = $L->tostring(1);
+  my $p = $L->tostring(2);
+  my %c = (
+    'dev'     =>  0, 'ino'     =>  1, 'mode'    =>  2,
+    'nlink'   =>  3, 'uid'     =>  4, 'gid'     =>  5,
+    'rdev'    =>  6, 'size'    =>  7, 'atime'   =>  8,
+    'mtime'   =>  9, 'ctime'   => 10, 'blksize' => 11,
+    'blocks'  => 12
+  );
+  my @r = stat($f);
+  if ( not @r ) {
+    vdebug("$f / $p => FILE NOT FOUND", 4, "lua_posix_stat");
+    $L->pushnil();
+    return 1;
+  }
+  my $r = defined($c{$p}) ? $r[$c{$p}] : undef;
+  vdebug("$f / $p => @r ($p: ".(defined($r) ? $r : "UNKNOWN").")", 4, "lua_posix_stat");
+  if ( not defined($r) ) {
+    $L->pushnil();
+    return 1;
+  }
+  $L->pushinteger($r);
+  return 1;
+}
+
+
+sub lua_pmain {
+  my ($L)  = @_;
+  my $m = $lstk[0]->{m};
+  my $st = $L->loadstring($m);
+  if ( $st == 0 ) {
+    my $base = $L->gettop();            # function index
+    $L->pushcfunction(\&lua_traceback); # push traceback function
+    $L->insert($base);                  # put it under chunk and args
+    $st = $L->pcall(0, 0, $base);
+    $L->remove($base);                  # remove traceback function
+  }
+  if ($st && !$L->isnil(-1)) {
+    my $msg = $L->tostring(-1);
+    $msg = _("(error object is not a string)") if ! defined $msg;
+    warn _("Lua Error:")."\n".$msg;
+    $lstk[0]->{error} = 1;
+    $L->pop(1);
+  }
+  return 0;
+}
+
+
+sub lua_init {
+  my $lsh = lua_get('Lua::API::State->new()');
+  if ( $lsh ) {
+    my $L = $lsh->open();  # create state
+    if (! defined $L ) {
+      vdebug("Lua Error: Cannot create state!", 3, "lua_init");
+      die _("Lua Error: Cannot create state!");
+    }
+    $L->openlibs;
+    $L->register("print", \&lua_print);
+    $L->register("vdebug", \&lua_vdebug);
+    my %rpm_lib = ('expand' => \&lua_rpm_expand,
+                   'define' => \&lua_rpm_define);
+    $L->register("rpm", \%rpm_lib);
+    my %posix_lib = ('getcwd' => \&lua_posix_getcwd,
+                     'stat'   => \&lua_posix_stat);
+    $L->register("posix", \%posix_lib);
+    return $L;
+  } else {
+    vdebug("Lua Error: Unable to open Lua::API::State!", 3, "lua_init");
+    die _("Lua Error: Unable to open Lua::API::State!");
+  }
+  return;
+}
+
+
+sub lua_macro {
+  my ($m) = @_;
+  die _("Lua module not loaded! The following macro can't be expanded:")."\n".
+        $m."\n"._("# end of the ommited macro") unless ( $lua_present );
+  unless ( defined($gL) ) {
+    $gL = lua_init();
+  }
+  return '' unless defined($gL);
+  my $r = {m => $m, stdout => ''};
+  unshift @lstk, $r;
+  my $st = $gL->cpcall(\&lua_pmain, undef);
+  shift @lstk;
+  $r->{stdout} =~ s/\s+\z//s;
+  if ( $debug_level >= 7 ) {
+    vdebug($r->{stdout}, 7, "lua_print/out/$r");
+    vdebug("Lua macro (in):\n".$m."\n# end of the macro", 7, "lua_macro/in");
+    if ( @macro_param_stack ) {
+      my $i = scalar @macro_param_stack;
+      vdebug("Parameterized macro stack: [".($i)."]", 7, "lua_macro/stack");
+      foreach my $ms ( @macro_param_stack ) {
+        vdebug("[$i] ".$ms->{'0'}." / ".$ms->{'#'}.": ".$ms->{'**'}, 7, "lua_macro/stack");
+        $i--;
+      }
+    }
+    vdebug("Lua macro (out):\n".$r->{stdout}."\n# end of the macro out", 7, "lua_macro/out");
+  }
+  exit(16) if $r->{error};
+  return $r->{stdout};
+}
 
 
 =pod
@@ -2006,6 +2529,8 @@ debbuild — Build Debian-compatible .deb packages from RPM .spec files
 =item 2015-2019 © Neal Gompa L<ngompa13@gmail.com>
 
 =item 2017-2019 © Datto, Inc. L<https://datto.com>
+
+=item 2020-2021 © Victor Zhestkov L<vzhestkov@suse.com>
 
 =back
 
