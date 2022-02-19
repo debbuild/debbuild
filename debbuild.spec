@@ -60,11 +60,26 @@ Recommends:     unzip
 Recommends:     zip
 Recommends:     zstd
 
+Recommends:     %{name}-lua-support
+
 %description
 debbuild attempts to build Debian-friendly semi-native packages from
 RPM spec files, RPM-friendly tarballs, and RPM source packages
 (.src.rpm files).  It accepts most of the options rpmbuild does, and
 should be able to interpret most spec files usefully.
+
+%package lua-support
+Summary:        Lua macro support for debbuild
+Requires:       %{name} = %{version}-%{release}
+%if "%{_vendor}" == "debbuild"
+Requires:       liblua-api-perl
+%else
+Requires:       perl(Lua::API)
+%endif
+
+%description lua-support
+This package adds the dependencies to support RPM macros
+written the Lua programming language.
 
 %prep
 # Steps to unpack and patch source as needed
@@ -88,6 +103,9 @@ make
 %{_mandir}/man8/*
 %{debconfigdir}/
 %{_sysconfdir}/debbuild/
+
+%files lua-support
+# Empty metapackage
 
 %changelog
 * Mon Dec 28 2020 Neal Gompa <ngompa13@gmail.com>
