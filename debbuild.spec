@@ -108,6 +108,9 @@ make
 # Empty metapackage
 
 %changelog
+* Sat Feb 19 2022 Neal Gompa <ngompa13@gmail.com>
+- Add subpackage for pulling in support for RPM macros written in Lua
+
 * Mon Dec 28 2020 Neal Gompa <ngompa13@gmail.com>
 - Quote words on both sides of string comparisons for RPM 4.16+ compatibility
 
