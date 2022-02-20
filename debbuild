@@ -2135,6 +2135,7 @@ sub expandmacros {
       $m = expandmacros(handle_macro_options("%$macra $args"));
     } elsif ( my ($smpl) = $m =~ /\A\{\$?([a-z_]\w*)\s*\}\z/i ) {
       $m = expd_simple($smpl);
+      $m = '%{'.$smpl.'}' if ( $m eq '%'.$smpl );
     }
     vdebug($orig_m, 5, "expandmacros/complex/in");
     my $i = scalar @macro_param_stack;
@@ -2151,7 +2152,7 @@ sub expandmacros {
     my $out = '';
     $cmd =~ s/\\\$/\$/g;
     $cmd =~ s/\\\\n/\\n/g;
-    open(my $cmd_fh, '-|', $build_shell, '-c', $cmd) or return $r;
+    open(my $cmd_fh, '-|', $build_shell, '-c', $cmd) or return $out;
     while ( <$cmd_fh> ) {
       $out .= $_;
     }
