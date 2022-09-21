@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: 2022-09-17 14:19+0000\n"
+"PO-Revision-Date: 2022-09-21 11:19+0000\n"
 "Last-Translator: Fernandez Alonso Alberto Mario <albialonso7@icloud.com>\n"
 "Language-Team: Italian <https://translate.fedoraproject.org/projects/"
 "debbuild/master/it/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14\n"
+"X-Generator: Weblate 4.14.1\n"
 
 #: debbuild:1624
 msgid "  Continuing anyway.\n"
@@ -116,7 +116,7 @@ msgstr "', continuando\n"
 
 #: debbuild:1828
 msgid "'.  Aborting!"
-msgstr ""
+msgstr "'.  Interruzione!"
 
 #: debbuild:518
 msgid ") barfed:  "
@@ -146,12 +146,12 @@ msgstr ":  requisiti di costruzione non soddisfatti.\n"
 
 #: debbuild:769 debbuild:776 debbuild:861 debbuild:876
 msgid ":' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr ":' non è supportato in modo nativo dai pacchetti deb.\n"
 
 #: debbuild:868 debbuild:872
 #, perl-format
 msgid ":' outside %if wrapper\n"
-msgstr ""
+msgstr ":' all'esterno %if Involucro\n"
 
 #: debbuild:151
 msgid "Can't --rebuild with "
@@ -191,11 +191,11 @@ msgstr "Non posso aprire: "
 
 #: debbuild:770 debbuild:877
 msgid "Downgrading relationship to Enhances:.\n"
-msgstr ""
+msgstr "Relazione di Declassamento a Enhances:.\n"
 
 #: debbuild:1267
 msgid "Exec of "
-msgstr ""
+msgstr "Esecuzione di "
 
 #: debbuild:1263
 msgid "Executing ("
@@ -203,7 +203,7 @@ msgstr "Eseguendo ("
 
 #: debbuild:1770
 msgid "Extracted source package "
-msgstr ""
+msgstr "Pacchetto sorgente estratto "
 
 #: debbuild:1353
 msgid "File not found: "
@@ -216,109 +216,110 @@ msgstr "Perdendo valore per %"
 #: debbuild:343
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
 msgstr ""
+"Non è stato trovato alcun file 'os-release' o programma 'lsb_release'.\n"
 
 #: debbuild:516
 msgid "No .spec file specified!  Exiting.\n"
-msgstr ""
+msgstr "Nessun .file spec specificato!  Uscendo.\n"
 
 #: debbuild:49
 msgid "No .spec file to work with!  Exiting.\n"
-msgstr ""
+msgstr "Nessun  .file spec per lavorare!  Uscendo.\n"
 
 #: debbuild:161
 msgid "No tarfile specified!  Exiting.\n"
-msgstr ""
+msgstr "Nessun file di tar specificato!  Uscendo.\n"
 
 #: debbuild:1521
 msgid "Signed binary package "
-msgstr ""
+msgstr "Pacchetto binario firmato "
 
 #: debbuild:344
 msgid "Sorry, I quit.\n"
-msgstr ""
+msgstr "Mi dispiace, io smetto.\n"
 
 #: debbuild:980
 #, perl-format
 msgid "Suspect %setup tag '%setup"
-msgstr ""
+msgstr "Sospetto %setup tag '%setup"
 
 #: debbuild:483
 msgid "This is debbuild, version "
-msgstr ""
+msgstr "Questa è la versione debbuild "
 
 #: debbuild:1673
 msgid "To install all missing dependencies, run 'apt install "
-msgstr ""
+msgstr "Per installare tutte le dipendenze mancanti, eseguire 'apt install' "
 
 #: debbuild:1687
 msgid "To remove all conflicting dependencies, run 'apt remove "
-msgstr ""
+msgstr "Per rimuovere tutte le dipendenze in conflitto, eseguire 'apt remove "
 
 #: debbuild:445
 msgid "Unknown stage "
-msgstr ""
+msgstr "Palcoscenico sconosciuto "
 
 #: debbuild:564
 msgid "Unknown tag '%"
-msgstr ""
+msgstr "Tag sconosciuto '%"
 
 #: debbuild:635
 #, perl-format
 msgid "Unmatched %else at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "%else non corrispondente alla fine del file.  Manca %endif.\n"
 
 #: debbuild:621
 #, perl-format
 msgid "Unmatched %else in line "
-msgstr ""
+msgstr "Inarrivabile %else in linea "
 
 #: debbuild:638
 #, perl-format
 msgid "Unmatched %endif in line "
-msgstr ""
+msgstr "Inarrivabile %endif in linea "
 
 #: debbuild:618
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
-msgstr ""
+msgstr "%if non corrispondenti alla fine del file.  Mancano %else/%endif.\n"
 
 #: debbuild:892
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "%if non corrispondenti alla fine del file.  Manca %endif.\n"
 
 #: debbuild:777 debbuild:862
 msgid "Upgrading relationship to Requires:.\n"
-msgstr ""
+msgstr "Migliorando relazione per Richiedere:.\n"
 
 #: debbuild:469
 msgid "WARNING:  Missing value for macro "
-msgstr ""
+msgstr "ATTENZIONE:  Valore mancante per la macro "
 
 #: debbuild:768 debbuild:775 debbuild:860 debbuild:867 debbuild:875
 msgid "Warning:  '"
-msgstr ""
+msgstr "Attenzione:  '"
 
 #: debbuild:871
 msgid "Warning:  Debian-specific '"
-msgstr ""
+msgstr "Attenzione:  specifico per Debian '"
 
 #: debbuild:1305
 msgid "Warning:  symlinking manpage failed:  "
-msgstr ""
+msgstr "Attenzione:  collegamento alla pagina principale fallito:  "
 
 #: debbuild:1511
 msgid "Wrote binary package "
-msgstr ""
+msgstr "Pacchetto binario scritto "
 
 #: debbuild:1605
 msgid "Wrote source package "
-msgstr ""
+msgstr "Pacchetto fonte scritto "
 
 #: debbuild:1256
 msgid " script file "
-msgstr ""
+msgstr " script file "
 
 #: debbuild:517
 msgid "specfile ("
-msgstr ""
+msgstr "profilo specifico ("
