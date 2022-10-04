@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: 2022-09-23 10:19+0000\n"
+"PO-Revision-Date: 2022-10-04 01:19+0000\n"
 "Last-Translator: Yang Yulin <yylteam@icloud.com>\n"
 "Language-Team: Chinese (Simplified) <https://translate.fedoraproject.org/"
 "projects/debbuild/master/zh_Hans/>\n"
@@ -111,41 +111,41 @@ msgstr "找到“%exclude”关键字，忽略输入行\n"
 
 #: debbuild:981
 msgid "', continuing\n"
-msgstr ""
+msgstr "'，继续\n"
 
 #: debbuild:1828
 msgid "'.  Aborting!"
-msgstr ""
+msgstr "'。中止！"
 
 #: debbuild:518
 msgid ") barfed:  "
-msgstr ""
+msgstr ") 吐出(barfed)：  "
 
 #: debbuild:1663
 msgid "):  Need "
-msgstr ""
+msgstr "):  需要 "
 
 #: debbuild:1621
 msgid "**WARNING**  "
-msgstr ""
+msgstr "**警告**  "
 
 #: debbuild:622
 #, perl-format
 msgid ".  Missing %if.\n"
-msgstr ""
+msgstr ".  缺少 %if.\n"
 
 #: debbuild:639
 #, perl-format
 msgid ".  Missing %if/%else.\n"
-msgstr ""
+msgstr ".  缺少 %if/%else.\n"
 
 #: debbuild:179
 msgid ":  build requirements not met.\n"
-msgstr ""
+msgstr ":  未满足构建要求。\n"
 
 #: debbuild:769 debbuild:776 debbuild:861 debbuild:876
 msgid ":' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr ":' 它在 .deb 包本身不支持。\n"
 
 #: debbuild:868 debbuild:872
 #, perl-format
@@ -186,7 +186,7 @@ msgstr ""
 
 #: debbuild:1346
 msgid "Could not open: "
-msgstr ""
+msgstr "无法打开： "
 
 #: debbuild:770 debbuild:877
 msgid "Downgrading relationship to Enhances:.\n"
@@ -206,7 +206,7 @@ msgstr ""
 
 #: debbuild:1353
 msgid "File not found: "
-msgstr ""
+msgstr "未找到文件： "
 
 #: debbuild:1827
 msgid "Missing value for '%"
