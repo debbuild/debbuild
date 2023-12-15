@@ -100,9 +100,6 @@ my %targets = (p => 'Prep',
 		b => 'Build binary',
 		s => 'Build source');
 
-# Global file handle for multiline macro definitions
-my $fh;
-
 # Store filelist files from "%files -f <filename>"
 my %files_files=();
 
@@ -271,12 +268,16 @@ sub find_bracketed {
   return extract_bracketed($text, $brackets);
 }
 
-
 sub read_multiline_macro {
-  my ($value, $fh) = @_;
-  my $is_sub = ref($fh) eq 'CODE';
+  my ($value, $fh, $getline) = @_;
+
+  $getline = sub {
+    my ($fh) = @_;
+    return <$fh>;
+  } if !defined($getline);
+
   if ($value =~ /\\\n\z/) { # multi-line macro
-    while (my $l = $is_sub ? &$fh() : <$fh>) {
+    while (my $l = &$getline($fh)) {
       $value .= $l;
       last unless $l =~ /\\\n\z/s;
     }
@@ -287,7 +288,7 @@ sub read_multiline_macro {
     $value =~ s/\n\z//;
   }
   if ($value =~ s/%\{lua:\s*$/\{lua:\n/) { # multi-line LUA macro
-    while (my $l = $is_sub ? &$fh() : <$fh>) {
+    while (my $l = &$getline($fh)) {
       $value .= $l;
       last if find_bracketed($value, '{}');
     }
@@ -582,7 +583,7 @@ sub parse_spec {
   $pkgdata{main}{arch} //= expandmacros('%{_arch}');
 
   die _("No .spec file specified!  Exiting.\n") unless $specfile;
-  open $fh, $specfile or die _('specfile (').$specfile.
+  open my $fh, $specfile or die _('specfile (').$specfile.
     _(') barfed:  ')."$!\n";
 
   my @ifexpr = (); # Nested %if..%else..%endif conditionals
@@ -600,6 +601,7 @@ sub parse_spec {
 
   our @rbuf = ();
   sub spec_readline {
+    my ($fh) = @_;
     if ( @rbuf ) {
       $_ = shift @rbuf;
       $_ .= "\n";
@@ -607,7 +609,7 @@ sub parse_spec {
       $_ = <$fh>;
     }
   }
-LINE: while ( spec_readline() ) {
+LINE: while ( spec_readline($fh) ) {
     next if /^\s*#/ and $stage =~ /\A(preamble|files)\z/; # Ignore comments...
     next if /^\s*$/ and $stage =~ /\A(preamble|files)\z/; # ... and blank lines.
 
@@ -682,7 +684,7 @@ LINE: while ( spec_readline() ) {
 
       next LINE if $ifexpr[-1]; # This appears to be the only case we call false.
       my $iflevel = @ifexpr;
-      while ( spec_readline() ) { # Skip %if-block, inluding nested %if..%else..%endif
+      while ( spec_readline($fh) ) { # Skip %if-block, inluding nested %if..%else..%endif
         if (/^\s*%if/) {
           $iflevel++;
         } elsif (/^\s*%else/) {
@@ -700,7 +702,7 @@ ELSE: if (/^\s*%else/) {
           _(".  Missing %if.\n") unless @ifexpr;
       next LINE unless $ifexpr[-1];
       my $iflevel = @ifexpr;
-      while ( spec_readline() ) { # Skip %else-block, inluding nested %if..%else..%endif
+      while ( spec_readline($fh) ) { # Skip %else-block, inluding nested %if..%else..%endif
         if (/^\s*%if/) {
           $iflevel++;
         } elsif (/^\s*%else/) {
@@ -749,7 +751,7 @@ ENDIF: if (/^\s*%endif/) {
 
     # Preprocess %define's and Conditional Build Stuff
     elsif (/^\s*%(?:(?:un)?define|dump|global|bcond_with(?:out)?)\s/) {
-      $_ = read_multiline_macro($_, \&spec_readline);
+      $_ = read_multiline_macro($_, $fh, \&spec_readline);
       expandmacros($_);
     }
 
