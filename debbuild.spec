@@ -54,6 +54,7 @@ Requires:       patch
 Requires:       pax
 Requires:       perl
 
+%if "%{_vendor}" == "debbuild"
 Recommends:     git-core
 Recommends:     quilt
 Recommends:     unzip
@@ -61,6 +62,7 @@ Recommends:     zip
 Recommends:     zstd
 
 Recommends:     %{name}-lua-support
+%endif
 
 %description
 debbuild attempts to build Debian-friendly semi-native packages from
