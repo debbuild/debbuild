@@ -1940,7 +1940,7 @@ sub getreqs {
     # "just" point to one of the symlinks that get created somewhere.)
     next if grep { /\b$req/ } @intprovlist;
     # workaround for Ubuntu usrmerge, resolve symlinks
-    $req = "/usr$req" if $req =~ m|^/lib| && "usr/lib" eq (readlink "/lib" || "");
+    $req = "/usr$req" if $req =~ m|^/lib| && "/usr/lib" eq (readlink "/lib" || "");
 
     $reqliblist .= " $req";
   }
