@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: 2024-01-23 07:36+0000\n"
+"PO-Revision-Date: 2024-02-01 13:36+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://translate.fedoraproject.org/projects/"
 "debbuild/master/ka/>\n"
@@ -132,16 +132,16 @@ msgstr "**გაფრთხილება**  "
 #: debbuild:622
 #, perl-format
 msgid ".  Missing %if.\n"
-msgstr ""
+msgstr ".  აკლია %if.\n"
 
 #: debbuild:639
 #, perl-format
 msgid ".  Missing %if/%else.\n"
-msgstr ""
+msgstr ".  აკლია %if/%else.\n"
 
 #: debbuild:179
 msgid ":  build requirements not met.\n"
-msgstr ""
+msgstr ":  აგების მოთხოვნები დაკმაყოფილებული არაა.\n"
 
 #: debbuild:769 debbuild:776 debbuild:861 debbuild:876
 msgid ":' is not natively supported by .deb packages.\n"
