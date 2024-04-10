@@ -1172,6 +1172,7 @@ sub unpackcmd {
 # Determine the suitable decompressor according to the file extension.
 sub decompress {
    my $filename = shift;
+   $filename = expandmacros($filename);
    return (
       $filename =~ /\.(?:t?gz|Z)$/  ? '%{__gzip}'  :
       $filename =~ /\.(?:t?bz?2?)$/ ? '%{__bzip2}' :
