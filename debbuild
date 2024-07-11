@@ -1559,8 +1559,12 @@ sub binpackage {
           # due to Debian's total lack of real permissions-processing in its actual package
           # handling component (dpkg-deb), this can't really be done "properly".  We'll have
           # to add chown/chmod commands to the postinst instead.  Feh.
-          $file_mod_owner .= $specglobals{__chown}." -Rh ".$file->{u}." $pkgfile\n" if $file->{u} ne '-';
-          $file_mod_owner .= $specglobals{__chgrp}." -Rh ".$file->{g}." $pkgfile\n" if $file->{g} ne '-';
+
+          # If we're managing a %dir, only set the permissions on the directory itself, not its contents.
+          my $chown_switch = $file->{od} ? "-h" : "-Rh";
+
+          $file_mod_owner .= $specglobals{__chown}." ".$chown_switch." ".$file->{u}." $pkgfile\n" if $file->{u} ne '-';
+          $file_mod_owner .= $specglobals{__chgrp}." ".$chown_switch." ".$file->{g}." $pkgfile\n" if $file->{g} ne '-';
           if ( -d "$specglobals{buildroot}$pkgfile" ) {
             $file_mod_owner .= $specglobals{__chmod}." ".$file->{dm}." $pkgfile\n" if $file->{dm} ne '-';
           } else {
