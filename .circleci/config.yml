@@ -2,11 +2,11 @@ version: 2
 jobs:
   test:
     docker:
-      - image: centos:7 # We support centos 6, but 7 already has a cpanm package
+      - image: almalinux:9 # We support EL8, but dpkg-dev is not installable in EPEL 8
     steps:
       - checkout
-      - run: 'yum install --setopt=skip_missing_names_on_install=False -y perl-App-cpanminus gettext gcc epel-release'
-      - run: 'yum install --setopt=skip_missing_names_on_install=False -y dpkg-dev fakeroot'
+      - run: 'dnf --assumeyes install perl-App-cpanminus gettext gcc epel-release'
+      - run: 'dnf --assumeyes install dpkg-dev fakeroot'
       - run: 'perl -V'
       - run: 'cpanm --notest --installdeps .'
       - run: './configure'
