@@ -16,11 +16,10 @@ Release:        0%{?dist}
 %if "%{_vendor}" == "debbuild"
 Packager:       debbuild developers <https://github.com/debbuild/debbuild>
 Group:          devel
-License:        GPL-2.0+
 %else
 Group:          Development/Tools%{?suse_version:/Building}
-License:        GPLv2+
 %endif
+License:        GPL-2.0-or-later
 URL:            https://github.com/debbuild/debbuild
 Source:         %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 BuildArch:      noarch
