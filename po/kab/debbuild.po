@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: 2024-10-03 19:42+0000\n"
+"PO-Revision-Date: 2024-10-04 11:33+0000\n"
 "Last-Translator: Rachida SA <rgebbid@gmail.com>\n"
 "Language-Team: Kabyle <https://translate.fedoraproject.org/projects/debbuild/"
 "master/kab/>\n"
@@ -128,17 +128,17 @@ msgstr ""
 
 #: debbuild:1621
 msgid "**WARNING**  "
-msgstr ""
+msgstr "**ƔUR-K**  "
 
 #: debbuild:622
 #, perl-format
 msgid ".  Missing %if.\n"
-msgstr ""
+msgstr ".  Ixuṣṣ %if.\n"
 
 #: debbuild:639
 #, perl-format
 msgid ".  Missing %if/%else.\n"
-msgstr ""
+msgstr ".  Ixuṣṣ %if/%else.\n"
 
 #: debbuild:179
 msgid ":  build requirements not met.\n"
@@ -146,7 +146,7 @@ msgstr ""
 
 #: debbuild:769 debbuild:776 debbuild:861 debbuild:876
 msgid ":' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr ":' uryettusefrak ara s wudem adigan sɣur .deb packages.\n"
 
 #: debbuild:868 debbuild:872
 #, perl-format
@@ -159,7 +159,7 @@ msgstr ""
 
 #: debbuild:178
 msgid "Can't build "
-msgstr ""
+msgstr "Ur izmir ara ad ibnu "
 
 #: debbuild:1057
 msgid "Can't handle unknown file type '"
