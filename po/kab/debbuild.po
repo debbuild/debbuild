@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-03-22 13:12+0100\n"
-"PO-Revision-Date: 2024-10-04 11:33+0000\n"
+"PO-Revision-Date: 2024-11-08 11:30+0000\n"
 "Last-Translator: Rachida SA <rgebbid@gmail.com>\n"
 "Language-Team: Kabyle <https://translate.fedoraproject.org/projects/debbuild/"
 "master/kab/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.7.2\n"
+"X-Generator: Weblate 5.8.2\n"
 
 #: debbuild:1624
 msgid "  Continuing anyway.\n"
@@ -42,11 +42,11 @@ msgstr ""
 
 #: debbuild:1656
 msgid " * Warning:  "
-msgstr ""
+msgstr " * Ḥader:  "
 
 #: debbuild:1267
 msgid " failed (%"
-msgstr ""
+msgstr " yecceḍ (%"
 
 #: debbuild:1509 debbuild:1519
 msgid " for "
@@ -54,7 +54,7 @@ msgstr " i "
 
 #: debbuild:446
 msgid " for option '-"
-msgstr ""
+msgstr " i textiṛt '-"
 
 #: debbuild:470 debbuild:1512 debbuild:1522 debbuild:1605
 msgid " in "
@@ -62,7 +62,7 @@ msgstr " deg "
 
 #: debbuild:1662
 msgid " is installed, but wrong version ("
-msgstr ""
+msgstr " yettwasbedd, maca d yir lqem ("
 
 #: debbuild:1657
 msgid " is probably installed but seems to be a virtual package.\n"
@@ -74,7 +74,7 @@ msgstr ""
 
 #: debbuild:565
 msgid " of "
-msgstr ""
+msgstr " n "
 
 #: debbuild:496
 msgid " stage.  Ignoring.\n"
@@ -83,15 +83,15 @@ msgstr ""
 #: debbuild:1771
 #, perl-brace-format
 msgid " to %{_topdir}.\n"
-msgstr ""
+msgstr " i %{_topdir}.\n"
 
 #: debbuild:451
 msgid " with --rebuild\n"
-msgstr ""
+msgstr " akked --rebuild\n"
 
 #: debbuild:470
 msgid "!  Ignoring.\n"
-msgstr ""
+msgstr "!  Anef.\n"
 
 #: debbuild:913
 msgid "%autosetup:  option '-S "
@@ -211,7 +211,7 @@ msgstr ""
 
 #: debbuild:1827
 msgid "Missing value for '%"
-msgstr ""
+msgstr "Ixuṣṣ wazal i '%"
 
 #: debbuild:343
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
@@ -219,11 +219,11 @@ msgstr ""
 
 #: debbuild:516
 msgid "No .spec file specified!  Exiting.\n"
-msgstr ""
+msgstr "Ulac afaylu.spec i yettwfernen!   Tuffɣa.\n"
 
 #: debbuild:49
 msgid "No .spec file to work with!  Exiting.\n"
-msgstr ""
+msgstr "Ulac afaylu .spec swayes ara txedmeḍ!    Tuffɣa.\n"
 
 #: debbuild:161
 msgid "No tarfile specified!  Exiting.\n"
@@ -235,7 +235,7 @@ msgstr ""
 
 #: debbuild:344
 msgid "Sorry, I quit.\n"
-msgstr ""
+msgstr "Sḥassfeɣ, ad ffɣeɣ.\n"
 
 #: debbuild:980
 #, perl-format
@@ -244,7 +244,7 @@ msgstr ""
 
 #: debbuild:483
 msgid "This is debbuild, version "
-msgstr ""
+msgstr "Ayagi debbuild, lqem "
 
 #: debbuild:1673
 msgid "To install all missing dependencies, run 'apt install "
@@ -317,7 +317,7 @@ msgstr ""
 
 #: debbuild:1256
 msgid " script file "
-msgstr ""
+msgstr " afaylu n usekript "
 
 #: debbuild:517
 msgid "specfile ("
