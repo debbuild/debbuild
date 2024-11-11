@@ -286,6 +286,7 @@ sub read_multiline_macro {
     $value =~ s/\\\\\n/\\\n/g;
     $value =~ s/\\"/"/g;
     $value =~ s/\n\z//;
+    $value =~ s/\\\\/\\/g;
   }
   if ($value =~ s/%\{lua:\s*$/\{lua:\n/) { # multi-line LUA macro
     while (my $l = &$getline($fh)) {
