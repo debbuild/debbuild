@@ -1895,6 +1895,16 @@ sub checkbuildreq {
 } # end checkbuildreq()
 
 
+## dpkg_query_paths(path)
+# Find out which package provides a given file.
+sub dpkg_query_paths {
+  my $req = shift;
+  return unless $req; # possibly empty
+  print _("Checking for ").$req._(" in installed packages...\n") if defined $specglobals{verbose};
+  my ($first) = qx($specglobals{__dpkg_query} -S $req) =~ /^([\w+-.]+?):/m;
+  return $first;
+} # end dpkg_query_paths()
+
 ## getreqs()
 # Find out which libraries/packages are required for any
 # executables and libs in a given file tree.
@@ -1922,7 +1932,7 @@ sub getreqs {
   # handle the case where the lib gets stuffed into a subpackage.  :/
   my @intprovlist = qx ( $specglobals{__find} $pkgtree -type f -name "*.so*" -printf "%P\n" );
 
-  my $reqliblist;
+  my @liblist;
   foreach (@reqlist) {
     next if /not a dynamic executable/;
     next if /statically linked/;
@@ -1945,18 +1955,23 @@ sub getreqs {
     # looked-for lib may not have the full soname version. (ie, it may
     # "just" point to one of the symlinks that get created somewhere.)
     next if grep { /\b$req/ } @intprovlist;
-    # workaround for Ubuntu usrmerge, resolve symlinks
-    $req = "*$req" if $req =~ m|^/lib| && "/usr/lib" eq (abs_path("/lib") || "");
 
-    $reqliblist .= " $req";
+    # workaround for Ubuntu usrmerge, resolve symlinks
+    # Firsly, we try to resolve dpkg path without modifications, then if it
+    # fails, we try to resolve it with /usr prefix (when /lib is a symlink to /usr/lib)
+    my $lib = dpkg_query_paths($req);
+    if(not(defined($lib)) && $req =~ m|^/lib| && "/usr/lib" eq (abs_path("/lib") || "")){
+      $lib = dpkg_query_paths("/usr$req");
+    }
+
+    if(not(defined($lib))){
+      warn _("Warning:  ").$req._(" not found in any package.\n");
+    }else{
+      push(@liblist, $lib);
+    }
   }
 
-# For now, we're done.  We're not going to meddle with versions yet.
-# Among other things, it's messier than handling "simple" yes/no "do
-# we have this lib?" deps.  >:(
-
-  return unless $reqliblist; # possibly empty
-  return map { m/^([\w+-.]+?):/ } qx($specglobals{__dpkg_query} -S$reqliblist);
+  return @liblist;
 } # end getreqs()
 
 
