@@ -13,7 +13,7 @@ Name:           debbuild
 Summary:        Build Debian-compatible .deb packages from RPM .spec files
 Version:        24.12.0
 Release:        0%{?dist}
-%if "%{_vendor}" == "debbuild"
+%if 0%{?_debbuild:1}
 Packager:       debbuild developers <https://github.com/debbuild/debbuild>
 Group:          devel
 %else
@@ -24,7 +24,7 @@ URL:            https://github.com/debbuild/debbuild
 Source:         %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 BuildArch:      noarch
 
-%if "%{_vendor}" == "debbuild"
+%if 0%{?_debbuild:1}
 BuildRequires:  podlators-perl
 BuildRequires:  lsb-release
 Requires:       liblocale-gettext-perl
@@ -70,7 +70,7 @@ should be able to interpret most spec files usefully.
 %package lua-support
 Summary:        Lua macro support for debbuild
 Requires:       %{name} = %{version}-%{release}
-%if "%{_vendor}" == "debbuild"
+%if 0%{?_debbuild:1}
 Requires:       liblua-api-perl
 %else
 Requires:       perl(Lua::API)
