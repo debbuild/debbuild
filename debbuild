@@ -133,7 +133,8 @@ parse_cmd();
 my $build_shell = expandmacros('%{___build_shell}');
 
 print version() if defined $specglobals{verbose};
-$specglobals{_debbuild} = $static_config{version};
+$specglobals{_debbuild} = 1;
+$specglobals{_debbuild_version} = $static_config{version};
 $specglobals{_debbuild_lua} = $lua_ver if defined($lua_ver);
 print "Lua: ".($lua_present ? $lua_ver : _('No Lua module loaded'))."\n"
       if $specglobals{verbose};
