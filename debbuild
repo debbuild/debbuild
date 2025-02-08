@@ -1957,13 +1957,7 @@ sub getreqs {
     next if grep { /\b$req/ } @intprovlist;
 
     # workaround for Ubuntu usrmerge, resolve symlinks
-    # Firsly, we try to resolve dpkg path without modifications, then if it
-    # fails, we try to resolve it with /usr prefix (when /lib is a symlink to /usr/lib)
-    my $lib = dpkg_query_paths($req);
-    if(not(defined($lib)) && $req =~ m|^/lib| && "/usr/lib" eq (abs_path("/lib") || "")){
-      $lib = dpkg_query_paths("/usr$req");
-    }
-
+    my $lib = dpkg_query_paths(abs_path($req));
     if(not(defined($lib))){
       warn _("Warning:  ").$req._(" not found in any package.\n");
     }else{
