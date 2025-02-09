@@ -392,7 +392,7 @@ sub lsb_detection {
     close OSREL;
 
   } elsif (open LSBREL, '-|', $specglobals{__lsb_release}, '-s', '-i', '-r', '-c') {
-    # Retrive dist name, version, and codename from lsb_release
+    # Retrieve dist name, version, and codename from lsb_release
     chomp( $baseos = lc <LSBREL> );
     chomp( $basever = <LSBREL> );
     chomp( $basecodename = <LSBREL> );
@@ -419,7 +419,7 @@ sub lsb_detection {
   # if the basever does not have a sub-version, it needs to be multiplied by 100
   $specglobals{$baseos.'_version'} //= $basever =~ /\./ || $basever eq "9999" ? $specbasever : $basever * 100;
 
-  # Default %{dist} to something marginally sane.  Note this should be overrideable by --define.
+  # Default %{dist} to something marginally sane.  Note this should be overridable by --define.
   # This has been chosen to most closely follow the usage in RHEL/CentOS and Fedora, ie "el5" or "fc20".
   $specglobals{dist} = $baseos.$basever;
 } # end lsb_detection()
@@ -685,7 +685,7 @@ LINE: while ( spec_readline($fh) ) {
 
       next LINE if $ifexpr[-1]; # This appears to be the only case we call false.
       my $iflevel = @ifexpr;
-      while ( spec_readline($fh) ) { # Skip %if-block, inluding nested %if..%else..%endif
+      while ( spec_readline($fh) ) { # Skip %if-block, including nested %if..%else..%endif
         if (/^\s*%if/) {
           $iflevel++;
         } elsif (/^\s*%else/) {
@@ -1937,7 +1937,7 @@ sub getreqs {
     next if /not a dynamic executable/;
     next if /statically linked/;
     next if m|/lib(?:64)?/ld-linux|;	# Hack! Hack!  PTHBTT!  (libc suxx0rz)
-    next if /linux-(gate|vdso).so/;	# Kernel hackery for teh W1n!!1!1eleventy-one!1  (Don't ask.  Feh.)
+    next if /linux-(gate|vdso).so/;	# Kernel hackery for the W1n!!1!1eleventy-one!1  (Don't ask.  Feh.)
 
     # Whee!  more hackery to detect provided-here libs.  Some apparently return from ldd as "not found".
     my ($a,$b) = split / => /;
@@ -2012,7 +2012,7 @@ sub store_value {
 sub expandmacros {
   # $s    : initial string with the macro to be expanded
   #         it will be modified during the processing holding the rest part to expand
-  # $r    : resulting string after expanding the maco
+  # $r    : resulting string after expanding the macro
   # $orig : holding the original value of $, for debug purposes only
   my $s = shift;
   my $r = '';
@@ -2095,7 +2095,7 @@ sub expandmacros {
     # $orig_m : original value of $m. used for debugging and some special cases
     my $m = shift;
     my $orig_m = $m;
-    # $qex    : is used to store conditional extentions of the expanded macro, depending on type of the macro
+    # $qex    : is used to store conditional extensions of the expanded macro, depending on type of the macro
     my ($qex, $macro, $value);
     my $macroparms = {'#' => 0};
     foreach my $ms ( @macro_param_stack ) {
@@ -2502,7 +2502,7 @@ sub lua_init {
 sub lua_macro {
   my ($m) = @_;
   die _("Lua module not loaded! The following macro can't be expanded:")."\n".
-        $m."\n"._("# end of the ommited macro") unless ( $lua_present );
+        $m."\n"._("# end of the omitted macro") unless ( $lua_present );
   unless ( defined($gL) ) {
     $gL = lua_init();
   }
