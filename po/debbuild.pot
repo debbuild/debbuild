@@ -104,7 +104,7 @@ msgid "!  Ignoring.\n"
 msgstr ""
 
 #: debbuild:2504
-msgid "# end of the ommited macro"
+msgid "# end of the omitted macro"
 msgstr ""
 
 #: debbuild:913 debbuild:1030
