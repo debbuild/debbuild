@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-22 13:12+0100\n"
+"POT-Creation-Date: 2025-02-08 17:19+0100\n"
 "PO-Revision-Date: 2021-09-25 11:04+0000\n"
 "Last-Translator: Jan Kuparinen <copper_fin@hotmail.com>\n"
 "Language-Team: Finnish <https://translate.fedoraproject.org/projects/"
@@ -19,97 +19,123 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 4.8\n"
 
-#: debbuild:1624
+#: debbuild:1624 debbuild:1827
 msgid "  Continuing anyway.\n"
 msgstr "  Jatketaan silti.\n"
 
-#: debbuild:1623
+#: debbuild:1623 debbuild:1826
 msgid "  Required for successful build:\n"
 msgstr "  Tarvitaan onnistuneeseen koostamiseen:\n"
 
-#: debbuild:1682
+#: debbuild:1682 debbuild:1885
 msgid " * Conflicting build-dependency "
 msgstr " * Ristiriitainen koontiriippuvuus "
 
-#: debbuild:1640 debbuild:1667
+#: debbuild:1640 debbuild:1667 debbuild:1843 debbuild:1870
 msgid " * Missing build-dependency "
 msgstr " * Puuttuva koontiriippuvuus "
 
-#: debbuild:1661
+#: debbuild:1661 debbuild:1864
 msgid " * Required build-dependency "
 msgstr " * Vaadittu koontiriippuvuus "
 
-#: debbuild:1656
+#: debbuild:1656 debbuild:1859
 msgid " * Warning:  "
 msgstr " * Varoitus:  "
 
-#: debbuild:1267
+#: debbuild:1267 debbuild:1402
 msgid " failed (%"
 msgstr " epäonnistui (%"
 
-#: debbuild:1509 debbuild:1519
+#: debbuild:1509 debbuild:1519 debbuild:1708 debbuild:1718
 msgid " for "
 msgstr " kohteelle "
 
-#: debbuild:446
+#: debbuild:446 debbuild:504
 msgid " for option '-"
 msgstr " vaihtoehtoa varten '-"
 
-#: debbuild:470 debbuild:1512 debbuild:1522 debbuild:1605
+#: debbuild:470 debbuild:1512 debbuild:1522 debbuild:1605 debbuild:528
+#: debbuild:1711 debbuild:1721 debbuild:1808
 msgid " in "
 msgstr " jossain "
 
-#: debbuild:1662
+#: debbuild:1902
+msgid " in installed packages...\n"
+msgstr ""
+
+#: debbuild:1662 debbuild:1865
 msgid " is installed, but wrong version ("
 msgstr " on asennettu, mutta väärä versio ("
 
-#: debbuild:1657
+#: debbuild:1657 debbuild:1860
 msgid " is probably installed but seems to be a virtual package.\n"
-msgstr " on todennäköisesti asennettu, mutta näyttää olevan virtuaalipaketti.\n"
+msgstr ""
+" on todennäköisesti asennettu, mutta näyttää olevan virtuaalipaketti.\n"
 
-#: debbuild:1622
+#: debbuild:1961
+#, fuzzy
+#| msgid " not found.  Can't check build-deps.\n"
+msgid " not found in any package.\n"
+msgstr " ei löydetty.  Ei voi tarkistaa koontiriippuvuuksia.\n"
+
+#: debbuild:1622 debbuild:1825
 msgid " not found.  Can't check build-deps.\n"
 msgstr " ei löydetty.  Ei voi tarkistaa koontiriippuvuuksia.\n"
 
-#: debbuild:565
+#: debbuild:565 debbuild:651
 msgid " of "
 msgstr " jostain "
 
-#: debbuild:496
+#: debbuild:1256 debbuild:1390
+msgid " script file "
+msgstr " komentotiedosto "
+
+#: debbuild:496 debbuild:554
 msgid " stage.  Ignoring.\n"
 msgstr " vaihe. Ohitetaan.\n"
 
-#: debbuild:1771
+#: debbuild:1771 debbuild:1979
 #, perl-brace-format
 msgid " to %{_topdir}.\n"
 msgstr " kohteeseen %{_topdir}.\n"
 
-#: debbuild:451
+#: debbuild:451 debbuild:509
 msgid " with --rebuild\n"
 msgstr " käyttäen --rebuild\n"
 
-#: debbuild:470
+#: debbuild:470 debbuild:528
 msgid "!  Ignoring.\n"
 msgstr "!  Ohitetaan.\n"
 
-#: debbuild:913
+#: debbuild:2504
+msgid "# end of the omitted macro"
+msgstr ""
+
+#: debbuild:913 debbuild:1030
 msgid "%autosetup:  option '-S "
 msgstr "%autosetup:  vaihtoehto '-S "
 
-#: debbuild:564
+#: debbuild:564 debbuild:650
 msgid "' at line "
 msgstr "' rivillä "
 
-#: debbuild:914
+#: debbuild:914 debbuild:1031
 msgid "' currently not supported at line "
 msgstr "' ei tällä hetkellä tuettu rivillä "
+
+#: debbuild:1670 debbuild:1676
+#, fuzzy
+#| msgid ":' is not natively supported by .deb packages.\n"
+msgid "' is not natively supported by .deb packages.\n"
+msgstr ":' .deb paketit eivät tue tätä luontaisesti.\n"
 
 #: debbuild:824
 #, perl-format
 msgid "'%exclude' keyword found, ignoring input line\n"
 msgstr "'%exclude' avainsana löydetty, ohitetaan syöterivi\n"
 
-#: debbuild:981
+#: debbuild:981 debbuild:1098
 msgid "', continuing\n"
 msgstr "', jatketaan\n"
 
@@ -117,106 +143,139 @@ msgstr "', jatketaan\n"
 msgid "'.  Aborting!"
 msgstr "'.  Keskeytetään!"
 
-#: debbuild:518
+#: debbuild:2466
+msgid "(error object is not a string)"
+msgstr ""
+
+#: debbuild:518 debbuild:587
 msgid ") barfed:  "
 msgstr ") oksennettu:  "
 
-#: debbuild:1663
+#: debbuild:1663 debbuild:1866
 msgid "):  Need "
 msgstr "):  Tarvitaan "
 
-#: debbuild:1621
+#: debbuild:1621 debbuild:1824
 msgid "**WARNING**  "
 msgstr "**VAROITUS**  "
 
-#: debbuild:622
+#: debbuild:622 debbuild:702
 #, perl-format
 msgid ".  Missing %if.\n"
 msgstr ".  %if puuttuu.\n"
 
-#: debbuild:639
+#: debbuild:639 debbuild:720
 #, perl-format
 msgid ".  Missing %if/%else.\n"
 msgstr ".   %if/%else puuttuu.\n"
 
-#: debbuild:179
+#: debbuild:179 debbuild:197
 msgid ":  build requirements not met.\n"
 msgstr ":  koontivaatimukset eivät täyty.\n"
 
-#: debbuild:769 debbuild:776 debbuild:861 debbuild:876
+#: debbuild:769 debbuild:776 debbuild:861 debbuild:876 debbuild:866
+#: debbuild:873 debbuild:973 debbuild:988
 msgid ":' is not natively supported by .deb packages.\n"
 msgstr ":' .deb paketit eivät tue tätä luontaisesti.\n"
 
-#: debbuild:868 debbuild:872
+#: debbuild:868 debbuild:872 debbuild:980 debbuild:984
 #, perl-format
 msgid ":' outside %if wrapper\n"
 msgstr ":' %if kääreen ulkopuolella\n"
 
-#: debbuild:151
+#: debbuild:151 debbuild:169
 msgid "Can't --rebuild with "
 msgstr "Ei voi käyttää --rebuild kohteessa "
 
-#: debbuild:178
+#: debbuild:178 debbuild:196
 msgid "Can't build "
 msgstr "Ei voi koostaa "
 
-#: debbuild:1057
+#: debbuild:1057 debbuild:1181
 msgid "Can't handle unknown file type '"
 msgstr "Tuntematonta tiedostotyyppiä ei voi käsitellä '"
 
-#: debbuild:1767
+#: debbuild:1767 debbuild:1975
 msgid "Can't install "
 msgstr "Ei voi asentaa "
 
-#: debbuild:1255
+#: debbuild:1255 debbuild:1389
 msgid "Can't open/create "
 msgstr "Ei voi avata/luoda "
 
-#: debbuild:450
+#: debbuild:450 debbuild:508
 msgid "Can't use -"
 msgstr "Ei voi käyttää -"
 
-#: debbuild:495
+#: debbuild:495 debbuild:553
 msgid "Can't use --short-circuit for "
 msgstr "Ei voi käyttää --short-circuit kohteelle "
 
-#: debbuild:1704
+#: debbuild:1902
+msgid "Checking for "
+msgstr ""
+
+#: debbuild:1704 debbuild:1917
 msgid "Checking library requirements...\n"
 msgstr "Tarkistetaan arkiston vaatimuksia...\n"
 
-#: debbuild:1346
+#: debbuild:1346 debbuild:1484
 msgid "Could not open: "
 msgstr "Avaus ei onnistunut: "
 
-#: debbuild:770 debbuild:877
+#: debbuild:770 debbuild:877 debbuild:867 debbuild:989
 msgid "Downgrading relationship to Enhances:.\n"
 msgstr "Suhteen alentaminen tehostaa :.\n"
 
-#: debbuild:1267
+#: debbuild:1267 debbuild:1402
 msgid "Exec of "
 msgstr "Suorittaminen kohteesta "
 
-#: debbuild:1263
+#: debbuild:1263 debbuild:1398
 msgid "Executing ("
 msgstr "Suoritetaan ("
 
-#: debbuild:1770
+#: debbuild:1770 debbuild:1978
 msgid "Extracted source package "
 msgstr "Purettu lähdepaketti "
 
-#: debbuild:1353
+#: debbuild:1353 debbuild:1491
 msgid "File not found: "
 msgstr "Tiedostoa ei löytynyt: "
+
+#: debbuild:2467
+msgid "Lua Error:"
+msgstr ""
+
+#: debbuild:2481
+msgid "Lua Error: Cannot create state!"
+msgstr ""
+
+#: debbuild:2495
+msgid "Lua Error: Unable to open Lua::API::State!"
+msgstr ""
+
+#: debbuild:2503
+msgid "Lua module not loaded! The following macro can't be expanded:"
+msgstr ""
+
+#: debbuild:1677
+msgid "Merging with 'post' script.\n"
+msgstr ""
+
+#: debbuild:1671
+msgid "Merging with 'pre' script.\n"
+msgstr ""
 
 #: debbuild:1827
 msgid "Missing value for '%"
 msgstr "Puuttuva arvo kohteesta '%"
 
-#: debbuild:343
+#: debbuild:343 debbuild:401
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
 msgstr "Os-release-tiedostoa tai lsb_release-ohjelmaa ei löydy.\n"
 
-#: debbuild:516
+#: debbuild:516 debbuild:585
 msgid "No .spec file specified!  Exiting.\n"
 msgstr "Yhtään .spec -tiedostoa ei ole määritetty! Poistutaan.\n"
 
@@ -224,101 +283,109 @@ msgstr "Yhtään .spec -tiedostoa ei ole määritetty! Poistutaan.\n"
 msgid "No .spec file to work with!  Exiting.\n"
 msgstr "Yhtään .spec -tiedostoa ei ole työstettäväksi! Poistutaan.\n"
 
-#: debbuild:161
+#: debbuild:138
+msgid "No Lua module loaded"
+msgstr ""
+
+#: debbuild:161 debbuild:179
 msgid "No tarfile specified!  Exiting.\n"
 msgstr "Yhtään tar-tiedostoa ei ole määritetty! Poistutaan.\n"
 
-#: debbuild:1521
+#: debbuild:1521 debbuild:1720
 msgid "Signed binary package "
 msgstr "Allekirjoitettu binaaripaketti "
 
-#: debbuild:344
+#: debbuild:344 debbuild:402
 msgid "Sorry, I quit.\n"
 msgstr "Pahoitteluni, lopetan.\n"
 
-#: debbuild:980
+#: debbuild:980 debbuild:1097
 #, perl-format
 msgid "Suspect %setup tag '%setup"
 msgstr "Epäilty %setup tunniste '%setup"
 
-#: debbuild:483
+#: debbuild:483 debbuild:541
 msgid "This is debbuild, version "
 msgstr "Tämä on debbuild, versio "
 
-#: debbuild:1673
+#: debbuild:1673 debbuild:1876
 msgid "To install all missing dependencies, run 'apt install "
 msgstr "Asenna kaikki puuttuvat riippuvuudet suorittamalla apt install "
 
-#: debbuild:1687
+#: debbuild:1687 debbuild:1890
 msgid "To remove all conflicting dependencies, run 'apt remove "
 msgstr ""
 "Voit poistaa kaikki ristiriitaiset riippuvuudet suorittamalla 'apt remove "
 
-#: debbuild:445
+#: debbuild:445 debbuild:503
 msgid "Unknown stage "
 msgstr "Tuntematon vaihe "
 
-#: debbuild:564
+#: debbuild:564 debbuild:650
 msgid "Unknown tag '%"
 msgstr "Tuntematon tunniste '%"
 
-#: debbuild:635
+#: debbuild:635 debbuild:715
 #, perl-format
 msgid "Unmatched %else at end of file.  Missing %endif.\n"
 msgstr "Täsmäämätön %else tiedoston lopussa. Puuttuva %endif.\n"
 
-#: debbuild:621
+#: debbuild:621 debbuild:701
 #, perl-format
 msgid "Unmatched %else in line "
 msgstr "Täsmäämätön %else rivillä "
 
-#: debbuild:638
+#: debbuild:638 debbuild:719
 #, perl-format
 msgid "Unmatched %endif in line "
 msgstr "Täsmäämätön %endif rivillä "
 
-#: debbuild:618
+#: debbuild:618 debbuild:697
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
 msgstr "Täsmäämätön %if tiedoston lopussa. Puuttuva  %else/%endif.\n"
 
-#: debbuild:892
+#: debbuild:892 debbuild:1009
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %endif.\n"
 msgstr "Täsmäämätön %if tiedoston lopussa. Puuttuva %endif.\n"
 
-#: debbuild:777 debbuild:862
+#: debbuild:777 debbuild:862 debbuild:874 debbuild:974
 msgid "Upgrading relationship to Requires:.\n"
 msgstr "Suhteen päivittäminen Edellyttää :.\n"
 
-#: debbuild:469
+#: debbuild:469 debbuild:527
 msgid "WARNING:  Missing value for macro "
 msgstr "VAROITUS: Makroista puuttuu arvo "
 
+#: debbuild:1961
+#, fuzzy
+#| msgid "Warning:  '"
+msgid "Warning:  "
+msgstr "Varoitus:   '"
+
 #: debbuild:768 debbuild:775 debbuild:860 debbuild:867 debbuild:875
+#: debbuild:865 debbuild:872 debbuild:972 debbuild:979 debbuild:987
+#: debbuild:1669 debbuild:1675
 msgid "Warning:  '"
 msgstr "Varoitus:   '"
 
-#: debbuild:871
+#: debbuild:871 debbuild:983
 msgid "Warning:  Debian-specific '"
 msgstr "Varoitus: Debian-kohtainen '"
 
-#: debbuild:1305
+#: debbuild:1305 debbuild:1440
 msgid "Warning:  symlinking manpage failed:  "
 msgstr "Varoitus: ohjesivun symbolinen linkittäminen epäonnistui:  "
 
-#: debbuild:1511
+#: debbuild:1511 debbuild:1710
 msgid "Wrote binary package "
 msgstr "Kirjoitettu binaaripaketti "
 
-#: debbuild:1605
+#: debbuild:1605 debbuild:1808
 msgid "Wrote source package "
 msgstr "Kirjoitettu lähdepaketti "
 
-#: debbuild:1256
-msgid " script file "
-msgstr " komentotiedosto "
-
-#: debbuild:517
+#: debbuild:517 debbuild:586
 msgid "specfile ("
 msgstr "määritystiedosto ("
