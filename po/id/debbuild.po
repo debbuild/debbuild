@@ -4,13 +4,15 @@
 # Andreas Scherer <andreas_github@freenet.de>, 2020.
 # Didik Supriadi <didiksupriadi41@gmail.com>, 2021.
 # Andika Triwidada <andika@gmail.com>, 2021, 2025.
+# Weblate Translation Memory <noreply-mt-weblate-translation-memory@weblate.org>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-08 17:19+0100\n"
 "PO-Revision-Date: 2025-02-11 01:37+0000\n"
-"Last-Translator: Andika Triwidada <andika@gmail.com>\n"
+"Last-Translator: Weblate Translation Memory <noreply-mt-weblate-translation-"
+"memory@weblate.org>\n"
 "Language-Team: Indonesian <https://translate.fedoraproject.org/projects/"
 "debbuild/master/id/>\n"
 "Language: id\n"
@@ -124,7 +126,7 @@ msgstr "' saat ini tidak didukung di baris "
 
 #: debbuild:1670 debbuild:1676
 msgid "' is not natively supported by .deb packages.\n"
-msgstr "' tidak didukung secara native oleh paket .deb.\n"
+msgstr ":' tidak didukung secara native oleh paket .deb.\n"
 
 #: debbuild:824
 #, perl-format
