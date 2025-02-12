@@ -10,9 +10,8 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-08 17:19+0100\n"
-"PO-Revision-Date: 2025-02-11 01:37+0000\n"
-"Last-Translator: Weblate Translation Memory <noreply-mt-weblate-translation-"
-"memory@weblate.org>\n"
+"PO-Revision-Date: 2025-02-12 01:38+0000\n"
+"Last-Translator: Andika Triwidada <andika@gmail.com>\n"
 "Language-Team: Indonesian <https://translate.fedoraproject.org/projects/"
 "debbuild/master/id/>\n"
 "Language: id\n"
@@ -211,7 +210,7 @@ msgstr "Tidak bisa menggunakan --short-circuit untuk "
 
 #: debbuild:1902
 msgid "Checking for "
-msgstr ""
+msgstr "Sedang memeriksa "
 
 #: debbuild:1704 debbuild:1917
 msgid "Checking library requirements...\n"
@@ -243,27 +242,27 @@ msgstr "File tidak ditemukan: "
 
 #: debbuild:2467
 msgid "Lua Error:"
-msgstr ""
+msgstr "Galat Lua:"
 
 #: debbuild:2481
 msgid "Lua Error: Cannot create state!"
-msgstr ""
+msgstr "Galat Lua: Tidak bisa mencipta keadaan!"
 
 #: debbuild:2495
 msgid "Lua Error: Unable to open Lua::API::State!"
-msgstr ""
+msgstr "Galat Lua: Tidak bisa membuka Lua::API::State!"
 
 #: debbuild:2503
 msgid "Lua module not loaded! The following macro can't be expanded:"
-msgstr ""
+msgstr "Modul Lua tidak dimuat! Makro berikut tidak bisa diekspansi:"
 
 #: debbuild:1677
 msgid "Merging with 'post' script.\n"
-msgstr ""
+msgstr "Menggabung dengan skrip 'post'.\n"
 
 #: debbuild:1671
 msgid "Merging with 'pre' script.\n"
-msgstr ""
+msgstr "Menggabung dengan skrip 'pre'.\n"
 
 #: debbuild:1827
 msgid "Missing value for '%"
@@ -284,7 +283,7 @@ msgstr "Tidak ada file .spec untuk digunakan!  Keluar.\n"
 
 #: debbuild:138
 msgid "No Lua module loaded"
-msgstr ""
+msgstr "Tidak ada modul Lua yang dimuat"
 
 #: debbuild:161 debbuild:179
 msgid "No tarfile specified!  Exiting.\n"
@@ -357,10 +356,8 @@ msgid "WARNING:  Missing value for macro "
 msgstr "PERINGATAN:  Tidak ada nilai untuk makro "
 
 #: debbuild:1961
-#, fuzzy
-#| msgid "Warning:  '"
 msgid "Warning:  "
-msgstr "Peringatan:  '"
+msgstr "Peringatan:  "
 
 #: debbuild:768 debbuild:775 debbuild:860 debbuild:867 debbuild:875
 #: debbuild:865 debbuild:872 debbuild:972 debbuild:979 debbuild:987
