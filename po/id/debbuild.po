@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-02-08 17:19+0100\n"
+"POT-Creation-Date: 2025-02-11 07:38+0100\n"
 "PO-Revision-Date: 2025-02-12 01:38+0000\n"
 "Last-Translator: Andika Triwidada <andika@gmail.com>\n"
 "Language-Team: Indonesian <https://translate.fedoraproject.org/projects/"
@@ -21,259 +21,244 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.9.2\n"
 
-#: debbuild:1624 debbuild:1827
+#: debbuild:1828
 msgid "  Continuing anyway.\n"
 msgstr "  Melanjutkan saja.\n"
 
-#: debbuild:1623 debbuild:1826
+#: debbuild:1827
 msgid "  Required for successful build:\n"
 msgstr "  Diperlukan untuk build yang sukses:\n"
 
-#: debbuild:1682 debbuild:1885
+#: debbuild:1886
 msgid " * Conflicting build-dependency "
 msgstr " * Dependensi build yang konflik "
 
-#: debbuild:1640 debbuild:1667 debbuild:1843 debbuild:1870
+#: debbuild:1844 debbuild:1871
 msgid " * Missing build-dependency "
 msgstr " * Dependensi build yang hilang "
 
-#: debbuild:1661 debbuild:1864
+#: debbuild:1865
 msgid " * Required build-dependency "
 msgstr " * Dependensi build yang diperlukan "
 
-#: debbuild:1656 debbuild:1859
+#: debbuild:1860
 msgid " * Warning:  "
 msgstr " * Peringatan:  "
 
-#: debbuild:1267 debbuild:1402
+#: debbuild:1403
 msgid " failed (%"
 msgstr " gagal (%"
 
-#: debbuild:1509 debbuild:1519 debbuild:1708 debbuild:1718
+#: debbuild:1709 debbuild:1719
 msgid " for "
 msgstr " untuk "
 
-#: debbuild:446 debbuild:504
+#: debbuild:505
 msgid " for option '-"
 msgstr " untuk opsi '-"
 
-#: debbuild:470 debbuild:1512 debbuild:1522 debbuild:1605 debbuild:528
-#: debbuild:1711 debbuild:1721 debbuild:1808
+#: debbuild:529 debbuild:1712 debbuild:1722 debbuild:1809
 msgid " in "
 msgstr " dalam "
 
-#: debbuild:1902
+#: debbuild:1903
 msgid " in installed packages...\n"
 msgstr " dalam paket yang terpasang...\n"
 
-#: debbuild:1662 debbuild:1865
+#: debbuild:1866
 msgid " is installed, but wrong version ("
 msgstr " diinstal, tetapi versi salah ("
 
-#: debbuild:1657 debbuild:1860
+#: debbuild:1861
 msgid " is probably installed but seems to be a virtual package.\n"
 msgstr " mungkin terpasang tapi tampaknya berupa paket virtual.\n"
 
-#: debbuild:1961
+#: debbuild:1962
 msgid " not found in any package.\n"
 msgstr " tidak ditemukan di paket mana pun.\n"
 
-#: debbuild:1622 debbuild:1825
+#: debbuild:1826
 msgid " not found.  Can't check build-deps.\n"
 msgstr " tidak ditemukan.  Tidak dapat memeriksa dependensi build.\n"
 
-#: debbuild:565 debbuild:651
+#: debbuild:652
 msgid " of "
 msgstr " dari "
 
-#: debbuild:1256 debbuild:1390
+#: debbuild:1391
 msgid " script file "
 msgstr " file script "
 
-#: debbuild:496 debbuild:554
+#: debbuild:555
 msgid " stage.  Ignoring.\n"
 msgstr " tahap.  Mengabaikan.\n"
 
-#: debbuild:1771 debbuild:1979
+#: debbuild:1980
 #, perl-brace-format
 msgid " to %{_topdir}.\n"
 msgstr " ke %{_topdir}.\n"
 
-#: debbuild:451 debbuild:509
+#: debbuild:510
 msgid " with --rebuild\n"
 msgstr " dengan --rebuild\n"
 
-#: debbuild:470 debbuild:528
+#: debbuild:529
 msgid "!  Ignoring.\n"
 msgstr "!  Mengabaikan.\n"
 
-#: debbuild:2504
+#: debbuild:2505
 msgid "# end of the omitted macro"
 msgstr "# akhir dari makro yang diabaikan"
 
-#: debbuild:913 debbuild:1030
+#: debbuild:1031
 msgid "%autosetup:  option '-S "
 msgstr "%autosetup:  opsi '-S "
 
-#: debbuild:564 debbuild:650
+#: debbuild:651
 msgid "' at line "
 msgstr "' di baris "
 
-#: debbuild:914 debbuild:1031
+#: debbuild:1032
 msgid "' currently not supported at line "
 msgstr "' saat ini tidak didukung di baris "
 
-#: debbuild:1670 debbuild:1676
+#: debbuild:1671 debbuild:1677
 msgid "' is not natively supported by .deb packages.\n"
 msgstr ":' tidak didukung secara native oleh paket .deb.\n"
 
-#: debbuild:824
-#, perl-format
-msgid "'%exclude' keyword found, ignoring input line\n"
-msgstr "Kata kunci '%exclude' ditemukan, mengabaikan baris input\n"
-
-#: debbuild:981 debbuild:1098
+#: debbuild:1099
 msgid "', continuing\n"
 msgstr "', melanjutkan\n"
 
-#: debbuild:1828
-msgid "'.  Aborting!"
-msgstr "'.  Menggugurkan!"
-
-#: debbuild:2466
+#: debbuild:2467
 msgid "(error object is not a string)"
 msgstr "(objek kesalahan bukan suatu string)"
 
-#: debbuild:518 debbuild:587
+#: debbuild:588
 msgid ") barfed:  "
 msgstr ") muntah:  "
 
-#: debbuild:1663 debbuild:1866
+#: debbuild:1867
 msgid "):  Need "
 msgstr "):  Perlu "
 
-#: debbuild:1621 debbuild:1824
+#: debbuild:1825
 msgid "**WARNING**  "
 msgstr "**PERINGATAN**  "
 
-#: debbuild:622 debbuild:702
+#: debbuild:703
 #, perl-format
 msgid ".  Missing %if.\n"
 msgstr ".  Tidak ada %if.\n"
 
-#: debbuild:639 debbuild:720
+#: debbuild:721
 #, perl-format
 msgid ".  Missing %if/%else.\n"
 msgstr ".  Tidak ada %if/%else.\n"
 
-#: debbuild:179 debbuild:197
+#: debbuild:198
 msgid ":  build requirements not met.\n"
 msgstr ":  persyaratan build tidak terpenuhi.\n"
 
-#: debbuild:769 debbuild:776 debbuild:861 debbuild:876 debbuild:866
-#: debbuild:873 debbuild:973 debbuild:988
+#: debbuild:867 debbuild:874 debbuild:974 debbuild:989
 msgid ":' is not natively supported by .deb packages.\n"
 msgstr ":' tidak didukung secara native oleh paket .deb.\n"
 
-#: debbuild:868 debbuild:872 debbuild:980 debbuild:984
+#: debbuild:981 debbuild:985
 #, perl-format
 msgid ":' outside %if wrapper\n"
 msgstr ":' di luar %if pembungkus\n"
 
-#: debbuild:151 debbuild:169
+#: debbuild:170
 msgid "Can't --rebuild with "
 msgstr "Tidak bisa --rebuild dengan "
 
-#: debbuild:178 debbuild:196
+#: debbuild:197
 msgid "Can't build "
 msgstr "Tidak bisa build "
 
-#: debbuild:1057 debbuild:1181
+#: debbuild:1182
 msgid "Can't handle unknown file type '"
 msgstr "Tidak dapat menangani jenis file yang tidak diketahui '"
 
-#: debbuild:1767 debbuild:1975
+#: debbuild:1976
 msgid "Can't install "
 msgstr "Tidak bisa menginstal "
 
-#: debbuild:1255 debbuild:1389
+#: debbuild:1390
 msgid "Can't open/create "
 msgstr "Tidak bisa membuka/membuat "
 
-#: debbuild:450 debbuild:508
+#: debbuild:509
 msgid "Can't use -"
 msgstr "Tidak bisa menggunakan -"
 
-#: debbuild:495 debbuild:553
+#: debbuild:554
 msgid "Can't use --short-circuit for "
 msgstr "Tidak bisa menggunakan --short-circuit untuk "
 
-#: debbuild:1902
+#: debbuild:1903
 msgid "Checking for "
 msgstr "Sedang memeriksa "
 
-#: debbuild:1704 debbuild:1917
+#: debbuild:1918
 msgid "Checking library requirements...\n"
 msgstr "Memeriksa persyaratan library...\n"
 
-#: debbuild:1346 debbuild:1484
+#: debbuild:1485
 msgid "Could not open: "
 msgstr "Tidak bisa membuka: "
 
-#: debbuild:770 debbuild:877 debbuild:867 debbuild:989
+#: debbuild:868 debbuild:990
 msgid "Downgrading relationship to Enhances:.\n"
 msgstr "Menurun-tingkatkan hubungan untuk Memajukan:.\n"
 
-#: debbuild:1267 debbuild:1402
+#: debbuild:1403
 msgid "Exec of "
 msgstr "Eksekusi dari "
 
-#: debbuild:1263 debbuild:1398
+#: debbuild:1399
 msgid "Executing ("
 msgstr "Menjalankan ("
 
-#: debbuild:1770 debbuild:1978
+#: debbuild:1979
 msgid "Extracted source package "
 msgstr "Paket sumber yang diekstrak "
 
-#: debbuild:1353 debbuild:1491
+#: debbuild:1492
 msgid "File not found: "
 msgstr "File tidak ditemukan: "
 
-#: debbuild:2467
+#: debbuild:2468
 msgid "Lua Error:"
 msgstr "Galat Lua:"
 
-#: debbuild:2481
+#: debbuild:2482
 msgid "Lua Error: Cannot create state!"
 msgstr "Galat Lua: Tidak bisa mencipta keadaan!"
 
-#: debbuild:2495
+#: debbuild:2496
 msgid "Lua Error: Unable to open Lua::API::State!"
 msgstr "Galat Lua: Tidak bisa membuka Lua::API::State!"
 
-#: debbuild:2503
+#: debbuild:2504
 msgid "Lua module not loaded! The following macro can't be expanded:"
 msgstr "Modul Lua tidak dimuat! Makro berikut tidak bisa diekspansi:"
 
-#: debbuild:1677
+#: debbuild:1678
 msgid "Merging with 'post' script.\n"
 msgstr "Menggabung dengan skrip 'post'.\n"
 
-#: debbuild:1671
+#: debbuild:1672
 msgid "Merging with 'pre' script.\n"
 msgstr "Menggabung dengan skrip 'pre'.\n"
 
-#: debbuild:1827
-msgid "Missing value for '%"
-msgstr "Nilai tidak ada untuk '%"
-
-#: debbuild:343 debbuild:401
+#: debbuild:402
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
 msgstr ""
 "Tidak ada file 'os-release' atau program 'lsb_release' yang ditemukan.\n"
 
-#: debbuild:516 debbuild:585
+#: debbuild:586
 msgid "No .spec file specified!  Exiting.\n"
 msgstr "Tidak ada file .spec yang ditentukan!  Keluar.\n"
 
@@ -281,106 +266,115 @@ msgstr "Tidak ada file .spec yang ditentukan!  Keluar.\n"
 msgid "No .spec file to work with!  Exiting.\n"
 msgstr "Tidak ada file .spec untuk digunakan!  Keluar.\n"
 
-#: debbuild:138
+#: debbuild:139
 msgid "No Lua module loaded"
 msgstr "Tidak ada modul Lua yang dimuat"
 
-#: debbuild:161 debbuild:179
+#: debbuild:180
 msgid "No tarfile specified!  Exiting.\n"
 msgstr "Tidak ada tarfile yang ditentukan!  Keluar.\n"
 
-#: debbuild:1521 debbuild:1720
+#: debbuild:1721
 msgid "Signed binary package "
 msgstr "Paket biner yang ditanda-tangani "
 
-#: debbuild:344 debbuild:402
+#: debbuild:403
 msgid "Sorry, I quit.\n"
 msgstr "Maaf, Saya berhenti.\n"
 
-#: debbuild:980 debbuild:1097
+#: debbuild:1098
 #, perl-format
 msgid "Suspect %setup tag '%setup"
 msgstr "Tag %setup yang mencurigakan '%setup"
 
-#: debbuild:483 debbuild:541
+#: debbuild:542
 msgid "This is debbuild, version "
 msgstr "Ini adalah debbuild, versi "
 
-#: debbuild:1673 debbuild:1876
+#: debbuild:1877
 msgid "To install all missing dependencies, run 'apt install "
 msgstr "Untuk menginstal semua dependensi yang hilang, jalankan 'apt install "
 
-#: debbuild:1687 debbuild:1890
+#: debbuild:1891
 msgid "To remove all conflicting dependencies, run 'apt remove "
 msgstr "Untuk menghapus semua dependensi yang konflik, jalankan 'apt remove "
 
-#: debbuild:445 debbuild:503
+#: debbuild:504
 msgid "Unknown stage "
 msgstr "Tahapan tak dikenal "
 
-#: debbuild:564 debbuild:650
+#: debbuild:651
 msgid "Unknown tag '%"
 msgstr "Tag tidak diketahui '%"
 
-#: debbuild:635 debbuild:715
+#: debbuild:716
 #, perl-format
 msgid "Unmatched %else at end of file.  Missing %endif.\n"
 msgstr "%else yang tidak cocok di akhir file.  Tidak ada %endif.\n"
 
-#: debbuild:621 debbuild:701
+#: debbuild:702
 #, perl-format
 msgid "Unmatched %else in line "
 msgstr "%else yang tidak cocok di baris "
 
-#: debbuild:638 debbuild:719
+#: debbuild:720
 #, perl-format
 msgid "Unmatched %endif in line "
 msgstr "%endif yang tidak cocok di baris "
 
-#: debbuild:618 debbuild:697
+#: debbuild:698
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
 msgstr "%if yang tidak cocok di akhir file.  Tidak ada %else/%endif.\n"
 
-#: debbuild:892 debbuild:1009
+#: debbuild:1010
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %endif.\n"
 msgstr "%if yang tidak cocok di akhir file.  Tidak ada %endif.\n"
 
-#: debbuild:777 debbuild:862 debbuild:874 debbuild:974
+#: debbuild:875 debbuild:975
 msgid "Upgrading relationship to Requires:.\n"
 msgstr "Meningkatkan hubungan ke Memerlukan:.\n"
 
-#: debbuild:469 debbuild:527
+#: debbuild:528
 msgid "WARNING:  Missing value for macro "
 msgstr "PERINGATAN:  Tidak ada nilai untuk makro "
 
-#: debbuild:1961
+#: debbuild:1962
 msgid "Warning:  "
 msgstr "Peringatan:  "
 
-#: debbuild:768 debbuild:775 debbuild:860 debbuild:867 debbuild:875
-#: debbuild:865 debbuild:872 debbuild:972 debbuild:979 debbuild:987
-#: debbuild:1669 debbuild:1675
+#: debbuild:866 debbuild:873 debbuild:973 debbuild:980 debbuild:988
+#: debbuild:1670 debbuild:1676
 msgid "Warning:  '"
 msgstr "Peringatan:  '"
 
-#: debbuild:871 debbuild:983
+#: debbuild:984
 msgid "Warning:  Debian-specific '"
 msgstr "Peringatan:  Khusus Debian '"
 
-#: debbuild:1305 debbuild:1440
+#: debbuild:1441
 msgid "Warning:  symlinking manpage failed:  "
 msgstr "Peringatan:  symlink halaman manual gagal:  "
 
-#: debbuild:1511 debbuild:1710
+#: debbuild:1711
 msgid "Wrote binary package "
 msgstr "Menulis paket biner "
 
-#: debbuild:1605 debbuild:1808
+#: debbuild:1809
 msgid "Wrote source package "
 msgstr "Menulis paket sumber "
 
-#: debbuild:517 debbuild:586
+#: debbuild:587
 msgid "specfile ("
 msgstr "specfile ("
+
+#, perl-format
+#~ msgid "'%exclude' keyword found, ignoring input line\n"
+#~ msgstr "Kata kunci '%exclude' ditemukan, mengabaikan baris input\n"
+
+#~ msgid "'.  Aborting!"
+#~ msgstr "'.  Menggugurkan!"
+
+#~ msgid "Missing value for '%"
+#~ msgstr "Nilai tidak ada untuk '%"
