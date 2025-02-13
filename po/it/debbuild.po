@@ -4,13 +4,14 @@
 # Andreas Scherer <andreas_github@freenet.de>, 2020.
 # Alessio <alciregi@posteo.net>, 2020.
 # Fernandez Alonso Alberto Mario <albialonso7@icloud.com>, 2022.
+# Salvatore Cocuzza <info@salvatorecocuzza.it>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-11 07:38+0100\n"
-"PO-Revision-Date: 2022-09-21 11:19+0000\n"
-"Last-Translator: Fernandez Alonso Alberto Mario <albialonso7@icloud.com>\n"
+"PO-Revision-Date: 2025-02-13 18:38+0000\n"
+"Last-Translator: Salvatore Cocuzza <info@salvatorecocuzza.it>\n"
 "Language-Team: Italian <https://translate.fedoraproject.org/projects/"
 "debbuild/master/it/>\n"
 "Language: it\n"
@@ -18,7 +19,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1\n"
+"X-Generator: Weblate 5.9.2\n"
 
 #: debbuild:1828
 msgid "  Continuing anyway.\n"
@@ -62,7 +63,7 @@ msgstr " in "
 
 #: debbuild:1903
 msgid " in installed packages...\n"
-msgstr ""
+msgstr " nei pacchetti installati...\n"
 
 #: debbuild:1866
 msgid " is installed, but wrong version ("
@@ -73,10 +74,8 @@ msgid " is probably installed but seems to be a virtual package.\n"
 msgstr " è probabilmente installato ma sembra essere un pacco virtuale.\n"
 
 #: debbuild:1962
-#, fuzzy
-#| msgid " not found.  Can't check build-deps.\n"
 msgid " not found in any package.\n"
-msgstr " non trovato.  Impossibile controllare le build-dep.\n"
+msgstr " non trovato in nessun pacchetto.\n"
 
 #: debbuild:1826
 msgid " not found.  Can't check build-deps.\n"
@@ -109,7 +108,7 @@ msgstr "!  ignorando.\n"
 
 #: debbuild:2505
 msgid "# end of the omitted macro"
-msgstr ""
+msgstr "# fine della macro omessa"
 
 #: debbuild:1031
 msgid "%autosetup:  option '-S "
@@ -124,10 +123,8 @@ msgid "' currently not supported at line "
 msgstr "' attualmente non supportato dalla rete "
 
 #: debbuild:1671 debbuild:1677
-#, fuzzy
-#| msgid ":' is not natively supported by .deb packages.\n"
 msgid "' is not natively supported by .deb packages.\n"
-msgstr ":' non è supportato in modo nativo dai pacchetti deb.\n"
+msgstr "' non è supportato nativamente dai pacchetti .deb.\n"
 
 #: debbuild:1099
 msgid "', continuing\n"
@@ -135,7 +132,7 @@ msgstr "', continuando\n"
 
 #: debbuild:2467
 msgid "(error object is not a string)"
-msgstr ""
+msgstr "(l'oggetto errore non è una stringa)"
 
 #: debbuild:588
 msgid ") barfed:  "
@@ -202,7 +199,7 @@ msgstr "Impossibile usare --il circuito corto per "
 
 #: debbuild:1903
 msgid "Checking for "
-msgstr ""
+msgstr "Controllo "
 
 #: debbuild:1918
 msgid "Checking library requirements...\n"
@@ -234,27 +231,27 @@ msgstr "File non trovato "
 
 #: debbuild:2468
 msgid "Lua Error:"
-msgstr ""
+msgstr "Errore Lua:"
 
 #: debbuild:2482
 msgid "Lua Error: Cannot create state!"
-msgstr ""
+msgstr "Errore Lua: impossibile creare lo stato!"
 
 #: debbuild:2496
 msgid "Lua Error: Unable to open Lua::API::State!"
-msgstr ""
+msgstr "Errore Lua: impossibile aprire Lua::API::State!"
 
 #: debbuild:2504
 msgid "Lua module not loaded! The following macro can't be expanded:"
-msgstr ""
+msgstr "Modulo Lua non caricato! La seguente macro non può essere espansa:"
 
 #: debbuild:1678
 msgid "Merging with 'post' script.\n"
-msgstr ""
+msgstr "Unione con lo script 'post'.\n"
 
 #: debbuild:1672
 msgid "Merging with 'pre' script.\n"
-msgstr ""
+msgstr "Unione con lo script 'pre'.\n"
 
 #: debbuild:402
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
@@ -271,7 +268,7 @@ msgstr "Nessun  .file spec per lavorare!  Uscendo.\n"
 
 #: debbuild:139
 msgid "No Lua module loaded"
-msgstr ""
+msgstr "Nessun modulo Lua caricato"
 
 #: debbuild:180
 msgid "No tarfile specified!  Exiting.\n"
@@ -344,10 +341,8 @@ msgid "WARNING:  Missing value for macro "
 msgstr "ATTENZIONE:  Valore mancante per la macro "
 
 #: debbuild:1962
-#, fuzzy
-#| msgid "Warning:  '"
 msgid "Warning:  "
-msgstr "Attenzione:  '"
+msgstr "Avvertimento:  "
 
 #: debbuild:866 debbuild:873 debbuild:973 debbuild:980 debbuild:988
 #: debbuild:1670 debbuild:1676
