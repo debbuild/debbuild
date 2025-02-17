@@ -2,13 +2,13 @@
 # Copyright (C) 2018, 2020 Andreas Scherer
 # This file is distributed under the same license as the DEBBUILD package.
 # Andreas Scherer <andreas_github@freenet.de>, 2020.
-# Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2023, 2024.
+# Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2023, 2024, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-11 07:38+0100\n"
-"PO-Revision-Date: 2024-02-01 13:36+0000\n"
+"PO-Revision-Date: 2025-02-17 03:38+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://translate.fedoraproject.org/projects/"
 "debbuild/master/ka/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.3.1\n"
+"X-Generator: Weblate 5.9.2\n"
 
 #: debbuild:1828
 msgid "  Continuing anyway.\n"
@@ -72,10 +72,8 @@ msgid " is probably installed but seems to be a virtual package.\n"
 msgstr " ალბათ დაყენებულია, მაგრამ, როგორც ჩანს, ვირტუალური პაკეტია.\n"
 
 #: debbuild:1962
-#, fuzzy
-#| msgid " not found.  Can't check build-deps.\n"
 msgid " not found in any package.\n"
-msgstr " ვერ ვიპოვე.  ვერ შევამოწმე აგების დამოკიდებულებები.\n"
+msgstr " აღმოჩენილია არც ერთ პაკეტში.\n"
 
 #: debbuild:1826
 msgid " not found.  Can't check build-deps.\n"
@@ -340,10 +338,8 @@ msgid "WARNING:  Missing value for macro "
 msgstr ""
 
 #: debbuild:1962
-#, fuzzy
-#| msgid " * Warning:  "
 msgid "Warning:  "
-msgstr " * გაფრთხილება:  "
+msgstr "გაფრთხილება:  "
 
 #: debbuild:866 debbuild:873 debbuild:973 debbuild:980 debbuild:988
 #: debbuild:1670 debbuild:1676
