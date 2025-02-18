@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-11 07:38+0100\n"
-"PO-Revision-Date: 2025-02-11 01:37+0000\n"
+"PO-Revision-Date: 2025-02-18 08:38+0000\n"
 "Last-Translator: Andreas Scherer <andreas_github@freenet.de>\n"
 "Language-Team: German <https://translate.fedoraproject.org/projects/debbuild/"
 "master/de/>\n"
@@ -25,7 +25,7 @@ msgstr "  Fahre trotzdem fort.\n"
 
 #: debbuild:1827
 msgid "  Required for successful build:\n"
-msgstr " Erforderlich für erfolgreiches Bauen:\n"
+msgstr "  Erforderlich für erfolgreiches Bauen:\n"
 
 #: debbuild:1886
 msgid " * Conflicting build-dependency "
