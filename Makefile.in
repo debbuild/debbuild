@@ -18,7 +18,7 @@ build: debbuild.out
 
 debbuild.out: debbuild debbuild.spec
 	cp debbuild debbuild.out
-	echo "\
+	env echo -e "\
 version:$(VERSION)\n\
 debconfigdir:$(DEBCONFIGDIR)\n\
 sysconfdir:$(SYSCONFDIR)\n" >> debbuild.out
