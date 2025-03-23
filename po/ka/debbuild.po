@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-11 07:38+0100\n"
-"PO-Revision-Date: 2025-02-17 03:38+0000\n"
+"PO-Revision-Date: 2025-03-23 02:53+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://translate.fedoraproject.org/projects/"
 "debbuild/master/ka/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.9.2\n"
+"X-Generator: Weblate 5.10.4\n"
 
 #: debbuild:1828
 msgid "  Continuing anyway.\n"
@@ -61,7 +61,7 @@ msgstr " რაში "
 
 #: debbuild:1903
 msgid " in installed packages...\n"
-msgstr ""
+msgstr " დაყენებულ პაკეტებში...\n"
 
 #: debbuild:1866
 msgid " is installed, but wrong version ("
@@ -85,7 +85,7 @@ msgstr " -დან "
 
 #: debbuild:1391
 msgid " script file "
-msgstr ""
+msgstr " სკრიპტის ფაილი "
 
 #: debbuild:555
 msgid " stage.  Ignoring.\n"
@@ -106,7 +106,7 @@ msgstr "!  გამოტოვება.\n"
 
 #: debbuild:2505
 msgid "# end of the omitted macro"
-msgstr ""
+msgstr "# ამოღებული მაკროს დასასრული"
 
 #: debbuild:1031
 msgid "%autosetup:  option '-S "
@@ -344,7 +344,7 @@ msgstr "გაფრთხილება:  "
 #: debbuild:866 debbuild:873 debbuild:973 debbuild:980 debbuild:988
 #: debbuild:1670 debbuild:1676
 msgid "Warning:  '"
-msgstr ""
+msgstr "გაფრთხილება:  '"
 
 #: debbuild:984
 msgid "Warning:  Debian-specific '"
