@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-11 07:38+0100\n"
-"PO-Revision-Date: 2025-04-02 07:17+0000\n"
+"PO-Revision-Date: 2025-04-06 20:32+0000\n"
 "Last-Translator: hsu zangmen <chzang55@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://"
 "translate.fedoraproject.org/projects/debbuild/master/zh_Hant/>\n"
@@ -107,7 +107,7 @@ msgstr ""
 
 #: debbuild:2505
 msgid "# end of the omitted macro"
-msgstr ""
+msgstr "# 省略的巨集結束"
 
 #: debbuild:1031
 msgid "%autosetup:  option '-S "
@@ -123,15 +123,15 @@ msgstr ""
 
 #: debbuild:1671 debbuild:1677
 msgid "' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr ".deb 套件不支援 '。\n"
 
 #: debbuild:1099
 msgid "', continuing\n"
-msgstr ""
+msgstr "'，繼續\n"
 
 #: debbuild:2467
 msgid "(error object is not a string)"
-msgstr ""
+msgstr "(錯誤物件不是字串）"
 
 #: debbuild:588
 msgid ") barfed:  "
@@ -143,25 +143,25 @@ msgstr ""
 
 #: debbuild:1825
 msgid "**WARNING**  "
-msgstr ""
+msgstr "**警告**  "
 
 #: debbuild:703
 #, perl-format
 msgid ".  Missing %if.\n"
-msgstr ""
+msgstr ".  缺少 %if。\n"
 
 #: debbuild:721
 #, perl-format
 msgid ".  Missing %if/%else.\n"
-msgstr ""
+msgstr ".  缺少 %if/%else。\n"
 
 #: debbuild:198
 msgid ":  build requirements not met.\n"
-msgstr ""
+msgstr "：未能滿足建立需求。\n"
 
 #: debbuild:867 debbuild:874 debbuild:974 debbuild:989
 msgid ":' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr "：'.deb套件不支援'。\n"
 
 #: debbuild:981 debbuild:985
 #, perl-format
@@ -170,51 +170,51 @@ msgstr ""
 
 #: debbuild:170
 msgid "Can't --rebuild with "
-msgstr ""
+msgstr "無法 --rebuild 以 "
 
 #: debbuild:197
 msgid "Can't build "
-msgstr ""
+msgstr "無法建置 "
 
 #: debbuild:1182
 msgid "Can't handle unknown file type '"
-msgstr ""
+msgstr "無法處理未知檔案類型 '"
 
 #: debbuild:1976
 msgid "Can't install "
-msgstr ""
+msgstr "無法安裝 "
 
 #: debbuild:1390
 msgid "Can't open/create "
-msgstr ""
+msgstr "無法開啟/建立 "
 
 #: debbuild:509
 msgid "Can't use -"
-msgstr ""
+msgstr "無法使用 -"
 
 #: debbuild:554
 msgid "Can't use --short-circuit for "
-msgstr ""
+msgstr "無法對以下項目使用 --short-circuit "
 
 #: debbuild:1903
 msgid "Checking for "
-msgstr ""
+msgstr "檢查 "
 
 #: debbuild:1918
 msgid "Checking library requirements...\n"
-msgstr ""
+msgstr "正在檢查函式庫需求...\n"
 
 #: debbuild:1485
 msgid "Could not open: "
-msgstr ""
+msgstr "無法開啟： "
 
 #: debbuild:868 debbuild:990
 msgid "Downgrading relationship to Enhances:.\n"
-msgstr ""
+msgstr "將關係降級為 Enhances：.\n"
 
 #: debbuild:1403
 msgid "Exec of "
-msgstr ""
+msgstr "執行 "
 
 #: debbuild:1399
 msgid "Executing ("
@@ -222,31 +222,31 @@ msgstr ""
 
 #: debbuild:1979
 msgid "Extracted source package "
-msgstr ""
+msgstr "擷取的原始碼軟體包 "
 
 #: debbuild:1492
 msgid "File not found: "
-msgstr ""
+msgstr "未找到檔案： "
 
 #: debbuild:2468
 msgid "Lua Error:"
-msgstr ""
+msgstr "Lua 錯誤："
 
 #: debbuild:2482
 msgid "Lua Error: Cannot create state!"
-msgstr ""
+msgstr "Lua 錯誤： 無法建立狀態！"
 
 #: debbuild:2496
 msgid "Lua Error: Unable to open Lua::API::State!"
-msgstr ""
+msgstr "Lua 錯誤： 無法開啟 Lua::API::State！"
 
 #: debbuild:2504
 msgid "Lua module not loaded! The following macro can't be expanded:"
-msgstr ""
+msgstr "Lua 模組未載入！ 下列巨集無法展開："
 
 #: debbuild:1678
 msgid "Merging with 'post' script.\n"
-msgstr ""
+msgstr "與「後置」腳本合併。\n"
 
 #: debbuild:1672
 msgid "Merging with 'pre' script.\n"
