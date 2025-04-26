@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-11 07:38+0100\n"
-"PO-Revision-Date: 2025-04-06 20:32+0000\n"
+"PO-Revision-Date: 2025-04-26 08:17+0000\n"
 "Last-Translator: hsu zangmen <chzang55@gmail.com>\n"
 "Language-Team: Chinese (Traditional Han script) <https://"
 "translate.fedoraproject.org/projects/debbuild/master/zh_Hant/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.10.4\n"
+"X-Generator: Weblate 5.11\n"
 
 #: debbuild:1828
 msgid "  Continuing anyway.\n"
@@ -50,60 +50,60 @@ msgstr " 失敗 (%)"
 
 #: debbuild:1709 debbuild:1719
 msgid " for "
-msgstr ""
+msgstr " 為 "
 
 #: debbuild:505
 msgid " for option '-"
-msgstr ""
+msgstr " 為選項 '-"
 
 #: debbuild:529 debbuild:1712 debbuild:1722 debbuild:1809
 msgid " in "
-msgstr ""
+msgstr " 在 "
 
 #: debbuild:1903
 msgid " in installed packages...\n"
-msgstr ""
+msgstr " 在已安裝的套件中...\n"
 
 #: debbuild:1866
 msgid " is installed, but wrong version ("
-msgstr ""
+msgstr " 是已安裝，但版本有錯誤 ("
 
 #: debbuild:1861
 msgid " is probably installed but seems to be a virtual package.\n"
-msgstr ""
+msgstr " 可能已安裝，但似乎是虛擬軟體包。\n"
 
 #: debbuild:1962
 msgid " not found in any package.\n"
-msgstr ""
+msgstr " 在任何套件中都找不到。\n"
 
 #: debbuild:1826
 msgid " not found.  Can't check build-deps.\n"
-msgstr ""
+msgstr " 未找到。 無法檢查 build-deps。\n"
 
 #: debbuild:652
 msgid " of "
-msgstr ""
+msgstr " 的 "
 
 #: debbuild:1391
 msgid " script file "
-msgstr ""
+msgstr " 指令稿 "
 
 #: debbuild:555
 msgid " stage.  Ignoring.\n"
-msgstr ""
+msgstr " 階段。 忽略。\n"
 
 #: debbuild:1980
 #, perl-brace-format
 msgid " to %{_topdir}.\n"
-msgstr ""
+msgstr " 到 %{_topdir}。\n"
 
 #: debbuild:510
 msgid " with --rebuild\n"
-msgstr ""
+msgstr " 使用 --rebuild\n"
 
 #: debbuild:529
 msgid "!  Ignoring.\n"
-msgstr ""
+msgstr "!  無視。\n"
 
 #: debbuild:2505
 msgid "# end of the omitted macro"
@@ -119,7 +119,7 @@ msgstr "' 行 "
 
 #: debbuild:1032
 msgid "' currently not supported at line "
-msgstr ""
+msgstr "'目前不支援行 "
 
 #: debbuild:1671 debbuild:1677
 msgid "' is not natively supported by .deb packages.\n"
@@ -135,11 +135,11 @@ msgstr "(錯誤物件不是字串）"
 
 #: debbuild:588
 msgid ") barfed:  "
-msgstr ""
+msgstr ") 吐了：  "
 
 #: debbuild:1867
 msgid "):  Need "
-msgstr ""
+msgstr "):  需要 "
 
 #: debbuild:1825
 msgid "**WARNING**  "
@@ -166,7 +166,7 @@ msgstr "：'.deb套件不支援'。\n"
 #: debbuild:981 debbuild:985
 #, perl-format
 msgid ":' outside %if wrapper\n"
-msgstr ""
+msgstr "：'外部 %if wrapper\n"
 
 #: debbuild:170
 msgid "Can't --rebuild with "
@@ -218,7 +218,7 @@ msgstr "執行 "
 
 #: debbuild:1399
 msgid "Executing ("
-msgstr ""
+msgstr "執行 ("
 
 #: debbuild:1979
 msgid "Extracted source package "
@@ -250,119 +250,119 @@ msgstr "與「後置」腳本合併。\n"
 
 #: debbuild:1672
 msgid "Merging with 'pre' script.\n"
-msgstr ""
+msgstr "與「pre」腳本合併。\n"
 
 #: debbuild:402
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
-msgstr ""
+msgstr "未找到 'os-release' 檔案或 'lsb_release' 程式。\n"
 
 #: debbuild:586
 msgid "No .spec file specified!  Exiting.\n"
-msgstr ""
+msgstr "未指定 .spec 檔案！ 正在退出。\n"
 
 #: debbuild:49
 msgid "No .spec file to work with!  Exiting.\n"
-msgstr ""
+msgstr "沒有 .spec 檔案可供使用！ 正在退出。\n"
 
 #: debbuild:139
 msgid "No Lua module loaded"
-msgstr ""
+msgstr "未能載入 Lua 模組"
 
 #: debbuild:180
 msgid "No tarfile specified!  Exiting.\n"
-msgstr ""
+msgstr "未指定 tarfile！ 正在退出。\n"
 
 #: debbuild:1721
 msgid "Signed binary package "
-msgstr ""
+msgstr "已簽署的二進位套件 "
 
 #: debbuild:403
 msgid "Sorry, I quit.\n"
-msgstr ""
+msgstr "對不起，我不幹了。\n"
 
 #: debbuild:1098
 #, perl-format
 msgid "Suspect %setup tag '%setup"
-msgstr ""
+msgstr "懷疑 %setup 標記 '%setup"
 
 #: debbuild:542
 msgid "This is debbuild, version "
-msgstr ""
+msgstr "這是 debbuild，版本 "
 
 #: debbuild:1877
 msgid "To install all missing dependencies, run 'apt install "
-msgstr ""
+msgstr "若要安裝所有遺失的相依性，請執行「apt install」 "
 
 #: debbuild:1891
 msgid "To remove all conflicting dependencies, run 'apt remove "
-msgstr ""
+msgstr "若要移除所有衝突的相依性，請執行「apt remove」 "
 
 #: debbuild:504
 msgid "Unknown stage "
-msgstr ""
+msgstr "未知階段 "
 
 #: debbuild:651
 msgid "Unknown tag '%"
-msgstr ""
+msgstr "未知標記 '%"
 
 #: debbuild:716
 #, perl-format
 msgid "Unmatched %else at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "檔案末尾有不匹配的 %else。   缺少 %endif。\n"
 
 #: debbuild:702
 #, perl-format
 msgid "Unmatched %else in line "
-msgstr ""
+msgstr "行中未匹配的 %else "
 
 #: debbuild:720
 #, perl-format
 msgid "Unmatched %endif in line "
-msgstr ""
+msgstr "行中未匹配的 %endif "
 
 #: debbuild:698
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
-msgstr ""
+msgstr "檔案末尾有不匹配的 %if。 缺少 %else/%endif。\n"
 
 #: debbuild:1010
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "檔案末端有不匹配的 %if。 缺少 %endif。\n"
 
 #: debbuild:875 debbuild:975
 msgid "Upgrading relationship to Requires:.\n"
-msgstr ""
+msgstr "升級關係為 Requires:.\n"
 
 #: debbuild:528
 msgid "WARNING:  Missing value for macro "
-msgstr ""
+msgstr "警告：巨集值缺失 "
 
 #: debbuild:1962
 msgid "Warning:  "
-msgstr ""
+msgstr "警告：  "
 
 #: debbuild:866 debbuild:873 debbuild:973 debbuild:980 debbuild:988
 #: debbuild:1670 debbuild:1676
 msgid "Warning:  '"
-msgstr ""
+msgstr "警告：  '"
 
 #: debbuild:984
 msgid "Warning:  Debian-specific '"
-msgstr ""
+msgstr "警告：  Debian 特有的 '"
 
 #: debbuild:1441
 msgid "Warning:  symlinking manpage failed:  "
-msgstr ""
+msgstr "警告：符號連結手冊頁失敗：  "
 
 #: debbuild:1711
 msgid "Wrote binary package "
-msgstr ""
+msgstr "撰寫二進位套件 "
 
 #: debbuild:1809
 msgid "Wrote source package "
-msgstr ""
+msgstr "撰寫原始碼套件 "
 
 #: debbuild:587
 msgid "specfile ("
-msgstr ""
+msgstr "specfile ("
