@@ -10,8 +10,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-11 07:38+0100\n"
 "PO-Revision-Date: 2025-09-01 22:53+0000\n"
-"Last-Translator: Weblate Translation Memory <noreply-mt-weblate-translation-"
-"memory@weblate.org>\n"
+"Last-Translator: Américo Monteiro <a_monteiro@gmx.com>\n"
 "Language-Team: Portuguese <https://translate.fedoraproject.org/projects/"
 "debbuild/master/pt/>\n"
 "Language: pt\n"
@@ -23,59 +22,59 @@ msgstr ""
 
 #: debbuild:1828
 msgid "  Continuing anyway.\n"
-msgstr ""
+msgstr "  A continuar de qualquer modo.\n"
 
 #: debbuild:1827
 msgid "  Required for successful build:\n"
-msgstr ""
+msgstr "  Requerido para compilação com sucesso:\n"
 
 #: debbuild:1886
 msgid " * Conflicting build-dependency "
-msgstr ""
+msgstr " * Dependência de compilação em conflito "
 
 #: debbuild:1844 debbuild:1871
 msgid " * Missing build-dependency "
-msgstr ""
+msgstr " * Dependência de compilação em falta "
 
 #: debbuild:1865
 msgid " * Required build-dependency "
-msgstr ""
+msgstr " * Dependência de compilação requerida "
 
 #: debbuild:1860
 msgid " * Warning:  "
-msgstr ""
+msgstr " * Aviso:  "
 
 #: debbuild:1403
 msgid " failed (%"
-msgstr " falhou -"
+msgstr " falhou (%"
 
 #: debbuild:1709 debbuild:1719
 msgid " for "
-msgstr ""
+msgstr " para "
 
 #: debbuild:505
 msgid " for option '-"
-msgstr ""
+msgstr " para opção '-"
 
 #: debbuild:529 debbuild:1712 debbuild:1722 debbuild:1809
 msgid " in "
-msgstr ""
+msgstr " em "
 
 #: debbuild:1903
 msgid " in installed packages...\n"
-msgstr ""
+msgstr " em pacotes instalados...\n"
 
 #: debbuild:1866
 msgid " is installed, but wrong version ("
-msgstr ""
+msgstr " está instalado, mas a versão é errada ("
 
 #: debbuild:1861
 msgid " is probably installed but seems to be a virtual package.\n"
-msgstr ""
+msgstr " está provavelmente instalado para parece ser um pacote virtual.\n"
 
 #: debbuild:1962
 msgid " not found in any package.\n"
-msgstr ""
+msgstr " não encontrado em nenhum pacote.\n"
 
 #: debbuild:1826
 msgid " not found.  Can't check build-deps.\n"
@@ -83,40 +82,40 @@ msgstr ""
 
 #: debbuild:652
 msgid " of "
-msgstr ""
+msgstr " de "
 
 #: debbuild:1391
 msgid " script file "
-msgstr ""
+msgstr " ficheiro script "
 
 #: debbuild:555
 msgid " stage.  Ignoring.\n"
-msgstr ""
+msgstr " estágio.  A ignorar.\n"
 
 #: debbuild:1980
 #, perl-brace-format
 msgid " to %{_topdir}.\n"
-msgstr ""
+msgstr " para %{_topdir}.\n"
 
 #: debbuild:510
 msgid " with --rebuild\n"
-msgstr ""
+msgstr " com --rebuild\n"
 
 #: debbuild:529
 msgid "!  Ignoring.\n"
-msgstr ""
+msgstr "!  A ignorar.\n"
 
 #: debbuild:2505
 msgid "# end of the omitted macro"
-msgstr ""
+msgstr "# fim da macro omitida"
 
 #: debbuild:1031
 msgid "%autosetup:  option '-S "
-msgstr ""
+msgstr "%autosetup:  opção '-S "
 
 #: debbuild:651
 msgid "' at line "
-msgstr ""
+msgstr "' na linha "
 
 #: debbuild:1032
 msgid "' currently not supported at line "
@@ -128,11 +127,11 @@ msgstr ""
 
 #: debbuild:1099
 msgid "', continuing\n"
-msgstr ""
+msgstr "', a continuar\n"
 
 #: debbuild:2467
 msgid "(error object is not a string)"
-msgstr ""
+msgstr "(erro objeto não é uma string)"
 
 #: debbuild:588
 msgid ") barfed:  "
@@ -144,21 +143,21 @@ msgstr ""
 
 #: debbuild:1825
 msgid "**WARNING**  "
-msgstr ""
+msgstr "**AVISO**  "
 
 #: debbuild:703
 #, perl-format
 msgid ".  Missing %if.\n"
-msgstr ""
+msgstr ".  Em falta %if.\n"
 
 #: debbuild:721
 #, perl-format
 msgid ".  Missing %if/%else.\n"
-msgstr ""
+msgstr ".  Em falta %if/%else.\n"
 
 #: debbuild:198
 msgid ":  build requirements not met.\n"
-msgstr ""
+msgstr ":  requerimentos de compilação não satisfeitos.\n"
 
 #: debbuild:867 debbuild:874 debbuild:974 debbuild:989
 msgid ":' is not natively supported by .deb packages.\n"
@@ -171,35 +170,35 @@ msgstr ""
 
 #: debbuild:170
 msgid "Can't --rebuild with "
-msgstr ""
+msgstr "Não pode --rebuild com "
 
 #: debbuild:197
 msgid "Can't build "
-msgstr ""
+msgstr "Não pode compilar "
 
 #: debbuild:1182
 msgid "Can't handle unknown file type '"
-msgstr ""
+msgstr "Não pode lidar com tipo de ficheiro desconhecido '"
 
 #: debbuild:1976
 msgid "Can't install "
-msgstr ""
+msgstr "Não pode instalar "
 
 #: debbuild:1390
 msgid "Can't open/create "
-msgstr ""
+msgstr "Não pode abrir/criar "
 
 #: debbuild:509
 msgid "Can't use -"
-msgstr ""
+msgstr "Não pode usar -"
 
 #: debbuild:554
 msgid "Can't use --short-circuit for "
-msgstr ""
+msgstr "Não pode usar --short-circuit para "
 
 #: debbuild:1903
 msgid "Checking for "
-msgstr ""
+msgstr "A verificar por "
 
 #: debbuild:1918
 msgid "Checking library requirements...\n"
@@ -207,7 +206,7 @@ msgstr ""
 
 #: debbuild:1485
 msgid "Could not open: "
-msgstr "Incapaz de abrir: {} "
+msgstr "Incapaz de abrir: "
 
 #: debbuild:868 debbuild:990
 msgid "Downgrading relationship to Enhances:.\n"
@@ -219,51 +218,51 @@ msgstr ""
 
 #: debbuild:1399
 msgid "Executing ("
-msgstr ""
+msgstr "A executar ("
 
 #: debbuild:1979
 msgid "Extracted source package "
-msgstr ""
+msgstr "Pacote fonte extraído "
 
 #: debbuild:1492
 msgid "File not found: "
-msgstr "Ficheiro não encontrado "
+msgstr "Ficheiro não encontrado: "
 
 #: debbuild:2468
 msgid "Lua Error:"
-msgstr ""
+msgstr "Erro de Lua:"
 
 #: debbuild:2482
 msgid "Lua Error: Cannot create state!"
-msgstr ""
+msgstr "Erro de Lua: Não pode criar estado!"
 
 #: debbuild:2496
 msgid "Lua Error: Unable to open Lua::API::State!"
-msgstr ""
+msgstr "Erro de Lua: Incapaz de abrir Lua::API::State!"
 
 #: debbuild:2504
 msgid "Lua module not loaded! The following macro can't be expanded:"
-msgstr ""
+msgstr "Módulo Lua não carregado! A seguinte macro não pode ser expandida:"
 
 #: debbuild:1678
 msgid "Merging with 'post' script.\n"
-msgstr ""
+msgstr "A fundir com script 'post'.\n"
 
 #: debbuild:1672
 msgid "Merging with 'pre' script.\n"
-msgstr ""
+msgstr "A fundir com script 'pre'.\n"
 
 #: debbuild:402
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
-msgstr ""
+msgstr "Nenhum ficheiro 'os-release' ou programa 'lsb_release' encontrado.\n"
 
 #: debbuild:586
 msgid "No .spec file specified!  Exiting.\n"
-msgstr ""
+msgstr "Nenhum ficheiro .spec especificado!  A sair.\n"
 
 #: debbuild:49
 msgid "No .spec file to work with!  Exiting.\n"
-msgstr ""
+msgstr "Nenhum ficheiro .spec para trabalhar com!  A sair.\n"
 
 #: debbuild:139
 msgid "No Lua module loaded"
@@ -275,11 +274,11 @@ msgstr ""
 
 #: debbuild:1721
 msgid "Signed binary package "
-msgstr ""
+msgstr "Pacote binário assinado "
 
 #: debbuild:403
 msgid "Sorry, I quit.\n"
-msgstr ""
+msgstr "Desculpe, Eu desisto.\n"
 
 #: debbuild:1098
 #, perl-format
@@ -288,7 +287,7 @@ msgstr ""
 
 #: debbuild:542
 msgid "This is debbuild, version "
-msgstr ""
+msgstr "Isto é o debbuild, versão "
 
 #: debbuild:1877
 msgid "To install all missing dependencies, run 'apt install "
@@ -300,11 +299,11 @@ msgstr ""
 
 #: debbuild:504
 msgid "Unknown stage "
-msgstr ""
+msgstr "Estágio desconhecido "
 
 #: debbuild:651
 msgid "Unknown tag '%"
-msgstr ""
+msgstr "Etiqueta desconhecida '%"
 
 #: debbuild:716
 #, perl-format
@@ -337,16 +336,16 @@ msgstr ""
 
 #: debbuild:528
 msgid "WARNING:  Missing value for macro "
-msgstr ""
+msgstr "AVISO: Valor em falta para macro "
 
 #: debbuild:1962
 msgid "Warning:  "
-msgstr "aviso:  "
+msgstr "Aviso:  "
 
 #: debbuild:866 debbuild:873 debbuild:973 debbuild:980 debbuild:988
 #: debbuild:1670 debbuild:1676
 msgid "Warning:  '"
-msgstr ""
+msgstr "Aviso:  '"
 
 #: debbuild:984
 msgid "Warning:  Debian-specific '"
@@ -358,12 +357,12 @@ msgstr ""
 
 #: debbuild:1711
 msgid "Wrote binary package "
-msgstr ""
+msgstr "Escreveu pacote binário "
 
 #: debbuild:1809
 msgid "Wrote source package "
-msgstr ""
+msgstr "Escreveu pacote fonte "
 
 #: debbuild:587
 msgid "specfile ("
-msgstr ""
+msgstr "ficheiro de especificações ("
