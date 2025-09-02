@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: DEBBUILD 24.12.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-11 07:38+0100\n"
-"PO-Revision-Date: 2025-09-01 22:53+0000\n"
+"PO-Revision-Date: 2025-09-02 23:53+0000\n"
 "Last-Translator: Américo Monteiro <a_monteiro@gmx.com>\n"
 "Language-Team: Portuguese <https://translate.fedoraproject.org/projects/"
 "debbuild/master/pt/>\n"
@@ -78,7 +78,7 @@ msgstr " não encontrado em nenhum pacote.\n"
 
 #: debbuild:1826
 msgid " not found.  Can't check build-deps.\n"
-msgstr ""
+msgstr " não encontrado.  Não posso verificar dependências de compilação.\n"
 
 #: debbuild:652
 msgid " of "
@@ -119,11 +119,11 @@ msgstr "' na linha "
 
 #: debbuild:1032
 msgid "' currently not supported at line "
-msgstr ""
+msgstr "' atualmente não suportado na linha "
 
 #: debbuild:1671 debbuild:1677
 msgid "' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr "' não é nativamente suportado por pacotes .deb.\n"
 
 #: debbuild:1099
 msgid "', continuing\n"
@@ -135,11 +135,11 @@ msgstr "(erro objeto não é uma string)"
 
 #: debbuild:588
 msgid ") barfed:  "
-msgstr ""
+msgstr ") vomitou:  "
 
 #: debbuild:1867
 msgid "):  Need "
-msgstr ""
+msgstr "):  Necessidade "
 
 #: debbuild:1825
 msgid "**WARNING**  "
@@ -161,12 +161,12 @@ msgstr ":  requerimentos de compilação não satisfeitos.\n"
 
 #: debbuild:867 debbuild:874 debbuild:974 debbuild:989
 msgid ":' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr ":' não é nativamente suportado por pacotes .deb.\n"
 
 #: debbuild:981 debbuild:985
 #, perl-format
 msgid ":' outside %if wrapper\n"
-msgstr ""
+msgstr ":' de fora %if invólucro\n"
 
 #: debbuild:170
 msgid "Can't --rebuild with "
@@ -202,7 +202,7 @@ msgstr "A verificar por "
 
 #: debbuild:1918
 msgid "Checking library requirements...\n"
-msgstr ""
+msgstr "A verificar requirimentos de biblioteca...\n"
 
 #: debbuild:1485
 msgid "Could not open: "
@@ -210,11 +210,11 @@ msgstr "Incapaz de abrir: "
 
 #: debbuild:868 debbuild:990
 msgid "Downgrading relationship to Enhances:.\n"
-msgstr ""
+msgstr "A descer relacionamento para Enhances:.\n"
 
 #: debbuild:1403
 msgid "Exec of "
-msgstr ""
+msgstr "Exec de "
 
 #: debbuild:1399
 msgid "Executing ("
@@ -266,11 +266,11 @@ msgstr "Nenhum ficheiro .spec para trabalhar com!  A sair.\n"
 
 #: debbuild:139
 msgid "No Lua module loaded"
-msgstr ""
+msgstr "Nenhum módulo Lua carregado"
 
 #: debbuild:180
 msgid "No tarfile specified!  Exiting.\n"
-msgstr ""
+msgstr "Nenhum ficheiro tar especificado!  A sair.\n"
 
 #: debbuild:1721
 msgid "Signed binary package "
@@ -283,7 +283,7 @@ msgstr "Desculpe, Eu desisto.\n"
 #: debbuild:1098
 #, perl-format
 msgid "Suspect %setup tag '%setup"
-msgstr ""
+msgstr "Etiqueta %setup suspeita '%setup"
 
 #: debbuild:542
 msgid "This is debbuild, version "
@@ -291,11 +291,11 @@ msgstr "Isto é o debbuild, versão "
 
 #: debbuild:1877
 msgid "To install all missing dependencies, run 'apt install "
-msgstr ""
+msgstr "Para instalar todas as dependências em falta, corra 'apt install "
 
 #: debbuild:1891
 msgid "To remove all conflicting dependencies, run 'apt remove "
-msgstr ""
+msgstr "Para remover todas as dependências em conflito, corra 'apt remove "
 
 #: debbuild:504
 msgid "Unknown stage "
@@ -308,31 +308,31 @@ msgstr "Etiqueta desconhecida '%"
 #: debbuild:716
 #, perl-format
 msgid "Unmatched %else at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "%else não correspondente no fim do ficheiro.  %endif em falta.\n"
 
 #: debbuild:702
 #, perl-format
 msgid "Unmatched %else in line "
-msgstr ""
+msgstr "%else não correspondente em linha "
 
 #: debbuild:720
 #, perl-format
 msgid "Unmatched %endif in line "
-msgstr ""
+msgstr "%endif não correspondente em linha "
 
 #: debbuild:698
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
-msgstr ""
+msgstr "%if não correspondente no fim do ficheiro.  %else/%endif em falta.\n"
 
 #: debbuild:1010
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "%if não correspondente no fim do ficheiro.  %endif em falta.\n"
 
 #: debbuild:875 debbuild:975
 msgid "Upgrading relationship to Requires:.\n"
-msgstr ""
+msgstr "A atualizar relacionamento para Requires:.\n"
 
 #: debbuild:528
 msgid "WARNING:  Missing value for macro "
@@ -349,11 +349,11 @@ msgstr "Aviso:  '"
 
 #: debbuild:984
 msgid "Warning:  Debian-specific '"
-msgstr ""
+msgstr "Aviso:  Especifico de Debian '"
 
 #: debbuild:1441
 msgid "Warning:  symlinking manpage failed:  "
-msgstr ""
+msgstr "Aviso:  criação de link simbólico a manual falhou:  "
 
 #: debbuild:1711
 msgid "Wrote binary package "
