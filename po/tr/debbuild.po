@@ -3,13 +3,14 @@
 # This file is distributed under the same license as the DEBBUILD package.
 # Andreas Scherer <andreas_github@freenet.de>, 2020.
 # Oğuz Ersen <oguzersen@protonmail.com>, 2020, 2021.
+# Oğuz Ersen <oguz@ersen.moe>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-11 07:38+0100\n"
-"PO-Revision-Date: 2021-08-18 19:04+0000\n"
-"Last-Translator: Oğuz Ersen <oguzersen@protonmail.com>\n"
+"PO-Revision-Date: 2025-10-05 16:54+0000\n"
+"Last-Translator: Oğuz Ersen <oguz@ersen.moe>\n"
 "Language-Team: Turkish <https://translate.fedoraproject.org/projects/"
 "debbuild/master/tr/>\n"
 "Language: tr\n"
@@ -17,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.7.2\n"
+"X-Generator: Weblate 5.13.3\n"
 
 #: debbuild:1828
 msgid "  Continuing anyway.\n"
@@ -61,7 +62,7 @@ msgstr " , şurada: "
 
 #: debbuild:1903
 msgid " in installed packages...\n"
-msgstr ""
+msgstr " kurulu paketlerde...\n"
 
 #: debbuild:1866
 msgid " is installed, but wrong version ("
@@ -72,10 +73,8 @@ msgid " is probably installed but seems to be a virtual package.\n"
 msgstr " muhtemelen kurulu ama sanal bir paket gibi görünüyor.\n"
 
 #: debbuild:1962
-#, fuzzy
-#| msgid " not found.  Can't check build-deps.\n"
 msgid " not found in any package.\n"
-msgstr " bulunamadı.  Oluşturma bağımlılıkları denetlenemiyor.\n"
+msgstr " hiçbir pakette bulunamadı.\n"
 
 #: debbuild:1826
 msgid " not found.  Can't check build-deps.\n"
@@ -108,7 +107,7 @@ msgstr "!  Yok sayılıyor.\n"
 
 #: debbuild:2505
 msgid "# end of the omitted macro"
-msgstr ""
+msgstr "# atlanan makronun sonu"
 
 #: debbuild:1031
 msgid "%autosetup:  option '-S "
@@ -123,10 +122,8 @@ msgid "' currently not supported at line "
 msgstr "' şu anda desteklenmiyor, satır: "
 
 #: debbuild:1671 debbuild:1677
-#, fuzzy
-#| msgid ":' is not natively supported by .deb packages.\n"
 msgid "' is not natively supported by .deb packages.\n"
-msgstr ":' .deb paketleri tarafından desteklenmiyor.\n"
+msgstr "' .deb paketleri tarafından desteklenmiyor.\n"
 
 #: debbuild:1099
 msgid "', continuing\n"
@@ -134,7 +131,7 @@ msgstr "', devam ediliyor\n"
 
 #: debbuild:2467
 msgid "(error object is not a string)"
-msgstr ""
+msgstr "(hata nesnesi bir dizge değil)"
 
 #: debbuild:588
 msgid ") barfed:  "
@@ -201,7 +198,7 @@ msgstr "--short-circuit kullanılamaz: "
 
 #: debbuild:1903
 msgid "Checking for "
-msgstr ""
+msgstr "Denetleniyor "
 
 #: debbuild:1918
 msgid "Checking library requirements...\n"
@@ -233,27 +230,27 @@ msgstr "Dosya bulunamadı: "
 
 #: debbuild:2468
 msgid "Lua Error:"
-msgstr ""
+msgstr "Lua Hatası:"
 
 #: debbuild:2482
 msgid "Lua Error: Cannot create state!"
-msgstr ""
+msgstr "Lua Hatası: Durum oluşturulamıyor!"
 
 #: debbuild:2496
 msgid "Lua Error: Unable to open Lua::API::State!"
-msgstr ""
+msgstr "Lua Hatası: Lua::API::State açılamıyor!"
 
 #: debbuild:2504
 msgid "Lua module not loaded! The following macro can't be expanded:"
-msgstr ""
+msgstr "Lua modülü yüklenmedi! Şu makro genişletilemiyor:"
 
 #: debbuild:1678
 msgid "Merging with 'post' script.\n"
-msgstr ""
+msgstr "'post' betiği ile birleştiriliyor.\n"
 
 #: debbuild:1672
 msgid "Merging with 'pre' script.\n"
-msgstr ""
+msgstr "'pre' betiği ile birleştiriliyor.\n"
 
 #: debbuild:402
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
@@ -269,7 +266,7 @@ msgstr "Çalışmak için .spec dosyası yok!  Sonlandırılıyor.\n"
 
 #: debbuild:139
 msgid "No Lua module loaded"
-msgstr ""
+msgstr "Lua modülü yüklenmedi"
 
 #: debbuild:180
 msgid "No tarfile specified!  Exiting.\n"
@@ -344,10 +341,8 @@ msgid "WARNING:  Missing value for macro "
 msgstr "UYARI:  Makro için eksik değer: "
 
 #: debbuild:1962
-#, fuzzy
-#| msgid "Warning:  '"
 msgid "Warning:  "
-msgstr "Uyarı:  '"
+msgstr "Uyarı:  "
 
 #: debbuild:866 debbuild:873 debbuild:973 debbuild:980 debbuild:988
 #: debbuild:1670 debbuild:1676
