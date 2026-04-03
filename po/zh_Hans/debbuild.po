@@ -3,21 +3,22 @@
 # This file is distributed under the same license as the DEBBUILD package.
 # Andreas Scherer <andreas_github@freenet.de>, 2020.
 # Yang Yulin <yylteam@icloud.com>, 2022.
+# 耗子 <haozi@loli.email>, 2026.
 msgid ""
 msgstr ""
 "Project-Id-Version: DEBBUILD I18N 1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-11 07:38+0100\n"
-"PO-Revision-Date: 2022-10-04 01:19+0000\n"
-"Last-Translator: Yang Yulin <yylteam@icloud.com>\n"
-"Language-Team: Chinese (Simplified) <https://translate.fedoraproject.org/"
-"projects/debbuild/master/zh_Hans/>\n"
+"PO-Revision-Date: 2026-04-03 06:58+0000\n"
+"Last-Translator: 耗子 <haozi@loli.email>\n"
+"Language-Team: Chinese (Simplified Han script) <https://"
+"translate.fedoraproject.org/projects/debbuild/master/zh_Hans/>\n"
 "Language: zh_Hans\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.14.1\n"
+"X-Generator: Weblate 5.16.2\n"
 
 #: debbuild:1828
 msgid "  Continuing anyway.\n"
@@ -61,7 +62,7 @@ msgstr " 在 "
 
 #: debbuild:1903
 msgid " in installed packages...\n"
-msgstr ""
+msgstr " 在已安装的软件包中……\n"
 
 #: debbuild:1866
 msgid " is installed, but wrong version ("
@@ -72,10 +73,8 @@ msgid " is probably installed but seems to be a virtual package.\n"
 msgstr " 可能已安装，但似乎是一个虚拟软件包。\n"
 
 #: debbuild:1962
-#, fuzzy
-#| msgid " not found.  Can't check build-deps.\n"
 msgid " not found in any package.\n"
-msgstr " 未找到。 无法检查生成点。\n"
+msgstr " 在任何软件包中均未找到。\n"
 
 #: debbuild:1826
 msgid " not found.  Can't check build-deps.\n"
@@ -87,7 +86,7 @@ msgstr " 的 "
 
 #: debbuild:1391
 msgid " script file "
-msgstr ""
+msgstr " 脚本文件 "
 
 #: debbuild:555
 msgid " stage.  Ignoring.\n"
@@ -108,7 +107,7 @@ msgstr "!  忽略。\n"
 
 #: debbuild:2505
 msgid "# end of the omitted macro"
-msgstr ""
+msgstr "# 被省略宏的末尾"
 
 #: debbuild:1031
 msgid "%autosetup:  option '-S "
@@ -123,10 +122,8 @@ msgid "' currently not supported at line "
 msgstr "' 当前不支持在行 "
 
 #: debbuild:1671 debbuild:1677
-#, fuzzy
-#| msgid ":' is not natively supported by .deb packages.\n"
 msgid "' is not natively supported by .deb packages.\n"
-msgstr ":' 它在 .deb 包本身不支持。\n"
+msgstr "”不被 .deb 包原生支持。\n"
 
 #: debbuild:1099
 msgid "', continuing\n"
@@ -134,7 +131,7 @@ msgstr "'，继续\n"
 
 #: debbuild:2467
 msgid "(error object is not a string)"
-msgstr ""
+msgstr "(错误对象不是字符串)"
 
 #: debbuild:588
 msgid ") barfed:  "
@@ -169,43 +166,43 @@ msgstr ":' 它在 .deb 包本身不支持。\n"
 #: debbuild:981 debbuild:985
 #, perl-format
 msgid ":' outside %if wrapper\n"
-msgstr ""
+msgstr ":' 在 %if 包装器外部\n"
 
 #: debbuild:170
 msgid "Can't --rebuild with "
-msgstr ""
+msgstr "无法使用 --rebuild 重新构建 "
 
 #: debbuild:197
 msgid "Can't build "
-msgstr ""
+msgstr "无法构建 "
 
 #: debbuild:1182
 msgid "Can't handle unknown file type '"
-msgstr ""
+msgstr "无法处理未知文件类型“"
 
 #: debbuild:1976
 msgid "Can't install "
-msgstr ""
+msgstr "无法安装 "
 
 #: debbuild:1390
 msgid "Can't open/create "
-msgstr ""
+msgstr "无法打开/创建 "
 
 #: debbuild:509
 msgid "Can't use -"
-msgstr ""
+msgstr "无法使用 -"
 
 #: debbuild:554
 msgid "Can't use --short-circuit for "
-msgstr ""
+msgstr "无法对 --short-circuit 使用 "
 
 #: debbuild:1903
 msgid "Checking for "
-msgstr ""
+msgstr "正在检查 "
 
 #: debbuild:1918
 msgid "Checking library requirements...\n"
-msgstr ""
+msgstr "正在检查库依赖……\n"
 
 #: debbuild:1485
 msgid "Could not open: "
@@ -213,19 +210,19 @@ msgstr "无法打开： "
 
 #: debbuild:868 debbuild:990
 msgid "Downgrading relationship to Enhances:.\n"
-msgstr ""
+msgstr "将关系降级为 Enhances:。\n"
 
 #: debbuild:1403
 msgid "Exec of "
-msgstr ""
+msgstr "执行 "
 
 #: debbuild:1399
 msgid "Executing ("
-msgstr ""
+msgstr "正在执行 ("
 
 #: debbuild:1979
 msgid "Extracted source package "
-msgstr ""
+msgstr "已提取源代码包 "
 
 #: debbuild:1492
 msgid "File not found: "
@@ -233,144 +230,142 @@ msgstr "未找到文件： "
 
 #: debbuild:2468
 msgid "Lua Error:"
-msgstr ""
+msgstr "Lua 错误："
 
 #: debbuild:2482
 msgid "Lua Error: Cannot create state!"
-msgstr ""
+msgstr "Lua 错误：无法创建状态！"
 
 #: debbuild:2496
 msgid "Lua Error: Unable to open Lua::API::State!"
-msgstr ""
+msgstr "Lua 错误：无法打开 Lua::API::State！"
 
 #: debbuild:2504
 msgid "Lua module not loaded! The following macro can't be expanded:"
-msgstr ""
+msgstr "Lua 模块未加载！以下宏无法展开："
 
 #: debbuild:1678
 msgid "Merging with 'post' script.\n"
-msgstr ""
+msgstr "与“post”脚本合并。\n"
 
 #: debbuild:1672
 msgid "Merging with 'pre' script.\n"
-msgstr ""
+msgstr "与“pre”脚本合并。\n"
 
 #: debbuild:402
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
-msgstr ""
+msgstr "未找到“os-release”文件或“lsb_release”程序。\n"
 
 #: debbuild:586
 msgid "No .spec file specified!  Exiting.\n"
-msgstr ""
+msgstr "未指定 .spec 文件！正在退出。\n"
 
 #: debbuild:49
 msgid "No .spec file to work with!  Exiting.\n"
-msgstr ""
+msgstr "没有可用的 .spec 文件！正在退出。\n"
 
 #: debbuild:139
 msgid "No Lua module loaded"
-msgstr ""
+msgstr "未加载 Lua 模块"
 
 #: debbuild:180
 msgid "No tarfile specified!  Exiting.\n"
-msgstr ""
+msgstr "未指定 tar 文件！正在退出。\n"
 
 #: debbuild:1721
 msgid "Signed binary package "
-msgstr ""
+msgstr "已签名二进制包 "
 
 #: debbuild:403
 msgid "Sorry, I quit.\n"
-msgstr ""
+msgstr "抱歉，我退出了。\n"
 
 #: debbuild:1098
 #, perl-format
 msgid "Suspect %setup tag '%setup"
-msgstr ""
+msgstr "可疑的 %setup 标签“%setup"
 
 #: debbuild:542
 msgid "This is debbuild, version "
-msgstr ""
+msgstr "这是 debbuild，版本 "
 
 #: debbuild:1877
 msgid "To install all missing dependencies, run 'apt install "
-msgstr ""
+msgstr "要安装所有缺失的依赖，请运行“apt install "
 
 #: debbuild:1891
 msgid "To remove all conflicting dependencies, run 'apt remove "
-msgstr ""
+msgstr "要删除所有冲突的依赖，请运行“apt remove "
 
 #: debbuild:504
 msgid "Unknown stage "
-msgstr ""
+msgstr "未知阶段 "
 
 #: debbuild:651
 msgid "Unknown tag '%"
-msgstr ""
+msgstr "未知标签“%"
 
 #: debbuild:716
 #, perl-format
 msgid "Unmatched %else at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "文件末尾存在未匹配的 %else。缺少 %endif。\n"
 
 #: debbuild:702
 #, perl-format
 msgid "Unmatched %else in line "
-msgstr ""
+msgstr "未匹配的 %else 在第 "
 
 #: debbuild:720
 #, perl-format
 msgid "Unmatched %endif in line "
-msgstr ""
+msgstr "未匹配的 %endif 在第 "
 
 #: debbuild:698
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
-msgstr ""
+msgstr "文件末尾存在未匹配的 %if。缺少 %else/%endif。\n"
 
 #: debbuild:1010
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "文件末尾存在未匹配的 %if。缺少 %endif。\n"
 
 #: debbuild:875 debbuild:975
 msgid "Upgrading relationship to Requires:.\n"
-msgstr ""
+msgstr "将关系升级为 Requires:。\n"
 
 #: debbuild:528
 msgid "WARNING:  Missing value for macro "
-msgstr ""
+msgstr "警告：宏缺少值 "
 
 #: debbuild:1962
-#, fuzzy
-#| msgid " * Warning:  "
 msgid "Warning:  "
-msgstr " * 警告：  "
+msgstr "警告：  "
 
 #: debbuild:866 debbuild:873 debbuild:973 debbuild:980 debbuild:988
 #: debbuild:1670 debbuild:1676
 msgid "Warning:  '"
-msgstr ""
+msgstr "警告：“"
 
 #: debbuild:984
 msgid "Warning:  Debian-specific '"
-msgstr ""
+msgstr "警告：Debian 特有的“"
 
 #: debbuild:1441
 msgid "Warning:  symlinking manpage failed:  "
-msgstr ""
+msgstr "警告：符号链接 manpage 失败：  "
 
 #: debbuild:1711
 msgid "Wrote binary package "
-msgstr ""
+msgstr "已写入二进制包 "
 
 #: debbuild:1809
 msgid "Wrote source package "
-msgstr ""
+msgstr "已写入源代码包 "
 
 #: debbuild:587
 msgid "specfile ("
-msgstr ""
+msgstr "spec 文件 ("
 
 #, perl-format
 #~ msgid "'%exclude' keyword found, ignoring input line\n"
