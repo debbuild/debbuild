@@ -8,358 +8,362 @@ msgstr ""
 "Project-Id-Version: DEBBUILD 24.12.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-11 07:38+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2026-05-08 10:59+0000\n"
+"Last-Translator: Bone NI <bounkirdni@gmail.com>\n"
+"Language-Team: Lao <https://translate.fedoraproject.org/projects/debbuild/"
+"master/lo/>\n"
 "Language: lo\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 5.17.1\n"
 
 #: debbuild:1828
 msgid "  Continuing anyway.\n"
-msgstr ""
+msgstr "  ກຳລັງດຳເນີນການຕໍ່ໄປ.\n"
 
 #: debbuild:1827
 msgid "  Required for successful build:\n"
-msgstr ""
+msgstr "  ສິ່ງທີ່ຈຳເປັນສຳລັບການສ້າງ (build) ທີ່ສຳເລັດ:\n"
 
 #: debbuild:1886
 msgid " * Conflicting build-dependency "
-msgstr ""
+msgstr " * ສິ່ງທີ່ຈຳເປັນໃນການສ້າງ (build-dependency) ທີ່ຂັດແຍ້ງກັນ "
 
 #: debbuild:1844 debbuild:1871
 msgid " * Missing build-dependency "
-msgstr ""
+msgstr " * ຂາດສິ່ງທີ່ຈຳເປັນໃນການສ້າງ (build-dependency) "
 
 #: debbuild:1865
 msgid " * Required build-dependency "
-msgstr ""
+msgstr " * ສິ່ງທີ່ຈຳເປັນໃນການສ້າງ (build-dependency) "
 
 #: debbuild:1860
 msgid " * Warning:  "
-msgstr ""
+msgstr " * ຄຳເຕືອນ:  "
 
 #: debbuild:1403
 msgid " failed (%"
-msgstr ""
+msgstr " ຫຼົ້ມເຫຼວ (%"
 
 #: debbuild:1709 debbuild:1719
 msgid " for "
-msgstr ""
+msgstr " ສຳລັບ "
 
 #: debbuild:505
 msgid " for option '-"
-msgstr ""
+msgstr " ສຳລັບຕົວເລືອກ '-"
 
 #: debbuild:529 debbuild:1712 debbuild:1722 debbuild:1809
 msgid " in "
-msgstr ""
+msgstr " ໃນ "
 
 #: debbuild:1903
 msgid " in installed packages...\n"
-msgstr ""
+msgstr " ໃນແພັກເກດທີ່ຕິດຕັ້ງແລ້ວ...\n"
 
 #: debbuild:1866
 msgid " is installed, but wrong version ("
-msgstr ""
+msgstr " ຖືກຕິດຕັ້ງແລ້ວ, ແຕ່ເປັນເວີຊັນທີ່ບໍ່ຖືກຕ້ອງ ("
 
 #: debbuild:1861
 msgid " is probably installed but seems to be a virtual package.\n"
 msgstr ""
+" ອາດຈະຖືກຕິດຕັ້ງແລ້ວ ແຕ່ເບິ່ງຄືວ່າເປັນແພັກເກດສະເມືອນ (virtual package).\n"
 
 #: debbuild:1962
 msgid " not found in any package.\n"
-msgstr ""
+msgstr " ບໍ່ພົບໃນແພັກເກດໃດໆ.\n"
 
 #: debbuild:1826
 msgid " not found.  Can't check build-deps.\n"
-msgstr ""
+msgstr " ບໍ່ພົບ. ບໍ່ສາມາດກວດສອບ build-deps ໄດ້.\n"
 
 #: debbuild:652
 msgid " of "
-msgstr ""
+msgstr " ຂອງ "
 
 #: debbuild:1391
 msgid " script file "
-msgstr ""
+msgstr " ໄຟລ໌ສະຄຣິບ "
 
 #: debbuild:555
 msgid " stage.  Ignoring.\n"
-msgstr ""
+msgstr " ຂັ້ນຕອນ. ກຳລັງຂ້າມໄປ.\n"
 
 #: debbuild:1980
 #, perl-brace-format
 msgid " to %{_topdir}.\n"
-msgstr ""
+msgstr " ໄປຍັງ %{_topdir}.\n"
 
 #: debbuild:510
 msgid " with --rebuild\n"
-msgstr ""
+msgstr " ດ້ວຍ --rebuild\n"
 
 #: debbuild:529
 msgid "!  Ignoring.\n"
-msgstr ""
+msgstr "! ກຳລັງຂ້າມໄປ.\n"
 
 #: debbuild:2505
 msgid "# end of the omitted macro"
-msgstr ""
+msgstr "# ສິ້ນສຸດຂອງມາກໂຄຣ (macro) ທີ່ຖືກລະເວັ້ນ"
 
 #: debbuild:1031
 msgid "%autosetup:  option '-S "
-msgstr ""
+msgstr "%autosetup: ຕົວເລືອກ '-S "
 
 #: debbuild:651
 msgid "' at line "
-msgstr ""
+msgstr "' ທີ່ແຖວ "
 
 #: debbuild:1032
 msgid "' currently not supported at line "
-msgstr ""
+msgstr "' ຍັງບໍ່ຮອງຮັບໃນຕອນນີ້ ທີ່ແຖວ "
 
 #: debbuild:1671 debbuild:1677
 msgid "' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr "' ບໍ່ໄດ້ຮັບການຮອງຮັບແບບພື້ນຖານໂດຍແພັກເກດ .deb.\n"
 
 #: debbuild:1099
 msgid "', continuing\n"
-msgstr ""
+msgstr "', ກຳລັງດຳເນີນການຕໍ່\n"
 
 #: debbuild:2467
 msgid "(error object is not a string)"
-msgstr ""
+msgstr "(ວັດຖຸຂໍ້ຜິດພາດບໍ່ແມ່ນຂໍ້ຄວາມ/string)"
 
 #: debbuild:588
 msgid ") barfed:  "
-msgstr ""
+msgstr ") ເກີດຂໍ້ຜິດພາດ:  "
 
 #: debbuild:1867
 msgid "):  Need "
-msgstr ""
+msgstr "): ຕ້ອງການ "
 
 #: debbuild:1825
 msgid "**WARNING**  "
-msgstr ""
+msgstr "**ຄຳເຕືອນ**  "
 
 #: debbuild:703
 #, perl-format
 msgid ".  Missing %if.\n"
-msgstr ""
+msgstr ". ຂາດ %if.\n"
 
 #: debbuild:721
 #, perl-format
 msgid ".  Missing %if/%else.\n"
-msgstr ""
+msgstr ". ຂາດ %if/%else.\n"
 
 #: debbuild:198
 msgid ":  build requirements not met.\n"
-msgstr ""
+msgstr ": ບໍ່ຄົບຖ້ວນຕາມເງື່ອນໄຂທີ່ຈຳເປັນໃນການສ້າງ (build).\n"
 
 #: debbuild:867 debbuild:874 debbuild:974 debbuild:989
 msgid ":' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr ":' ບໍ່ໄດ້ຮັບການຮອງຮັບແບບພື້ນຖານໂດຍແພັກເກດ .deb.\n"
 
 #: debbuild:981 debbuild:985
 #, perl-format
 msgid ":' outside %if wrapper\n"
-msgstr ""
+msgstr ":' ຢູ່ນອກ %if wrapper\n"
 
 #: debbuild:170
 msgid "Can't --rebuild with "
-msgstr ""
+msgstr "ບໍ່ສາມາດ --rebuild ດ້ວຍ "
 
 #: debbuild:197
 msgid "Can't build "
-msgstr ""
+msgstr "ບໍ່ສາມາດສ້າງ (build) "
 
 #: debbuild:1182
 msgid "Can't handle unknown file type '"
-msgstr ""
+msgstr "ບໍ່ສາມາດຈັດການກັບປະເພດໄຟລ໌ທີ່ບໍ່ຮູ້ຈັກ '"
 
 #: debbuild:1976
 msgid "Can't install "
-msgstr ""
+msgstr "ບໍ່ສາມາດຕິດຕັ້ງ "
 
 #: debbuild:1390
 msgid "Can't open/create "
-msgstr ""
+msgstr "ບໍ່ສາມາດເປີດ/ສ້າງ "
 
 #: debbuild:509
 msgid "Can't use -"
-msgstr ""
+msgstr "ບໍ່ສາມາດໃຊ້ -"
 
 #: debbuild:554
 msgid "Can't use --short-circuit for "
-msgstr ""
+msgstr "ບໍ່ສາມາດໃຊ້ --short-circuit ສຳລັບ "
 
 #: debbuild:1903
 msgid "Checking for "
-msgstr ""
+msgstr "ກຳລັງກວດສອບ "
 
 #: debbuild:1918
 msgid "Checking library requirements...\n"
-msgstr ""
+msgstr "ກຳລັງກວດສອບສິ່ງທີ່ຈຳເປັນຂອງໄລບຣາຣີ (library)...\n"
 
 #: debbuild:1485
 msgid "Could not open: "
-msgstr ""
+msgstr "ບໍ່ສາມາດເປີດ: "
 
 #: debbuild:868 debbuild:990
 msgid "Downgrading relationship to Enhances:.\n"
-msgstr ""
+msgstr "ກຳລັງຫຼຸດລະດັບຄວາມສຳພັນເປັນ Enhances:.\n"
 
 #: debbuild:1403
 msgid "Exec of "
-msgstr ""
+msgstr "ການປະຕິບັດການ (Exec) ຂອງ "
 
 #: debbuild:1399
 msgid "Executing ("
-msgstr ""
+msgstr "ກຳລັງປະຕິບັດການ ("
 
 #: debbuild:1979
 msgid "Extracted source package "
-msgstr ""
+msgstr "ແຕກໄຟລ໌ແພັກເກດຊອຣ໌ສ (source package) ແລ້ວ "
 
 #: debbuild:1492
 msgid "File not found: "
-msgstr ""
+msgstr "ບໍ່ພົບໄຟລ໌: "
 
 #: debbuild:2468
 msgid "Lua Error:"
-msgstr ""
+msgstr "ຂໍ້ຜິດພາດ Lua:"
 
 #: debbuild:2482
 msgid "Lua Error: Cannot create state!"
-msgstr ""
+msgstr "ຂໍ້ຜິດພາດ Lua: ບໍ່ສາມາດສ້າງ state ໄດ້!"
 
 #: debbuild:2496
 msgid "Lua Error: Unable to open Lua::API::State!"
-msgstr ""
+msgstr "ຂໍ້ຜິດພາດ Lua: ບໍ່ສາມາດເປີດ Lua::API::State ໄດ້!"
 
 #: debbuild:2504
 msgid "Lua module not loaded! The following macro can't be expanded:"
-msgstr ""
+msgstr "ບໍ່ໄດ້ໂຫຼດໂມດູນ Lua! ບໍ່ສາມາດຂະຫຍາຍມາກໂຄຣ (macro) ຕໍ່ໄປນີ້ໄດ້:"
 
 #: debbuild:1678
 msgid "Merging with 'post' script.\n"
-msgstr ""
+msgstr "ກຳລັງຮວມເຂົ້າກັບສະຄຣິບ 'post'.\n"
 
 #: debbuild:1672
 msgid "Merging with 'pre' script.\n"
-msgstr ""
+msgstr "ກຳລັງຮວມເຂົ້າກັບສະຄຣິບ 'pre'.\n"
 
 #: debbuild:402
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
-msgstr ""
+msgstr "ບໍ່ພົບໄຟລ໌ 'os-release' ຫຼື ໂປຣແກຣມ 'lsb_release'.\n"
 
 #: debbuild:586
 msgid "No .spec file specified!  Exiting.\n"
-msgstr ""
+msgstr "ບໍ່ໄດ້ລະບຸໄຟລ໌ .spec! ກຳລັງອອກ.\n"
 
 #: debbuild:49
 msgid "No .spec file to work with!  Exiting.\n"
-msgstr ""
+msgstr "ບໍ່ມີໄຟລ໌ .spec ທີ່ຈະເຮັດວຽກນຳ! ກຳລັງອອກ.\n"
 
 #: debbuild:139
 msgid "No Lua module loaded"
-msgstr ""
+msgstr "ບໍ່ມີໂມດູນ Lua ທີ່ຖືກໂຫຼດ"
 
 #: debbuild:180
 msgid "No tarfile specified!  Exiting.\n"
-msgstr ""
+msgstr "ບໍ່ໄດ້ລະບຸໄຟລ໌ tar! ກຳລັງອອກ.\n"
 
 #: debbuild:1721
 msgid "Signed binary package "
-msgstr ""
+msgstr "ແພັກເກດໄບນາຣີ (binary package) ທີ່ເຊັນແລ້ວ "
 
 #: debbuild:403
 msgid "Sorry, I quit.\n"
-msgstr ""
+msgstr "ຂໍໂທດ, ຂ້ອຍຢຸດການເຮັດວຽກ.\n"
 
 #: debbuild:1098
 #, perl-format
 msgid "Suspect %setup tag '%setup"
-msgstr ""
+msgstr "ສົງໄສແທັກ %setup '%setup"
 
 #: debbuild:542
 msgid "This is debbuild, version "
-msgstr ""
+msgstr "ນີ້ຄື debbuild, ເວີຊັນ "
 
 #: debbuild:1877
 msgid "To install all missing dependencies, run 'apt install "
-msgstr ""
+msgstr "ເພື່ອຕິດຕັ້ງສິ່ງທີ່ຈຳເປັນທັງໝົດທີ່ຂາດຫາຍໄປ, ໃຫ້ລັນຄຳສັ່ງ 'apt install "
 
 #: debbuild:1891
 msgid "To remove all conflicting dependencies, run 'apt remove "
 msgstr ""
+"ເພື່ອຖອນການຕິດຕັ້ງສິ່ງທີ່ຈຳເປັນທັງໝົດທີ່ຂັດແຍ້ງກັນ, ໃຫ້ລັນຄຳສັ່ງ 'apt remove "
 
 #: debbuild:504
 msgid "Unknown stage "
-msgstr ""
+msgstr "ບໍ່ຮູ້ຈັກຂັ້ນຕອນ "
 
 #: debbuild:651
 msgid "Unknown tag '%"
-msgstr ""
+msgstr "ບໍ່ຮູ້ຈັກແທັກ '%"
 
 #: debbuild:716
 #, perl-format
 msgid "Unmatched %else at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "ພົບ %else ທີ່ບໍ່ເຂົ້າຄູ່ກັນຢູ່ທ້າຍໄຟລ໌. ຂາດ %endif.\n"
 
 #: debbuild:702
 #, perl-format
 msgid "Unmatched %else in line "
-msgstr ""
+msgstr "ພົບ %else ທີ່ບໍ່ເຂົ້າຄູ່ກັນໃນແຖວ "
 
 #: debbuild:720
 #, perl-format
 msgid "Unmatched %endif in line "
-msgstr ""
+msgstr "ພົບ %endif ທີ່ບໍ່ເຂົ້າຄູ່ກັນໃນແຖວ "
 
 #: debbuild:698
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
-msgstr ""
+msgstr "ພົບ %if ທີ່ບໍ່ເຂົ້າຄູ່ກັນຢູ່ທ້າຍໄຟລ໌. ຂາດ %else/%endif.\n"
 
 #: debbuild:1010
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "ພົບ %if ທີ່ບໍ່ເຂົ້າຄູ່ກັນຢູ່ທ້າຍໄຟລ໌. ຂາດ %endif.\n"
 
 #: debbuild:875 debbuild:975
 msgid "Upgrading relationship to Requires:.\n"
-msgstr ""
+msgstr "ກຳລັງຍົກລະດັບຄວາມສຳພັນເປັນ Requires:.\n"
 
 #: debbuild:528
 msgid "WARNING:  Missing value for macro "
-msgstr ""
+msgstr "ຄຳເຕືອນ: ຂາດຄ່າສຳລັບມາກໂຄຣ (macro) "
 
 #: debbuild:1962
 msgid "Warning:  "
-msgstr ""
+msgstr "ຄຳເຕືອນ:  "
 
 #: debbuild:866 debbuild:873 debbuild:973 debbuild:980 debbuild:988
 #: debbuild:1670 debbuild:1676
 msgid "Warning:  '"
-msgstr ""
+msgstr "ຄຳເຕືອນ:  '"
 
 #: debbuild:984
 msgid "Warning:  Debian-specific '"
-msgstr ""
+msgstr "ຄຳເຕືອນ:  ສະເພາະສຳລັບ Debian '"
 
 #: debbuild:1441
 msgid "Warning:  symlinking manpage failed:  "
-msgstr ""
+msgstr "ຄຳເຕືອນ: ການສ້າງ symlink ໃຫ້ manpage ຫຼົ້ມເຫຼວ:  "
 
 #: debbuild:1711
 msgid "Wrote binary package "
-msgstr ""
+msgstr "ຂຽນແພັກເກດໄບນາຣີ (binary package) ແລ້ວ "
 
 #: debbuild:1809
 msgid "Wrote source package "
-msgstr ""
+msgstr "ຂຽນແພັກເກດຊອຣ໌ສ (source package) ແລ້ວ "
 
 #: debbuild:587
 msgid "specfile ("
-msgstr ""
+msgstr "specfile ("
