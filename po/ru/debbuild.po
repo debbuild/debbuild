@@ -8,359 +8,362 @@ msgstr ""
 "Project-Id-Version: DEBBUILD 24.12.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-02-11 07:38+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2026-08-19 00:28+0000\n"
+"Last-Translator: Andrei Stepanov <adem4ik@gmail.com>\n"
+"Language-Team: Russian <https://translate.fedoraproject.org/projects/"
+"debbuild/master/ru/>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 2026.8.1\n"
 
 #: debbuild:1828
 msgid "  Continuing anyway.\n"
-msgstr ""
+msgstr "  Продолжаем в любом случае.\n"
 
 #: debbuild:1827
 msgid "  Required for successful build:\n"
-msgstr ""
+msgstr "  Требуется для успешной сборки:\n"
 
 #: debbuild:1886
 msgid " * Conflicting build-dependency "
-msgstr ""
+msgstr " * Конфликтующая зависимость сборки "
 
 #: debbuild:1844 debbuild:1871
 msgid " * Missing build-dependency "
-msgstr ""
+msgstr " * Отсутствующая зависимость сборки "
 
 #: debbuild:1865
 msgid " * Required build-dependency "
-msgstr ""
+msgstr " * Требуемая зависимость сборки "
 
 #: debbuild:1860
 msgid " * Warning:  "
-msgstr ""
+msgstr " * Предупреждение:  "
 
 #: debbuild:1403
 msgid " failed (%"
-msgstr ""
+msgstr " завершился ошибкой (%"
 
 #: debbuild:1709 debbuild:1719
 msgid " for "
-msgstr ""
+msgstr " для "
 
 #: debbuild:505
 msgid " for option '-"
-msgstr ""
+msgstr " для параметра '-"
 
 #: debbuild:529 debbuild:1712 debbuild:1722 debbuild:1809
 msgid " in "
-msgstr ""
+msgstr " в "
 
 #: debbuild:1903
 msgid " in installed packages...\n"
-msgstr ""
+msgstr " в установленных пакетах...\n"
 
 #: debbuild:1866
 msgid " is installed, but wrong version ("
-msgstr ""
+msgstr " установлен, но неверная версия ("
 
 #: debbuild:1861
 msgid " is probably installed but seems to be a virtual package.\n"
-msgstr ""
+msgstr " вероятно, установлен, но похоже на виртуальный пакет.\n"
 
 #: debbuild:1962
 msgid " not found in any package.\n"
-msgstr ""
+msgstr " не найден ни в одном пакете.\n"
 
 #: debbuild:1826
 msgid " not found.  Can't check build-deps.\n"
-msgstr ""
+msgstr " не найден. Невозможно проверить зависимости сборки.\n"
 
 #: debbuild:652
 msgid " of "
-msgstr ""
+msgstr " из "
 
 #: debbuild:1391
 msgid " script file "
-msgstr ""
+msgstr " файл скрипта "
 
 #: debbuild:555
 msgid " stage.  Ignoring.\n"
-msgstr ""
+msgstr " этап. Игнорируем.\n"
 
 #: debbuild:1980
 #, perl-brace-format
 msgid " to %{_topdir}.\n"
-msgstr ""
+msgstr " в %{_topdir}.\n"
 
 #: debbuild:510
 msgid " with --rebuild\n"
-msgstr ""
+msgstr " с --rebuild\n"
 
 #: debbuild:529
 msgid "!  Ignoring.\n"
-msgstr ""
+msgstr "! Игнорируем.\n"
 
 #: debbuild:2505
 msgid "# end of the omitted macro"
-msgstr ""
+msgstr "# конец пропущенного макроса"
 
 #: debbuild:1031
 msgid "%autosetup:  option '-S "
-msgstr ""
+msgstr "%autosetup: параметр '-S "
 
 #: debbuild:651
 msgid "' at line "
-msgstr ""
+msgstr "' в строке "
 
 #: debbuild:1032
 msgid "' currently not supported at line "
-msgstr ""
+msgstr "' в настоящее время не поддерживается в строке "
 
 #: debbuild:1671 debbuild:1677
 msgid "' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr "' не поддерживается нативно пакетами .deb.\n"
 
 #: debbuild:1099
 msgid "', continuing\n"
-msgstr ""
+msgstr "', продолжаем\n"
 
 #: debbuild:2467
 msgid "(error object is not a string)"
-msgstr ""
+msgstr "(объект ошибки не является строкой)"
 
 #: debbuild:588
 msgid ") barfed:  "
-msgstr ""
+msgstr ") выдал ошибку:  "
 
 #: debbuild:1867
 msgid "):  Need "
-msgstr ""
+msgstr "): Требуется "
 
 #: debbuild:1825
 msgid "**WARNING**  "
-msgstr ""
+msgstr "**ПРЕДУПРЕЖДЕНИЕ**  "
 
 #: debbuild:703
 #, perl-format
 msgid ".  Missing %if.\n"
-msgstr ""
+msgstr ". Отсутствует %if.\n"
 
 #: debbuild:721
 #, perl-format
 msgid ".  Missing %if/%else.\n"
-msgstr ""
+msgstr ". Отсутствует %if/%else.\n"
 
 #: debbuild:198
 msgid ":  build requirements not met.\n"
-msgstr ""
+msgstr ": требования к сборке не выполнены.\n"
 
 #: debbuild:867 debbuild:874 debbuild:974 debbuild:989
 msgid ":' is not natively supported by .deb packages.\n"
-msgstr ""
+msgstr ":' не поддерживается нативно пакетами .deb.\n"
 
 #: debbuild:981 debbuild:985
 #, perl-format
 msgid ":' outside %if wrapper\n"
-msgstr ""
+msgstr ":' вне обёртки %if\n"
 
 #: debbuild:170
 msgid "Can't --rebuild with "
-msgstr ""
+msgstr "Невозможно выполнить --rebuild с "
 
 #: debbuild:197
 msgid "Can't build "
-msgstr ""
+msgstr "Невозможно собрать "
 
 #: debbuild:1182
 msgid "Can't handle unknown file type '"
-msgstr ""
+msgstr "Невозможно обработать неизвестный тип файла '"
 
 #: debbuild:1976
 msgid "Can't install "
-msgstr ""
+msgstr "Невозможно установить "
 
 #: debbuild:1390
 msgid "Can't open/create "
-msgstr ""
+msgstr "Невозможно открыть/создать "
 
 #: debbuild:509
 msgid "Can't use -"
-msgstr ""
+msgstr "Невозможно использовать -"
 
 #: debbuild:554
 msgid "Can't use --short-circuit for "
-msgstr ""
+msgstr "Невозможно использовать --short-circuit для "
 
 #: debbuild:1903
 msgid "Checking for "
-msgstr ""
+msgstr "Проверка наличия "
 
 #: debbuild:1918
 msgid "Checking library requirements...\n"
-msgstr ""
+msgstr "Проверка требований к библиотекам...\n"
 
 #: debbuild:1485
 msgid "Could not open: "
-msgstr ""
+msgstr "Не удалось открыть: "
 
 #: debbuild:868 debbuild:990
 msgid "Downgrading relationship to Enhances:.\n"
-msgstr ""
+msgstr "Понижение отношения до Enhances:.\n"
 
 #: debbuild:1403
 msgid "Exec of "
-msgstr ""
+msgstr "Выполнение "
 
 #: debbuild:1399
 msgid "Executing ("
-msgstr ""
+msgstr "Выполнение ("
 
 #: debbuild:1979
 msgid "Extracted source package "
-msgstr ""
+msgstr "Извлечён исходный пакет "
 
 #: debbuild:1492
 msgid "File not found: "
-msgstr ""
+msgstr "Файл не найден: "
 
 #: debbuild:2468
 msgid "Lua Error:"
-msgstr ""
+msgstr "Ошибка Lua:"
 
 #: debbuild:2482
 msgid "Lua Error: Cannot create state!"
-msgstr ""
+msgstr "Ошибка Lua: Невозможно создать состояние!"
 
 #: debbuild:2496
 msgid "Lua Error: Unable to open Lua::API::State!"
-msgstr ""
+msgstr "Ошибка Lua: Невозможно открыть Lua::API::State!"
 
 #: debbuild:2504
 msgid "Lua module not loaded! The following macro can't be expanded:"
-msgstr ""
+msgstr "Модуль Lua не загружен! Следующий макрос не может быть раскрыт:"
 
 #: debbuild:1678
 msgid "Merging with 'post' script.\n"
-msgstr ""
+msgstr "Объединение со скриптом 'post'.\n"
 
 #: debbuild:1672
 msgid "Merging with 'pre' script.\n"
-msgstr ""
+msgstr "Объединение со скриптом 'pre'.\n"
 
 #: debbuild:402
 msgid "No 'os-release' file or 'lsb_release' program found.\n"
-msgstr ""
+msgstr "Файл 'os-release' или программа 'lsb_release' не найдены.\n"
 
 #: debbuild:586
 msgid "No .spec file specified!  Exiting.\n"
-msgstr ""
+msgstr "Файл .spec не указан! Выход.\n"
 
 #: debbuild:49
 msgid "No .spec file to work with!  Exiting.\n"
-msgstr ""
+msgstr "Нет файла .spec для работы! Выход.\n"
 
 #: debbuild:139
 msgid "No Lua module loaded"
-msgstr ""
+msgstr "Модуль Lua не загружен"
 
 #: debbuild:180
 msgid "No tarfile specified!  Exiting.\n"
-msgstr ""
+msgstr "Tar-файл не указан! Выход.\n"
 
 #: debbuild:1721
 msgid "Signed binary package "
-msgstr ""
+msgstr "Подписанный двоичный пакет "
 
 #: debbuild:403
 msgid "Sorry, I quit.\n"
-msgstr ""
+msgstr "Извините, я завершаю работу.\n"
 
 #: debbuild:1098
 #, perl-format
 msgid "Suspect %setup tag '%setup"
-msgstr ""
+msgstr "Подозрительный тег %setup '%setup"
 
 #: debbuild:542
 msgid "This is debbuild, version "
-msgstr ""
+msgstr "Это debbuild, версия "
 
 #: debbuild:1877
 msgid "To install all missing dependencies, run 'apt install "
-msgstr ""
+msgstr "Чтобы установить все отсутствующие зависимости, выполните 'apt install "
 
 #: debbuild:1891
 msgid "To remove all conflicting dependencies, run 'apt remove "
-msgstr ""
+msgstr "Чтобы удалить все конфликтующие зависимости, выполните 'apt remove "
 
 #: debbuild:504
 msgid "Unknown stage "
-msgstr ""
+msgstr "Неизвестный этап "
 
 #: debbuild:651
 msgid "Unknown tag '%"
-msgstr ""
+msgstr "Неизвестный тег '%"
 
 #: debbuild:716
 #, perl-format
 msgid "Unmatched %else at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "Непарный %else в конце файла. Отсутствует %endif.\n"
 
 #: debbuild:702
 #, perl-format
 msgid "Unmatched %else in line "
-msgstr ""
+msgstr "Непарный %else в строке "
 
 #: debbuild:720
 #, perl-format
 msgid "Unmatched %endif in line "
-msgstr ""
+msgstr "Непарный %endif в строке "
 
 #: debbuild:698
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %else/%endif.\n"
-msgstr ""
+msgstr "Непарный %if в конце файла. Отсутствует %else/%endif.\n"
 
 #: debbuild:1010
 #, perl-format
 msgid "Unmatched %if at end of file.  Missing %endif.\n"
-msgstr ""
+msgstr "Непарный %if в конце файла. Отсутствует %endif.\n"
 
 #: debbuild:875 debbuild:975
 msgid "Upgrading relationship to Requires:.\n"
-msgstr ""
+msgstr "Повышение отношения до Requires:.\n"
 
 #: debbuild:528
 msgid "WARNING:  Missing value for macro "
-msgstr ""
+msgstr "ПРЕДУПРЕЖДЕНИЕ: Отсутствует значение для макроса "
 
 #: debbuild:1962
 msgid "Warning:  "
-msgstr ""
+msgstr "Предупреждение:  "
 
 #: debbuild:866 debbuild:873 debbuild:973 debbuild:980 debbuild:988
 #: debbuild:1670 debbuild:1676
 msgid "Warning:  '"
-msgstr ""
+msgstr "Предупреждение: '"
 
 #: debbuild:984
 msgid "Warning:  Debian-specific '"
-msgstr ""
+msgstr "Предупреждение: Debian-специфичный '"
 
 #: debbuild:1441
 msgid "Warning:  symlinking manpage failed:  "
 msgstr ""
+"Предупреждение: создание символической ссылки на man-страницу не удалось:  "
 
 #: debbuild:1711
 msgid "Wrote binary package "
-msgstr ""
+msgstr "Записан двоичный пакет "
 
 #: debbuild:1809
 msgid "Wrote source package "
-msgstr ""
+msgstr "Записан исходный пакет "
 
 #: debbuild:587
 msgid "specfile ("
-msgstr ""
+msgstr "файл spec ("
